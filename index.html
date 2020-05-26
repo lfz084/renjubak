@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -655,7 +655,7 @@
 
     function handleStart(evt) {
 
-      //evt.preventDefault(); //阻止事件的默认行为
+      //evt.preventDefault();//阻止事件的默认行为
 
     }
 
@@ -696,7 +696,8 @@
 
     function bodyTouchStart(evt) {
 
-      //evt.preventDefault(); //阻止事件的默认行为
+      //evt.preventDefault();
+      //阻止事件的默认行为
       //log("touchstart...","red");
       if (isMsgShow) return;
       // 防止锁屏
@@ -780,7 +781,7 @@
 
     function bodyTouchEnd(evt) {
 
-      // evt.preventDefault();
+      //evt.preventDefault();
       if (isMsgShow) return;
 
       //log("touchend/touchleave...","red");
@@ -876,13 +877,13 @@
         }
 
 
-        bodyStartTouches.splice(idx, 1); // remove it; we're done
+        bodyStartTouches.splice(idx, 1); //remove it;we're done
 
       } else {
         // 出错重新初始化 触摸跟踪
         bodyStartTouches.length = 0;
 
-        log("can't figure out which touch to end");
+        log("can't figure out which touch to end");
 
       }
 
@@ -949,7 +950,7 @@
 
       }
 
-      return -1; // not found
+      return -1; //notfound
 
     }
 
