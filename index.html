@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -49,9 +49,9 @@
     }
   </style>
 </head>
-    
 
-<body>  
+
+<body>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script src="./script/jsPDF/msyh-bold.js"></script>
   <script src="./script/NoSleep.min.js"></script>
@@ -626,7 +626,7 @@
 
       canvas.addEventListener("touchmove", handleMove, false);
 
-      //canvas.addEventListener("click", canvasClick, false);
+      //canvas.addEventListener("click", canvasClick, false);
 
       canvas.addEventListener("contextmenu", bodyKeepTouch, false);
 
@@ -655,7 +655,7 @@
 
     function handleStart(evt) {
 
-      //evt.preventDefault(); //阻止事件的默认行为
+      //evt.preventDefault(); //阻止事件的默认行为
 
     }
 
@@ -696,7 +696,7 @@
 
     function bodyTouchStart(evt) {
 
-      //evt.preventDefault(); //阻止事件的默认行为
+      //evt.preventDefault(); //阻止事件的默认行为
       //log("touchstart...","red");
       if (isMsgShow) return;
       // 防止锁屏
@@ -767,7 +767,7 @@
       continueSetCutDivX = touches[0].pageX;
       continueSetCutDivY = touches[0].pageY;
 
-      if ((Math.abs(bodyPreviousTouch[0].pageX - touches[0].pageX) > 30) && (Math.abs(bodyPreviousTouch[0].pageY - touches[0].pageY) > 30)) {
+      if ((bodyPreviousTouch.length && Math.abs(bodyPreviousTouch[0].pageX - touches[0].pageX) > 30) && (Math.abs(bodyPreviousTouch[0].pageY - touches[0].pageY) > 30)) {
         // 取消单击事件。
         isBodyClick = false;
       }
@@ -780,7 +780,7 @@
 
     function bodyTouchEnd(evt) {
 
-      // evt.preventDefault();
+      // evt.preventDefault();
       if (isMsgShow) return;
 
       //log("touchend/touchleave...","red");
