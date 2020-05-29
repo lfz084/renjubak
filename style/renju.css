@@ -1,11 +1,11 @@
  @font-face {
 
-   font-family: '微软雅黑';
+   font-family: 'mHeiTi';
    src: url('../font/simhei.otf');
  }
 
  font {
-   font-family: 微软雅黑;
+    font-family: 微软雅黑,STHeiti,MingLiu;
    font-weight: bold;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
@@ -14,20 +14,21 @@
 
 
  button {
-   font-family: 微软雅黑;
+    font-family: 微软雅黑,STHeiti,MingLiu;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
 
  div {
-   font-family: 微软雅黑;
+   font-family: 微软雅黑,STHeiti,MingLiu;
    font-weight: bolder;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
  canvas {
+   font-family: 微软雅黑,STHeiti,MingLiu;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
