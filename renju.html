@@ -4,87 +4,17 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="shortcut icon" href="./pic/favicon1.ico" />
+  <link href="./style/renju.css" rel="stylesheet" type="text/css">
   <title> 摆棋小工具</title>
-  <style>
-    @font-face {
 
-      font-family: 'mHeiTi';
-      src: url('./font/simhei.otf');
-    }
-
-    font {
-      font-family: 微软雅黑, STHeiti, MingLiu, mHeiTi;
-      font-weight: bold;
-      -webkit-user-select: none;
-      /* Chrome/Safari/Opera */
-    }
-
-
-
-    button {
-      font-family: 微软雅黑, STHeiti, MingLiu, mHeiTi;
-      -webkit-user-select: none;
-      /* Chrome/Safari/Opera */
-    }
-
-
-    div {
-      font-family: 微软雅黑, STHeiti, MingLiu, mHeiTi;
-      font-weight: bolder;
-      -webkit-user-select: none;
-      /* Chrome/Safari/Opera */
-    }
-
-    canvas {
-      -webkit-user-select: none;
-      /* Chrome/Safari/Opera */
-    }
-
-
-    body {
-      height: 100%;
-      width: 100%;
-      -webkit-user-select: none;
-      /* Chrome/Safari/Opera */
-    }
-  </style>
 </head>
 
 
 <body>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
-  <script src="./script/jsPDF/msyh-bold.js"></script>
   <script src="./script/NoSleep.min.js"></script>
   <script src="./script/button.js"></script>
   <script src="./script/checkerBoard.js"></script>
-  <script language="javascript">
-    "use strict";
-    const isTest = 0;
-    //记录日志
-    var logDiv = null;
-    if (isTest) {
-      logDiv = document.createElement("div");
-      logDiv.style.position = "absolute";
-      logDiv.style.borderStyle = "dashed";
-      logDiv.style.borderWidth = '1px';
-      //logDiv.style.borderColor = '#eee';
-      logDiv.style.left = 0;
-      logDiv.style.top = 0
-      logDiv.style.width = 600
-      logDiv.style.height = 200;
-      logDiv.style.innerHTML = "AAAA";
-      document.body.appendChild(logDiv);
-    }
-
-    function log(msg, color) {
-
-      setTimeout(function() {
-        if (!isTest) return;
-        if (color == null) color = 'black';
-        logDiv.innerHTML = "<font color=" + color + ">" + msg + "</font><br>" + logDiv.innerHTML.slice(0, 1500);
-      }, 10);
-    }
-  </script>
   <script language="javascript">
     "use strict";
     var d = document;
@@ -201,8 +131,6 @@
 
       document.body.addEventListener("click", canvasClick, false);
 
-      log("setCheckBoardEvent End");
-
     }
 
 
@@ -254,7 +182,6 @@
 
       //evt.preventDefault();
       //阻止事件的默认行为
-      //log("touchstart...","red");
       if (isMsgShow) return;
       // 防止锁屏
 
@@ -300,8 +227,6 @@
         bodyStartTouches.push(copyTouch(touches[0], touchNum));
       }
 
-      //log("bodyPreviousTouch.length = " + bodyPreviousTouch.length);
-      //log(bodyStartTouches);
     }
 
 
@@ -309,7 +234,7 @@
     //处理触摸移动事件
 
     function bodyTouchMove(evt) {
-      log("bodyTouchMove")
+    
       if (timerContinueSetCutDiv) evt.preventDefault();
       var touches = evt.changedTouches;
 
@@ -339,9 +264,6 @@
 
       //evt.preventDefault();
       if (isMsgShow) return;
-
-      //log("touchend/touchleave...","red");
-
       let cancelClick = false;
 
       var touches = evt.changedTouches;
@@ -374,16 +296,11 @@
 
         var touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
 
-        //log("touchNum=" + touchNum);
-
         if (touchNum > 3) { // 超过3指重置触摸跟踪
-
           bodyStartTouches.length = 0 //remove it; we're done
-
           return;
         }
 
-        log("第" + bodyStartTouches[idx].touchNum + "个手指离开屏幕");
 
         if ((!cancelClick) && isBodyClick) {
           if ((bodyPreviousTouch.length > 0) && (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) && (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)) {
@@ -417,19 +334,19 @@
         }
         else if (xMove > 380 && Math.abs(xMove / yMove) > 2) {
 
-          log("右滑", "red");
+          //log("右滑", "red");
         }
         else if (xMove < -380 && Math.abs(xMove / yMove) > 2) {
 
-          log("左滑", "red");
+          //log("左滑", "red");
         }
         else if (yMove > 380 && Math.abs(yMove / xMove) > 2) {
 
-          log("下滑", "red");
+          //log("下滑", "red");
         }
         else if (yMove < -380 && Math.abs(yMove / xMove) > 2) {
 
-          log("上滑", "red");
+          //log("上滑", "red");
         }
 
 
@@ -438,8 +355,6 @@
       } else {
         // 出错重新初始化 触摸跟踪
         bodyStartTouches.length = 0;
-
-        log("can't figure out which touch to end");
 
       }
 
@@ -453,8 +368,6 @@
     function bodyTouchCancel(evt) {
 
       evt.preventDefault();
-
-      log("touchcancel.", "blue");
 
       var touches = evt.changedTouches;
       // 取消 continueSetCutDiv 事件
@@ -496,8 +409,6 @@
 
         var id = touches[i].identifier;
 
-
-        log("onTouchesIndex  " + touches)
         if (id == idToFind) {
 
           return i;
@@ -515,7 +426,6 @@
 
     function canvasKeepTouch(x, y) {
 
-      log("canvad长按start");
       if (playModel == renjuModel) {
         if (event && event.type == "contextmenu") {
           renjuKeepTouch(event.pageX, event.pageY);
@@ -538,7 +448,6 @@
 
     function canvasClick(x, y) {
 
-      log("canvad 单击", "pink");
       if (isMsgShow) return; // 针对鼠标事件
       x = event.type == "click" ? event.pageX : x;
       y = event.type == "click" ? event.pageY : y;
@@ -569,7 +478,6 @@
 
     function canvasDblClick(x, y) {
 
-      log("canvad 双击", "pink");
       if (playModel == renjuModel) {
         if (event.type == "dblclick") {
           renjuDblClick(event.pageX, event.pageY);
@@ -591,7 +499,7 @@
 
 
     function bodyKeepTouch() {
-      log("keepTouch........。", "red");
+
       clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
       timerBodyKeepTouch = null;
       let x = bodyStartTouches[0].pageX;
@@ -604,7 +512,7 @@
         //log("canvad 长按");
       }
       else {
-        log("Body 长按");
+        //log("Body 长按");
       }
 
     }
@@ -847,7 +755,6 @@
 
       renjuCmddiv = document.createElement("div");
       let s = renjuCmddiv.style;
-      log("creatrenjuCmddiv");
       parentNode.appendChild(renjuCmddiv);
       s.position = "absolute";
       s.width = width / 1.15;
@@ -1993,8 +1900,6 @@
     //返回参数确认 添加棋子 还是标签
     function getRenjuCmd() {
 
-      log("getRenjuCmd");
-
       let isShow = cShownum.checked ? true : false;
       let idx;
       let code;
@@ -2065,7 +1970,7 @@
               return { type: tLb, cmd: "☆", showNum: isShow };
           }
       }
-      log("getRenjuCmd err");
+    
     }
 
 
@@ -2096,10 +2001,8 @@
     function renjuClick(x, y) {
 
       let idx = cBoard.getPIndex(x, y);
-      log("rennuClick idx=" + idx);
 
       if (idx > -1) {
-        log("P[IDX].type=" + cBoard.P[idx].type);
 
         let cmds = getRenjuCmd();
         switch (cmds.type) {
@@ -2159,11 +2062,9 @@
     function renjuDblClick(x, y) {
 
       let idx = cBoard.getPIndex(x, y);
-      log("renjuDblClick  idx==" + idx);
       if (idx > -1) {
         // 触发快速悔棋
         if (cBoard.P[idx].type == tNum) {
-          log("renjuDblClick 连续悔棋");
           if (idx != cBoard.MS[cBoard.MSindex]) {
             for (let i = cBoard.MSindex + 1; i > parseInt(cBoard.P[idx].text); i--) {
               cBoard.cleNb(idx, cShownum.checked);
@@ -2547,7 +2448,6 @@
             */
 
             if (!backStage && vcfcount % 30 == 0) {
-              log("失败结点数=" + countFailMoves);
               cBoard.printMoves(vcfmoves, vcfcolor);
             }
             vcfFinding = findVCF(timeOut, depth);

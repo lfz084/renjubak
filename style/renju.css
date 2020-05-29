@@ -1,0 +1,41 @@
+ @font-face {
+
+   font-family: 'mHeiTi';
+   src: url('../font/simhei.otf');
+ }
+
+ font {
+   font-family: mHeiTi;
+   font-weight: bold;
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }
+
+
+
+ button {
+   font-family: mHeiTi;
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }
+
+
+ div {
+   font-family: mHeiTi;
+   font-weight: bolder;
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }
+
+ canvas {
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }
+
+
+ body {
+   height: 100%;
+   width: 100%;
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }

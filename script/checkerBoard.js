@@ -1,3 +1,5 @@
+"use strict";
+
 var tempp = new point(0, 0, null);
 
 const tEmpty = 0;
@@ -1444,8 +1446,8 @@ checkerBoard.prototype.printCheckerBoard = function() {
   //画星位
   if (this.SLTX == 15 && this.SLTY == 15) {
 
-    for (i = 48; i < 225; i += 120) {
-      for (j = 0; j < 9; j += 8) {
+    for (let i = 48; i < 225; i += 120) {
+      for (let j = 0; j < 9; j += 8) {
         p.setxy(this.P[i + j].x, this.P[i + j].y);
         ctx.beginPath();
         ctx.fillStyle = "#000";
@@ -1908,7 +1910,6 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
         let name = d.getFullYear() + "_" + (d.getMonth() + 1) + "_" + d.getDate() + " " + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
         closeMsg();
         doc.save(name + '.pdf'); //保存文档
-        delete doc;
       }, 50);
     }, 50);
   }, 50);
@@ -2280,7 +2281,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
   ctx.fill();
   ctx.stroke();
 
-  txt = parseInt(this.P[idx].text) - this.resetNum;
+  let txt = parseInt(this.P[idx].text) - this.resetNum;
   txt = parseInt(txt) < 1 ? "" : txt;
   if (showNum) {
     ctx.font = "bolder " + parseInt(w * 1.08) + "px  微软雅黑";
