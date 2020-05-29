@@ -33,7 +33,7 @@
       }*/
       this.margin = 0;
       this.outline = "none"; //去掉外框
-      this.fontFamily = "微软雅黑";
+      this.fontFamily = "mHeiTi";
       this.fontSize = parseInt(this.height) / 2.2 + "px";
       this.textAlign = "center";
       this.checked = false;
