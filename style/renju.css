@@ -1,6 +1,6 @@
 
  font {
-   font-family:STHeiti;
+   font-family:黑体;
    font-weight: bold;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
@@ -9,21 +9,21 @@
 
 
  button {
-   font-family:STHeiti;
+   font-family:黑体;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
 
  div {
-   font-family:STHeiti;
+   font-family:黑体;
    font-weight: bolder;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
  canvas {
-   font-family:STHeiti;
+   font-family:黑体;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
