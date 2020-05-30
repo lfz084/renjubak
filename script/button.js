@@ -338,7 +338,7 @@
       let s;
       this.text = txt == null ? "" : txt;
       this.text2 = txt2 == null ? "" : txt2;
-      this.button.style.fontFamily = "SimHei";
+      this.button.style.fontFamily = "mHeiTi";
       if (this.checked) {
         s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
         s += this.text2 == "" ? this.text : this.text2;
