@@ -82,6 +82,9 @@
 
     document.body.onload = function() {
 
+      let fontFace = new FontFace('mHeiTi','url("../font/simhei.otf")');
+      fontFace.load().then(function(){alert()});
+      
       cBoard = new checkerBoard(d.getElementById("up"), 0, 0, cWidth, cWidth);
       cBoard.printCheckerBoard();
 
