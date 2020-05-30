@@ -1070,7 +1070,7 @@ checkerBoard.prototype.getSVG = function() {
       m = j == 0 ? -this.gH : this.gH;
       x1 = this.P[i + j].x * size;
       y1 = (this.P[i + j].y + m) * size;
-      svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family=" KaiTi"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.alpha.charAt(i)}</text>`;
+      svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family=" SimHei"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.alpha.charAt(i)}</text>`;
 
     }
   }
@@ -1080,7 +1080,7 @@ checkerBoard.prototype.getSVG = function() {
       m = j == 0 ? -this.gW : this.gW;
       x1 = (this.P[i * this.SLTX + j].x + m) * size;
       y1 = this.P[i * this.SLTX + j].y * size;
-      svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family=" KaiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
+      svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family=" SimHei" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
 
     }
   }
@@ -1094,13 +1094,13 @@ checkerBoard.prototype.getSVG = function() {
       /*
        if (this.P[i].type==tNum) {
            let color = this.P[i].color=="white" ? "black" : "white";
-           svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family=" KaiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+           svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family=" SimHei" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
        }
       */
     }
     else if (this.P[i].type == tLb) {
       svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
-      //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family=" KaiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+      //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family=" SimHei" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
     }
 
     let txt = this.P[i].text;
@@ -1136,7 +1136,7 @@ checkerBoard.prototype.getSVG = function() {
         }
       }
     }
-    svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family=" KaiTi" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+    svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family=" SimHei" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
   }
 
   svgText += "</svg>";
@@ -1370,7 +1370,7 @@ checkerBoard.prototype.printCoordinate = function(t, r, d, l) {
   let m;
   let ctx = this.bakCanvas.getContext("2d");
   ctx.fillStyle = "#000";
-  ctx.font = parseInt(this.gW * 0.5) + "px  KaiTi";
+  ctx.font = parseInt(this.gW * 0.5) + "px  SimHei";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   for (let i = 0; i < this.SLTX; i++) {
@@ -1704,7 +1704,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
     y1 = top + y1 * size;
     y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
     doc.text(String(txt), x1, y1, "center");
-    //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family=" KaiTi" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+    //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family=" SimHei" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
   }
 
 }
@@ -1729,7 +1729,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
     ctx.fill(); // 填充
     ctx.stroke(); // 描边
     ctx.fillStyle = color == "white" ? "black" : color == "black" ? "white" : color;
-    ctx.font = "bolder " + parseInt(w * 1.08) + "px   KaiTi";
+    ctx.font = "bolder " + parseInt(w * 1.08) + "px   SimHei";
   }
   else { //  打印标签
     ctx.beginPath();
@@ -1737,19 +1737,19 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
     ctx.arc(p.x, p.y, text.length > 1 ? w : w / 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.fillStyle = color;
-    ctx.font = "bolder " + parseInt(w * 1.1) + "px   KaiTi";
+    ctx.font = "bolder " + parseInt(w * 1.1) + "px   SimHei";
   }
 
-  ctx.font = "bolder " + parseInt(w * 1.08) + "px   KaiTi";
+  ctx.font = "bolder " + parseInt(w * 1.08) + "px   SimHei";
   if (text.length == 1) { // 两位数数数字不需要放大字体
     let code = text.charCodeAt();
     // 再把一位数字排除
     if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
       if (text == "▲" || text == "■" || text == "☆" || text == "◎" || text == "✖") {
-        ctx.font = "bolder " + parseInt(w * 1.1) + "px   KaiTi";
+        ctx.font = "bolder " + parseInt(w * 1.1) + "px   SimHei";
       }
       else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-        ctx.font = "bolder " + parseInt(w * 1.5) + "px   KaiTi";
+        ctx.font = "bolder " + parseInt(w * 1.5) + "px   SimHei";
       }
     }
   }
@@ -2242,7 +2242,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
   ctx.stroke();
 
   // 设置字体
-  ctx.font = "bolder " + parseInt(w * 1.08) + "px   KaiTi";
+  ctx.font = "bolder " + parseInt(w * 1.08) + "px   SimHei";
   // 由棋子颜色决定字体颜色
   ctx.fillStyle = this.notShowLastNum ? color == "white" ? "black" : "white" : "#ff6666";
   if (showNum) { // 显示数字
@@ -2284,7 +2284,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
   let txt = parseInt(this.P[idx].text) - this.resetNum;
   txt = parseInt(txt) < 1 ? "" : txt;
   if (showNum) {
-    ctx.font = "bolder " + parseInt(w * 1.08) + "px   KaiTi";
+    ctx.font = "bolder " + parseInt(w * 1.08) + "px   SimHei";
     ctx.fillStyle = color == "white" ? "black" : color == "black" ? "white" : color;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
