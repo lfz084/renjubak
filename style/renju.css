@@ -1,12 +1,6 @@
-@font-face {
-  font-family: 'mHeiTi';
-  src: url('../font/simhei.otf');
-  font-weight: normal;
-  font-style: normal;
-}
 
  font {
-   font-family:mHeiTi,STHeiti;
+   font-family:SimHei,STHeiti,Source Han Sans CN;
    font-weight: bold;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
@@ -15,21 +9,21 @@
 
 
  button {
-   font-family:mHeiTi,STHeiti;
+   font-family:SimHei,STHeiti,Source Han Sans CN;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
 
  div {
-   font-family:mHeiTi,STHeiti;
+   font-family:SimHei,STHeiti,Source Han Sans CN;
    font-weight: bolder;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
  canvas {
-   font-family:mHeiTi,STHeiti;
+   font-family:SimHei,STHeiti,Source Han Sans CN;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }

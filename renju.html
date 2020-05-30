@@ -41,6 +41,7 @@
         }
       }, 30 * 1000);
     }
+    
 
     //用来保存跟踪正在发送的触摸事件
 
@@ -82,9 +83,6 @@
 
     document.body.onload = function() {
 
-      let fontFace = new FontFace('mHeiTi','url("../font/simhei.otf")');
-      fontFace.load().then(function(){alert()});
-      
       cBoard = new checkerBoard(d.getElementById("up"), 0, 0, cWidth, cWidth);
       cBoard.printCheckerBoard();
 
