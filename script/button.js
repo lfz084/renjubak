@@ -33,7 +33,7 @@
       }*/
       this.margin = 0;
       this.outline = "none"; //去掉外框
-      //this.fontFamily = "SimHei,STHeiti,Source Han Sans CN";
+      //this.fontFamily = "STHeiti";
       this.fontSize = parseInt(this.height) / 2.2 + "px";
       this.textAlign = "center";
       this.checked = false;
@@ -338,7 +338,7 @@
       let s;
       this.text = txt == null ? "" : txt;
       this.text2 = txt2 == null ? "" : txt2;
-      this.button.style.fontFamily = "SimHei,STHeiti,Source Han Sans CN";
+      this.button.style.fontFamily = "STHeiti";
       if (this.checked) {
         s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
         s += this.text2 == "" ? this.text : this.text2;

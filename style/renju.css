@@ -1,6 +1,6 @@
 
  font {
-   font-family:SimHei,STHeiti,Source Han Sans CN;
+   font-family:STHeiti;
    font-weight: bold;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
@@ -9,21 +9,21 @@
 
 
  button {
-   font-family:SimHei,STHeiti,Source Han Sans CN;
+   font-family:STHeiti;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
 
  div {
-   font-family:SimHei,STHeiti,Source Han Sans CN;
+   font-family:STHeiti;
    font-weight: bolder;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
 
  canvas {
-   font-family:SimHei,STHeiti,Source Han Sans CN;
+   font-family:STHeiti;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
