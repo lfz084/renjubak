@@ -1789,7 +1789,7 @@ checkerBoard.prototype.printSearchPoint = function(idx, text, color) {
 // 涂鸦模式，边框初始化
 checkerBoard.prototype.resetCutDiv = function() {
   
-  canvas = this.canvas;
+  let canvas = this.canvas;
   let w = parseInt(canvas.width);
   let h = parseInt(canvas.height);
   let XL = w / 3;
