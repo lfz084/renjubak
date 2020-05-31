@@ -3,6 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
   <link rel="shortcut icon" href="./pic/favicon1.ico" />
   <link href="./style/renju.css" rel="stylesheet" type="text/css">
   <title> 摆棋小工具</title>
@@ -23,6 +24,9 @@
     var dh = d.documentElement.clientHeight;
     var cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
     cWidth = cWidth < dh ? cWidth : dh;
+    var viewport = document.getElementById('viewport');
+    var noScalable = "width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui";
+    var scalable = "width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, minimal-ui";
     // dw = 2000;
     //  dh = 2000;
     var noSleep;
@@ -1319,6 +1323,7 @@
         img.onload = function() {
           img.onload = null;
           putImg();
+          viewport.setAttribute('content','user-scalable=1');
         }
       });
 
@@ -1645,6 +1650,7 @@
       putCheckerBoard = putBoard;
 
       function putBoard(idx) {
+        viewport.setAttribute('content','user-scalable=');
         if (idx < 0) return;
         let arr = cBoard.getPointArray([]);
         let h1 = parseInt(cBoard.width);
