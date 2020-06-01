@@ -726,7 +726,7 @@ checkerBoard.prototype.getPIndex = function(x, y) {
   let i;
   let j;
 
-  if (cBoard.isOut(x, y, this.canvas)) return -1;
+  if (this.isOut(x, y, this.canvas)) return -1;
 
   let p = tempp;
   p.setxy(x, y); // page 坐标 转 canvas 坐标

@@ -3,7 +3,6 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
   <link rel="shortcut icon" href="./pic/favicon1.ico" />
   <link href="./style/renju.css" rel="stylesheet" type="text/css">
   <title> 摆棋小工具</title>
@@ -24,9 +23,6 @@
     var dh = d.documentElement.clientHeight;
     var cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
     cWidth = cWidth < dh ? cWidth : dh;
-    var viewport = document.getElementById('viewport');
-    var noScalable = "width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui";
-    var scalable = "width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, minimal-ui";
     // dw = 2000;
     //  dh = 2000;
     var noSleep;
@@ -154,7 +150,7 @@
     //处理触摸移动事件
 
     function handleMove(evt) {
-
+    
       if (timerContinueSetCutDiv) evt.preventDefault();
 
     }
@@ -219,7 +215,7 @@
       }
       else
       {
-
+       
         // 多点触摸取消长按事件
         if (timerBodyKeepTouch) {
           clearTimeout(timerBodyKeepTouch);
@@ -240,7 +236,7 @@
     //处理触摸移动事件
 
     function bodyTouchMove(evt) {
-    
+      
       if (timerContinueSetCutDiv) evt.preventDefault();
       var touches = evt.changedTouches;
 
@@ -624,16 +620,15 @@
     function createRenjuCmdDiv(parentNode, left, top, width, height) {
 
       renjuCmddiv = document.createElement("div");
-      let s = renjuCmddiv.style;
       parentNode.appendChild(renjuCmddiv);
-      s.position = "absolute";
-      s.width = width / 1.15;
-      s.height = width;
-      s.top = top;
-      s.left = (dw - parseInt(s.width)) / 2;
-      if (dw > dh) s.left = (dw - cWidth * 2) / 2;
+      renjuCmddiv.style.position = "absolute";
+      renjuCmddiv.style.width = width / 1.15;
+      renjuCmddiv.style.height = width;
+      renjuCmddiv.style.top = top;
+      renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2;
+      if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2;
 
-      let sw = parseInt(s.width);
+      let sw = parseInt(renjuCmddiv.style.width);
       let w = sw / 9;
       let h = w / 1.5;
       let t = 0;
@@ -689,14 +684,7 @@
       w = sw / 9;
       t = t + h * 1.5;
 
-      /*
-      cFlipX = new button(renjuCmddiv,"button",w*0,t,w,h);
-      cFlipX.show();
-      cFlipX.setText("↕180°");
-      cFlipX.setontouchend( function() {      
-          cBoard.boardFlipX(cShownum.checked);
-      });
-      */
+  
 
       cFlipY = new button(renjuCmddiv, "button", w * 0, t, w, h);
       cFlipY.show();
@@ -712,14 +700,7 @@
         cBoard.boardCW(cShownum.checked);
       });
 
-      /*
-      cCCW = new button(renjuCmddiv,"button",w*3.2,t,w,h);
-      cCCW.show();
-      cCCW.setText("↖90°");
-      cCCW.setontouchend( function() {      
-          cBoard.boardCCW(cShownum.checked);
-      });
-      */
+  
 
       cMoveL = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
       cMoveL.show();
@@ -1323,7 +1304,6 @@
         img.onload = function() {
           img.onload = null;
           putImg();
-          viewport.setAttribute('content','user-scalable=1');
         }
       });
 
@@ -1650,7 +1630,6 @@
       putCheckerBoard = putBoard;
 
       function putBoard(idx) {
-        viewport.setAttribute('content','user-scalable=');
         if (idx < 0) return;
         let arr = cBoard.getPointArray([]);
         let h1 = parseInt(cBoard.width);

@@ -2,7 +2,6 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta id="viewport" name="viewport" content="user-scalable=0">
   <link rel="shortI icon" href="./pic/favicon.ico" />
   <link href="./style/renju.css" rel="stylesheet" type="text/css">
   <title>五子棋涂鸦代替</title>
@@ -583,6 +582,7 @@
         p.setxy(parseInt(s.substring(0, i)), parseInt(s.substring(i + 1)));
       }
     }
+    
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,7 +606,6 @@
     let backNum = 0; // ==true 时，可以快速悔棋。
 
     let d = document;
-    let viewport = document.getElementById('viewport');
     let dw = 0; //网页可见宽度
     let dh = 0; //网页可见高度
     dw = d.documentElement.clientWidth;
@@ -1738,14 +1737,11 @@
     function resetCmdDiv()
     {
       let n = ndiv;
-
       if (chkLock.checked) {
         bodyDiv.appendChild(ndiv);
-        viewport.setAttribute('content','user-scalable=0');
       }
       else {
         if (ndiv.parentNode) ndiv.parentNode.removeChild(ndiv);
-        viewport.setAttribute('content','user-scalable=1');
       }
 
       n.style.position = "absolute";
