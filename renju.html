@@ -1932,7 +1932,7 @@
           }
         } // 触发，手动输入标记
         else if ((cBoard.P[idx].type == tLb || cBoard.P[idx].type == tEmpty) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
-          inputLabel();
+          inputLabel(idx);
         }
 
       }
@@ -1969,30 +1969,31 @@
           break;
         case tLb:
           // 设置弹窗，让用户手动输入标记
-          inputLabel();
+          inputLabel(idx);
           break;
         case tEmpty:
           // 设置弹窗，让用户手动输入标记
-          inputLabel();
+          inputLabel(idx);
           break;
 
       }
 
     }
     
-    function inputLabel(){
+    function inputLabel(idx){
       let w = cBoard.width * 0.8;
       let h;
       let l = (dw - w) / 2;
       let t = dh / 7;
+      let color = getRenjuLbColor();
       // 设置弹窗，让用户手动输入标记
       msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-      if (msgStr == "") return;
-      cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
-      cBoard.wLb(idx, msgStr.substr(0, 3), getRenjuLbColor());
+        let str = msgStr.substr(0, 3);
+        cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
+        if (str!="" && str!=" ") cBoard.wLb(idx, str, color);
       },
       function(msgStr) { //用户取消，删除标记
-      cBoard.clePoint(idx);
+        //cBoard.clePoint(idx);
       });
     }
 

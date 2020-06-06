@@ -95,7 +95,7 @@
    butEnter.setontouchend(function() {
      MsgBoxobj.parentNode.removeChild(MsgBoxobj);
      isMsgShow = false;
-     if (callEnter) callEnter(msgTextarea.value);
+     if (callEnter) callEnter(String(msgTextarea.value));
      msgTextarea.value = "";
    });
 
@@ -107,7 +107,7 @@
      butCancel.setontouchend(function() {
        MsgBoxobj.parentNode.removeChild(MsgBoxobj);
        isMsgShow = false;
-       if (callCancel) callCancel(msgTextarea.value);
+       if (callCancel) callCancel(String(msgTextarea.value));
      });
 
    }
