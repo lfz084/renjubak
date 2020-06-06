@@ -13,9 +13,11 @@ function view() {
 view.prototype.resize = function() {
   this.viewport.setAttribute("content", "initial-scale=" + 0.1);
   this.viewport.setAttribute("content", "width=1000, initial-scale=" +this.scale+",  user-scalable=0");
+  alert(this.viewport.getAttribute("content")) ;
 };
 
 view.prototype.userScalable = function(scalable) {
   this.viewport.setAttribute("content", "initial-scale=" + 0.1);
   this.viewport.setAttribute("content", "width=1000, initial-scale=" +this.scale+",  user-scalable=1");
+  alert(this.viewport.getAttribute("content"));
 };
