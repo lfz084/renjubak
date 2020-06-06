@@ -20,7 +20,7 @@ view.prototype.resize = function() {
   setTimeout(function() {
     self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${self.scale}, user-scalable=no`);
     //alert(self.viewport.getAttribute("content"));
-  }, 200);
+  }, 50);
 };
 
 view.prototype.userScalable = function(scalable) {
@@ -35,5 +35,5 @@ view.prototype.userScalable = function(scalable) {
   setTimeout(function() {
     self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${2}, user-scalable=yes`);
     //alert(self.viewport.getAttribute("content"));
-  }, 200);
+  }, 50);
 };
