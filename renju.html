@@ -1476,6 +1476,7 @@
         parentNode.style.top = h1 + parentNode.offsetTop - h2;
         cBoard.resetCutDiv();
         ctx = null;
+        viewport.userScalable();
       }
 
       function lockImg(generator) {
@@ -1531,6 +1532,7 @@
             cBoard.hideCutDiv();
             ctx = null;
             if (generator) generator.next();
+            viewport.resize();
             /*
             cBoard.parentNode.appendChild(cBoard.bakCanvas);
             cBoard.bakCanvas.style.top = 2000;
@@ -1930,20 +1932,7 @@
           }
         } // 触发，手动输入标记
         else if ((cBoard.P[idx].type == tLb || cBoard.P[idx].type == tEmpty) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
-          let w = cBoard.width * 0.8;
-          let h;
-          let l = (dw - w) / 2;
-          let t = dh / 7;
-          // 设置弹窗，让用户手动输入标记
-          msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-              if (msgStr == "") return;
-              cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
-              cBoard.wLb(idx, msgStr.substr(0, 3), getRenjuLbColor());
-            },
-            function(msgStr) { //用户取消，删除标记
-              cBoard.clePoint(idx);
-            });
-
+          inputLabel();
         }
 
       }
@@ -1980,23 +1969,31 @@
           break;
         case tLb:
           // 设置弹窗，让用户手动输入标记
-          msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-            if (msgStr == "") return;
-            cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
-            cBoard.wLb(idx, msgStr.substr(0, 3), getRenjuLbColor());
-          });
+          inputLabel();
           break;
         case tEmpty:
           // 设置弹窗，让用户手动输入标记
-          msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-            if (msgStr == "") return;
-            cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
-            cBoard.wLb(idx, msgStr.substr(0, 3), getRenjuLbColor());
-          });
+          inputLabel();
           break;
 
       }
 
+    }
+    
+    function inputLabel(){
+      let w = cBoard.width * 0.8;
+      let h;
+      let l = (dw - w) / 2;
+      let t = dh / 7;
+      // 设置弹窗，让用户手动输入标记
+      msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
+      if (msgStr == "") return;
+      cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
+      cBoard.wLb(idx, msgStr.substr(0, 3), getRenjuLbColor());
+      },
+      function(msgStr) { //用户取消，删除标记
+      cBoard.clePoint(idx);
+      });
     }
 
 

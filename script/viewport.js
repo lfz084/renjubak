@@ -16,11 +16,11 @@ view.prototype.resize = function() {
   document.head.appendChild(this.viewport);
   */
   let self = this;
-  self.viewport.setAttribute("content", "initial-scale=0.1");
-  setTimeout(function() {
+  self.viewport.setAttribute("content",  `initial-scale=${self.scale+0.01} `);
+  //setTimeout(function() {
     self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${self.scale}, user-scalable=no`);
     //alert(self.viewport.getAttribute("content"));
-  }, 50);
+  //}, 10);
 };
 
 view.prototype.userScalable = function(scalable) {
@@ -31,9 +31,9 @@ view.prototype.userScalable = function(scalable) {
   document.head.appendChild(this.viewport);
   */
   let self = this;
-  self.viewport.setAttribute("content", "initial-scale=0.1");
-  setTimeout(function() {
+  self.viewport.setAttribute("content", `initial-scale=${self.scale+0.01} `);
+  //setTimeout(function() {
     self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${2}, user-scalable=yes`);
     //alert(self.viewport.getAttribute("content"));
-  }, 50);
+  //}, 10);
 };

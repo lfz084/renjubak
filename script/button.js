@@ -36,7 +36,7 @@
       this.fontSize = parseInt(this.height) / 2.2 + "px";
       this.textAlign = "center";
       this.checked = false;
-      this.borderRadius = '20px';
+      this.borderRadius = "20px";
       this.text = ""; //未选中显示的文本
       this.text2 = ""; //选中时显示的文本
 
@@ -77,7 +77,6 @@
         but.defaultontouchmove();
       };
 
-
     }
 
 
@@ -86,7 +85,6 @@
 
       if (this.type != "select") return;
       let op = document.createElement("option");
-
       op.setAttribute("value", value);
       op.innerHTML = text;
       this.input.appendChild(op);
@@ -245,7 +243,6 @@
 
       this.borderRadius = rs;
       this.show();
-
     };
 
 
@@ -255,24 +252,20 @@
       this.color = color;
       this.selectColor = color;
       this.button.style.color = color;
-
     };
 
 
 
     //设置选定状态    
     button.prototype.setChecked = function(checked) {
-
       if (this.checked == (checked == true)) return;
       this.checked = checked ? true : false;
       this.setText(this.text, this.text2);
-
     };
 
 
     //字体
     button.prototype.setFontSize = function(fontSize) {
-
       this.fontSize = parseInt(fontSize) + "px";
       if (this.checked) {
         this.button.style.fontSize = parseInt(parseInt(this.fontSize) * 0.9) + "px";
@@ -280,35 +273,29 @@
       else {
         this.button.style.fontSize = this.fontSize;
       }
-
     };
 
 
 
     button.prototype.setNotChangeColor = function(nc) {
-
       this.notChangeColor = nc;
-
     };
 
 
 
     // 給事件绑定函数
     button.prototype.setonchange = function(callbak) {
-
       let but = this;
       this.input.onchange = function() {
         but.defaultonchange();
         callbak(but);
       };
-
     };
 
 
 
     // 給事件绑定函数
     button.prototype.setontouchstart = function(callbak) {
-
       let but = this;
       this.input.ontouchstart = function() {
         if (!but.defaultontouchstart(but)) return;
@@ -322,7 +309,6 @@
 
     // 給事件绑定函数
     button.prototype.setontouchend = function(callbak) {
-
       let but = this;
       this.input.ontouchend = function() {
         if (!but.defaultontouchend(but)) return;
@@ -345,7 +331,6 @@
         this.button.style.fontSize = this.fontSize;
         this.button.style.color = this.notChangeColor ? this.color : this.selectColor;
         this.button.style.backgroundColor = this.selectBackgroundColor;
-
       }
       else {
         let timer;
@@ -373,8 +358,6 @@
           but.button.style.color = but.color;
           but.button.style.backgroundColor = but.backgroundColor;
         }
-
-
       }
       if (this.type == "select") {
         for (let i = 5 - s.length; i > 0; i--) {
@@ -405,7 +388,7 @@
       this.div.style.left = this.left;
       this.div.style.borderRadius = this.borderRadius == null ? parseInt(this.width) + "px" : this.borderRadius;
 
-      this.div.style.borderStyle = 'solid';
+      this.div.style.borderStyle = "solid";
       this.div.style.borderWidth = parseInt(this.width) < parseInt(this.height) ? parseInt(this.width) / 30 + "px" : parseInt(this.height) / 30 + "px";
       this.div.style.borderColor = this.selectBackgroundColor;
       //this.div.style.backgroundColor = "red"
@@ -422,7 +405,7 @@
       this.button.style.borderWidth = 0;
       this.button.style.margin = 0;
       this.button.style.borderRadius = this.div.style.borderRadius
-      this.button.style.outline = 'none';
+      this.button.style.outline = "none";
       this.button.style.textAlign = "center";
       this.button.style.lineHeight = parseInt(this.height) + "px";
       this.button.style.backgroundColor = this.backgroundColor;
