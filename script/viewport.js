@@ -18,4 +18,4 @@ view.prototype.userScalable = function(scalable) {
   this.viewport.setAttribute("content", "initial-scale=" + 0.1);
   this.viewport.setAttribute("content", `width=1000, initial-scale=${this.scale}, minimum-scale=${this.scale}, maximum-scale =${5}, user-scalable=yes`);
   alert(this.viewport.getAttribute("content"));
-};
+}; 
