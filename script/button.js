@@ -47,35 +47,35 @@
 
       this.input.ontouchstart = function() {
         but.defaultontouchstart();
-      }
+      };
 
       this.input.onmousedown = function() {
         but.defaultontouchstart();
-      }
+      };
 
       this.input.ontouchcancel = function() {
         but.defaultontouchend();
-      }
+      };
 
       this.input.ontouchleave = function() {
         but.defaultontouchend();
-      }
+      };
 
       this.input.ontouchend = function() {
         but.defaultontouchend();
-      }
+      };
 
       this.input.onmouseup = function() {
         but.defaultontouchend();
-      }
+      };
 
       this.input.onchange = function() {
         but.defaultonchange();
-      }
+      };
 
       this.input.ontouchmove = function() {
         but.defaultontouchmove();
-      }
+      };
 
 
     }
@@ -91,7 +91,7 @@
       op.innerHTML = text;
       this.input.appendChild(op);
 
-    }
+    };
 
 
 
@@ -108,14 +108,14 @@
       }
       this.button.style.backgroundColor = this.selectBackgroundColor;
       return true;
-    }
+    };
 
 
     button.prototype.defaultontouchmove = function() {
 
       this.isEventMove = true; // 取消单击事件
       return true;
-    }
+    };
 
 
 
@@ -188,7 +188,7 @@
 
       if (this.type == "file") this.input.click();
       return cancel ? false : true;
-    }
+    };
 
 
 
@@ -199,7 +199,7 @@
       let txt = this.input.options[this.input.selectedIndex].text;
       this.setText(txt);
       return true;
-    }
+    };
 
 
 
@@ -217,7 +217,7 @@
       if (f.parentNode) f.parentNode.removeChild(f);
 
 
-    }
+    };
 
 
     //  移动和设置大小
@@ -228,7 +228,7 @@
       this.width = width == null ? this.width : width;
       this.height = height == null ? this.height : height;
       this.show();
-    }
+    };
 
 
     //按钮背景色
@@ -236,7 +236,7 @@
       this.backgroundColor = color;
       this.button.style.backgroundColor = color;
 
-    }
+    };
 
 
 
@@ -246,7 +246,7 @@
       this.borderRadius = rs;
       this.show();
 
-    }
+    };
 
 
 
@@ -256,7 +256,7 @@
       this.selectColor = color;
       this.button.style.color = color;
 
-    }
+    };
 
 
 
@@ -267,7 +267,7 @@
       this.checked = checked ? true : false;
       this.setText(this.text, this.text2);
 
-    }
+    };
 
 
     //字体
@@ -281,7 +281,7 @@
         this.button.style.fontSize = this.fontSize;
       }
 
-    }
+    };
 
 
 
@@ -289,7 +289,7 @@
 
       this.notChangeColor = nc;
 
-    }
+    };
 
 
 
@@ -300,9 +300,9 @@
       this.input.onchange = function() {
         but.defaultonchange();
         callbak(but);
-      }
+      };
 
-    }
+    };
 
 
 
@@ -313,8 +313,8 @@
       this.input.ontouchstart = function() {
         if (!but.defaultontouchstart(but)) return;
         callbak(but);
-      }
-    }
+      };
+    };
 
 
 
@@ -327,9 +327,9 @@
       this.input.ontouchend = function() {
         if (!but.defaultontouchend(but)) return;
         callbak(but);
-      }
+      };
       this.input.onmouseup = this.input.ontouchend;
-    }
+    };
 
 
     // 设置文本
@@ -383,7 +383,7 @@
         s = "&nbsp;" + s + "▼";
       }
       this.button.innerHTML = s;
-    }
+    };
 
 
 
@@ -441,4 +441,4 @@
 
       this.setText(this.text, this.text2); // 正确显示按钮文本
       if (this.type == "select") this.defaultonchange();
-    }
+    };

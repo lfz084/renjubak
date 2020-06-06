@@ -35,7 +35,7 @@ point.prototype.cle = function() {
   this.text = "";
   this.color = null;
   //alert("p.cle")
-}
+};
 
 point.prototype.printBorder = function(gW, gH) {
   var size;
@@ -53,7 +53,7 @@ point.prototype.printBorder = function(gW, gH) {
   this.d.style.borderColor = 'red';
   this.d.style.zIndex = 0;
 
-}
+};
 
 
 //在这个点上记一个标记
@@ -79,7 +79,7 @@ point.prototype.printLb = function(s, color, gW, gH) {
   this.d.style.top = this.y - parseInt(size / 2);
   this.d.style.zIndex = 0;
 
-}
+};
 
 
 // 在这个点上放一个棋子or数字;
@@ -112,7 +112,7 @@ point.prototype.printNb = function(n, color, gW, gH) {
     this.d.style.borderColor = this.color;
     if (this.color == 'white') this.d.style.borderColor = 'black';
   }
-}
+};
 
 
 //改变一个棋子or数字颜色
@@ -122,13 +122,13 @@ point.prototype.setcolor = function(color) {
 
 
 //设置一个div标签
-point.prototype.setd = function(d) { this.d = d; }
+point.prototype.setd = function(d) { this.d = d; };
 
 
 point.prototype.setxy = function(x, y) {
   this.x = x;
   this.y = y;
-}
+};
 
 
 
@@ -204,15 +204,15 @@ function checkerBoard(parentNode, left, top, width, height) {
 
   this.cutDiv = document.createElement("div");
   this.parentNode.appendChild(this.cutDiv);
-  this.cutDiv.ontouchend = function() { event.preventDefault(); }
-  this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); }
+  this.cutDiv.ontouchend = function() { event.preventDefault(); };
+  this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); };
 
   for (var i = 0; i < 225; i++) {
     this.DIV[i] = document.createElement("div");
     this.DIV[i].style.borderRadius = '50%';
     this.parentNode.appendChild(this.DIV[i]);
-    this.DIV[i].ontouchend = function() { event.preventDefault(); }
-    this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); }
+    this.DIV[i].ontouchend = function() { event.preventDefault(); };
+    this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); };
     this.P[i] = new point(0, 0, this.DIV[i]);
   }
 
@@ -248,7 +248,7 @@ checkerBoard.prototype.CW = function(arrobj, count) {
 
   }
 
-}
+};
 
 
 
@@ -279,7 +279,7 @@ checkerBoard.prototype.CCW = function(arrobj, count) {
 
   }
 
-}
+};
 
 
 
@@ -345,7 +345,7 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
   }
 
 
-}
+};
 
 
 
@@ -413,7 +413,7 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
   }
 
 
-}
+};
 
 
 
@@ -479,7 +479,7 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
     this.wNb(bMS[i], "black");
   }
 
-}
+};
 
 
 
@@ -546,7 +546,7 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
   }
 
 
-}
+};
 
 
 
@@ -563,7 +563,7 @@ checkerBoard.prototype.cle = function() {
     this.clePoint(i);
   }
 
-}
+};
 
 
 
@@ -574,7 +574,7 @@ checkerBoard.prototype.cleAllPointBorder = function() {
     this.DIV[i].style.borderStyle = 'none';
   }
 
-}
+};
 
 
 
@@ -591,7 +591,7 @@ checkerBoard.prototype.cleLb = function(idx) {
       this.clePoint(idx);
     }
   }
-}
+};
 
 
 
@@ -610,7 +610,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
     this.showLastNum(showNum);
 
   }
-}
+};
 
 
 
@@ -618,7 +618,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
 checkerBoard.prototype.cleMoves = function() {
 
   this.Moves = "";
-}
+};
 
 
 
@@ -635,7 +635,7 @@ checkerBoard.prototype.clePoint = function(idx) {
   ctx.drawImage(this.bakCanvas, p.x - (this.gW / 2), p.y - (this.gH / 2), this.gW, this.gH, p.x - (this.gW / 2), p.y - (this.gH / 2), this.gW, this.gH);
   ctx = null;
   if (renjuSave) renjuSave();
-}
+};
 
 
 
@@ -653,7 +653,7 @@ checkerBoard.prototype.cutBkPoint = function(idx) {
   ctx = null;
   return true;
 
-}
+};
 
 
 
@@ -684,7 +684,7 @@ checkerBoard.prototype.flipX = function(arrobj) {
 
   }
 
-}
+};
 
 
 
@@ -714,7 +714,7 @@ checkerBoard.prototype.flipY = function(arrobj) {
     }
 
   }
-}
+};
 
 
 
@@ -739,7 +739,7 @@ checkerBoard.prototype.getPIndex = function(x, y) {
   if (j == this.SLTY) j--;
   return parseInt(this.SLTX * j + i);
 
-}
+};
 
 
 
@@ -763,7 +763,7 @@ checkerBoard.prototype.getMoves = function(type) {
   }
 
   return ml.toUpperCase();
-}
+};
 
 
 
@@ -797,7 +797,7 @@ checkerBoard.prototype.getPointArray = function(arrobj) {
     }
   }
   return arrobj;
-}
+};
 
 
 
@@ -845,7 +845,7 @@ checkerBoard.prototype.getPointColor = function(x, y) {
   else {
     //alert("not Line")
     return ({ r: r / w / h, g: g / w / h, b: b / w / h }); //不是网格
-  }
+  };
 
 
 
@@ -1009,7 +1009,7 @@ checkerBoard.prototype.getPointColor = function(x, y) {
     }
   }
 
-}
+};
 
 
 
@@ -1141,7 +1141,7 @@ checkerBoard.prototype.getSVG = function() {
 
   svgText += "</svg>";
   return svgText;
-}
+};
 
 
 
@@ -1158,7 +1158,7 @@ checkerBoard.prototype.hideNum = function() {
     this.printPoint(this.MS[i], "", color, tNum);
   }
 
-}
+};
 
 
 
@@ -1167,7 +1167,7 @@ checkerBoard.prototype.hideCutDiv = function() {
 
   this.cutDiv.style.borderStyle = 'none';
   this.cutDiv.style.zIndex = -100;
-}
+};
 
 
 
@@ -1178,7 +1178,7 @@ checkerBoard.prototype.indexToName = function(idx) {
   let x = (idx % this.SLTX);
   let y = parseInt(idx / this.SLTY);
   return (this.alpha.charAt(x) + (15 - y)).toLowerCase();
-}
+};
 
 
 
@@ -1202,7 +1202,7 @@ checkerBoard.prototype.isOut = function(x, y, htmlObj) {
     return true;
   }
   return false;
-}
+};
 
 
 
@@ -1216,7 +1216,7 @@ checkerBoard.prototype.nameToIndex = function(name) {
 
   return x + y * this.SLTX;
 
-}
+};
 
 
 // 平移棋盘
@@ -1312,7 +1312,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
       board.clePoint(idx1);
     }
   }
-}
+};
 
 
 
@@ -1325,7 +1325,7 @@ checkerBoard.prototype.MSToMoves = function() {
     this.Moves += this.indexToName(this.MS[i]);
   }
   
-}
+};
 
 
 
@@ -1341,7 +1341,7 @@ checkerBoard.prototype.printArray = function(arr, txt, color) {
       }
     }
   }
-}
+};
 
 
 
@@ -1354,7 +1354,7 @@ checkerBoard.prototype.printBorder = function() {
     if (this.P[i] != null) this.P[i].printBorder(this.gW, this.gH);
   }
   
-}
+};
 
 
 
@@ -1396,7 +1396,7 @@ checkerBoard.prototype.printCoordinate = function(t, r, d, l) {
     }
   }
   ctx = null;
-}
+};
 
 
 
@@ -1484,7 +1484,7 @@ checkerBoard.prototype.printCheckerBoard = function() {
   this.resetP();*/
 
   //this.printBorder();
-}
+};
 
 
 
@@ -1511,7 +1511,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
     }
     this.wLb(moves[i], i + 1, color);
   }
-}
+};
 
 
 
@@ -1707,7 +1707,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
     //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
   }
 
-}
+};
 
 
 
@@ -1764,7 +1764,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
   ctx = null;
   if (renjuSave) renjuSave();
   return true;
-}
+};
 
 
 
@@ -1782,7 +1782,7 @@ checkerBoard.prototype.printSearchPoint = function(idx, text, color) {
     this.searchIdx = idx;
     this.wLb(idx, text, color);
   }
-}
+};
 
 
 
@@ -1823,7 +1823,7 @@ checkerBoard.prototype.resetCutDiv = function() {
   this.YB = YT + parseInt(s.height);
   this.resetP(this.XL, this.XR, this.YT, this.YB);
   this.printBorder();
-}
+};
 
 // 后台设置棋盘所有点的坐标。不会改变棋盘的显示
 checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
@@ -1855,7 +1855,7 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
     }
   }
   
-}
+};
 
 
 
@@ -1880,7 +1880,7 @@ checkerBoard.prototype.saveAsImage = function(type) {
   }, 'image/' + type, 0.1);
 
 
-}
+};
 
 
 
@@ -1914,7 +1914,7 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
     }, 50);
   }, 50);
 
-}
+};
 
 
 
@@ -1933,7 +1933,7 @@ checkerBoard.prototype.saveAsSVG = function(type) {
   save_link.dispatchEvent(event);
   URL.revokeObjectURL(save_link.href);
 
-}
+};
 
 
 
@@ -2019,7 +2019,7 @@ checkerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘�
   if (passResetP) return;
   this.resetP(this.XL, this.XR, this.YT, this.YB);
 
-}
+};
 
 
 // 设置最后一手是否高亮显示
@@ -2033,7 +2033,7 @@ checkerBoard.prototype.setNotShowLastNum = function(idx) {
     return false;
   }
 
-}
+};
 
 //设置棋谱
 checkerBoard.prototype.setMoves = function(codeStr) {
@@ -2099,7 +2099,7 @@ checkerBoard.prototype.setMoves = function(codeStr) {
     return false;
   }
 
-}
+};
 
 
 // 设置从第几手开始显示序号， 默认==0 时第一手开始显示，==1 时第二手显示❶
@@ -2107,7 +2107,7 @@ checkerBoard.prototype.setResetNum = function(num) {
 
   this.resetNum = parseInt(num);
   this.showNum();
-}
+};
 
 
 
@@ -2211,7 +2211,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
     }
   }
 
-}
+};
 
 
 
@@ -2294,7 +2294,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
   ctx = null;
   return true;
 
-}
+};
 
 
 
@@ -2313,7 +2313,7 @@ checkerBoard.prototype.showNum = function() {
     this.printPoint(this.MS[i], txt, color, tNum, true);
   }
 
-}
+};
 
 
 
@@ -2323,7 +2323,7 @@ checkerBoard.prototype.toEnd = function(isShowNum) {
   while (this.MSindex < this.MS.length - 1) {
     this.toNext(isShowNum);
   }
-}
+};
 
 
 // 跳到下一手
@@ -2333,7 +2333,7 @@ checkerBoard.prototype.toNext = function(isShowNum) {
 
     this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum);
   }
-}
+};
 
 
 // 返回上一手
@@ -2344,7 +2344,7 @@ checkerBoard.prototype.toPrevious = function(isShowNum) {
     this.cleNb(this.MS[this.MSindex], isShowNum);
   }
 
-}
+};
 
 
 
@@ -2354,7 +2354,7 @@ checkerBoard.prototype.toStart = function(isShowNum) {
   while (this.MSindex > 0) {
     this.toPrevious(isShowNum);
   }
-}
+};
 
 
 
@@ -2383,7 +2383,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
     this.wNb(this.nameToIndex(a), color, showNum)
     
   }
-}
+};
 
 
 // 解析二维数组后，摆棋
@@ -2427,7 +2427,7 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
       this.wNb(wNarr[i], "white", isShowNum, tWhite);
     }
   }
-}
+};
 
 
 
@@ -2440,7 +2440,7 @@ checkerBoard.prototype.wLb = function(idx, text, color) {
   this.P[idx].type = tLb;
   this.P[idx].text = text;
   this.printPoint(idx, this.P[idx].text, this.P[idx].color);
-}
+};
 
 
 
@@ -2471,7 +2471,7 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type) {
     txt = showNum ? txt : "";
   }
   this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
-}
+};
 
 
 
@@ -2491,7 +2491,7 @@ checkerBoard.prototype.xyPageToObj = function(p, canvas) {
   }
   p.x = p.x - l;
   p.y = p.y - t;
-}
+};
 
 // 把 canvas 坐标 转成 page 坐标
 checkerBoard.prototype.xyObjToPage = function(p, canvas) {
@@ -2507,4 +2507,4 @@ checkerBoard.prototype.xyObjToPage = function(p, canvas) {
   }
   p.x = p.x + l;
   p.y = p.y + t;
-}
+};

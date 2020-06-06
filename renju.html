@@ -15,9 +15,11 @@
   <script src="./script/button.js"></script>
   <script src="./script/msgbox.js"></script>
   <script src="./script/checkerBoard.js"></script>
+  <script src="./script/viewport.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
+    var viewport = new view();
     var d = document;
     var dw = d.documentElement.clientWidth;
     var dh = d.documentElement.clientHeight;
@@ -1335,6 +1337,7 @@
         cSLTY.input.value = cBoard.SLTY;
         cSLTY.setText(cSLTY.input.value + "\b行");
         ctx = null;
+        viewport.userScalable();
       }
 
       cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
@@ -1642,6 +1645,7 @@
         parentNode.appendChild(renjuCmddiv);
         playModel = renjuModel;
         cBoard.unpackArray(changeCoordinate(arr, idx));
+        viewport.resize();
       }
 
       function changeCoordinate(arr, idx) {
