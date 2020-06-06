@@ -118,7 +118,7 @@ point.prototype.printNb = function(n, color, gW, gH) {
 //改变一个棋子or数字颜色
 point.prototype.setcolor = function(color) {
   this.printNb(parseInt(this.text), color);
-}
+};
 
 
 //设置一个div标签
