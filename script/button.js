@@ -16,10 +16,10 @@
       this.option = [];
       this.type = type;
       this.position = "absolute";
-      this.width = width == null ? "200px" : width;
-      this.height = height == null ? "150px" : height;
-      this.left = left == null ? 0 : left;
-      this.top = top == null ? 0 : top;
+      this.width = width == null ? "200px" : parseInt(width)+"px";
+      this.height = height == null ? "150px" : parseInt(height)+"px";
+      this.left = left == null ? "0px" : parseInt(left)+"px";
+      this.top = top == null ? "0px" : parseInt(top)+"px";
       this.color = "#333333";
       this.selectColor = "black";
       this.notChangeColor = false; // 不自动调整按钮字体颜色
@@ -36,7 +36,7 @@
       this.fontSize = parseInt(this.height) / 2.2 + "px";
       this.textAlign = "center";
       this.checked = false;
-      this.borderRadius = "20px";
+      this.borderRadius = (parseInt(this.width)>parseInt(this.height)?parseInt(this.height):parseInt(this.width))/2+"px";
       this.text = ""; //未选中显示的文本
       this.text2 = ""; //选中时显示的文本
 
@@ -221,10 +221,10 @@
     //  移动和设置大小
     button.prototype.move = function(left, top, width, height) {
 
-      this.left = left == null ? this.left : left;
-      this.top = top == null ? this.top : top;
-      this.width = width == null ? this.width : width;
-      this.height = height == null ? this.height : height;
+      this.left = left == null ? this.left : parseInt(left)+"px";
+      this.top = top == null ? this.top : parseInt(top)+"px";
+      this.width = width == null ? this.width : parseInt(width)+"px";
+      this.height = height == null ? this.height : parseInt(height)+"px";
       this.show();
     };
 
@@ -378,13 +378,13 @@
       this.div.appendChild(this.input);
 
       this.div.style.position = this.position;
-      if (width) this.width = width;
+      if (width) this.width = parseInt(width)+"px";
       this.div.style.width = this.width;
-      if (height) this.height = height;
+      if (height) this.height = parseInt(height)+"px";
       this.div.style.height = this.height;
-      if (top) this.top = top;
+      if (top) this.top = parseInt(top)+"px";
       this.div.style.top = this.top;
-      if (left) this.left = left;
+      if (left) this.left = parseInt(left)+"px";
       this.div.style.left = this.left;
       this.div.style.borderRadius = this.borderRadius == null ? parseInt(this.width) + "px" : this.borderRadius;
 
@@ -400,9 +400,9 @@
       this.button.style.zIndex = this.div.style.zIndex;
       this.button.style.width = this.width;
       this.button.style.height = this.height;
-      this.button.style.top = 0;
-      this.button.style.left = 0;
-      this.button.style.borderWidth = 0;
+      this.button.style.top = "0px";
+      this.button.style.left = "0px";
+      this.button.style.borderWidth = "0px";
       this.button.style.margin = 0;
       this.button.style.borderRadius = this.div.style.borderRadius
       this.button.style.outline = "none";
@@ -417,8 +417,8 @@
       this.input.style.zIndex = this.button.style.zIndex + 1;
       this.input.style.width = this.width;
       this.input.style.height = this.height;
-      this.input.style.top = -parseInt(this.height);
-      this.input.style.left = 0;
+      this.input.style.top = -parseInt(this.height)+"px";
+      this.input.style.left = "0px";
       this.input.style.borderRadius = this.div.style.borderRadius
       this.input.style.opacity = 0;
 

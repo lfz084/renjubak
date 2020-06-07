@@ -43,10 +43,10 @@
    document.body.appendChild(MsgBoxobj);
    s.position = "fixed";
    s.zIndex = 9999;
-   s.width = d.documentElement.clientWidth;
-   s.height = d.documentElement.clientHeight * 2;
-   s.top = 0;
-   s.left = 0;
+   s.width = d.documentElement.clientWidth+"px";
+   s.height = d.documentElement.clientHeight * 2+"px";
+   s.top = "0px";
+   s.left = "0px";
 
    if (lineNum == "auto") {
      lineNum = parseInt(height * 0.8 / parseInt(s.width) / 0.05 / 1.25);
@@ -57,19 +57,19 @@
    }
 
    s = windowDiv.style;
-   s.left = left;
-   s.top = top;
-   s.width = width;
-   s.height = height || parseInt(s.width) / 20 * (lineNum + 3) * 1.3;
+   s.left = parseInt(left)+"px";
+   s.top = parseInt(top)+"px";
+   s.width = parseInt(width)+"px";
+   s.height = parseInt(height) +"px" || parseInt(s.width) / 20 * (lineNum + 3) * 1.3+"px";
    s.backgroundColor = "#666666";
 
    s = msgTextarea.style;
    msgTextarea.value = text || "";
    s.left = "10px";
    s.top = "10px";
-   s.width = parseInt(windowDiv.style.width) - 20;
+   s.width = parseInt(windowDiv.style.width) - 20+"px";
    s.fontSize = parseInt(s.width) * 0.05 + "px";
-   s.height = parseInt(s.fontSize) * 1.3 * lineNum;
+   s.height = parseInt(s.fontSize) * 1.3 * lineNum+"px";
    s.borderColor = "#666666";
    if (type == "msgbox") {
      msgTextarea.readOnly = true;

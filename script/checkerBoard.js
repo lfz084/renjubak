@@ -46,8 +46,8 @@ point.prototype.printBorder = function(gW, gH) {
   this.d.style.position = "absolute";
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2);
-  this.d.style.top = this.y - parseInt(size / 2);
+  this.d.style.left = this.x - parseInt(size / 2)+"px";
+  this.d.style.top = this.y - parseInt(size / 2)+"px";
   this.d.style.borderStyle = "dashed";
   this.d.style.borderWidth = "1px";
   this.d.style.borderColor = "red";
@@ -68,15 +68,15 @@ point.prototype.printLb = function(s, color, gW, gH) {
   this.d.innerHTML = this.text;
   temp = (gW < gH) ? gW : gH;
   size = parseInt(temp / 4 * 3);
-  this.d.style.fontSize = size;
+  this.d.style.fontSize = size+"px";
   this.d.style.color = color;
   this.d.style.position = "absolute";
   this.d.style.background = "";
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
   this.d.style.lineHeight = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2);
-  this.d.style.top = this.y - parseInt(size / 2);
+  this.d.style.left = this.x - parseInt(size / 2)+"px";
+  this.d.style.top = this.y - parseInt(size / 2)+"px";
   this.d.style.zIndex = 0;
 
 };
@@ -93,7 +93,7 @@ point.prototype.printNb = function(n, color, gW, gH) {
   this.d.innerHTML = this.text;
   temp = (gW < gH) ? gW : gH;
   size = (color == "black" || color == "white") ? parseInt(temp / 4 * 1.5) : parseInt(temp / 4 * 3);
-  this.d.style.fontSize = size;
+  this.d.style.fontSize = size+"px";
   size = parseInt(temp / 4 * 2);
   this.d.style.color = color == "white" ? "black" : "pink";
   this.d.style.position = "absolute";
@@ -101,8 +101,8 @@ point.prototype.printNb = function(n, color, gW, gH) {
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
   this.d.style.lineHeight = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2);
-  this.d.style.top = this.y - parseInt(size / 2);
+  this.d.style.left = this.x - parseInt(size / 2)+"px";
+  this.d.style.top = this.y - parseInt(size / 2)+"px";
   this.d.style.borderStyle = "";
   this.d.style.zIndex = 0;
   if (color == "black" || color == "white")
@@ -140,10 +140,10 @@ point.prototype.setxy = function(x, y) {
 function checkerBoard(parentNode, left, top, width, height) {
 
   this.parentNode = parentNode;
-  this.left = left;
-  this.top = top;
-  this.width = width;
-  this.height = height;
+  this.left = parseInt(left)+"px";
+  this.top = parseInt(top)+"px";
+  this.width = parseInt(width)+"px";
+  this.height = parseInt(height)+"px";
 
   this.isShowNum = true; // 是否显示手顺
 
@@ -173,15 +173,15 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.canvas = d.createElement("canvas");
   this.canvas.style.position = "absolute";
   if (width == null || height == null) {
-    this.canvas.style.width = dw < dh ? dw : dh;
+    this.canvas.style.width = dw < dh ? dw+"px" : dh+"px";
     this.canvas.style.height = this.canvas.style.width;
   }
   else {
-    this.canvas.style.width = width;
-    this.canvas.style.height = height;
+    this.canvas.style.width = parseInt(width)+"px";
+    this.canvas.style.height = parseInt(height)+"px";
   }
-  this.canvas.style.left = left;
-  this.canvas.style.top = top;
+  this.canvas.style.left = parseInt(left)+"px";
+  this.canvas.style.top = parseInt(top)+"px";
   this.parentNode.appendChild(this.canvas);
 
   //后台保存的空棋盘
@@ -189,8 +189,8 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.bakCanvas.style.position = "absolute";
   this.bakCanvas.style.width = this.canvas.style.width;
   this.bakCanvas.style.height = this.canvas.style.height;
-  this.bakCanvas.style.left = this.canvas.offsetLeft;
-  this.bakCanvas.style.top = this.canvas.offsetTop;
+  this.bakCanvas.style.left = this.canvas.offsetLeft+"px";
+  this.bakCanvas.style.top = this.canvas.offsetTop+"px";
 
   //后台裁剪图片的canvas
   this.cutCanvas = d.createElement("canvas");
@@ -231,17 +231,21 @@ checkerBoard.prototype.CW = function(arrobj, count) {
   //复制二维数组
   let arrs = [];
   for (y = 0; y < this.SLTY; y++) {
+
     arrs[y] = [];
     for (x = 0; x < this.SLTX; x++) {
       arrs[y][x] = arrobj[y][x];
     }
+
   }
   //旋转
   for (y = 0; y < this.SLTY; y++) {
+
     for (x = 0; x < this.SLTX; x++) {
       nx = this.SLTX - 1 - x;
       arrobj[y][x] = arrs[nx][y];
     }
+
   }
 
 };
@@ -258,17 +262,21 @@ checkerBoard.prototype.CCW = function(arrobj, count) {
   //复制二维数组
   let arrs = [];
   for (y = 0; y < this.SLTY; y++) {
+
     arrs[y] = [];
     for (x = 0; x < this.SLTX; x++) {
       arrs[y][x] = arrobj[y][x];
     }
+
   }
   //旋转
   for (y = 0; y < this.SLTY; y++) {
+
     for (x = 0; x < this.SLTX; x++) {
       ny = this.SLTY - 1 - y;
       arrobj[y][x] = arrs[x][ny];
     }
+
   }
 
 };
@@ -290,6 +298,7 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
   let ny;
 
   for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
+
     if (this.P[idx].type == tWhite) {
       wMS.push(idx);
     }
@@ -302,12 +311,16 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
     tMS = [];
     tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
     for (let i = 0; i < tMS1.length; i++) {
+
       idx = tMS1[i];
+
       y = parseInt(idx / this.SLTX);
       nx = this.SLTY - 1 - y; // 新的 x坐标是原来 y坐标的翻转;
       ny = idx % this.SLTX; // 旋转后新的 y坐标是原来的 x坐标
+
       idx = ny * this.SLTX + nx;
       tMS[i] = idx;
+
     }
     if (j == 0) {
       wMS = tMS.slice();
@@ -352,6 +365,7 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
   let ny;
 
   for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
+
     if (this.P[idx].type == tWhite) {
       wMS.push(idx);
     }
@@ -364,6 +378,7 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
     tMS = [];
     tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
     for (let i = 0; i < tMS1.length; i++) {
+
       idx = tMS1[i]; // 取得旧的index
       // 新的 x坐标是原来 y坐标;   
       nx = parseInt(idx / this.SLTX);
@@ -373,6 +388,7 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
       // 求得新的index，暂时保存
       idx = ny * this.SLTX + nx;
       tMS[i] = idx;
+
     }
     if (j == 0) {
       wMS = tMS.slice();
@@ -417,6 +433,7 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
   let ny;
 
   for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
+
     if (this.P[idx].type == tWhite) {
       wMS.push(idx);
     }
@@ -1012,7 +1029,7 @@ checkerBoard.prototype.getSVG = function() {
   let lineWidth;
   let canvas = this.canvas;
   for (let i = 0; i < this.SLTX; i++) {
-    lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
+    lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size  : parseInt(canvas.width) / 1000 * 2 * size;
     x1 = this.P[i].x * size;
     y1 = this.P[i].y * size;
     x2 = this.P[i + (this.SLTY - 1) * this.SLTX].x * size;
@@ -1454,8 +1471,8 @@ checkerBoard.prototype.printCheckerBoard = function() {
   ctx = canvas2.getContext("2d");
   canvas2.width = canvas.width;
   canvas2.height = canvas.height;
-  canvas2.style.width = canvas.width;
-  canvas2.style.height = canvas.height;
+  canvas2.style.width = canvas.width+"px";
+  canvas2.style.height = canvas.height+"px";
   //图片转移后，重新设置每个点的坐标
   ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
   /*this.XL += canvas2.offsetLeft - canvas.offsetLeft ;
@@ -1784,10 +1801,10 @@ checkerBoard.prototype.resetCutDiv = function() {
   s.borderWidth = "3px";
   s.borderColor = "red";
   s.zIndex = 0;
-  s.width = XR - XL;
-  s.height = YB - YT;
-  s.left = XL;
-  s.top = YT;
+  s.width = XR - XL+"px";
+  s.height = YB - YT+"px";
+  s.left = XL+"px";
+  s.top = YT+"px";
 
   /*
   if (XR == 0  || YB == 0)  {
@@ -1987,10 +2004,10 @@ checkerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘�
 
   let canvas = this.canvas;
   s.position = "absolute";
-  s.left = canvas.offsetLeft < l ? l : canvas.offsetLeft;
-  s.top = canvas.offsetTop < t ? t : canvas.offsetTop;
-  s.width = w > parseInt(canvas.style.width) - l ? parseInt(canvas.style.width) - l : w;
-  s.height = h > parseInt(canvas.style.height) - t ? parseInt(canvas.style.height) - t : h;
+  s.left = canvas.offsetLeft < l ? l+"px" : canvas.offsetLeft+"px";
+  s.top = canvas.offsetTop < t ? t+"px" : canvas.offsetTop+"px";
+  s.width = w > parseInt(canvas.style.width) - l ? parseInt(canvas.style.width) - l+"px" : w+"px";
+  s.height = h > parseInt(canvas.style.height) - t ? parseInt(canvas.style.height) - t+"px" : h+"px";
   
   this.XL = l;
   this.XR = this.XL + w;
@@ -2361,7 +2378,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
       m = m.substr(1);
     }
     // 棋谱坐标转成 index 后添加棋子
-    this.wNb(this.nameToIndex(a), color, showNum);
+    this.wNb(this.nameToIndex(a), color, showNum)
     
   }
 };

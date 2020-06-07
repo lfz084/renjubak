@@ -76,11 +76,11 @@
     document.write(`<div width = 100% style = "height:${cWidth*4}px" ></div>`);
     if (dw > dh) {
       d.write(`<div id="up" style="position:absolute;left:${0}px;top:0px;background-Color:red" > </div>`);
-      d.write(`<div id="down" style="position:absolute;left:${cWidth}px;top:0px;background-Color:red" > </div>`);
+      d.write(`<div id="down" style="position:absolute;left:${cWidth*1.06}px;top:0px;background-Color:red" > </div>`);
     }
     else {
       d.write(`<div id="up" style="position:absolute;left:${(dw-cWidth)/2}px;top:${cWidth}px;background-Color:red" > </div>`);
-      d.write(`<div id="down" style="position:absolute;left:0px;top:${cWidth*2 + 50}px;background-Color:red" > </div>`);
+      d.write(`<div id="down" style="position:absolute;left:0px;top:${cWidth*2.06}px;background-Color:red" > </div>`);
     }
 
 
@@ -625,11 +625,11 @@
       renjuCmddiv = document.createElement("div");
       parentNode.appendChild(renjuCmddiv);
       renjuCmddiv.style.position = "absolute";
-      renjuCmddiv.style.width = width / 1.15;
-      renjuCmddiv.style.height = width;
-      renjuCmddiv.style.top = top;
-      renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2;
-      if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2;
+      renjuCmddiv.style.width = width / 1.15+"px";
+      renjuCmddiv.style.height = width+"px";
+      renjuCmddiv.style.top = parseInt(top)+"px";
+      renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2+"px";
+      if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2+"px";
 
       let sw = parseInt(renjuCmddiv.style.width);
       let w = sw / 9;
@@ -1321,11 +1321,11 @@
         // 画图之前，设置画布大小
         cBoard.canvas.width = w1;
         cBoard.canvas.height = h1;
-        cBoard.canvas.style.width = w1;
-        cBoard.canvas.style.height = h1;
+        cBoard.canvas.style.width = w1+"px";
+        cBoard.canvas.style.height = h1+"px";
         let ctx = cBoard.canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
-        parentNode.style.top = h1 + parentNode.offsetTop - h2;
+        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
         cBoard.resetCutDiv();
         parentNode.removeChild(renjuCmddiv);
         parentNode.appendChild(imgCmdDiv);
@@ -1409,11 +1409,11 @@
       let s = imgCmdDiv.style;
       //parentNode.appendChild(imgCmdDiv);
       s.position = "absolute";
-      s.width = width / 1.15;
-      s.height = width;
-      s.top = top;
-      s.left = (dw - parseInt(s.width)) / 2;
-      if (dw > dh) s.left = (dw - cWidth * 2) / 2;
+      s.width = width / 1.15+"px";
+      s.height = width+"px";
+      s.top = parseInt(top)+"px";
+      s.left = (dw - parseInt(s.width)) / 2+"px";
+      if (dw > dh) s.left = (dw - cWidth * 2) / 2+"px";
 
       let sw = parseInt(s.width);
       let w = sw / 5;
@@ -1444,11 +1444,11 @@
         // 画图之前，设置画布大小
         cBoard.canvas.width = w1;
         cBoard.canvas.height = h1;
-        cBoard.canvas.style.width = w1;
-        cBoard.canvas.style.height = h1;
+        cBoard.canvas.style.width = w1+"px";
+        cBoard.canvas.style.height = h1+"px";
         let ctx = cBoard.canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
-        parentNode.style.top = h1 + parentNode.offsetTop - h2;
+        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
         cBoard.resetCutDiv();
         ctx = null;
         viewport.userScalable();
@@ -1468,8 +1468,8 @@
 
         cBoard.bakCanvas.width = w2;
         cBoard.bakCanvas.height = h2;
-        cBoard.bakCanvas.style.width = w2;
-        cBoard.bakCanvas.style.height = h2;
+        cBoard.bakCanvas.style.width = w2+"px";
+        cBoard.bakCanvas.style.height = h2+"px";
 
         let ctx = cBoard.bakCanvas.getContext("2d");
         ctx.fillStyle = cBoard.backgroundColor;
@@ -1617,7 +1617,7 @@
         cBoard.cle();
         cBoard.printCheckerBoard();
         cBoard.hideCutDiv();
-        parentNode.style.top = h1 + parentNode.offsetTop - h2;
+        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
         parentNode.removeChild(imgCmdDiv);
         parentNode.appendChild(renjuCmddiv);
         playModel = renjuModel;
