@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>全屏显示</title>
+  <meta charset="utf-8" />
+  <style>
+    iframe {
+      background: #fff;
+    }
+
+    button {
+      margin-left: 100px;
+      top=500px;
+      width=200px;
+      height=100px;
+    }
+
+    h1 {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>js控制页面的全屏展示和退出全屏显示</h1>
+  <iframe id="iframe"></iframe>
+  <button type="button" id="btn">全屏</button>
+  <script>
+    let btn = document.getElementById("btn");
+
+    btn.onclick = function() {
+      let width = window.screen.width;
+      let height = window.screen.height;
+      let scale = width/height;
+      let elem = document.getElementById("iframe");
+      elem.style.width = 1000 + "px";
+      elem.style.height = 1000/scale + "px";
+      elem.setAttribute("src", "./renju.html");
+      requestFullScreen(elem);
+    };
+
+    function requestFullScreen(element) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      }
+      //FireFox
+      else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+      }
+      //Chrome等
+      else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+      }
+      //IE11
+      else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+      }
+    }
+  </script>
+</body>
+
+</html>

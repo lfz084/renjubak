@@ -19,17 +19,18 @@
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
-    var viewport = new view();
-    var d = document;
-    var dw = d.documentElement.clientWidth;
-    var dh = d.documentElement.clientHeight;
-    var cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
+    let viewport = new view();
+    let d = document;
+    let dw = d.documentElement.clientWidth;
+    alert(dw);
+    let dh = d.documentElement.clientHeight;
+    let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
     cWidth = cWidth < dh ? cWidth : dh;
     // dw = 2000;
     //  dh = 2000;
-    var noSleep;
-    var isNoSleep = false; // bodyTouchStart 防止锁屏
-    var noSleepTime = 0;
+    let noSleep;
+    let isNoSleep = false; // bodyTouchStart 防止锁屏
+    let noSleepTime = 0;
     if (typeof(NoSleep) == "function") {
       noSleep = new NoSleep();
       setInterval(function() {
@@ -48,28 +49,28 @@
 
     //用来保存跟踪正在发送的触摸事件
 
-    var canvasStartTouches = [];
+    let canvasStartTouches = [];
 
-    var bodyStartTouches = [];
+    let bodyStartTouches = [];
 
-    var previousTouch = []; // 辅助判断双击
+    let previousTouch = []; // 辅助判断双击
 
-    var bodyPreviousTouch = [];
+    let bodyPreviousTouch = [];
 
-    var bodyMoveTouches = [];
+    let bodyMoveTouches = [];
 
-    var continueSetCutDivX = 0;
-    var continueSetCutDivY = 0;
+    let continueSetCutDivX = 0;
+    let continueSetCutDivY = 0;
 
-    var isBodyClick = false; // 辅助判断单击
+    let isBodyClick = false; // 辅助判断单击
 
-    var timerCanvasKeepTouch = null;
+    let timerCanvasKeepTouch = null;
 
-    var timerBodyKeepTouch = null;
+    let timerBodyKeepTouch = null;
 
-    var timerContinueSetCutDiv = null;
+    let timerContinueSetCutDiv = null;
 
-    var cBoard = null; //棋盘对象
+    let cBoard = null; //棋盘对象
 
 
     document.write("<div width = 100% style = 'height:3000px' ></div>");
@@ -189,7 +190,7 @@
       if (isMsgShow) return;
       // 防止锁屏
 
-      var touches = evt.changedTouches;
+      let touches = evt.changedTouches;
 
       //记录坐标，给continueSetCutDiv使用
       continueSetCutDivX = touches[0].pageX;
@@ -224,7 +225,7 @@
           timerBodyKeepTouch = null;
         }
 
-        var touchNum = bodyStartTouches.length + 1; //判断是第几个手指触摸屏幕
+        let touchNum = bodyStartTouches.length + 1; //判断是第几个手指触摸屏幕
         if (touchNum > 3) return; //超过3指忽略
         // 多点触摸 取消单击事件。
         isBodyClick = false;
@@ -240,7 +241,7 @@
     function bodyTouchMove(evt) {
       
       if (timerContinueSetCutDiv) evt.preventDefault();
-      var touches = evt.changedTouches;
+      let touches = evt.changedTouches;
 
       if (isMsgShow) return;
 
@@ -270,9 +271,9 @@
       if (isMsgShow) return;
       let cancelClick = false;
 
-      var touches = evt.changedTouches;
+      let touches = evt.changedTouches;
 
-      var idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
+      let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
       // 取消  ContinueSetCutDiv 事件
       clearTimeout(timerContinueSetCutDiv);
       if (timerContinueSetCutDiv) {
@@ -291,14 +292,14 @@
 
       if (idx >= 0) {
 
-        var sX = bodyStartTouches[idx].pageX;
-        var sY = bodyStartTouches[idx].pageY;
-        var tX = touches[0].pageX;
-        var tY = touches[0].pageY;
-        var xMove = tX - sX;
-        var yMove = tY - sY;
+        let sX = bodyStartTouches[idx].pageX;
+        let sY = bodyStartTouches[idx].pageY;
+        let tX = touches[0].pageX;
+        let tY = touches[0].pageY;
+        let xMove = tX - sX;
+        let yMove = tY - sY;
 
-        var touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
+        let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
 
         if (touchNum > 3) { // 超过3指重置触摸跟踪
           bodyStartTouches.length = 0 //remove it; we're done
@@ -373,7 +374,7 @@
 
       evt.preventDefault();
 
-      var touches = evt.changedTouches;
+      let touches = evt.changedTouches;
       // 取消 continueSetCutDiv 事件
       clearInterval(timerContinueSetCutDiv);
       if (timerContinueSetCutDiv) {
@@ -409,9 +410,9 @@
 
     function onTouchesIndex(idToFind, touches) {
 
-      for (var i = 0; i < touches.length; i++) {
+      for (let i = 0; i < touches.length; i++) {
 
-        var id = touches[i].identifier;
+        let id = touches[i].identifier;
 
         if (id == idToFind) {
 
@@ -535,9 +536,9 @@
     function continueSetCutDivMove() {
 
       //log("continueSetCutDiv start");
-      var x = parseInt(continueSetCutDivX);
-      var y = parseInt(continueSetCutDivY);
-      var p = { x: x, y: y };
+      let x = parseInt(continueSetCutDivX);
+      let y = parseInt(continueSetCutDivY);
+      let p = { x: x, y: y };
       if (!cBoard.isOut(x, y, cBoard.canvas))
       {
         cBoard.setxy(p, 0.25);
@@ -2012,7 +2013,7 @@
   </script>
   <script language="javascript">
     "use strict";
-    var timerSave = null; // 保存,定时器
+    let timerSave = null; // 保存,定时器
 
     function renjuSave() {
 
@@ -3331,7 +3332,7 @@
 
       let st = 0;
       let ed = 0;
-      var i;
+      let i;
       for (i = -1; i > -4; i--) {
         if (getArrValue(x, y, i, model, arr) != color) {
           break;
