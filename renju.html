@@ -22,7 +22,7 @@
     let viewport = new view();
     let d = document;
     let dw = d.documentElement.clientWidth;
-    alert(dw);
+    //alert(dw);
     let dh = d.documentElement.clientHeight;
     let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
     cWidth = cWidth < dh ? cWidth : dh;
@@ -73,14 +73,14 @@
     let cBoard = null; //棋盘对象
 
 
-    document.write("<div width = 100% style = 'height:3000px' ></div>");
+    document.write(`<div width = 100% style = "height:${cWidth*4}px" ></div>`);
     if (dw > dh) {
-      d.write(`<div id='up' style='position:absolute;left:${0}px;top:0px;background-Color:red' > </div>`);
-      d.write("<div id='down' style='position:absolute;left:" + cWidth + "px;top:0px;background-Color:red' > </div>");
+      d.write(`<div id="up" style="position:absolute;left:${0}px;top:0px;background-Color:red" > </div>`);
+      d.write(`<div id="down" style="position:absolute;left:${cWidth}px;top:0px;background-Color:red" > </div>`);
     }
     else {
-      d.write(`<div id='up' style='position:absolute;left:${(dw-cWidth)/2}px;top:800px;background-Color:red' > </div>`);
-      d.write("<div id='down' style='position:absolute;left:0px;top:" + (800 + cWidth + 50) + "px;background-Color:red' > </div>");
+      d.write(`<div id="up" style="position:absolute;left:${(dw-cWidth)/2}px;top:${cWidth}px;background-Color:red" > </div>`);
+      d.write(`<div id="down" style="position:absolute;left:0px;top:${cWidth*2 + 50}px;background-Color:red" > </div>`);
     }
 
 
@@ -302,7 +302,7 @@
         let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
 
         if (touchNum > 3) { // 超过3指重置触摸跟踪
-          bodyStartTouches.length = 0 //remove it; we're done
+          bodyStartTouches.length = 0; //remove it; we're done
           return;
         }
 
@@ -1371,32 +1371,6 @@
         }
         but.input.value = 0;
       });
-
-
-
-      /*
-      cReset = new button(renjuCmddiv,"button",w*2.66,t,w,h);
-      cReset.show();
-      cReset.setColor("black");
-      cReset.setText(" 复原棋局");
-      cReset.setontouchend( function() {    
-          cBoard.cle();
-          cBoard.unpackMoves(cShownum.checked);
-      });
-      
-      cLocknum = new button(renjuCmddiv,"checkbox",w*3.99,t,w,h);
-      cLocknum.show();
-      cLocknum.setText("锁定棋局");
-      cLocknum.setontouchend( function() {    
-          if (cLocknum.checked) {
-              cBoard.MSToMoves();  // 保存棋谱代码
-          }
-          else {
-              cBoard.cleMoves();  // 清空棋谱代码
-          }
-      });
-      */
-
 
 
       t = t + h * 1.3;
@@ -5279,7 +5253,7 @@
             break;
         }
 
-        return { 'x': nx, 'y': ny };
+        return { "x": nx, "y": ny };
       }
       catch (err) {
         alert("getNextEmpty err=" + err.message);

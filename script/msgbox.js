@@ -6,7 +6,7 @@
 
  // 创建一个屏蔽层
  var MsgBoxobj = document.createElement("div");
- MsgBoxobj.ontouchend = function() { event.preventDefault();msgTextarea.focus(); };
+ MsgBoxobj.ontouchend = function() { event.preventDefault();if(msgTextarea.style.autofocus) msgTextarea.focus(); };
 
  // msg 窗口
  var windowDiv = document.createElement("div");
@@ -62,7 +62,6 @@
    s.width = width;
    s.height = height || parseInt(s.width) / 20 * (lineNum + 3) * 1.3;
    s.backgroundColor = "#666666";
-
 
    s = msgTextarea.style;
    msgTextarea.value = text || "";
