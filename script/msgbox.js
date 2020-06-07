@@ -31,11 +31,14 @@
 
    let p = { x: parseInt(cBoard.width) / 10, y: 0 };
    cBoard.xyObjToPage(p, cBoard.canvas);
-   type = type == null ? "msgbox" : type;
-   left = left == null ? p.x : left;
-   top = top == null ? dh / 11 : top;
-   width = width || cBoard.width * 0.8;
-   //height = 
+   //console.log(`p.x=${p.x},p.y=${p.y}, left=${left},top=${top},width=${width}`);
+  
+   type = !!type == false ? "msgbox" : type;
+   left = !!left == false ? p.x : left;
+   top = !!top == false ? dh / 11 : top;
+   width = !!width == false ? parseInt(cBoard.width) *0.8 : width;
+   //console.log(`left=${left},top=${top},width=${width}`);
+   
    butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
    isMsgShow = true; // 屏蔽 bodytouch 事件;
@@ -60,7 +63,7 @@
    s.left = parseInt(left)+"px";
    s.top = parseInt(top)+"px";
    s.width = parseInt(width)+"px";
-   s.height = parseInt(height) +"px" || parseInt(s.width) / 20 * (lineNum + 3) * 1.3+"px";
+   s.height = !!height ? parseInt(height) +"px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3+"px";
    s.backgroundColor = "#666666";
 
    s = msgTextarea.style;
