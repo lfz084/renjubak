@@ -1465,7 +1465,7 @@
         let t = div.offsetTop - h / 11 > 0 ? div.offsetTop - h / 11 : 0;
         let L2 = l > 0 ? 0 : w / 11 - div.offsetLeft;
         let t2 = t > 0 ? 0 : h / 11 - div.offsetTop;
-
+        //alert(`div.offsetLeft${div.offsetLeft},div.offsetTop${div.offsetTop}`)
         cBoard.bakCanvas.width = w2;
         cBoard.bakCanvas.height = h2;
         cBoard.bakCanvas.style.width = w2+"px";
@@ -1493,15 +1493,15 @@
 
             h = parseInt(cBoard.canvas.height);
             cBoard.canvas.height = parseInt(cBoard.width) * h2 / w2;
-            cBoard.canvas.style.height = parseInt(cBoard.width) * h2 / w2;
-            ctx.drawImage(cBoard.cutImg, 0, 0, w2, h2, 0, 0, parseInt(cBoard.width), parseInt(cBoard.width) * h2 / w2);
+            cBoard.canvas.style.height = parseInt(cBoard.width) * h2 / w2+"px";
+            ctx.drawImage(cBoard.bakCanvas, 0, 0, w2, h2, 0, 0, parseInt(cBoard.width), parseInt(cBoard.width) * h2 / w2);
 
             cBoard.XL = parseInt(cBoard.canvas.width) / 13;
             cBoard.XR = parseInt(cBoard.canvas.width) / 13 * 12;
             cBoard.YT = parseInt(cBoard.canvas.height) / 13;
             cBoard.YB = parseInt(cBoard.canvas.height) / 13 * 12;
             cBoard.resetP(cBoard.XL, cBoard.XR, cBoard.YT, cBoard.YB);
-            parentNode.style.top = parseInt(cBoard.canvas.height) + parentNode.offsetTop - h;
+            parentNode.style.top = parseInt(cBoard.canvas.height) + parentNode.offsetTop - h+"px";
 
             cBoard.cleAllPointBorder();
             cBoard.hideCutDiv();

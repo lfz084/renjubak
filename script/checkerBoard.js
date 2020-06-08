@@ -140,10 +140,10 @@ point.prototype.setxy = function(x, y) {
 function checkerBoard(parentNode, left, top, width, height) {
 
   this.parentNode = parentNode;
-  this.left = parseInt(left)+"px";
-  this.top = parseInt(top)+"px";
-  this.width = parseInt(width)+"px";
-  this.height = parseInt(height)+"px";
+  this.left = parseInt(left);
+  this.top = parseInt(top);
+  this.width = parseInt(width);
+  this.height = parseInt(height);
 
   this.isShowNum = true; // 是否显示手顺
 
@@ -191,7 +191,7 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.bakCanvas.style.height = this.canvas.style.height;
   this.bakCanvas.style.left = this.canvas.offsetLeft+"px";
   this.bakCanvas.style.top = this.canvas.offsetTop+"px";
-
+  //this.parentNode.appendChild(this.bakCanvas);
   //后台裁剪图片的canvas
   this.cutCanvas = d.createElement("canvas");
 
