@@ -6,14 +6,26 @@
   <meta charset="utf-8" />
   <style>
     iframe {
+
+      padding: 0px 0px 0px 0px;
+      border-style=none;
+      position: absolute;
       background: #fff;
+      border: hidden;
+      overflow:hidden;
+      scroll:no;
+    }
+
+    div {
+      border: hidden;
     }
 
     button {
-      margin-left: 100px;
-      top=500px;
+      left: 100px;
+      top=1000px;
       width=200px;
       height=100px;
+      position: absolute;
     }
 
     h1 {
@@ -24,20 +36,35 @@
 
 <body>
   <h1>js控制页面的全屏展示和退出全屏显示</h1>
-  <iframe id="iframe"></iframe>
+  <div id="fullDiv">
+    <iframe id="iframe"></iframe>
+  </div>
   <button type="button" id="btn">全屏</button>
   <script>
     let btn = document.getElementById("btn");
 
+
     btn.onclick = function() {
       let width = window.screen.width;
       let height = window.screen.height;
-      let scale = width/height;
+      let scale = width / 1000;
       let elem = document.getElementById("iframe");
+      let fullDiv = document.getElementById("fullDiv");
+
+      requestFullScreen(fullDiv);
+      fullDiv.style.width = width + "px";
+      fullDiv.style.height = height + "px";
+
       elem.style.width = 1000 + "px";
-      elem.style.height = 1000/scale + "px";
-      elem.setAttribute("src", "./renju.html");
-      requestFullScreen(elem);
+      elem.style.height = 1000 * height / width + "px";
+      elem.src = "./renju.html";
+
+      elem.style.left = "-5px";
+      elem.style.top = "-5px";
+      elem.style.transform = "scale(" + scale + ")";
+      elem.style.webkitTransform = "scale(" + scale + ")";
+      elem.style.mozTransform = "scale(" + scale + ")";
+      elem.style.transformOrigin = "0 0";
     };
 
     function requestFullScreen(element) {

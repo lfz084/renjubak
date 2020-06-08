@@ -25,7 +25,8 @@
     //alert(dw);
     let dh = d.documentElement.clientHeight;
     let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
-    cWidth = cWidth < dh ? cWidth : dh;
+    cWidth = dw < dh ? cWidth : dh;
+    //cWidth = 950;
     // dw = 2000;
     //  dh = 2000;
     let noSleep;
