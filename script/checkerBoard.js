@@ -191,7 +191,7 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.bakCanvas.style.height = this.canvas.style.height;
   this.bakCanvas.style.left = this.canvas.offsetLeft+"px";
   this.bakCanvas.style.top = this.canvas.offsetTop+"px";
-  //this.parentNode.appendChild(this.bakCanvas);
+  this.parentNode.appendChild(this.bakCanvas);
   //后台裁剪图片的canvas
   this.cutCanvas = d.createElement("canvas");
 

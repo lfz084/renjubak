@@ -1494,7 +1494,7 @@
             h = parseInt(cBoard.canvas.height);
             cBoard.canvas.height = parseInt(cBoard.width) * h2 / w2;
             cBoard.canvas.style.height = parseInt(cBoard.width) * h2 / w2+"px";
-            ctx.drawImage(cBoard.bakCanvas, 0, 0, w2, h2, 0, 0, parseInt(cBoard.width), parseInt(cBoard.width) * h2 / w2);
+            ctx.drawImage(cBoard.cutImg, 0, 0, w2, h2, 0, 0, parseInt(cBoard.width), parseInt(cBoard.width) * h2 / w2);
 
             cBoard.XL = parseInt(cBoard.canvas.width) / 13;
             cBoard.XR = parseInt(cBoard.canvas.width) / 13 * 12;
