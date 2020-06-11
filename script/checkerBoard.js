@@ -37,6 +37,7 @@ point.prototype.cle = function() {
   //alert("p.cle")
 };
 
+
 point.prototype.printBorder = function(gW, gH) {
   var size;
   var temp;
@@ -349,7 +350,6 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
 
 
 
-
 // 逆时针 翻转棋盘90°
 checkerBoard.prototype.boardCCW = function(isShowNum) {
 
@@ -417,7 +417,6 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
 
 
 
-
 // 上下 翻转棋盘
 checkerBoard.prototype.boardFlipX = function(isShowNum) {
 
@@ -480,7 +479,6 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
   }
 
 };
-
 
 
 
@@ -550,10 +548,6 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
 
 
-
-
-
-
 // 清空棋盘上每一个点的显示，和记录
 checkerBoard.prototype.cle = function() {
 
@@ -595,9 +589,6 @@ checkerBoard.prototype.cleLb = function(idx) {
 
 
 
-
-
-
 // 删除一颗棋子,不删除MS的记录
 checkerBoard.prototype.cleNb = function(idx, showNum) {
 
@@ -619,8 +610,6 @@ checkerBoard.prototype.cleMoves = function() {
 
   this.Moves = "";
 };
-
-
 
 
 
@@ -718,8 +707,6 @@ checkerBoard.prototype.flipY = function(arrobj) {
 
 
 
-
-
 //判断用户点击了棋盘上面的哪一个点，在返回这个点的index
 checkerBoard.prototype.getPIndex = function(x, y) {
 
@@ -743,8 +730,6 @@ checkerBoard.prototype.getPIndex = function(x, y) {
 
 
 
-
-
 // 当前棋盘显示的棋子， 转成棋谱 返回
 checkerBoard.prototype.getMoves = function(type) {
 
@@ -764,8 +749,6 @@ checkerBoard.prototype.getMoves = function(type) {
 
   return ml.toUpperCase();
 };
-
-
 
 
 
@@ -798,8 +781,6 @@ checkerBoard.prototype.getPointArray = function(arrobj) {
   }
   return arrobj;
 };
-
-
 
 
 
@@ -1013,8 +994,6 @@ checkerBoard.prototype.getPointColor = function(x, y) {
 
 
 
-
-
 // 把棋盘图片转成SVG,返回SVG代码
 checkerBoard.prototype.getSVG = function() {
 
@@ -1143,9 +1122,6 @@ checkerBoard.prototype.getSVG = function() {
 
 
 
-
-
-
 // 顺序棋盘上棋子，隐藏手数
 checkerBoard.prototype.hideNum = function() {
 
@@ -1160,13 +1136,11 @@ checkerBoard.prototype.hideNum = function() {
 
 
 
-
 checkerBoard.prototype.hideCutDiv = function() {
 
   this.cutDiv.style.borderStyle = "none";
   this.cutDiv.style.zIndex = -100;
 };
-
 
 
 
@@ -1177,9 +1151,6 @@ checkerBoard.prototype.indexToName = function(idx) {
   let y = parseInt(idx / this.SLTY);
   return (this.alpha.charAt(x) + (15 - y)).toLowerCase();
 };
-
-
-
 
 
 
@@ -1204,7 +1175,6 @@ checkerBoard.prototype.isOut = function(x, y, htmlObj) {
 
 
 
-
 // 字母数字坐标，返回 P数组的index
 checkerBoard.prototype.nameToIndex = function(name) {
 
@@ -1215,6 +1185,7 @@ checkerBoard.prototype.nameToIndex = function(name) {
   return x + y * this.SLTX;
 
 };
+
 
 
 // 平移棋盘
@@ -1314,7 +1285,6 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
 
 
 
-
 // MS 数组记录 转成棋谱代码
 checkerBoard.prototype.MSToMoves = function() {
 
@@ -1324,7 +1294,6 @@ checkerBoard.prototype.MSToMoves = function() {
   }
   
 };
-
 
 
 
@@ -1340,7 +1309,6 @@ checkerBoard.prototype.printArray = function(arr, txt, color) {
     }
   }
 };
-
 
 
 
@@ -1395,7 +1363,6 @@ checkerBoard.prototype.printCoordinate = function(t, r, d, l) {
   }
   ctx = null;
 };
-
 
 
 
@@ -1483,7 +1450,6 @@ checkerBoard.prototype.printCheckerBoard = function() {
 
   //this.printBorder();
 };
-
 
 
 
@@ -1709,8 +1675,6 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
 
 
 
-
-
 // 在棋盘上打印一个点
 checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
   let p = tempp;
@@ -1763,7 +1727,6 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
   if (renjuSave) renjuSave();
   return true;
 };
-
 
 
 
@@ -1823,6 +1786,8 @@ checkerBoard.prototype.resetCutDiv = function() {
   this.printBorder();
 };
 
+
+
 // 后台设置棋盘所有点的坐标。不会改变棋盘的显示
 checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
   let i;
@@ -1854,7 +1819,6 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
   }
   
 };
-
 
 
 
@@ -1916,7 +1880,6 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
 
 
 
-
 checkerBoard.prototype.saveAsSVG = function(type) {
 
   let save_link = document.createElement("a");
@@ -1932,8 +1895,6 @@ checkerBoard.prototype.saveAsSVG = function(type) {
   URL.revokeObjectURL(save_link.href);
 
 };
-
-
 
 
 
@@ -2020,6 +1981,7 @@ checkerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘�
 };
 
 
+
 // 设置最后一手是否高亮显示
 checkerBoard.prototype.setNotShowLastNum = function(idx) {
 
@@ -2032,6 +1994,8 @@ checkerBoard.prototype.setNotShowLastNum = function(idx) {
   }
 
 };
+
+
 
 //设置棋谱
 checkerBoard.prototype.setMoves = function(codeStr) {
@@ -2098,6 +2062,7 @@ checkerBoard.prototype.setMoves = function(codeStr) {
   }
 
 };
+
 
 
 // 设置从第几手开始显示序号， 默认==0 时第一手开始显示，==1 时第二手显示❶
@@ -2213,7 +2178,6 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
 
 
 
-
 // 根据用户设置 决定是否高亮显示 最后一手棋
 checkerBoard.prototype.showLastNum = function(showNum) {
 
@@ -2296,7 +2260,6 @@ checkerBoard.prototype.showLastNum = function(showNum) {
 
 
 
-
 // 刷新棋盘上棋子显示手数
 checkerBoard.prototype.showNum = function() {
 
@@ -2324,6 +2287,7 @@ checkerBoard.prototype.toEnd = function(isShowNum) {
 };
 
 
+
 // 跳到下一手
 checkerBoard.prototype.toNext = function(isShowNum) {
 
@@ -2332,6 +2296,7 @@ checkerBoard.prototype.toNext = function(isShowNum) {
     this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum);
   }
 };
+
 
 
 // 返回上一手
@@ -2384,6 +2349,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 };
 
 
+
 // 解析二维数组后，摆棋
 checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
 
@@ -2426,7 +2392,6 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
     }
   }
 };
-
 
 
 
@@ -2473,8 +2438,6 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type) {
 
 
 
-
-
 // 把 page 坐标 转成 canvas 坐标
 checkerBoard.prototype.xyPageToObj = function(p, canvas) {
 
@@ -2490,6 +2453,8 @@ checkerBoard.prototype.xyPageToObj = function(p, canvas) {
   p.x = p.x - l;
   p.y = p.y - t;
 };
+
+
 
 // 把 canvas 坐标 转成 page 坐标
 checkerBoard.prototype.xyObjToPage = function(p, canvas) {
