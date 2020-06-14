@@ -1467,12 +1467,16 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
   }
   for (let i = 0; i < moves.length; i++) {
     let color;
-    if (firstColor == 1) {
+    if (i==moves.length-1) {
+      color = "red";
+    }
+    else if (firstColor == 1) {
       color = i % 2 ? "#9e9999" : "black";
     }
     else {
       color = i % 2 ? "black" : "#9e9999";
     }
+    
     this.wLb(moves[i], i + 1, color);
   }
 };

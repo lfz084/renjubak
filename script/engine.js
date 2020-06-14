@@ -19,7 +19,6 @@
     let vcfFailMoves = []; // 保存失败节点,已经地毯的节点
     let vcfWinMoves = []; // 保存成立的VCF分支;
     let vcfFinding = -1; // 计算状态
-    let timerVCF = null; // 连续计算计时器
     let vcfFindDepth = 0; // 计算深度
     let vcfStartTimer = 0;
     let vcfnLevel = null;
@@ -111,6 +110,25 @@
 
 
 
+  onmessage=function(e){
+    let p = e.data.parameter;
+    const cmd = {
+      "findVCF":         function() {findVCF(p[0],p[1],p[2],p[3],p[4],p[5]);}, 
+      "cancelFind":      function() {cancelFind();}, 
+    };
+    
+    console.log(p);
+    cmd[e.data.cmd]();
+  }
+
+
+
+  function post(cmd, param) {
+    postMessage({"cmd":cmd, "parameter":param});
+  }
+
+
+
     // 复制一个维数组
     function copyMoves(moves) {
 
@@ -141,17 +159,16 @@
     // 连续查找,VCF
     //color 设置棋子颜色， timeout 设置超时毫秒单位， 
     // depth 计算深度， backStage 后台模式, count VCF个数上限
-    function* findVCF(color, timeOut, depth, count, backStage, arr) {
+    function findVCF(color, timeOut, depth, count, backStage, arr) {
 
       try {
-        if (timerVCF) return;
+        console.log("vcf start");
         vcfFinishEvent = function() {};
         timeOut = timeOut == null ? 1800000 : timeOut;
         depth = depth == null ? 225 : depth;
         count = count == null ? 225 : count * 1;
         backStage = backStage ? true : false;
         vcfCount = 0;
-        vcfFinding = -1;
 
         vcfArr = arr;
         copyArr(vcfInitial, vcfArr);
@@ -172,12 +189,12 @@
 
         getArr(vcfNewArr);
 
-        // alert(vcfFinding)
-        timerVCF = setInterval(function() {
-          vcfActuator(timeOut, depth, count, backStage);
-        }, 0);
+        // console.log(vcfFinding)
+        post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
         vcfStartTimer = new Date().getTime();
-        yield;
+        vcfActuator(timeOut, depth, count, backStage);
+        
+        console.log("vcf end");
         return vcfWinMoves.length;
         
         
@@ -191,35 +208,37 @@
                 let x;
                 let y;
                 let len;
-                switch (vcfFinding) {
-                  case 0:
-                    vcfFinding = 100;
-                    vcfCount++;
-                    if (!backStage && vcfCount % 30 == 0) {
-                      cBoard.printMoves(vcfMoves, vcfColor);
-                    }
-                    vcfFinding = continueFindVCF(timeOut, depth);
-                    break;
-                  case 1:
-                    // -1 分支地毯完， 0 继续地毯后面分支
-                    vcfFinding = vcfFS.length ? (vcfWinMoves.length < count) ? 0 : -1 : -1;
-                    break;
-                  case -1:
-                    clearInterval(timerVCF);
-                    copyArr(vcfArr, vcfInitial);
-                    timerVCF = null;
-                    vcfFinishEvent();
-                    generator.next();
-                    if (backStage) {
+                while(true){
+                  vcfFinding = stopFind ? -1:vcfFinding;
+                  switch (vcfFinding) {
+                    case 0:
+                      vcfFinding = 100;
+                      vcfCount++;
+                      if (!backStage && vcfCount % 60 == 0) {
+                        //cBoard.printMoves(vcfMoves, vcfColor);
+                        post("printMoves", [vcfMoves, vcfColor]);
+                      }
+                      vcfFinding = continueFindVCF(timeOut, depth);
                       break;
-                    }
-                    cBoard.printMoves([]);
-                    break;
-                }
+                    case 1:
+                      // -1 分支地毯完， 0 继续地毯后面分支
+                      vcfFinding = vcfFS.length ? (vcfWinMoves.length < count) ? 0 : -1 : -1;
+                      break;
+                    case -1:
+                      copyArr(vcfArr, vcfInitial);
+                      vcfFinishEvent();
+                      if (!backStage) {
+                        post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+                      }
+                      return;
+                      //cBoard.printMoves([]);
+                      break;
+                  }
+                } 
                 //log (vcfFinding)
               }
               catch (err) {
-                alert("vcfActuator err=" + err.message);
+                console.log("vcfActuator err=" + err.message);
               }
             }
             
@@ -229,7 +248,6 @@
             function continueFindVCF() {
             
                  try {
-                   noSleepTime = new Date().getTime(); // 自动防锁屏
                    let moves = vcfMoves;
                    let arr = vcfArr;
                    let newarr = vcfNewArr;
@@ -252,7 +270,7 @@
             
                    }
             
-                   // alert(cfLevel.level)
+                   // console.log(cfLevel.level)
                    if (cfLevel.level < 4 && dp <= depth) { //如果对手进攻级别低于  冲4
                      getArr(newarr);
                      if (findFourPoint(arr, color, newarr)) {
@@ -284,7 +302,9 @@
                              fs.splice(st - 1, ed - st + 1);
                              let wMoves = moves.concat(v);
                              if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                             pushWinMoves(WinMoves, wMoves);
+                             if (pushWinMoves(WinMoves, wMoves)) {
+                               post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+                             };
                              pushFailMoves(FailMoves, moves.slice(0, moves.length));
                              backFindVCF();
                              return 1;
@@ -306,7 +326,7 @@
                          }
                        }
             
-                       // alert(fs)
+                       // console.log(fs)
             
                        tx = fs[ed] % 15;
                        ty = parseInt(fs[ed] / 15);
@@ -334,12 +354,14 @@
             
                      tx = cfLevel.p.x;
                      ty = cfLevel.p.y;
-                     // alert(printArr(arr)+"\n"+cfLevel.p.x+"-"+cfLevel.p.y+"-")
+                     // console.log(printArr(arr)+"\n"+cfLevel.p.x+"-"+cfLevel.p.y+"-")
                      if (isFour(tx, ty, color, arr)) { // 有反4，继续计算
                        if (isFFWin(tx, ty, color, arr)) {
                          let wMoves = moves.concat(ty * 15 + tx);
                          if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                         pushWinMoves(WinMoves, wMoves);
+                         if (pushWinMoves(WinMoves, wMoves)) {
+                           post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+                         };
                          pushFailMoves(FailMoves, moves.slice(0, moves.length));
                          backFindVCF();
                          return 1;
@@ -371,7 +393,7 @@
                    }
                    if (fs.length == 0) return -1; // 地毯完，VCF失败
                    if (new Date().getTime() - vcfStartTimer > timeOut) return -1;
-                   if (vcfFindDepth % 8) return continueFindVCF(timeOut, depth);
+                   if (vcfFindDepth % 10) return continueFindVCF(timeOut, depth);
                    return 0; //未完，等待定时器调用
             
             
@@ -479,12 +501,12 @@
             
                  }
                  catch (err) {
-                   alert("continueFindVCF err=" + err.message);
+                   console.log("continueFindVCF err=" + err.message);
                  }
                }
       }
       catch (err) {
-        alert("findVCF err=" + err.message);
+        console.log("findVCF err=" + err.message);
       }
     }
 
@@ -493,7 +515,6 @@
     // 停止查找
     function cancelFind() {
 
-      vcfFinding = -1;
       stopFind = true;
       setTimeout("stopFind = false;", 2500);
     }
@@ -539,7 +560,7 @@
       let k;
       let l = moves.length;
       let len = VCF.length;
-      // alert(moves+"  对比")
+      // console.log(moves+"  对比")
       // 确认是否重复
       if (l > 20) return;
       for (i = len - 1; i >= 0; i--) {
@@ -573,9 +594,9 @@
       for (i = 0; i < VCF.length; i++) {
         if (VCF[i].length >= l) break;
       }
-      // alert("准备添加"+VCF)
+      // console.log("准备添加"+VCF)
       VCF.splice(i, 0, copyMoves(moves)); // 
-      // alert("添加后"+VCF)
+      // console.log("添加后"+VCF)
       return true;
     }
 
@@ -590,7 +611,7 @@
         let k;
         let l = moves.length;
         let len = WinMoves.length;
-        // alert(moves+"  对比")
+        // console.log(moves+"  对比")
         // 确认是否重复
 
         for (i = len - 1; i >= 0; i--) {
@@ -607,9 +628,9 @@
             if (k >= 0) continue; // 没有找到相同数据;
  
             if (k < 0) { // 把所有重复的替换掉
-              //alert("准备替换"+WinMoves)
+              //console.log("准备替换"+WinMoves)
               WinMoves.splice(i, 1); // 找到后续相同数据,删除
-              // alert("替换后"+WinMoves)
+              // console.log("替换后"+WinMoves)
             }
 
           }
@@ -624,8 +645,8 @@
               }
               if (j < 0) break; // 没有找到相同数据;
             }
-            //alert (moves +"move")
-            //alert (WinMoves[i] + "winmov")
+            //console.log (moves +"move")
+            //console.log (WinMoves[i] + "winmov")
             if (k >= 0) continue; // 没有找到相同数据;
 
             if (k < 0) {
@@ -637,13 +658,13 @@
         for (i = 0; i < WinMoves.length; i++) {
           if (WinMoves[i].length >= l) break;
         }
-        // alert("准备添加"+WinMoves)
+        // console.log("准备添加"+WinMoves)
         WinMoves.splice(i, 0, copyMoves(moves)); // 找到相同数据;
-        // alert("添加后"+WinMoves)
+        // console.log("添加后"+WinMoves)
         return true;
       }
       catch (err) {
-        alert("pushWinMoves err=" + err.message);
+        console.log("pushWinMoves err=" + err.message);
       }
     }
 
@@ -683,7 +704,7 @@
         return (i >= 0) ? true : false;
       }
       catch (err) {
-        alert("findMoves err=" + err.message);
+        console.log("findMoves err=" + err.message);
       }
     }
 
@@ -712,7 +733,7 @@
         return false;
       }
       catch (err) {
-        alert("isWin ERR=" + err.message);
+        console.log("isWin ERR=" + err.message);
       }
     }
 
@@ -744,7 +765,7 @@
       // 判断对手进攻级别
       let nLevel = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
       let winLevel;
-      //alert("对手进攻级别="+nLevel.level)
+      //console.log("对手进攻级别="+nLevel.level)
       if (nLevel.level == 5) { // 对手已胜
         return 2;
       }
@@ -786,7 +807,7 @@
             let j;
 
             for (j = fMoves.length - 1; j >= 0; j--) {
-              //alert("gDepth="+gDepth+"\nj="+j);
+              //console.log("gDepth="+gDepth+"\nj="+j);
 
               // 摆棋
               for (let k = fMoves[j].length - 1; k >= 0; k--) {
@@ -796,7 +817,7 @@
               }
 
               winLevel = yield* getWinLevel(arr, color, timeout, depth, gDepth - 1);
-              //alert("_____"+winLevel)
+              //console.log("_____"+winLevel)
               if (winLevel < 3.5) notWin = true;
 
               // 复原棋子
@@ -1176,7 +1197,7 @@
         if (color == 2) { // 判断白棋
           for (let i = 0; i > -5; i--) {
             let pw = getPower(x, y, arr, Cmodel[j], color, i);
-            //if (Cmodel[j]=="u") alert (pw)
+            //if (Cmodel[j]=="u") console.log (pw)
             if (pw == 4) {
               if (isLineFF(x, y, Cmodel[j], color, arr)) {
                 count = 2;
@@ -1291,9 +1312,9 @@
       arr[y][x] = ov;
       if (color == 1) { // 黑棋33，否定3连
         count = countf > 1 ? -1 : count;
-        //alert("countf=" + countf)
+        //console.log("countf=" + countf)
       }
-      //alert("count=" +count + "   countf=" +countf)
+      //console.log("count=" +count + "   countf=" +countf)
       return free === true ? (count > 0 && countf > 0) : free === false ? (count > 0 && countf == 0) : count > 0;
     }
 
@@ -1447,7 +1468,7 @@
         }
       }
       ed = i - 1;
-      //alert("st="+ st + "   ed=" + ed)
+      //console.log("st="+ st + "   ed=" + ed)
       switch (ed - st) {
         case 0:
           if (getArrValue(x, y, -4, model, arr) == color && getArrValue(x, y, 4, model, arr) == color && getArrValue(x, y, -3, model, arr) == color && getArrValue(x, y, 3, model, arr) == color && getArrValue(x, y, -2, model, arr) == color && getArrValue(x, y, 2, model, arr) == color && getArrValue(x, y, -1, model, arr) == 0 && getArrValue(x, y, 1, model, arr) == 0) {
@@ -1552,7 +1573,7 @@
               }
             }
           }
-          // alert("count="+count)
+          // console.log("count="+count)
           let tx;
           let ty;
           let idx;
@@ -1584,7 +1605,7 @@
       }
       arr[y][x] = ov;
 
-      //alert("ps="+ps)
+      //console.log("ps="+ps)
       return ps;
     }
 
@@ -1616,11 +1637,11 @@
       for (let i = fp.length - 1; i >= 0; i--) {
         fPoint.push(fp[i]);
       }
-      //alert(fPoint)
+      //console.log(fPoint)
 
       // 找出这些抓的防点，排除先手防
       let bPoint = getBlockVCF(fPoint, 2, arr, true, true);
-      //alert("bPoint"+bPoint)
+      //console.log("bPoint"+bPoint)
       if (bPoint) {
         cBoard.cleLb("all");
         let fourP = fPoint[0]; // 冲四点
@@ -1959,7 +1980,7 @@
       }
       catch (err)
       {
-        alert(err.message);
+        console.log(err.message);
       }
 
     }
@@ -2097,7 +2118,7 @@
       let count = 0;
       let P = [];
       findThree(arr, color, newarr);
-      //alert(newarr)
+      //console.log(newarr)
       let free = ftype == onlyFree ? true : ftype == onlyNoFree ? false : null;
       for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
@@ -2123,7 +2144,7 @@
           }
         }
       }
-      // alert(newarr)
+      // console.log(newarr)
       return count ? P : false;
     }
 
@@ -2286,7 +2307,7 @@
           }
         }
       }
-      //alert("fMoves.length=\n"+fMoves.length+"\n"+fMoves)
+      //console.log("fMoves.length=\n"+fMoves.length+"\n"+fMoves)
     }
 
 
@@ -2324,7 +2345,7 @@
         return count;
       }
       catch (err) {
-        alert("findTTpoint err=" + err.message);
+        console.log("findTTpoint err=" + err.message);
       }
     }
 
@@ -2378,7 +2399,7 @@
 
       }
       catch (err) {
-        alert("aroundPoinr err=" + err.message);
+        console.log("aroundPoinr err=" + err.message);
       }
     }
 
@@ -2414,7 +2435,7 @@
 
             let notWin = false; //后续计算，如果双杀不成立==true
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
-            //alert(bPoint)
+            //console.log(bPoint)
             if (bPoint) { //排除直接防
               if (!(yield* excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
                 //排除失败，双杀不成立
@@ -2439,10 +2460,10 @@
                 for (let l=0;l<=j;l++)  {
                     str+="\n"+fMoves[l];
                 }
-                alert(j+"\n"+str)
+                console.log(j+"\n"+str)
                 */
                 let winLevel = yield* getWinLevel(arr, color, timeout, depth, 1);
-                //alert("winLevel="+winLevel)
+                //console.log("winLevel="+winLevel)
                 if (winLevel < 3.5) notWin = true; // 复原棋子
 
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
@@ -2551,7 +2572,7 @@
       let pnt = aroundPoint[idx];
       let fourP = findFourPoint(arr, color, getArr([])) || [];
       let threeP = yield* findLevelThreePoint(arr, color, getArr([]), null, 224, true);
-      alert(threeP.concat(fourP));
+      console.log(threeP.concat(fourP));
 
       function* findVCTPoint(arr, color, newarr, fType, idx) {
 
@@ -2798,7 +2819,7 @@
       // 判断对手进攻级别
       let nLevel = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
       let winLevel;
-      //alert("对手进攻级别="+nLevel.level)
+      //console.log("对手进攻级别="+nLevel.level)
       if (nLevel.level == 5) { // 对手已胜
         return 2;
       }
@@ -2847,7 +2868,7 @@
             let j;
 
             for (j = fMoves.length - 1; j >= 0; j--) {
-              //alert("gDepth="+gDepth+"\nj="+j);
+              //console.log("gDepth="+gDepth+"\nj="+j);
 
               // 摆棋
               for (let k = fMoves[j].length - 1; k >= 0; k--) {
@@ -2860,10 +2881,10 @@
                for (let l=0;l<=j;l++)  {
                    str+="\n"+fMoves[l];
                }
-               alert(j+"\n"+str)
+               console.log(j+"\n"+str)
               */
               winLevel = yield* getWinLevel(arr, color, timeout, depth, gDepth - 1, maxNum - fMoves[j].length / 2);
-              //alert("_____"+winLevel)
+              //console.log("_____"+winLevel)
               if (winLevel < 3.5) notWin = true;
 
               // 复原棋子
@@ -3018,7 +3039,7 @@
         return { "x": nx, "y": ny };
       }
       catch (err) {
-        alert("getNextEmpty err=" + err.message);
+        console.log("getNextEmpty err=" + err.message);
       }
 
     }
@@ -3097,7 +3118,7 @@
         return count;
       }
       catch (err) {
-        alert("getPower err=" + err.message);
+        console.log("getPower err=" + err.message);
       }
 
     }
@@ -3121,7 +3142,7 @@
         return arr;
       }
       catch (err) {
-        alert("getArr err=" + err.message);
+        console.log("getArr err=" + err.message);
       }
     }
 
@@ -3143,7 +3164,7 @@
         return s;
       }
       catch (err) {
-        alert("printArr err=" + err.message);
+        console.log("printArr err=" + err.message);
       }
     }
 
@@ -3161,7 +3182,7 @@
         return null;
       }
       catch (err) {
-        alert("getArrValue err=" + err.message);
+        console.log("getArrValue err=" + err.message);
       }
     }
 
@@ -3179,7 +3200,7 @@
         return { x: -1, y: -1 };
       }
       catch (err) {
-        alert("getArrPoint err=" + err.message);
+        console.log("getArrPoint err=" + err.message);
       }
     }
 
@@ -3197,7 +3218,7 @@
         return -1;
       }
       catch (err) {
-        alert("getArrIndex err=" + err.message);
+        console.log("getArrIndex err=" + err.message);
       }
     }
 
@@ -3236,7 +3257,7 @@
         }
       }
       catch (err) {
-        alert("changeX err=" + err.message);
+        console.log("changeX err=" + err.message);
       }
     }
 
@@ -3261,6 +3282,6 @@
         }
       }
       catch (err) {
-        alert("changeY err=" + err.message);
+        console.log("changeY err=" + err.message);
       }
     }

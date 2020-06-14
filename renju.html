@@ -22,6 +22,7 @@
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
+    
     let viewport = new view();
     let d = document;
     let dw = d.documentElement.clientWidth;
@@ -616,7 +617,7 @@
     let cFindPoint = null;
     let cFindVCF = null;
     let cCancelFind = null;
-    let cObjVCF = { arr: [], winMoves: [], color: 0, done: false }; // 保存VCF分支
+    let cObjVCF = { arr: [], winMoves: [], color: 0, time: false }; // 保存VCF分支
     let cLoadImg = null;
     let cSLTX = null;
     let cSLTY = null;
@@ -872,8 +873,68 @@
         cCancelFind.hide();
         closeMsg();
       }
-
-
+      let printMsg = function() {
+        let fclr = cObjVCF.color == 1 ? "黑棋" : "白棋";
+        console.log(cObjVCF.winMoves)
+        if (cObjVCF.winMoves.length) {
+          msg("✔ " + fclr + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
+        }
+        else {
+          msg("❌❌❌ " + fclr + " 查找VCF失败了");
+        }
+      }
+      let createWork = function(){
+        let wk = new Worker("./script/engine.js");
+        wk.onmessage=function(e){
+        let cmd = e.data.cmd;
+        let p = e.data.parameter;
+        const f = {
+          "printMoves":          function(){cBoard.printMoves(p[0],p[1]);},
+          "findVCF_addVCF":      function(){
+                                    cObjVCF.arr = copyArr([], p[3]);
+                                    cObjVCF.winMoves = [];
+                                    cObjVCF.color = p[1];
+                                    cObjVCF.time = p[2];
+                                    for (let i = 0; i < p[0].length; i++) { 
+                                      cObjVCF.winMoves.push(p[0][i].slice(0)); 
+                                      
+                                    }
+                                 }, 
+          "findVCF_End":         function(){
+                                    cObjVCF.arr = copyArr([], p[3]);
+                                    cObjVCF.winMoves = [];
+                                    cObjVCF.color = p[1];
+                                    cObjVCF.time = p[2];
+                                    for (let i = 0; i < p[0].length; i++) { 
+                                      cObjVCF.winMoves.push(p[0][i].slice(0)); 
+                                    }
+                                    cBoard.cleLb("all");
+                                    if (cObjVCF.winMoves.length) cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);
+                                    callback();
+                                    printMsg();
+                                 }, 
+        };
+        wk.onerror = function(){alert("worker error");};
+        console.log(cmd);
+        f[cmd]();
+        }
+        return wk;
+      } 
+      let work = createWork();
+      let postMsg = function(cmd,param){
+        console.log(cmd);
+        if (cmd=="cancelFind") {
+          work.terminate();
+          work = createWork();
+          //cObjVCF = { arr: [], winMoves: [], color: 0, time: 0}; // 保存VCF分
+          cBoard.cleLb("all");
+          callback();
+          printMsg();
+        }
+        else {
+          work.postMessage({"cmd":cmd,parameter:param});
+        }
+      };
 
       cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
       cFindVCF.addOption(0, "<<");
@@ -898,59 +959,13 @@
         setCmd(but);
         let arr = [];
         cBoard.getPointArray(arr);
-        let printMsg = function() {
-          let fclr = vcfColor == 1 ? "黑棋" : "白棋";
-          if (vcfWinMoves.length) {
-            // 显示手顺
-            let len = vcfWinMoves[0].length;
-            let x = vcfWinMoves[0][len - 1] % 15;
-            let y = parseInt(vcfWinMoves[0][len - 1] / 15);
-
-            setTimeout(function() {
-              cBoard.printMoves(vcfWinMoves[0].slice(0, len), vcfColor);
-              cBoard.wLb(vcfWinMoves[0][len - 1], len, "red");
-            }, 600);
-
-            msg("✔ " + fclr + " 找到 " + vcfWinMoves.length + "套 VCF,用时 " + (new Date().getTime() - vcfStartTimer) / 1000 + "秒");
-
-            let str = "";
-            for (let y = 0; y < vcfWinMoves.length; y++) {
-              str += "\n" + vcfWinMoves[y] + "====" + vcfWinMoves[y].length;
-            }
-
-          }
-          else {
-
-            msg("❌❌❌ " + fclr + " 查找VCF失败了");
-          }
-
-        }
-        let finishEvent = function(done) {
-          cObjVCF.arr = copyArr([], cBoard.getPointArray([]));
-          cObjVCF.winMoves = [];
-          cObjVCF.color = vcfColor;
-          cObjVCF.done = done;
-          for (let i = 0; i < vcfWinMoves.length; i++) {
-            cObjVCF.winMoves.push(vcfWinMoves[i].slice(0));
-          }
-          callback();
-          printMsg();
-        }
         // findVCF(color,timeOut,depth,count,backStage,arr,callback,callbackParameter) 
         switch (but.input.value * 1) {
           case 1:
-            generator = findVCF(getRenjuSelColor(), null, null, 1, null, arr);
-            generator.next();
-            vcfFinishEvent = function() {
-              finishEvent(false);
-            }
+            postMsg("findVCF",[getRenjuSelColor(),null,null,1,null,arr]);
             break;
           case 2:
-            generator = findVCF(getRenjuSelColor(), null, null, null, null, arr);
-            generator.next();
-            vcfFinishEvent = function() {
-              finishEvent(true);
-            }
+            postMsg("findVCF",[getRenjuSelColor(),null,null,null,null,arr]);
             break;
           case 3:
             function* ftwo() {
@@ -1072,7 +1087,7 @@
       //cCancelFind.show();
       cCancelFind.setText("停止");
       cCancelFind.setontouchend(function(but) {
-        cancelFind();
+        postMsg("cancelFind");
       });
 
 
@@ -1136,7 +1151,7 @@
           but.input.value = 0;
         }
 
-        function bArr(arr, arr2) {
+        function bArr(arr, arr2) { //判断两个arr是否相等
           if (arr2.length) {
             for (let y = 0; y < 15; y++) {
               for (let x = 0; x < 15; x++) {
