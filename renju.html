@@ -567,6 +567,7 @@
   
   <script language="javascript">
     "use strict";
+    const maxThread = window.navigator.hardwareConcurrency-1 || 2;
     const renjuModel = 0;
     const imgModel = 1;
     let playModel = renjuModel;
@@ -886,50 +887,92 @@
       let createWork = function(){
         let wk = new Worker("./script/engine.js");
         wk.onmessage=function(e){
-        let cmd = e.data.cmd;
-        let p = e.data.parameter;
-        const f = {
-          "printMoves":          function(){cBoard.printMoves(p[0],p[1]);},
-          "findVCF_addVCF":      function(){
-                                    cObjVCF.arr = copyArr([], p[3]);
-                                    cObjVCF.winMoves = [];
-                                    cObjVCF.color = p[1];
-                                    cObjVCF.time = p[2];
-                                    for (let i = 0; i < p[0].length; i++) { 
-                                      cObjVCF.winMoves.push(p[0][i].slice(0)); 
-                                      
-                                    }
-                                 }, 
-          "findVCF_End":         function(){
-                                    cObjVCF.arr = copyArr([], p[3]);
-                                    cObjVCF.winMoves = [];
-                                    cObjVCF.color = p[1];
-                                    cObjVCF.time = p[2];
-                                    for (let i = 0; i < p[0].length; i++) { 
-                                      cObjVCF.winMoves.push(p[0][i].slice(0)); 
-                                    }
-                                    cBoard.cleLb("all");
-                                    if (cObjVCF.winMoves.length) cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);
-                                    callback();
-                                    printMsg();
-                                 }, 
+          let cmd = e.data.cmd;
+          let p = e.data.parameter;
+          const f = {
+            "cleLb":               function(){cBoard.cleLb(p[0]);}, 
+            "wLb":                 function(){cBoard.wLb(p[0],p[1],p[2]);}, 
+            "printSearchPoint":    function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+            "printMoves":          function(){cBoard.printMoves(p[0],p[1]);},
+            "findVCF_addVCF":      function(){
+                                     cObjVCF.arr = copyArr([], p[3]);
+                                     cObjVCF.winMoves = [];
+                                     cObjVCF.color = p[1];
+                                     cObjVCF.time = p[2];
+                                     for (let i = 0; i < p[0].length; i++) { 
+                                       cObjVCF.winMoves.push(p[0][i].slice(0)); 
+                                     }
+                                   }, 
+            "findVCF_End":         function(){
+                                     cObjVCF.arr = copyArr([], p[3]);
+                                     cObjVCF.winMoves = [];
+                                     cObjVCF.color = p[1];
+                                     cObjVCF.time = p[2];
+                                     for (let i = 0; i < p[0].length; i++) { 
+                                       cObjVCF.winMoves.push(p[0][i].slice(0)); 
+                                     }
+                                     cBoard.cleLb("all");
+                                     if (cObjVCF.winMoves.length) cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);
+                                     callback();
+                                     printMsg();
+                                   }, 
+            "findTwoVCF_End":      function(){callback(); }, 
+          };
+          wk.onerror = function(){alert("worker error");};
+          console.log(cmd);
+          f[cmd]();
         };
-        wk.onerror = function(){alert("worker error");};
-        console.log(cmd);
-        f[cmd]();
-        }
         return wk;
-      } 
+      };
       let work = createWork();
       let postMsg = function(cmd,param){
         console.log(cmd);
+        console.log(cmd=="findTwoVCF");
         if (cmd=="cancelFind") {
           work.terminate();
           work = createWork();
           //cObjVCF = { arr: [], winMoves: [], color: 0, time: 0}; // 保存VCF分
           cBoard.cleLb("all");
           callback();
-          printMsg();
+          //printMsg();
+        }
+        else if (cmd=="findTwoVCF") {
+          let newarr = param[2];
+          let color = param[1];
+          let arr = param[0];
+          selectPoint(arr, color, newarr, null, null, true, { level: 2 });
+          findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
+          let nArr = [];
+          let sPoint = [];
+          for (let i=0; i<15; i++){
+            for (let j=0; j<15; j++){
+              if (newarr[i][j]==0) {
+                sPoint.push({x:j,y:i});
+                cBoard.wLb(i * 15 + j, "●", "#888888");
+              } 
+            }
+          }
+          if (sPoint.length==0) return;
+          let idx=0;
+          let ave=parseInt(sPoint.length/maxThread) ||  1;
+          for (let i=0; i<maxThread; i++) {
+            nArr[i] = getArr([],-9999);
+            for (let j=idx; j<idx+ave; j++){
+              if (j==sPoint.length) break;
+              nArr[i][sPoint[j].y][sPoint[j].x] = 0;
+            }
+            idx+=ave;
+            if (i==maxThread-1) {
+              for (let j=idx; j<sPoint.length; j++){ 
+                nArr[i][sPoint[j].y][sPoint[j].x]=0;
+              }
+            }
+            
+            let wk=createWork();
+            param[2] = nArr[i];
+            wk.postMessage({"cmd":cmd,parameter:param});
+            
+          }
         }
         else {
           work.postMessage({"cmd":cmd,parameter:param});
@@ -968,12 +1011,7 @@
             postMsg("findVCF",[getRenjuSelColor(),null,null,null,null,arr]);
             break;
           case 3:
-            function* ftwo() {
-              yield* findTwoVCF(arr, getRenjuSelColor(), getArr([]));
-              callback();
-            }
-            generator = ftwo();
-            generator.next();
+            postMsg("findTwoVCF", [arr, getRenjuSelColor(), getArr([])]);
             break;
           case 7:
             function* g() {

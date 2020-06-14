@@ -27,7 +27,7 @@
 
     let vcfWhiteWinMoves = [];
     let vcfBlackWinMoves = [];
-    let vcfFinishEvent = function() {};
+   
 
 
     //，保存周围点的坐标
@@ -115,9 +115,10 @@
     const cmd = {
       "findVCF":         function() {findVCF(p[0],p[1],p[2],p[3],p[4],p[5]);}, 
       "cancelFind":      function() {cancelFind();}, 
+       "findTwoVCF": function() {findTwoVCF(p[0],p[1],p[2]);}, 
     };
     
-    console.log(p);
+    //console.log(p);
     cmd[e.data.cmd]();
   }
 
@@ -162,8 +163,7 @@
     function findVCF(color, timeOut, depth, count, backStage, arr) {
 
       try {
-        console.log("vcf start");
-        vcfFinishEvent = function() {};
+        //console.log("vcf start");
         timeOut = timeOut == null ? 1800000 : timeOut;
         depth = depth == null ? 225 : depth;
         count = count == null ? 225 : count * 1;
@@ -190,11 +190,11 @@
         getArr(vcfNewArr);
 
         // console.log(vcfFinding)
-        post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+        if(!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
         vcfStartTimer = new Date().getTime();
         vcfActuator(timeOut, depth, count, backStage);
         
-        console.log("vcf end");
+        //console.log("vcf end");
         return vcfWinMoves.length;
         
         
@@ -214,8 +214,7 @@
                     case 0:
                       vcfFinding = 100;
                       vcfCount++;
-                      if (!backStage && vcfCount % 60 == 0) {
-                        //cBoard.printMoves(vcfMoves, vcfColor);
+                      if (!backStage && vcfCount % 100 == 0) {
                         post("printMoves", [vcfMoves, vcfColor]);
                       }
                       vcfFinding = continueFindVCF(timeOut, depth);
@@ -226,12 +225,10 @@
                       break;
                     case -1:
                       copyArr(vcfArr, vcfInitial);
-                      vcfFinishEvent();
                       if (!backStage) {
                         post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
                       }
                       return;
-                      //cBoard.printMoves([]);
                       break;
                   }
                 } 
@@ -302,7 +299,7 @@
                              fs.splice(st - 1, ed - st + 1);
                              let wMoves = moves.concat(v);
                              if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                             if (pushWinMoves(WinMoves, wMoves)) {
+                             if (pushWinMoves(WinMoves, wMoves) && !backStage) {
                                post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
                              };
                              pushFailMoves(FailMoves, moves.slice(0, moves.length));
@@ -359,7 +356,7 @@
                        if (isFFWin(tx, ty, color, arr)) {
                          let wMoves = moves.concat(ty * 15 + tx);
                          if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                         if (pushWinMoves(WinMoves, wMoves)) {
+                         if (pushWinMoves(WinMoves, wMoves) && !backStage) {
                            post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
                          };
                          pushFailMoves(FailMoves, moves.slice(0, moves.length));
@@ -393,7 +390,7 @@
                    }
                    if (fs.length == 0) return -1; // 地毯完，VCF失败
                    if (new Date().getTime() - vcfStartTimer > timeOut) return -1;
-                   if (vcfFindDepth % 10) return continueFindVCF(timeOut, depth);
+                   if (vcfFindDepth % 8) return continueFindVCF(timeOut, depth);
                    return 0; //未完，等待定时器调用
             
             
@@ -757,13 +754,13 @@
 
 
     // 判断是否活三级别胜
-    function* isTTWin(x, y, color, arr, timeout, depth, gDepth) {
+    function isTTWin(x, y, color, arr, timeout, depth, gDepth) {
 
       timeout = timeout || 30000;
       depth = depth || 1000;
       gDepth = gDepth || 2;
       // 判断对手进攻级别
-      let nLevel = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
+      let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
       let winLevel;
       //console.log("对手进攻级别="+nLevel.level)
       if (nLevel.level == 5) { // 对手已胜
@@ -782,19 +779,19 @@
           let y = winLevel.p.y;
           let x = winLevel.p.x;
           arr[y][x] = color == 1 ? 2 : 1;
-          let num = yield* findVCF(color, timeout, depth, 1, true, arr);
+          let num = findVCF(color, timeout, depth, 1, true, arr);
           arr[y][x] = 0;
           if (num) return 4.4;
         }
 
         //findVCF(color,timeOut,depth,count,backStage,arr) 
-        let fNum = yield* findVCF(color, timeout, depth, 1, true, arr);
+        let fNum = findVCF(color, timeout, depth, 1, true, arr);
         if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
 
           let notWin = false; //后续计算，如果双杀不成立==true
           let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
           if (bPoint) { //排除直接防
-            if (!(yield* excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
               //排除失败，双杀不成立
               notWin = true;
             }
@@ -816,7 +813,7 @@
                 arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
               }
 
-              winLevel = yield* getWinLevel(arr, color, timeout, depth, gDepth - 1);
+              winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1);
               //console.log("_____"+winLevel)
               if (winLevel < 3.5) notWin = true;
 
@@ -1526,7 +1523,7 @@
             arr[p.y][p.x] = 1;
             if (isLineFour(x, y, Cmodel[i], 1, arr, null, true)) {
               ps.push(getArrIndex(x, y, j, Cmodel[i], arr) * 1);
-              //cBoard.wLb(ps[ps.length-1],"6","red");
+              //post("wLb", [ps[ps.length-1],"6","red"]);
             }
             arr[p.y][p.x] = ov;
           }
@@ -1536,7 +1533,7 @@
             arr[p.y][p.x] = 1;
             if (isLineFour(x, y, Cmodel[i], 1, arr, null, true)) {
               ps.push(getArrIndex(x, y, -j, Cmodel[i], arr) * 1);
-              //cBoard.wLb(ps[ps.length-1],"6","red");
+              //post("wLb", [ps[ps.length-1],"6","red"]);
             }
             arr[p.y][p.x] = ov;
           }
@@ -1612,7 +1609,7 @@
 
 
     // 找防冲4抓禁，防点
-    function* blockCatchFoul(arr) {
+    function blockCatchFoul(arr) {
 
       let fp = [];
       let fPoint = []; //二维数组，抓禁冲四点
@@ -1643,7 +1640,7 @@
       let bPoint = getBlockVCF(fPoint, 2, arr, true, true);
       //console.log("bPoint"+bPoint)
       if (bPoint) {
-        cBoard.cleLb("all");
+        post("cleLb", ["all"]);
         let fourP = fPoint[0]; // 冲四点
         let x = fourP % 15;
         let y = parseInt(fourP / 15);
@@ -1682,7 +1679,7 @@
             color = "#3333ff";
           }
           notBlock = false;
-          cBoard.wLb(bPoint[i], s, color);
+          post("wLb", [bPoint[i], s, color]);
         }
       }
       else {
@@ -1723,7 +1720,7 @@
         }
 
         // 打印正在计算的点
-        cBoard.printSearchPoint(fMoves[k][0], "⊙", "green");
+        post("printSearchPoint", [fMoves[k][0], "⊙", "green"]);
         // 扫描防点
         let lvl = getLevel(arr, 2)
         let blk = [];
@@ -1754,11 +1751,11 @@
             let narr = copyArr([], arr);
             narr[y][x] = 1;
             // 需要判断对手是否有攻，搜索VCF不严谨
-            lvl = yield* findVCF(2, 10000, 10, 1, true, narr);
+            lvl = findVCF(2, 10000, 10, 1, true, narr);
             if (lvl == 0) { // 白棋没有新的VCF,新防点成立
               idx = fMoves[k][0];
-              cBoard.printSearchPoint(); // 清空刚才计算的点
-              cBoard.wLb(idx, "◎", "red");
+              post("printSearchPoint", []); // 清空刚才计算的点
+              post("wLb", [idx, "◎", "red"]);
               i = -1;
             }
             notBlock = false;
@@ -1789,7 +1786,7 @@
 
 
       }
-      cBoard.printSearchPoint(); // 清空刚才计算的点
+      post("printSearchPoint", []); // 清空刚才计算的点
       if (notBlock) {
         return 0;
       }
@@ -2152,7 +2149,7 @@
 
     //let testarr = false;
     // 找活3级别攻击点
-    function* findLevelThreePoint(arr, color, newarr, fType, idx, backstage) {
+    function findLevelThreePoint(arr, color, newarr, fType, idx, backstage) {
 
       backstage = backstage == null ? true : backstage;
       let threeP = []; // 保存活3点，包括复活3
@@ -2160,7 +2157,7 @@
       let vcfP = []; // 保存做V点
       let pnt = aroundPoint[idx || 112];
       // 先判断对手进攻级别,快速选点     
-      yield* selectPoint(arr, color, newarr, null, null, backstage, { level: 2 });
+      selectPoint(arr, color, newarr, null, null, backstage, { level: 2 });
 
       for (let i = 0; i < 225; i++) {
 
@@ -2169,18 +2166,18 @@
 
         if (!stopFind && newarr[y][x] == 0) {
           arr[y][x] = color;
-          if (!backstage) cBoard.printSearchPoint(pnt.index[i], "⊙", "green");
-          let level = yield* getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : null);
+          if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]); 
+          let level = getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : null);
           let nColor = color == 1 ? 2 : 1;
           if (level.level < 4 && level.level >= 3) {
             let l = level.moves.length; // 保存手数，待后面判断43杀
             // 已经确认对手低于活三级别
-            if (!backstage) cBoard.clePoint(pnt.index[i]);
+            if (!backstage) post("wLb", [pnt.index[i]]);
             if ((color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
               if (fType == null) {
                 if (!backstage) {
-                  cBoard.printSearchPoint();
-                  cBoard.wLb(pnt.index[i], "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red");
+                  post("printSearchPoint", []);
+                  post("wLb", [pnt.index[i], "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]); 
                 }
                 threeP.splice(0, 0, pnt.index[i]);
               }
@@ -2190,8 +2187,8 @@
 
               if (fType == null) {
                 if (!backstage) {
-                  cBoard.printSearchPoint();
-                  cBoard.wLb(pnt.index[i], "V", l > 3 ? "black" : "red");
+                  post("printSearchPoint", []);
+                  post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
                 }
                 if (l > 3) {
                   vcfP.splice(0, 0, pnt.index[i]);
@@ -2203,8 +2200,8 @@
               else { // 进一步判断是否做V
                 if ((fType == onlyVCF && l > 3) || (fType == onlySimpleWin && l == 3)) {
                   if (!backstage) {
-                    cBoard.printSearchPoint();
-                    cBoard.wLb(pnt.index[i], "V", l > 3 ? "black" : "red");
+                    post("printSearchPoint", []);
+                    post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
                   }
                   if (l > 3) {
                     vcfP.splice(0, 0, pnt.index[i]);
@@ -2219,10 +2216,10 @@
           arr[y][x] = 0;
         }
         else {
-          if (!backstage) cBoard.cleLb(pnt.index[i]);
+          if (!backstage) post("cleLb", [pnt.index[i]]);
         }
       }
-      if (!backstage) cBoard.printSearchPoint();
+      if (!backstage) post("printSearchPoint", []);
       return vcfP.concat(simpleP, threeP);
 
 
@@ -2406,7 +2403,7 @@
 
 
     // 找VCF 级别双杀点
-    function* findTwoVCF(arr, color, newarr, count, backstage) {
+    function findTwoVCF(arr, color, newarr, count, backstage) {
 
       let pnt = aroundPoint[112];
       let pNum = 0; //双杀点计数
@@ -2415,9 +2412,10 @@
       count = count || 10000;
       // 确定双杀选点范围
       // 先判断对手进攻级别,快速选点
-      yield* selectPoint(arr, color, newarr, timeout, depth, false);
+      /*
+      selectPoint(arr, color, newarr, timeout, depth, false);
       findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
-
+      */
 
       for (let i = 0; i < 225; i++) {
         let x = pnt.point[i].x;
@@ -2426,18 +2424,18 @@
         if (!stopFind && newarr[y][x] == 0) {
           // 处理直接防
           arr[y][x] = color;
-          if (!backstage) cBoard.printSearchPoint(pnt.index[i], "⊙", "green");
+          if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]); 
           // 对手准备落子，判断对手是否有攻。
-          let nLevel = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
+          let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
           //findVCF(color,timeOut,depth,count,backStage,arr) 
-          let fNum = nLevel.level >= 3 ? 0 : yield* findVCF(color, timeout, depth, 2, true, arr);
+          let fNum = nLevel.level >= 3 ? 0 : findVCF(color, timeout, depth, 2, true, arr);
           if (fNum >= 2 || (fNum == 1 && vcfWinMoves[0].length == 1)) { // 有两套V，判断双杀是否成立
 
             let notWin = false; //后续计算，如果双杀不成立==true
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
             //console.log(bPoint)
             if (bPoint) { //排除直接防
-              if (!(yield* excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+              if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
                 //排除失败，双杀不成立
                 notWin = true;
               }
@@ -2462,7 +2460,7 @@
                 }
                 console.log(j+"\n"+str)
                 */
-                let winLevel = yield* getWinLevel(arr, color, timeout, depth, 1);
+                let winLevel = getWinLevel(arr, color, timeout, depth, 1);
                 //console.log("winLevel="+winLevel)
                 if (winLevel < 3.5) notWin = true; // 复原棋子
 
@@ -2476,8 +2474,8 @@
             }
             if (!notWin) { // 双杀成立
               if (!backstage) {
-                cBoard.printSearchPoint();
-                cBoard.wLb(pnt.index[i], "◎", "red");
+                post("printSearchPoint", []);
+                post("wLb", [pnt.index[i], "◎", "red"]); 
               }
               pNum++;
               if (pNum == count) i = 10000;
@@ -2486,10 +2484,13 @@
           arr[y][x] = 0;
         }
         else { // 清空选点范围外的点
-          if (!backstage) cBoard.cleLb(pnt.index[i]);
+          //if (!backstage) post("cleLb", [pnt.index[i]]);
         }
       }
-      if (!backstage) cBoard.printSearchPoint();
+      if (!backstage) {
+        post("printSearchPoint", []);
+        post("findTwoVCF_End");
+      } 
       return pNum;
 
     }
@@ -2497,7 +2498,7 @@
 
 
     // 排除直接防
-    function* excludeBP(arr, color, bPoint, timeout, depth) {
+    function excludeBP(arr, color, bPoint, timeout, depth) {
 
       let i;
       let x;
@@ -2512,7 +2513,7 @@
         for (j = fMoves.length - 1; j >= 0; j--) {
           if (isVCF(color == 1 ? 2 : 1, arr, fMoves[j])) break;
         }
-        fNum = j >= 0 ? 1 : yield* findVCF(color == 1 ? 2 : 1, timeout, depth, 1, true, arr);
+        fNum = j >= 0 ? 1 : findVCF(color == 1 ? 2 : 1, timeout, depth, 1, true, arr);
         arr[y][x] = 0;
         if (fNum == 0) {
           return false;
@@ -2528,7 +2529,7 @@
 
 
     //限珠题
-    function* findSimpleWin(arr, color, newarr, num) {
+    function findSimpleWin(arr, color, newarr, num) {
 
       let rt = false;
       if (num == 4) {
@@ -2537,7 +2538,7 @@
         let depth = 1;
         // 确定双杀选点范围
         // 先判断对手进攻级别,快速选点
-        yield* selectPoint(arr, color, newarr, timeout, depth, false);
+        selectPoint(arr, color, newarr, timeout, depth, false);
 
         for (let i = 0; i < 225; i++) {
           let x = pnt.point[i].x;
@@ -2546,20 +2547,20 @@
           if (!stopFind && newarr[y][x] == 0) {
             // 处理直接防
             arr[y][x] = color;
-            if (true) cBoard.printSearchPoint(pnt.index[i], "⊙", "green");
-            let winLevel = yield* getWinLevel(arr, color, timeout, depth, 2, 2);
+            if (true) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
+            let winLevel = getWinLevel(arr, color, timeout, depth, 2, 2);
             if (winLevel > 3) {
-              cBoard.printSearchPoint();
-              cBoard.wLb(pnt.index[i], "◎", "red");
+              post("printSearchPoint", []);
+              post("wLb", [pnt.index[i], "◎", "red"]); 
               rt = true;
             }
             arr[y][x] = 0;
           }
           else { // 清空选点范围外的点
-            if (true) cBoard.cleLb(pnt.index[i]);
+            if (true) post("cleLb", [pnt.index[i]]);
           }
         }
-        if (true) cBoard.printSearchPoint();
+        if (true) post("printSearchPoint", []);
       }
       return rt;
     }
@@ -2567,21 +2568,21 @@
 
 
     // 
-    function* findVCT(arr, color, idx, timeOut, depth, count, backStage) {
+    function findVCT(arr, color, idx, timeOut, depth, count, backStage) {
 
       let pnt = aroundPoint[idx];
       let fourP = findFourPoint(arr, color, getArr([])) || [];
-      let threeP = yield* findLevelThreePoint(arr, color, getArr([]), null, 224, true);
+      let threeP = findLevelThreePoint(arr, color, getArr([]), null, 224, true);
       console.log(threeP.concat(fourP));
 
-      function* findVCTPoint(arr, color, newarr, fType, idx) {
+      function findVCTPoint(arr, color, newarr, fType, idx) {
 
         let threeP = []; // 保存活3点，包括复活3
         let simpleP = []; // 保存坐杀点
         let vcfP = []; // 保存做V点
         let pnt = aroundPoint[idx || 112];
         // 先判断对手进攻级别,快速选点     
-        yield* selectPoint(arr, color, newarr, null, null, true);
+        selectPoint(arr, color, newarr, null, null, true);
 
         for (let i = 0; i < 225; i++) {
 
@@ -2590,7 +2591,7 @@
 
           if (!stopFind && newarr[y][x] == 0) {
             arr[y][x] = color;
-            let level = yield* getLevelB(arr, color, newarr, null, depth);
+            let level = getLevelB(arr, color, newarr, null, depth);
             let nColor = color == 1 ? 2 : 1;
             if (level.level > 4) { //冲四,
             }
@@ -2683,7 +2684,7 @@
           // 防住所有VCF,记录防点,过滤掉先手防
           if (j >= len && (!passFour || !isFour(x, y, nColor, arr))) {
             p.push(pnt.index[i]);
-            if (!backStage) cBoard.wLb(pnt.index[i], "b", "blue");
+            if (!backStage) post("wLb", [pnt.index[i], "b", "blue"]);
           }
         }
 
@@ -2695,7 +2696,7 @@
 
 
     // 找出成立的VCF(活三级别)防点
-    function* getBlockVCFb(VCF, color, arr, backStage, passFour) {
+    function getBlockVCFb(VCF, color, arr, backStage, passFour) {
 
       backStage = backStage == null ? true : backStage;
       let p = getBlockVCF(VCF, color, arr, true, passFour);
@@ -2705,7 +2706,7 @@
         let y = parseInt(p[i] / 15);
         arr[y][x] = color == 1 ? 2 : 1;
         // 确保没有新的VCF
-        let fNum = yield* findVCF(color, 60000, null, 1, true, arr);
+        let fNum = findVCF(color, 60000, null, 1, true, arr);
         arr[y][x] = 0;
         if (fNum) {
           p.splice(i, 1);
@@ -2723,7 +2724,7 @@
           }
         }
         else {
-          if (!backStage) cBoard.wLb(y * 15 + x, "b", "blue");
+          if (!backStage) post("wLb", [y * 15 + x, "b", "blue"]);
         }
         if (stopFind) i = -1;
       }
@@ -2768,7 +2769,7 @@
     // level =={level:level,p:{x:x,y:y} || moves:moves};
     // level.level==4 ,level =={level:level,p:{x:x,y:y} ,p保存冲4防点
     // level.level==3,level =={level:level,moves:moves} moves保存一套成立的VCF手顺
-    function* getLevelB(arr, color, newarr, timeout, depth, backstage) {
+    function getLevelB(arr, color, newarr, timeout, depth, backstage) {
 
       timeout = timeout || 10000;
       depth = depth || 100;
@@ -2796,7 +2797,7 @@
 
       // 快速搜索VCF
       //(color,timeout,depth,count,backstage,arr)
-      let n = yield* findVCF(color, timeout, depth, 1, backstage, arr);
+      let n = findVCF(color, timeout, depth, 1, backstage, arr);
       if (n > 0) {
         return ({ level: 3, moves: vcfWinMoves[0] });
       }
@@ -2810,14 +2811,14 @@
 
     // 轮到对手落子
     // 判断必胜级别 depth==vcf深度，gDepth==递归深度, maxNum==最大手数，单色手数
-    function* getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
+    function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
 
       timeout = timeout || 30000;
       depth = depth || 1000;
       gDepth = gDepth || 2;
       maxNum = maxNum || 1000;
       // 判断对手进攻级别
-      let nLevel = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
+      let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
       let winLevel;
       //console.log("对手进攻级别="+nLevel.level)
       if (nLevel.level == 5) { // 对手已胜
@@ -2836,19 +2837,19 @@
           let y = winLevel.p.y;
           let x = winLevel.p.x;
           arr[y][x] = color == 1 ? 2 : 1;
-          let num = yield* findVCF(color, timeout, depth, 1, true, arr);
+          let num = findVCF(color, timeout, depth, 1, true, arr);
           arr[y][x] = 0;
           if (num) return 4.4;
         }
 
         //findVCF(color,timeOut,depth,count,backStage,arr) 
-        let fNum = yield* findVCF(color, timeout, depth, 1, true, arr);
+        let fNum = findVCF(color, timeout, depth, 1, true, arr);
         if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
 
           let notWin = false; //后续计算，如果双杀不成立==true
           let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
           if (bPoint) { //排除直接防
-            if (!(yield* excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
               //排除失败，双杀不成立
               notWin = true;
             }
@@ -2883,7 +2884,7 @@
                }
                console.log(j+"\n"+str)
               */
-              winLevel = yield* getWinLevel(arr, color, timeout, depth, gDepth - 1, maxNum - fMoves[j].length / 2);
+              winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1, maxNum - fMoves[j].length / 2);
               //console.log("_____"+winLevel)
               if (winLevel < 3.5) notWin = true;
 
@@ -2907,7 +2908,7 @@
 
 
     // 确定选点范围
-    function* selectPoint(arr, color, newarr, timeout, depth, backstage, level) {
+    function selectPoint(arr, color, newarr, timeout, depth, backstage, level) {
 
       timeout = timeout || 30000;
       depth = depth || 1000;
@@ -2915,7 +2916,7 @@
       // 确定活三级选点范围
       // 先判断对手进攻级别,快速选点
 
-      if (!level) level = yield* getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth);
+      if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth);
       if (level.level >= 5) {
         return getArr(newarr, -9999);
       }
@@ -2942,7 +2943,7 @@
         // 对手有V，选点范围在V的防点内
         let mv = []; //转二维数组
         mv.push(level.moves);
-        let p = yield* getBlockVCFb(mv, color == 1 ? 2 : 1, arr, true);
+        let p = getBlockVCFb(mv, color == 1 ? 2 : 1, arr, true);
         getArr(newarr, -9999);
 
         for (let i = p.length - 1; i >= 0; i--) {
@@ -2983,7 +2984,7 @@
       function printNewarr(newarr) {
         for (let y = 0; y < 15; y++) { // 
           for (let x = 0; x < 15; x++) {
-            if (newarr[y][x] == 0) cBoard.wLb(y * 15 + x, "●", "#888888");
+            if (newarr[y][x] == 0) post("wLb", [y * 15 + x, "●", "#888888"]);
           }
         }
       }
