@@ -791,53 +791,39 @@
         switch (but.input.value * 1) {
           case 1:
             setCmd(but);
-
-            function* vcf() {
-              yield* findLevelThreePoint(arr, getRenjuSelColor(), newarr, onlyVCF, 112, false);
-              callback();
-            }
-            generator = vcf();
-            generator.next();
+            postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlyVCF]);
             break;
 
           case 2:
             setCmd(but);
-
-            function* swin() {
-              yield* findLevelThreePoint(arr, getRenjuSelColor(), newarr, onlySimpleWin, 112, false);
-              callback();
-            }
-            generator = swin();
-            generator.next();
+            postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlySimpleWin]);
             break;
 
           case 3:
             setCmd(but);
-
-            function* three() {
-              yield* findLevelThreePoint(arr, getRenjuSelColor(), newarr, null, 112, false);
-              callback();
-            }
-            generator = three();
-            generator.next();
+            postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, null]);
             break;
 
           case 4:
             findThreePoint(arr, getRenjuSelColor(), newarr, onlyFree);
             cBoard.printArray(newarr, "③", "red");
             break;
+            
           case 5:
             findTTPoint(arr, getRenjuSelColor(), newarr);
             cBoard.printArray(newarr, "❌", "red");
             break;
+            
           case 6:
             findFFPoint(arr, getRenjuSelColor(), newarr);
             cBoard.printArray(newarr, "❌", "red");
             break;
+            
           case 7:
             findSixPoint(arr, getRenjuSelColor(), newarr, null);
             cBoard.printArray(newarr, "❌", "red");
             break;
+            
           case 8:
             findFivePoint(arr, getRenjuSelColor(), newarr, null);
             cBoard.printArray(newarr, "⑤", "red");
@@ -915,8 +901,20 @@
                                      if (cObjVCF.winMoves.length) cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);
                                      callback();
                                      printMsg();
+                                     work.terminate();
                                    }, 
-            "findTwoVCF_End":      function(){callback(); }, 
+                                   
+          "blockCatchFoul_End":    function(){       
+                                     callback();
+                                     work.terminate();
+                                     if (p[0] == -1) {
+                                       msg("❌❌❌ 没有找到冲四抓禁 ❌❌❌");
+                                     }
+                                     else if (p[0] == 0) {
+                                       msg("❌❌❌ 没有成立的解禁点 ❌❌❌");
+                                     } 
+                                   }, 
+           
           };
           wk.onerror = function(){alert("worker error");};
           console.log(cmd);
@@ -924,57 +922,77 @@
         };
         return wk;
       };
-      let work = createWork();
+      let work = [];
+      let works = [];
       let postMsg = function(cmd,param){
         console.log(cmd);
-        console.log(cmd=="findTwoVCF");
         if (cmd=="cancelFind") {
-          work.terminate();
-          work = createWork();
-          //cObjVCF = { arr: [], winMoves: [], color: 0, time: 0}; // 保存VCF分
+          if (work && typeof(work.terminate)=="function") work.terminate();
+          for (let i=0; i<works.length; i++) works[i].terminate();
           cBoard.cleLb("all");
           callback();
           //printMsg();
         }
-        else if (cmd=="findTwoVCF") {
-          let newarr = param[2];
-          let color = param[1];
+        else if (cmd=="isTwoVCF" || cmd=="isLevelThreePoint" || cmd=="isSimpleWin") {
+          
           let arr = param[0];
+          let color = param[1];
+          let newarr = param[2];
           selectPoint(arr, color, newarr, null, null, true, { level: 2 });
-          findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
-          let nArr = [];
+          if(cmd=="isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
           let sPoint = [];
-          for (let i=0; i<15; i++){
-            for (let j=0; j<15; j++){
-              if (newarr[i][j]==0) {
-                sPoint.push({x:j,y:i});
-                cBoard.wLb(i * 15 + j, "●", "#888888");
-              } 
+          let pnt = aroundPoint[112];
+          for (let i=0; i<225; i++){
+            let x = pnt.point[i].x;
+            let y = pnt.point[i].y;
+            if (newarr[y][x]==0) {
+              sPoint.push(y*15 + x);
+              cBoard.wLb(y*15 + x, "●", "#888888");
+            } 
+            else {
+              cBoard.cleLb(y*15+x);
             }
           }
-          if (sPoint.length==0) return;
-          let idx=0;
-          let ave=parseInt(sPoint.length/maxThread) ||  1;
+          if (sPoint.length==0) {callback();return;};
+          
+          let workCount = 0;
           for (let i=0; i<maxThread; i++) {
-            nArr[i] = getArr([],-9999);
-            for (let j=idx; j<idx+ave; j++){
-              if (j==sPoint.length) break;
-              nArr[i][sPoint[j].y][sPoint[j].x] = 0;
-            }
-            idx+=ave;
-            if (i==maxThread-1) {
-              for (let j=idx; j<sPoint.length; j++){ 
-                nArr[i][sPoint[j].y][sPoint[j].x]=0;
-              }
-            }
-            
-            let wk=createWork();
-            param[2] = nArr[i];
-            wk.postMessage({"cmd":cmd,parameter:param});
+            if (sPoint.length) {
+              works[i] =  new Worker("./script/engine.js");
+              workCount++;
+              works[i].onmessage = function(e){
+                let idx = sPoint.length ? sPoint.splice(0,1) : -1;
+                let command = e.data.cmd;
+                let p = e.data.parameter;
+                const f = {
+                  "cleLb":             function(){cBoard.cleLb(p[0]);},
+                  "wLb":               function(){cBoard.printSearchPoint();cBoard.wLb(p[0],p[1],p[2]);},
+                  "printSearchPoint":  function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+                  "end":               function(){}, 
+                };
+                f[command]();
+                if (idx>-1) {
+                  cBoard.printSearchPoint(idx, "⊙", "green");
+                  works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+                }
+                else {
+                  works[i].terminate();
+                  workCount--;
+                  if (workCount==0) {
+                    cBoard.printSearchPoint();
+                    callback();
+                  } 
+                } 
+              };
+              let idx = sPoint.splice(0,1);
+              cBoard.printSearchPoint(idx, "⊙", "green");
+              works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+             }
             
           }
         }
         else {
+          work = createWork();
           work.postMessage({"cmd":cmd,parameter:param});
         }
       };
@@ -988,8 +1006,8 @@
       cFindVCF.addOption(5, "防\b冲四抓禁");
 
       cFindVCF.addOption(6, "找\b VCF防点");
-      cFindVCF.addOption(7, "判断\b进攻级别");
-      cFindVCF.addOption(8, "判断\b简单必胜");
+      //cFindVCF.addOption(7, "判断\b进攻级别");
+      //cFindVCF.addOption(8, "判断\b简单必胜");
 
       cFindVCF.show();
       cFindVCF.setText("解题");
@@ -1011,7 +1029,7 @@
             postMsg("findVCF",[getRenjuSelColor(),null,null,null,null,arr]);
             break;
           case 3:
-            postMsg("findTwoVCF", [arr, getRenjuSelColor(), getArr([])]);
+            postMsg("isTwoVCF", [arr, getRenjuSelColor(), getArr([])]);
             break;
           case 7:
             function* g() {
@@ -1062,20 +1080,10 @@
             }
             generator = gbf();
             generator.next();
-            break
+            break；
           case 5:
-            function* bcf() {
-              let r = yield* blockCatchFoul(arr);
-              callback();
-              if (r == -1) {
-                msg("❌❌❌ 没有找到冲四抓禁 ❌❌❌");
-              }
-              else if (r == 0) {
-                msg("❌❌❌ 没有成立的解禁点 ❌❌❌");
-              }
-            }
-            generator = bcf();
-            generator.next();
+            setCmd(but);
+            postMsg("blockCatchFoul", [arr]);
             break;
           case 8:
             function* gwl() {
@@ -1104,15 +1112,8 @@
             }
             break;
           case 4:
-            function* sp() {
-              if (!(yield* findSimpleWin(arr, getRenjuSelColor(), getArr([]), 4))) {
-                msg("❌❌❌没有两手43胜❌❌❌");
-              }
-              callback();
-            }
-            generator = sp();
-            generator.next();
-
+            setCmd(but);
+            postMsg("isSimpleWin", [arr, getRenjuSelColor(), getArr([]), 4]);
             break;
         }
         but.input.value = 0;

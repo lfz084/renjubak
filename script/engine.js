@@ -115,7 +115,11 @@
     const cmd = {
       "findVCF":         function() {findVCF(p[0],p[1],p[2],p[3],p[4],p[5]);}, 
       "cancelFind":      function() {cancelFind();}, 
-       "findTwoVCF": function() {findTwoVCF(p[0],p[1],p[2]);}, 
+      "isTwoVCF":        function() {isTwoVCF(p[0],p[1],p[2]);}, 
+      "isLevelThreePoint":function() {isLevelThreePoint(p[0],p[1],p[2],p[3])}, 
+      "isSimpleWin":     function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
+      "blockCatchFoul":  function() { blockCatchFoul(p[0]) },
+     
     };
     
     //console.log(p);
@@ -1628,7 +1632,8 @@
         }
       }
       if (!fPoint.length) {
-        return -1;
+        post("blockCatchFoul_End",[-1]);
+        return;
       }
       // 合并数组
       for (let i = fp.length - 1; i >= 0; i--) {
@@ -1787,12 +1792,7 @@
 
       }
       post("printSearchPoint", []); // 清空刚才计算的点
-      if (notBlock) {
-        return 0;
-      }
-      else {
-        return 1;
-      }
+      post("blockCatchFoul_End",[notBlock?0:1]);
 
     }
 
@@ -2224,9 +2224,44 @@
 
 
     }
-
-
-
+    
+   
+    
+    function isLevelThreePoint(idx, arr, color, fType) {
+    
+      let x = idx % 15;
+      let y = parseInt(idx / 15);
+    
+      arr[y][x] = color;
+      let level = getLevelB(arr, color, getArr([]), null, fType == onlySimpleWin ? 1 : null);
+      let nColor = color == 1 ? 2 : 1;
+      if (level.level < 4 && level.level >= 3) {
+        let l = level.moves.length; // 保存手数，待后面判断43杀
+        if ((color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
+          if (fType == null) {
+            post("wLb", [idx, "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]);
+            return;
+          }
+        }
+        else {
+          if (fType == null) {
+            post("wLb", [idx, "V", l > 3 ? "black" : "red"]);
+            return;
+          }
+          else { // 进一步判断是否做V
+            if ((fType == onlyVCF && l > 3) || (fType == onlySimpleWin && l == 3)) {
+              post("wLb", [idx, "V", l > 3 ? "black" : "red"]);
+              return;
+            }
+          }
+        }
+      }
+      arr[y][x] = 0;
+      post("end");
+    }
+    
+    
+    
     // 计算先手防 查找连续冲四，经过的点存入newarr,所有冲四分支存入fMoves。
     // 连续冲四方，必须没有VCF，如果有VCF可能影响计算结果
     function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves) {
@@ -2403,96 +2438,65 @@
 
 
     // 找VCF 级别双杀点
-    function findTwoVCF(arr, color, newarr, count, backstage) {
+    function isTwoVCF(idx, arr, color) {
 
-      let pnt = aroundPoint[112];
       let pNum = 0; //双杀点计数
       let timeout = 30000;
       let depth = 1000;
-      count = count || 10000;
-      // 确定双杀选点范围
-      // 先判断对手进攻级别,快速选点
-      /*
-      selectPoint(arr, color, newarr, timeout, depth, false);
-      findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
-      */
+      let x = idx % 15;
+      let y = parseInt(idx/15);
 
-      for (let i = 0; i < 225; i++) {
-        let x = pnt.point[i].x;
-        let y = pnt.point[i].y;
-
-        if (!stopFind && newarr[y][x] == 0) {
-          // 处理直接防
-          arr[y][x] = color;
-          if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]); 
-          // 对手准备落子，判断对手是否有攻。
-          let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
-          //findVCF(color,timeOut,depth,count,backStage,arr) 
-          let fNum = nLevel.level >= 3 ? 0 : findVCF(color, timeout, depth, 2, true, arr);
-          if (fNum >= 2 || (fNum == 1 && vcfWinMoves[0].length == 1)) { // 有两套V，判断双杀是否成立
-
-            let notWin = false; //后续计算，如果双杀不成立==true
-            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
-            //console.log(bPoint)
-            if (bPoint) { //排除直接防
-              if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
-                //排除失败，双杀不成立
-                notWin = true;
-              }
-            }
-
-            if (!notWin) { // 没有找到直接共防，继续寻找先手防
-              //处理先手防
-              let fMoves = []; //  保存先手连续冲四分支
-              continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
-              let j;
-              for (j = fMoves.length - 1; j >= 0; j--) {
-                // 摆棋
-                for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                  let x = fMoves[j][k] % 15;
-                  let y = parseInt(fMoves[j][k] / 15);
-                  arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
-                }
-                /*
-                let str = "";
-                for (let l=0;l<=j;l++)  {
-                    str+="\n"+fMoves[l];
-                }
-                console.log(j+"\n"+str)
-                */
-                let winLevel = getWinLevel(arr, color, timeout, depth, 1);
-                //console.log("winLevel="+winLevel)
-                if (winLevel < 3.5) notWin = true; // 复原棋子
-
-                for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                  let x = fMoves[j][k] % 15;
-                  let y = parseInt(fMoves[j][k] / 15);
-                  arr[y][x] = 0;
-                }
-                if (notWin) j = -1;
-              }
-            }
-            if (!notWin) { // 双杀成立
-              if (!backstage) {
-                post("printSearchPoint", []);
-                post("wLb", [pnt.index[i], "◎", "red"]); 
-              }
-              pNum++;
-              if (pNum == count) i = 10000;
-            }
+      // 处理直接防
+      arr[y][x] = color;
+      // 对手准备落子，判断对手是否有攻。
+      let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
+      //findVCF(color,timeOut,depth,count,backStage,arr) 
+      let fNum = nLevel.level >= 3 ? 0 : findVCF(color, timeout, depth, 2, true, arr);
+      if (fNum>=2 || (fNum==1 && vcfWinMoves[0].length==1)) { // 有两套V，判断双杀是否成立
+        let notWin = false; //后续计算，如果双杀不成立==true
+        let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
+        //console.log(bPoint)
+        if (bPoint) { //排除直接防
+          if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+            //排除失败，双杀不成立
+            notWin = true;
           }
-          arr[y][x] = 0;
         }
-        else { // 清空选点范围外的点
-          //if (!backstage) post("cleLb", [pnt.index[i]]);
+        
+        if (!notWin) { // 没有找到直接共防，继续寻找先手防
+          //处理先手防
+          let fMoves = []; //  保存先手连续冲四分支
+          continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
+          let j;
+          for (j = fMoves.length - 1; j >= 0; j--) {
+          // 摆棋
+            for (let k = fMoves[j].length - 1; k >= 0; k--) {
+              let x = fMoves[j][k] % 15;
+              let y = parseInt(fMoves[j][k] / 15);
+              arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
+            }
+            let winLevel = getWinLevel(arr, color, timeout, depth, 1);
+            //console.log("winLevel="+winLevel)
+            if (winLevel < 3.5) notWin = true; // 复原棋子
+            for (let k = fMoves[j].length - 1; k >= 0; k--) {
+              let x = fMoves[j][k] % 15;
+              let y = parseInt(fMoves[j][k] / 15);
+              arr[y][x] = 0;
+            }
+            if (notWin) j = -1;
+          }
         }
+        if (!notWin) {  pNum++;}
       }
-      if (!backstage) {
-        post("printSearchPoint", []);
-        post("findTwoVCF_End");
-      } 
-      return pNum;
-
+      arr[y][x] = 0;
+      //console.log(pNum + "--"+idx);
+      if (pNum) {
+        post("wLb",[idx, "◎", "red"]);
+      }
+      else {
+        post("end");
+      }
+      
     }
 
 
@@ -2564,6 +2568,28 @@
       }
       return rt;
     }
+    
+    
+    
+    function isSimpleWin(idx, arr, color, num) {
+    
+      if (num == 4) {
+        let timeout = 30000;
+        let depth = 1;
+        let x = idx % 15;
+        let y = parseInt(idx/15);
+            
+        arr[y][x] = color;
+        let winLevel = getWinLevel(arr, color, timeout, depth, 2, 2);
+        if (winLevel > 3) {
+           post("wLb", [idx, "◎", "red"]);
+           return
+        }
+        arr[y][x] = 0;
+      } 
+      post("end");
+    }
+    
 
 
 
