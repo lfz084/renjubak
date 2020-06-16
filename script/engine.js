@@ -119,10 +119,11 @@
       "isLevelThreePoint":function() {isLevelThreePoint(p[0],p[1],p[2],p[3])}, 
       "isSimpleWin":     function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
       "blockCatchFoul":  function() { blockCatchFoul(p[0]) },
+      "isBlockVCF":      function() { isBlockVCF(p[0], p[1], p[2]) },
      
     };
     
-    //console.log(p);
+    //console.log("engine.onmessage parameter =" + p);
     cmd[e.data.cmd]();
   }
 
@@ -173,7 +174,7 @@
         count = count == null ? 225 : count * 1;
         backStage = backStage ? true : false;
         vcfCount = 0;
-
+      
         vcfArr = arr;
         copyArr(vcfInitial, vcfArr);
         vcfFS.length = 0;
@@ -2683,6 +2684,23 @@
         }
       }
       return -1;
+    }
+    
+    
+    //判断idx 是否可以防住 color色的所有VCF
+    function isBlockVCF (idx, color, arr) {
+      let x = idx % 15;
+      let y = parseInt(idx / 15);
+      arr[y][x] = color == 1 ? 2 : 1;
+      // 确保没有新的VCF
+      let fNum = findVCF(color, 60000, null, 1, true, arr);
+      arr[y][x] = 0;
+      if (fNum) {
+        post("end");
+      }
+      else {
+        post("wLb", [idx, "b", "blue"]);
+      }
     }
 
 

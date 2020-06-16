@@ -991,6 +991,73 @@
             
           }
         }
+        else if(cmd=="getBlockVCFb") {
+          let sPoint = [];
+          work = new Worker("./script/engine.js");
+          work.onmessage = function(e) {
+            let command = e.data.cmd;
+            let p = e.data.parameter;
+            if (command =="findVCF_End") {
+              work.terminate();
+              cBoard.cleLb("all");
+              if (p[0].length) {
+                sPoint = getBlockVCF(p[0],p[1],p[3]);
+                if (sPoint.length) {
+                  //console.log("sPoint = " + sPoint);
+                  excludeBP("isBlockVCF");
+                }
+                else {
+                  callback();
+                  msg("❌❌❌没有成立的防点");
+                }
+              }
+              else {
+                callback();
+                msg("❌❌❌没有VCF");
+              }
+            }
+          };
+          
+          work.postMessage({"cmd":"findVCF", parameter:[param[0],null,null,1,null,param[1]]});
+          function excludeBP(cmd, parameter){
+             let workCount = 0;
+             for (let i=0; i<maxThread; i++) { 
+               if (sPoint.length) { 
+                 works[i]=new Worker("./script/engine.js");
+                 workCount++; 
+                 works[i].onmessage=function(e){ 
+                   let idx=sPoint.length ? sPoint.splice(0,1) : -1; 
+                   let command=e.data.cmd;
+                   let p=e.data.parameter;
+                   const f={ 
+                     "cleLb" : function(){cBoard.cleLb(p[0]);},
+                     "wLb" : function(){cBoard.printSearchPoint();cBoard.wLb(p[0],p[1],p[2]);},
+                     "printSearchPoint" : function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+                     "end" : function(){}, 
+                     
+                   }; 
+                   f[command]();
+                   if (idx>-1) {
+                     cBoard.printSearchPoint(idx, "⊙", "green");
+                     works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+                   }
+                   else {
+                     works[i].terminate();
+                     workCount--;
+                     if (workCount==0) {
+                       cBoard.printSearchPoint();
+                       callback();
+                     }
+                    }
+                  };
+                  let idx = sPoint.splice(0,1);
+                  cBoard.printSearchPoint(idx, "⊙", "green");
+                  works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+               } 
+             }
+            
+          }
+        }
         else {
           work = createWork();
           work.postMessage({"cmd":cmd,parameter:param});
@@ -1068,18 +1135,7 @@
             generator.next();
             break;
           case 6:
-            function* gbf() {
-              if (yield* findVCF(getRenjuSelColor(), null, null, 1, null, copyArr([], arr))) {
-                let p = yield* getBlockVCFb(vcfWinMoves, vcfColor, arr, false);
-                if (!p) msg("❌❌❌没有成立的防点");
-              }
-              else {
-                msg("❌❌❌没有VCF");
-              }
-              callback();
-            }
-            generator = gbf();
-            generator.next();
+            postMsg("getBlockVCFb", [getRenjuSelColor(), arr]);
             break;
           case 5:
             setCmd(but);
