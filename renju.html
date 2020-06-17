@@ -50,6 +50,17 @@
         }
       }, 30 * 1000);
     }
+    let openNoSleep = function(){
+      if (noSleep) {
+        msg("启动防锁屏功能", null, null, null, null, null, null, null, null, null, 0);
+        setTimeout ("closeMsg();", 2000);
+        noSleep.enable();
+      }
+    };
+    let closeNoSleep = function(){
+      closeMsg();
+      noSleep.disable();
+    };
     
 
     //用来保存跟踪正在发送的触摸事件
@@ -852,6 +863,7 @@
         cFindPoint.hide();
         cFindVCF.hide();
         cCancelFind.move(but.left, but.top, but.width, but.height);
+        openNoSleep();
       }
       let callback = function() {
         cFindPoint.show();
@@ -859,7 +871,8 @@
         cFindVCF.show();
         cFindVCF.setText("解题");
         cCancelFind.hide();
-        closeMsg();
+        //closeMsg();   //closeNoSleep 里面有重复代码
+        closeNoSleep();
       }
       let printMsg = function() {
         let fclr = cObjVCF.color == 1 ? "黑棋" : "白棋";
