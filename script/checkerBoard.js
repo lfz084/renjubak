@@ -1007,6 +1007,7 @@ checkerBoard.prototype.getSVG = function() {
   let y2;
   let lineWidth;
   let canvas = this.canvas;
+  console.log("checkerBoard.getSVG");
   for (let i = 0; i < this.SLTX; i++) {
     lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size  : parseInt(canvas.width) / 1000 * 2 * size;
     x1 = this.P[i].x * size;
@@ -1027,8 +1028,8 @@ checkerBoard.prototype.getSVG = function() {
   //画星位
   if (this.SLTX == 15 && this.SLTY == 15) {
     let r = parseInt(canvas.width) / 1000 * 6 * size;
-    for (i = 48; i < 225; i += 120) {
-      for (j = 0; j < 9; j += 8) {
+    for (let i = 48; i < 225; i += 120) {
+      for (let j = 0; j < 9; j += 8) {
         x1 = this.P[i + j].x * size;
         y1 = this.P[i + j].y * size;
         svgText += `<circle cx="${x1}" cy="${y1}" r="${r}" stroke="black" stroke-width="0" fill="black"/> `;
@@ -1527,8 +1528,8 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
   //画星位
   if (this.SLTX == 15 && this.SLTY == 15) {
     let r = parseInt(canvas.width) / 1000 * 6 * size;
-    for (i = 48; i < 225; i += 120) {
-      for (j = 0; j < 9; j += 8) {
+    for (let i = 48; i < 225; i += 120) {
+      for (let j = 0; j < 9; j += 8) {
         x1 = left + this.P[i + j].x * size;
         y1 = top + this.P[i + j].y * size;
         doc.setFillColor(0, 0, 0);
@@ -1893,6 +1894,7 @@ checkerBoard.prototype.saveAsSVG = function(type) {
   let blob = new Blob([this.getSVG()], { type: mimetype });
   save_link.href = URL.createObjectURL(blob);
   save_link.download = name;
+  console.log("checkerBoard.saveAsSVG Download" );
   let event = document.createEvent("MouseEvents");
   event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
   save_link.dispatchEvent(event);
