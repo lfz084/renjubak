@@ -784,211 +784,277 @@ checkerBoard.prototype.getPointArray = function(arrobj) {
 
 
 
-// 取得一个点的平均颜色
-checkerBoard.prototype.getPointColor = function(x, y) {
+// 自动识别图片中的棋子
+checkerBoard.prototype.autoPut = function() {
 
-  let idx = y ? this.getPIndex(x, y) : x;
-  let w = parseInt(this.gW / 2);
-  let h = parseInt(this.gH / 2);
-  let l = parseInt(this.P[idx].x + (this.gW - w) / 2 - this.gW / 2);
-  let t = parseInt(this.P[idx].y + (this.gH - h) / 2 - this.gH / 2);
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  let ctx = this.canvas.getContext("2d");
-  let c;
-  let arr = []; //  记录彩色
-  let narr = []; // 记录黑白色
-  for (let i = 0; i < w; i++) {
-    arr[i] = [];
-    for (let j = 0; j < h; j++) {
-      c = ctx.getImageData(l + i, t + j, 1, 1).data;
-      //let black = (i>w/4*1.5 && i<w/4*2.5 || j>h/4*1.5 && j<h/4*2.5) && c[0]<50 && c[1]<50 && c[2]<50 ? -38 : 0;
-      arr[i][j] = c;
-      r += c[0];
-      g += c[1];
-      b += c[2];
-      c = null;
+  let arr = getArr([], 0, this.SLTX, this.SLTY);
+  let max = 0;
+  let min = 255;
+  let test = false;
+  let cNum;
+  let rgb;
+  let idx;
+  let wBoard = true; // 默认白色棋盘
+  let ctx = cBoard.canvas.getContext("2d");
+  let imgData =  ctx.getImageData(0, 0, parseInt(this.width), parseInt(this.height)).data;
+  
+  for (let i = this.SLTY - 1; i >= 0; i--) {
+    for (let j = this.SLTX - 1; j >= 0; j--) {
+      idx = i * this.SLTX + j;
+      rgb = getPointColor(idx,this);
+      //alert(rgb.r+"\n"+rgb.g+"\n"+rgb.b);
+      cNum = (rgb.r + rgb.g + rgb.b) / 3;
+      // 黑，白以外-1000，表示空子。
+      if (Math.abs(rgb.r - rgb.g) < 60 && Math.abs(rgb.r - rgb.b) < 60 && Math.abs(rgb.g - rgb.b) < 60) {
+        arr[i][j] = cNum;
+        max = cNum > max ? cNum : max; // 设置最白，最黑
+        min = cNum < min ? cNum : min;
+      }
+      else {
+        arr[i][j] = -1000;
+        wBoard = false;
+      } 
     }
   }
+  
+  //alert("end");
+  
+  imgData = null;
   ctx = null;
-
-  if (isLine((r + g + b) / h / w / 3, this)) {
-    //alert("line")
-    return ({ r: 255, g: 125, b: 255 }); //网格
+  
+  for (let i = this.SLTY - 1; i >= 0; i--) {
+    for (let j = this.SLTX - 1; j >= 0; j--) {
+      idx = i * this.SLTX + j;
+      if (Math.abs(arr[i][j] - max) < (wBoard || max > 250 ? 20 : 50)) {
+        //arr[i][j] = 2;
+        this.P[idx].printNb("★", "white", this.gW, this.gH);
+      }
+      else if (Math.abs(arr[i][j] - min) < (wBoard || min < 5 ? 30 : 60)) {
+        //arr[i][j] = 1;
+        this.P[idx].printNb("★", "black", this.gW, this.gH);
+      }
+      else if (test) {
+        this.P[idx].printNb("▲", "black", this.gW, this.gH);
+      }
+    }
   }
-  else if (isLine((r + g + b) / h / w / 3 + 18, this)) {
-    return ({ r: 255, g: 125, b: 255 }); //网格
-  }
-  else if (isLine((r + g + b) / h / w / 3 - 18, this)) {
-    return ({ r: 255, g: 125, b: 255 }); //网格
-  }
-  else {
-    //alert("not Line")
-    return ({ r: r / w / h, g: g / w / h, b: b / w / h }); //不是网格
-  };
-
-
-
-  function isLine(cnum, cboard) {
-    let tx;
-    let ty; //网格的x，y 线
-    let count = 0; // 记录黑点
+  
+  
+  
+  //取得一个点的平均颜色
+  function getPointColor (idx, cBoard) {
+    
+    //alert("getPointc");
+    let width = parseInt(cBoard.width);
+    let w = parseInt(cBoard.gW / 2);
+    let h = parseInt(cBoard.gH / 2);
+    let l = parseInt(cBoard.P[idx].x + (cBoard.gW - w) / 2 - cBoard.gW / 2);
+    let t = parseInt(cBoard.P[idx].y + (cBoard.gH - h) / 2 - cBoard.gH / 2);
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let arr = []; //  记录彩色
+    let narr = []; // 记录黑白色
+    
     for (let i = 0; i < w; i++) {
-      narr[i] = [];
+      arr[i] = [];
       for (let j = 0; j < h; j++) {
-        c = arr[i][j];
-        if (c[0] < cnum && c[1] < cnum && c[2] < cnum) {
-          narr[i][j] = 1;
-          count++;
-        }
-        else {
-          narr[i][j] = 0;
-        }
+        //let black = (i>w/4*1.5 && i<w/4*2.5 || j>h/4*1.5 && j<h/4*2.5) && c[0]<50 && c[1]<50 && c[2]<50 ? -38 : 0;
+        arr[i][j] = [];
+        arr[i][j][0] = imgData[(width*(t+j)+l+i)*4];
+        arr[i][j][1] = imgData[(width*(t+j)+l+i)*4+1];
+        arr[i][j][2] = imgData[(width*(t+j)+l+i)*4+2];
+        arr[i][j][3] = imgData[(width*(t+j)+l+i)*4+3];
+        r += arr[i][j][0];
+        g += arr[i][j][1];
+        b += arr[i][j][2];
       }
     }
-    if (count > w * h / 8 * 3) return false;
-    /*
-        // 测试
-    let str = idx+"\n";
-    for (let j=0; j<h; j++)  {
-        for (let i=0; i<w; i++)  {
-            str+=narr[i][j];
-        }
-        str+="\n"
+    
+    //alert("Set arr end");
+    if (isLine((r + g + b) / h / w / 3, cBoard)) {
+      //alert("line")
+      return ({ r: 255, g: 125, b: 255 }); //网格
     }
-    alert(str)
-    */
-    // 针对白底棋盘，搜索棋盘网格线
-    if (y == null) {
-      x = idx % cboard.SLTX;
-      y = parseInt(idx / cboard.SLTX);
+    else if (isLine((r + g + b) / h / w / 3 + 18, cBoard)) {
+      return ({ r: 255, g: 125, b: 255 }); //网格
     }
-
-    if (x == 0) {
-      if (idx == 0) {
-        if (right() && buttom()) return true;
-      }
-      else if (idx == cboard.SLTX * (cboard.SLTY - 1)) {
-        if (right() && top()) return true;
-      }
-      else {
-        if (right() && buttom() && top()) return true;
-      }
-    }
-    else if (x == cboard.SLTX - 1) {
-      if (idx == cboard.SLTX - 1) {
-        if (left() && buttom()) return true;
-      }
-      else if (idx == cboard.SLTX * cboard.SLTY - 1) {
-        if (left() && top()) return true;
-      }
-      else {
-        if (left() && top() && buttom()) return true;
-      }
-    }
-    else if (y == 0) {
-      if (left() && right() && buttom()) return true;
-    }
-    else if (y == cboard.SLTY - 1) {
-      if (left() && right() && top()) return true;
+    else if (isLine((r + g + b) / h / w / 3 - 18, cBoard)) {
+      return ({ r: 255, g: 125, b: 255 }); //网格
     }
     else {
-      if (left() && right() && top() && buttom()) return true;
+      //alert("not Line")
+      return ({ r: r / w / h, g: g / w / h, b: b / w / h }); //不是网格
     }
-
-    function left() {
-      let i;
-      let j;
-      for (i = 0; i < h; i++) {
-        let c = narr[0][i];
-        if (c == 1) {
-          if (ty != null) {
-            if (Math.abs(i - ty) > h * 0.3 || Math.abs(i - ty) == 0) { return false; }
+ 
+ 
+ 
+    function isLine(cnum, cboard) {
+      let tx;
+      let ty; //网格的x，y 线
+      let x = idx % cboard.SLTX;
+      let y = parseInt(idx/cboard.SLTX);
+      let count = 0; // 记录黑点
+      let c; 
+      for (let i = 0; i < w; i++) {
+        narr[i] = [];
+        for (let j = 0; j < h; j++) {
+          c = arr[i][j];
+          if (c[0] < cnum && c[1] < cnum && c[2] < cnum) {
+            narr[i][j] = 1;
+            count++;
           }
           else {
-            ty = i;
+            narr[i][j] = 0;
           }
-          for (j = 1; j < w / 5; j++) {
-            c = narr[j][i];
-            if (c == 0 && narr[j + 2][i] == 0 && !(narr[j + 3][i] == 1 && narr[j + 4][i] == 1 && narr[j + 5][i] == 1)) break;
-          }
-          if (j >= w / 5) return true;
-          return false;
         }
       }
-      //alert("__left")
-    }
-
-    function right() {
-      let i;
-      let j;
-      for (i = h - 1; i >= 0; i--) {
-        let c = narr[w - 1][i];
-        if (c == 1) {
-          if (ty != null) {
-            if (Math.abs(i - ty) > h * 0.3 || Math.abs(i - ty) == 0) { return false; }
+      if (count > w * h / 8 * 3) return false;
+    
+      /*
+          // 测试
+      let str = idx+"\n";
+      for (let j=0; j<h; j++)  {
+          for (let i=0; i<w; i++)  {
+              str+=narr[i][j];
           }
-          else {
-            ty = i;
-          }
-          for (j = w - 2; j > w * 4 / 5; j--) {
-            c = narr[j][i];
-            if (c == 0 && narr[j - 2][i] == 0 && !(narr[j - 3][i] == 1 && narr[j - 4][i] == 1 && narr[j - 5][i] == 1)) break;
-          }
-          if (j <= w * 4 / 5) return true;
-          return false;
+          str+="\n"
+      }
+      alert(str)
+      */
+    
+      // 针对白底棋盘，搜索棋盘网格线
+      if (y == null) {
+        x = idx % cboard.SLTX;
+        y = parseInt(idx / cboard.SLTX);
+      }
+    
+      if (x == 0) {
+        if (idx == 0) {
+          if (right() && buttom()) return true;
+        }
+        else if (idx == cboard.SLTX * (cboard.SLTY - 1)) {
+          if (right() && top()) return true;
+        }
+        else {
+          if (right() && buttom() && top()) return true;
         }
       }
-      //alert("__right")
-    }
-
-    function top() {
-      let i;
-      let j;
-      for (i = 0; i < w; i++) {
-        let c = narr[i][0];
-        if (c == 1) {
-          if (tx != null) {
-            if (Math.abs(i - tx) > w * 0.3 || Math.abs(i - tx) == 0) { return false; }
-          }
-          else {
-            tx = i;
-          }
-          for (j = 1; j < h / 5; j++) {
-            c = narr[i][j];
-            if (c == 0 && narr[i][j + 2] == 0 && !(narr[i][j + 3] == 1 && narr[i][j + 4] == 1 && narr[i][j + 5] == 1)) break;
-          }
-          if (j >= h / 5) return true;
-          return false;
+      else if (x == cboard.SLTX - 1) {
+        if (idx == cboard.SLTX - 1) {
+          if (left() && buttom()) return true;
+        }
+        else if (idx == cboard.SLTX * cboard.SLTY - 1) {
+          if (left() && top()) return true;
+        }
+        else {
+          if (left() && top() && buttom()) return true;
         }
       }
-      //alert("__top")
-    }
-
-    function buttom() {
-      let i;
-      let j;
-      for (i = w - 1; i >= 0; i--) {
-        let c = narr[i][h - 1];
-        if (c == 1) {
-          if (tx != null) {
-            if (Math.abs(i - tx) > w * 0.3 || Math.abs(i - tx) == 0) { return false; }
-          }
-          else {
-            tx = i;
-          }
-          for (j = h - 2; j > h * 4 / 5; j--) {
-            c = narr[i][j];
-            if (c == 0 && narr[i][j - 2] == 0 && !(narr[i][j - 3] == 1 && narr[i][j - 4] == 1 && narr[i][j - 5] == 1)) break;
-          }
-          if (j <= h * 4 / 5) return true;
-          return false;
-        }
+      else if (y == 0) {
+        if (left() && right() && buttom()) return true;
       }
-      //alert("__buttom")
+      else if (y == cboard.SLTY - 1) {
+        if (left() && right() && top()) return true;
+      }
+      else {
+        if (left() && right() && top() && buttom()) return true;
+      }
+    
+      function left() {
+        let i;
+        let j;
+        for (i = 0; i < h; i++) {
+          let c = narr[0][i];
+          if (c == 1) {
+            if (ty != null) {
+              if (Math.abs(i - ty) > h * 0.3 || Math.abs(i - ty) == 0) { return false; }
+            }
+            else {
+              ty = i;
+            }
+            for (j = 1; j < w / 5; j++) {
+              c = narr[j][i];
+              if (c == 0 && narr[j + 2][i] == 0 && !(narr[j + 3][i] == 1 && narr[j + 4][i] == 1 && narr[j + 5][i] == 1)) break;
+            }
+            if (j >= w / 5) return true;
+            return false;
+          }
+        }
+        //alert("__left")
+      }
+    
+      function right() {
+        let i;
+        let j;
+        for (i = h - 1; i >= 0; i--) {
+          let c = narr[w - 1][i];
+          if (c == 1) {
+            if (ty != null) {
+              if (Math.abs(i - ty) > h * 0.3 || Math.abs(i - ty) == 0) { return false; }
+            }
+            else {
+              ty = i;
+            }
+            for (j = w - 2; j > w * 4 / 5; j--) {
+              c = narr[j][i];
+              if (c == 0 && narr[j - 2][i] == 0 && !(narr[j - 3][i] == 1 && narr[j - 4][i] == 1 && narr[j - 5][i] == 1)) break;
+            }
+            if (j <= w * 4 / 5) return true;
+            return false;
+          }
+        }
+        //alert("__right")
+      }
+    
+      function top() {
+        let i;
+        let j;
+        for (i = 0; i < w; i++) {
+          let c = narr[i][0];
+          if (c == 1) {
+            if (tx != null) {
+              if (Math.abs(i - tx) > w * 0.3 || Math.abs(i - tx) == 0) { return false; }
+            }
+            else {
+              tx = i;
+            }
+            for (j = 1; j < h / 5; j++) {
+              c = narr[i][j];
+              if (c == 0 && narr[i][j + 2] == 0 && !(narr[i][j + 3] == 1 && narr[i][j + 4] == 1 && narr[i][j + 5] == 1)) break;
+            }
+            if (j >= h / 5) return true;
+            return false;
+          }
+        }
+        //alert("__top")
+      }
+    
+      function buttom() {
+        let i;
+        let j;
+        for (i = w - 1; i >= 0; i--) {
+          let c = narr[i][h - 1];
+          if (c == 1) {
+            if (tx != null) {
+              if (Math.abs(i - tx) > w * 0.3 || Math.abs(i - tx) == 0) { return false; }
+            }
+            else {
+              tx = i;
+            }
+            for (j = h - 2; j > h * 4 / 5; j--) {
+              c = narr[i][j];
+              if (c == 0 && narr[i][j - 2] == 0 && !(narr[i][j - 3] == 1 && narr[i][j - 4] == 1 && narr[i][j - 5] == 1)) break;
+            }
+            if (j <= h * 4 / 5) return true;
+            return false;
+          }
+        }
+        //alert("__buttom")
+      }
     }
-  }
+   
+  } 
 
 };
 

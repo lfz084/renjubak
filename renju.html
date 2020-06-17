@@ -567,7 +567,8 @@
   
   <script language="javascript">
     "use strict";
-    const maxThread = window.navigator.hardwareConcurrency-1 || 2;
+    const maxThread = 0 || window.navigator.hardwareConcurrency-1 || 2;
+    //setTimeout("alert(maxThread)", 3000);
     const renjuModel = 0;
     const imgModel = 1;
     let playModel = renjuModel;
@@ -1638,76 +1639,15 @@
       cAutoPut.setColor("black");
       cAutoPut.setText(" 自动识别");
       cAutoPut.setontouchend(function() {
-        generator = autoPut();
         if (!cLockImg.checked) {
           lockImg(generator);
           cLockImg.setChecked(1);
         }
-        else {
-          generator.next();
-        }
+        setTimeout("cBoard.autoPut();", 200);
+        nSetChecked(cAddwhite2); 
       });
 
-      function* autoPut() {
-        let arr = getArr([], 0, cBoard.SLTX, cBoard.SLTY);
-        let max = 0;
-        let min = 255;
-        let timeout = 120;
-        let cNum;
-        let rgb;
-        let idx;
-        let wBoard = true; // 默认白色棋盘
-        let sTime;
-        setTimeout(function() { generator.next(); }, 500);
-        yield; //浏览器空闲再测速
-        sTime = new Date().getTime();
-        cBoard.getPointColor(0); // 测速
-        if ((new Date().getTime() - sTime) > timeout) {
-          msg("您使用的浏览器运行速度太慢，不适合使用自动扫描");
-          return;
-        }
-        msg("正在扫描棋盘......", null, null, null, null, null, null, null, null, null, 0);
-        for (let i = cBoard.SLTY - 1; i >= 0; i--) {
-          for (let j = cBoard.SLTX - 1; j >= 0; j--) {
-            idx = i * cBoard.SLTX + j;
-            cBoard.P[idx].printLb("★", "green", cBoard.gW, cBoard.gH);
-            rgb = cBoard.getPointColor(idx);
-            //alert(rgb.r+"\n"+rgb.g+"\n"+rgb.b);
-            cNum = (rgb.r + rgb.g + rgb.b) / 3;
-            // 黑，白以外-1000，表示空子。
-            if (Math.abs(rgb.r - rgb.g) < 60 && Math.abs(rgb.r - rgb.b) < 60 && Math.abs(rgb.g - rgb.b) < 60) {
-              arr[i][j] = cNum;
-              max = cNum > max ? cNum : max; // 设置最白，最黑
-              min = cNum < min ? cNum : min;
-            }
-            else {
-              arr[i][j] = -1000;
-              wBoard = false;
-            }
-            setTimeout(function() { generator.next(); }, 0);
-            yield;
-            cBoard.P[idx].cle();
-          }
-        }
-        closeMsg();
-        nSetChecked(cAddwhite2); // 选定白棋按钮，方便修改
-        for (let i = cBoard.SLTY - 1; i >= 0; i--) {
-          for (let j = cBoard.SLTX - 1; j >= 0; j--) {
-            idx = i * cBoard.SLTX + j;
-            if (Math.abs(arr[i][j] - max) < (wBoard || max > 250 ? 20 : 50)) {
-              //arr[i][j] = 2;
-              cBoard.P[idx].printNb("★", "white", cBoard.gW, cBoard.gH);
-            }
-            else if (Math.abs(arr[i][j] - min) < (wBoard || min < 5 ? 30 : 60)) {
-              //arr[i][j] = 1;
-              cBoard.P[idx].printNb("★", "black", cBoard.gW, cBoard.gH);
-            }
-            else if (timeout > 1000) {
-              cBoard.P[idx].printNb("▲", "black", cBoard.gW, cBoard.gH);
-            }
-          }
-        }
-      }
+      
 
       cPutBoard = new button(imgCmdDiv, "button", w * 2.66, t, w, h);
       cPutBoard.show();
