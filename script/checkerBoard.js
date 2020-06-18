@@ -874,13 +874,13 @@ checkerBoard.prototype.autoPut = function() {
     //alert("Set arr end");
     if (isLine((r + g + b) / h / w / 3, cBoard)) {
       //alert("line")
-      return ({ r: 255, g: 125, b: 255 }); //网格
+      return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 + 18, cBoard)) {
-      return ({ r: 255, g: 125, b: 255 }); //网格
+      return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 - 18, cBoard)) {
-      return ({ r: 255, g: 125, b: 255 }); //网格
+      return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else {
       //alert("not Line")

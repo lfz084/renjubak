@@ -13,16 +13,15 @@
 
 
 <body>
+  <script src="./script/viewport.js"></script>
   <script src="./script/NoSleep.min.js"></script>
   <script src="./script/button.js"></script>
   <script src="./script/msgbox.js"></script>
   <script src="./script/checkerBoard.js"></script>
-  <script src="./script/viewport.js"></script>
   <script src="./script/engine.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
-    
     let viewport = new view();
     let d = document;
     let dw = d.documentElement.clientWidth;
@@ -52,7 +51,7 @@
     }
     let openNoSleep = function(){
       if (noSleep) {
-        msg("启动防锁屏功能", null, null, null, null, null, null, null, null, null, 0);
+        msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
         setTimeout ("closeMsg();", 2000);
         noSleep.enable();
       }
@@ -102,7 +101,10 @@
 
 
     document.body.onload = function() {
-
+    try {
+      //测试脚本是否加载成功;
+      if (!button || !checkerBoard || !msg || !findVCF || !view || !NoSleep) { location.reload(); return;} 
+      
       cBoard = new checkerBoard(d.getElementById("up"), 0, 0, cWidth, cWidth);
       cBoard.printCheckerBoard();
 
@@ -113,7 +115,13 @@
       createImgCmdDiv(d.getElementById("down"), 0, 0, cWidth, cWidth);
 
       renjuLoad();
-
+      
+      if (dw<=dh) window.scrollTo(0,cWidth);
+    } 
+    catch (err) {
+      console.log ("reLoad");
+      location.reload(); 
+    }
 
     }
 

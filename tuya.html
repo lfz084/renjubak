@@ -1716,6 +1716,9 @@
 
     function resetPage()
     {
+    try {
+    //测试脚本是否加载成功;
+    if (!button || !view) { location.reload(); return;}
       //alert('resetPage');
       let i;
       for (i = 0; i < 225; i++)
@@ -1726,6 +1729,12 @@
       saveMaxHistory();
       tempHistoryIndex = loadHistoryIndex();
       loadHistory();
+      window.scrollTo(0,parseInt(fileDiv.style.top)-sw/9/1.5*1);
+    } 
+    catch (err) {
+      console.log("reLoad");
+      location.reload(); 
+    }
     }
 
 
