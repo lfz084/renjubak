@@ -52,7 +52,7 @@
     let openNoSleep = function(){
       if (noSleep) {
         msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
-        setTimeout ("closeMsg();", 2000);
+        closeMsg(2000);
         noSleep.enable();
       }
     };
@@ -435,17 +435,9 @@
     function onTouchesIndex(idToFind, touches) {
 
       for (let i = 0; i < touches.length; i++) {
-
         let id = touches[i].identifier;
-
-        if (id == idToFind) {
-
-          return i;
-
-        }
-
+        if (id == idToFind) {  return i;  }
       }
-
       return -1; //notfound
 
     }
@@ -728,8 +720,6 @@
       cCW.setontouchend(function() {
         cBoard.boardCW(cShownum.checked);
       });
-
-  
 
       cMoveL = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
       cMoveL.show();

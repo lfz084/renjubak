@@ -2,33 +2,38 @@
  "use strict";
  const typeMSG = 1;
  const typeINPUT = 2;
- var isMsgShow = false; // =true 屏蔽 bodytouch 事件;
+ let closeTimer = null;
+ let isMsgShow = false; // =true 屏蔽 bodytouch 事件;
 
  // 创建一个屏蔽层
- var MsgBoxobj = document.createElement("div");
+ let MsgBoxobj = document.createElement("div");
  MsgBoxobj.ontouchend = function() { event.preventDefault();if(msgTextarea.style.autofocus) msgTextarea.focus(); };
 
  // msg 窗口
- var windowDiv = document.createElement("div");
+ let windowDiv = document.createElement("div");
  MsgBoxobj.appendChild(windowDiv);
  windowDiv.style.position = "relative";
 
  // 文本框
- var msgTextarea = document.createElement("textarea");
+ let msgTextarea = document.createElement("textarea");
  windowDiv.appendChild(msgTextarea);
  msgTextarea.style.position = "relative";
  //msgTextarea.oninput = function(event){alert(event.keyCode)}
 
  //确认按钮
- var butEnter = new button(windowDiv, "button", 50, 50, 50, 50);
+ let butEnter = new button(windowDiv, "button", 50, 50, 50, 50);
  butEnter.show();
 
  //取消按钮
- var butCancel = new button(windowDiv, "button", 50, 50, 50, 50);
+ let butCancel = new button(windowDiv, "button", 50, 50, 50, 50);
  butCancel.show();
 
  function msg(text, type, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum) {
 
+   if (closeTimer) {
+     clearTimeout(closeTimer);
+     closeTimer = null;
+   }
    let p = { x: parseInt(cBoard.width) / 10, y: 0 };
    cBoard.xyObjToPage(p, cBoard.canvas);
    //console.log(`p.x=${p.x},p.y=${p.y}, left=${left},top=${top},width=${width}`);
@@ -42,7 +47,7 @@
    butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
    isMsgShow = true; // 屏蔽 bodytouch 事件;
-   var s = MsgBoxobj.style;
+   let s = MsgBoxobj.style;
    document.body.appendChild(MsgBoxobj);
    s.position = "fixed";
    s.zIndex = 9999;
@@ -127,11 +132,21 @@
 
 
 
- function closeMsg() {
-
-   if (MsgBoxobj.parentNode == null) return;
-   MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-   isMsgShow = false;
-   msgTextarea.value = "";
-
+ function closeMsg(timer) {
+   
+   if (closeTimer) {
+     clearTimeout(closeTimer);
+     closeTimer = null;
+   }
+   timer = parseInt(timer) > 0 ? parseInt(timer) : 0;
+   closeTimer = setTimeout(function(){
+     closeTimer = null;
+     if (MsgBoxobj.parentNode == null) return;
+     MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+     isMsgShow = false;
+     msgTextarea.value = "";
+   },timer);
+   
  }
+ 
+ 

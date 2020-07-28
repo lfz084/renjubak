@@ -159,6 +159,21 @@
       }
       return arr;
     }
+    
+    
+    
+    function tree (arr) {
+      this.arr = [];
+      this.parentNode = [];
+      this.childNode = [];
+    }
+    
+    
+    function node () {
+      this.level = 0;
+      this.parentNode = [];
+      this.childNode = [];
+    }
 
 
 
@@ -488,7 +503,6 @@
                      }
             
                      for (let i = moves.length - 5; i >= 0; i -= 2) {
-            
                        let VCF = moves.slice(i + 2); // 判断是否无谓冲四      
                        if (isVCF(color, arr, VCF)) moves.splice(i, 2); //删除无谓冲四
                        for (let j = 1; j < 3; j++) { // 复原两步
@@ -2597,68 +2611,7 @@
     // 
     function findVCT(arr, color, idx, timeOut, depth, count, backStage) {
 
-      let pnt = aroundPoint[idx];
-      let fourP = findFourPoint(arr, color, getArr([])) || [];
-      let threeP = findLevelThreePoint(arr, color, getArr([]), null, 224, true);
-      console.log(threeP.concat(fourP));
-
-      function findVCTPoint(arr, color, newarr, fType, idx) {
-
-        let threeP = []; // 保存活3点，包括复活3
-        let simpleP = []; // 保存坐杀点
-        let vcfP = []; // 保存做V点
-        let pnt = aroundPoint[idx || 112];
-        // 先判断对手进攻级别,快速选点     
-        selectPoint(arr, color, newarr, null, null, true);
-
-        for (let i = 0; i < 225; i++) {
-
-          let x = pnt.point[i].x;
-          let y = pnt.point[i].y;
-
-          if (!stopFind && newarr[y][x] == 0) {
-            arr[y][x] = color;
-            let level = getLevelB(arr, color, newarr, null, depth);
-            let nColor = color == 1 ? 2 : 1;
-            if (level.level > 4) { //冲四,
-            }
-            else if (level.level < 4 && level.level >= 3) {
-              let l = level.moves.length; // 保存手数，待后面判断43杀
-              // 已经确认对手低于活三级别
-              if ((color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
-                if (fType == null) {
-                  threeP.splice(0, 0, pnt.index[i]);
-                }
-
-              }
-              else {
-
-                if (fType == null) {
-                  if (l > 3) {
-                    vcfP.splice(0, 0, pnt.index[i]);
-                  }
-                  else {
-                    simpleP.splice(0, 0, pnt.index[i]);
-                  }
-                }
-                else { // 进一步判断是否做V
-                  if ((fType == onlyVCF && l > 3) || (fType == onlySimpleWin && l == 3)) {
-                    if (l > 3) {
-                      vcfP.splice(0, 0, pnt.index[i]);
-                    }
-                    else {
-                      simpleP.splice(0, 0, pnt.index[i]);
-                    }
-                  }
-                }
-              }
-            }
-            arr[y][x] = 0;
-          }
-        }
-        return vcfP.concat(simpleP, threeP);
-
-      }
+      
     }
 
 
@@ -2778,7 +2731,7 @@
 
 
 
-    // 返回进攻级别,调用之前必须清空newarr,完成后newarr保存有五连点的信息
+    // 返回进攻级别,完成后newarr保存有五连点的信息
     function getLevel(arr, color, pass) {
 
       if (isWin(color == 1 ? 2 : 1, arr)) return { level: 0, p: null };
