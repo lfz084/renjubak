@@ -1580,7 +1580,7 @@
         viewport.userScalable();
       }
 
-      function lockImg(generator) {
+      function lockImg() {
 
         let div = cBoard.cutDiv;
         let w = parseInt(cBoard.cutDiv.style.width);
@@ -1632,7 +1632,6 @@
             cBoard.cleAllPointBorder();
             cBoard.hideCutDiv();
             ctx = null;
-            if (generator) generator.next();
             viewport.resize();
             /*
             cBoard.parentNode.appendChild(cBoard.bakCanvas);
@@ -1651,10 +1650,10 @@
       cAutoPut.setText(" 自动识别");
       cAutoPut.setontouchend(function() {
         if (!cLockImg.checked) {
-          lockImg(generator);
+          lockImg();
           cLockImg.setChecked(1);
         }
-        setTimeout("cBoard.autoPut();", 200);
+        setTimeout("cBoard.autoPut();", 500);
         nSetChecked(cAddwhite2); 
       });
 
@@ -1778,8 +1777,10 @@
         cAddblack2.setChecked(0);
         cAddwhite2.setChecked(0);
         chk.setChecked(1);
-        if (!cLockImg.checked) { lockImg();
-          cLockImg.setChecked(1) }
+        if (!cLockImg.checked) { 
+          lockImg();
+          cLockImg.setChecked(1);
+        }
       }
     }
 
