@@ -233,8 +233,8 @@
                   switch (vcfFinding) {
                     case 0:
                       vcfFinding = 100;
-                      vcfCount++;
-                      if (!backStage && vcfCount % 100 == 0) {
+                      vcfCount = vcfCount==90000 ? 1 : vcfCount+1;
+                      if (!backStage && vcfCount % 1000 == 0) {
                         post("printMoves", [vcfMoves, vcfColor]);
                       }
                       vcfFinding = continueFindVCF(timeOut, depth);
@@ -410,7 +410,7 @@
                    }
                    if (fs.length == 0) return -1; // 地毯完，VCF失败
                    if (new Date().getTime() - vcfStartTimer > timeOut) return -1;
-                   if (vcfFindDepth % 8) return continueFindVCF(timeOut, depth);
+                   //if (vcfFindDepth % 1) return continueFindVCF(timeOut, depth);
                    return 0; //未完，等待定时器调用
             
             
