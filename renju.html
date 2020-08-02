@@ -890,7 +890,7 @@
           const f = {
             "cleLb":               function(){cBoard.cleLb(p[0]);}, 
             "wLb":                 function(){cBoard.wLb(p[0],p[1],p[2]);}, 
-            "printSearchPoint":    function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+            "printSearchPoint":    function(){cBoard.printSearchPoint(0,p[0],p[1],p[2]);},
             "printMoves":          function(){cBoard.printMoves(p[0],p[1]);},
             "findVCF_addVCF":      function(){
                                      cObjVCF.arr = copyArr([], p[3]);
@@ -978,26 +978,26 @@
                 let p = e.data.parameter;
                 const f = {
                   "cleLb":             function(){cBoard.cleLb(p[0]);},
-                  "wLb":               function(){cBoard.printSearchPoint();cBoard.wLb(p[0],p[1],p[2]);},
-                  "printSearchPoint":  function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+                  "wLb":               function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
+                  "printSearchPoint":  function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
                   "end":               function(){}, 
                 };
                 f[command]();
                 if (idx>-1) {
-                  cBoard.printSearchPoint(idx, "⊙", "green");
+                  cBoard.printSearchPoint(i, idx, "⊙", "green");
                   works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
                 }
                 else {
                   works[i].terminate();
+                  cBoard.printSearchPoint(i);
                   workCount--;
                   if (workCount==0) {
-                    cBoard.printSearchPoint();
                     callback();
                   } 
                 } 
               };
               let idx = sPoint.splice(0,1);
-              cBoard.printSearchPoint(idx, "⊙", "green");
+              cBoard.printSearchPoint(i, idx, "⊙", "green");
               works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
              }
             
@@ -1043,27 +1043,27 @@
                    let p=e.data.parameter;
                    const f={ 
                      "cleLb" : function(){cBoard.cleLb(p[0]);},
-                     "wLb" : function(){cBoard.printSearchPoint();cBoard.wLb(p[0],p[1],p[2]);},
-                     "printSearchPoint" : function(){cBoard.printSearchPoint(p[0],p[1],p[2]);},
+                     "wLb" : function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
+                     "printSearchPoint" : function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
                      "end" : function(){}, 
                      
                    }; 
                    f[command]();
                    if (idx>-1) {
-                     cBoard.printSearchPoint(idx, "⊙", "green");
+                     cBoard.printSearchPoint(i,idx, "⊙", "green");
                      works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
                    }
                    else {
                      works[i].terminate();
+                     cBoard.printSearchPoint(i);
                      workCount--;
                      if (workCount==0) {
-                       cBoard.printSearchPoint();
                        callback();
                      }
                     }
                   };
                   let idx = sPoint.splice(0,1);
-                  cBoard.printSearchPoint(idx, "⊙", "green");
+                  cBoard.printSearchPoint(i,idx, "⊙", "green");
                   works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
                } 
              }

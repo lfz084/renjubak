@@ -166,8 +166,8 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.gH = 0; //棋盘格子高度,浮点数
   this.SLTX = 15;
   this.SLTY = 15; //默认是15×15棋盘;
-  this.searchIdx = -1; // 记录正在计算的点
-
+  this.searchIdx = []; // 记录正在计算的点
+  for (let i=0; i<30; i++) {this.searchIdx[i]=-1;};
   this.backgroundColor = "#f0f0f0";
 
   //页面显示的棋盘
@@ -1802,16 +1802,17 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
 
 
 // 在棋盘上打印当前正在计算的点
-checkerBoard.prototype.printSearchPoint = function(idx, text, color) {
+checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
 
+  num = num ? parseInt(num) : 0;
   //清除旧标记
-  if (this.searchIdx > -1 && this.searchIdx != idx) {
-    this.cleLb(this.searchIdx);
-    this.searchIdx = -1;
+  if (this.searchIdx[num] > -1 && this.searchIdx[num] != idx) {
+    this.cleLb(this.searchIdx[num]);
+    this.searchIdx[num] = -1;
   }
   //写入新标记
   if (idx > -1) {
-    this.searchIdx = idx;
+    this.searchIdx[num] = idx;
     this.wLb(idx, text, color);
   }
 };
