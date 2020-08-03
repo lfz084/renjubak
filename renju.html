@@ -38,27 +38,24 @@
     if (typeof(NoSleep) == "function") {
       noSleep = new NoSleep();
       setInterval(function() {
-        if ((new Date().getTime() - noSleepTime) < 3000) {
-          if (!isNoSleep) { isNoSleep = true;
-            noSleep.enable(); }
+        if (isNoSleep) {
+          noSleep.enable(); 
         }
-        else
-        {
-          if (isNoSleep) { isNoSleep = false;
-            noSleep.disable(); }
+        else {
+          noSleep.disable(); 
         }
-      }, 30 * 1000);
+      }, 15 * 1000);
     }
     let openNoSleep = function(){
       if (noSleep) {
-        msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
-        closeMsg(2000);
-        noSleep.enable();
+        //msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
+        //closeMsg(2000);
+        isNoSleep = true; 
       }
     };
     let closeNoSleep = function(){
-      closeMsg();
-      noSleep.disable();
+      //closeMsg();
+      isNoSleep = false; 
     };
     
 
