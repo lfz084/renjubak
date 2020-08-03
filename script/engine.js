@@ -228,14 +228,19 @@
                 let x;
                 let y;
                 let len;
+                let prvTimer = vcfStartTimer-1000;
+                let maxTimer = 1500;
                 while(true){
                   vcfFinding = stopFind ? -1:vcfFinding;
                   switch (vcfFinding) {
                     case 0:
                       vcfFinding = 100;
                       vcfCount = vcfCount==90000 ? 1 : vcfCount+1;
-                      if (!backStage && vcfCount % 1000 == 0) {
-                        post("printMoves", [vcfMoves, vcfColor]);
+                      if (!backStage) {
+                        if (new Date().getTime()-prvTimer > maxTimer) {
+                          prvTimer = prvTimer+maxTimer;
+                          post("printMoves", [vcfMoves, vcfColor]);
+                        } 
                       }
                       vcfFinding = continueFindVCF(timeOut, depth);
                       break;

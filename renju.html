@@ -18,7 +18,7 @@
   <script src="./script/button.js?version=1"></script>
   <script src="./script/msgbox.js?version=1"></script>
   <script src="./script/checkerBoard.js?version=1"></script>
-  <script src="./script/engine.js?version=1"></script>
+  <script src="./script/engine.js?version=1.20200803"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
@@ -1013,9 +1013,12 @@
               work.terminate();
               cBoard.cleLb("all");
               if (p[0].length) {
-                sPoint = getBlockVCF(p[0],p[1],p[3]);
+                sPoint = getBlockVCF(p[0],p[1],p[3],true);
                 if (sPoint.length) {
                   //console.log("sPoint = " + sPoint);
+                  for (let i=0; i<sPoint.length; i++) {
+                    cBoard.wLb(sPoint[i], "●", "#888888");
+                  } 
                   excludeBP("isBlockVCF");
                 }
                 else {
@@ -1027,6 +1030,9 @@
                 callback();
                 msg("❌❌❌没有VCF");
               }
+            }
+            else if (command =="printMoves") {
+              cBoard.printMoves(p[0],p[1]);
             }
           };
           
