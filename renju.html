@@ -17,8 +17,8 @@
   <script src="./script/NoSleep.min.js"></script>
   <script src="./script/button.js"></script>
   <script src="./script/msgbox.js"></script>
-  <script src="./script/checkerBoard.js"></script>
-  <script src="./script/engine-20200803.js"></script>
+  <script src="./script/checkerBoard-20200804.js"></script>
+  <script src="./script/engine-20200804.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
@@ -631,6 +631,47 @@
     let cLoadImg = null;
     let cSLTX = null;
     let cSLTY = null;
+    let lbTime = new function(){
+          this.div = document.createElement("div");
+          this.startTime = 0;
+          this.timer = null;
+            
+          this.move = function (left, top, width, height, fontSize) {
+            renjuCmddiv.appendChild(this.div);
+            this.startTime = new Date().getTime();
+            this.div.style.position = "absolute";
+            this.div.style.left = left;
+            this.div.style.top = top;
+            this.div.style.height = height;
+            this.div.style.width = width;
+            this.div.style.fontFamily = "黑体";
+            this.div.style.fontSize = fontSize;
+            this.div.style.textAlign = "center";
+            this.div.style.lineHeight = height;
+            /*
+            this.div.style.borderStyle = "solid";
+            this.div.style.borderWidth = "1px";
+            this.div.style.borderColor = "red";
+            */
+            this.div.innerHTML = "00:00:00"
+            let lbDiv = this.div;
+            let sTime = this.startTime;
+            this.timer = setInterval(function(){
+              let t = new Date().getTime() - sTime;
+              let h = parseInt(t/3600000);
+                  h = h<10 ? "0"+h : h;
+              let m = parseInt((t%3600000)/60000);
+                  m = m<10 ? "0"+m : m;
+              let s = parseInt((t%60000)/1000);
+                  s = s<10 ? "0"+s : s;
+              lbDiv.innerHTML = `${h}:${m}:${s}`;
+            },1000);
+          };
+          this.close = function() {
+            renjuCmddiv.removeChild(this.div);
+            clearInterval(this.timer);
+          };
+        };
     let putCheckerBoard = function() {};
 
 
@@ -797,17 +838,17 @@
         let newarr = getArr([]);
         switch (but.input.value * 1) {
           case 1:
-            setCmd(but);
+            setCmd();
             postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlyVCF]);
             break;
 
           case 2:
-            setCmd(but);
+            setCmd();
             postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlySimpleWin]);
             break;
 
           case 3:
-            setCmd(but);
+            setCmd();
             postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, null]);
             break;
 
@@ -852,12 +893,15 @@
         but.input.value = 0;
       });
       cFindPoint.setontouchend(function() {});
-      let setCmd = function(but) {
+      let setCmd = function() {
         //msg ("","msgbox",0,cBoard.height,dw+8,dh-cBoard.height,"停止计算",null,
         //  cancelFind,null,null,"auto");
         cFindPoint.hide();
         cFindVCF.hide();
+        let but = cFindVCF;
         cCancelFind.move(but.left, but.top, but.width, but.height);
+        let lb = cFindPoint;
+        lbTime.move(lb.left, lb.top, lb.width, lb.height, parseInt(parseInt(lb.width)/4)+"px");
         openNoSleep();
       }
       let callback = function() {
@@ -866,6 +910,7 @@
         cFindVCF.show();
         cFindVCF.setText("解题");
         cCancelFind.hide();
+        lbTime.close();
         //closeMsg();   //closeNoSleep 里面有重复代码
         closeNoSleep();
       }
@@ -876,11 +921,11 @@
           msg("✔ " + fclr + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
         }
         else {
-          msg("❌❌❌ " + fclr + " 查找VCF失败了");
+          msg("❌❌❌ " + fclr + " 查找VCF失败了❌❌❌");
         }
       }
       let createWork = function(){
-        let wk = new Worker("./script/engine-20200803.js");
+        let wk = new Worker("./script/engine-20200804.js");
         wk.onmessage=function(e){
           let cmd = e.data.cmd;
           let p = e.data.parameter;
@@ -907,7 +952,7 @@
                                        cObjVCF.winMoves.push(p[0][i].slice(0)); 
                                      }
                                      cBoard.cleLb("all");
-                                     if (cObjVCF.winMoves.length) cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);
+                                     if (cObjVCF.winMoves.length) setTimeout(function(){cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);}, 800);
                                      callback();
                                      printMsg();
                                      work.terminate();
@@ -947,98 +992,112 @@
           let arr = param[0];
           let color = param[1];
           let newarr = param[2];
-          selectPoint(arr, color, newarr, null, null, true, { level: 2 });
-          if(cmd=="isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
-          let sPoint = [];
-          let pnt = aroundPoint[112];
-          for (let i=0; i<225; i++){
-            let x = pnt.point[i].x;
-            let y = pnt.point[i].y;
-            if (newarr[y][x]==0) {
-              sPoint.push(y*15 + x);
-              cBoard.wLb(y*15 + x, "●", "#888888");
-            } 
-            else {
-              cBoard.cleLb(y*15+x);
+          work = new Worker("./script/engine-20200804.js");
+          work.onmessage = function(e) {
+            newarr = e.data.parameter[0];
+            continuefun();
+          };
+          work.postMessage({"cmd":"selectPoint", parameter:[arr, color, newarr, null, null, true, { level: 2}]});
+          //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
+          function continuefun() {
+            if(cmd=="isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
+            let sPoint = [];
+            let pnt = aroundPoint[112];
+            for (let i=0; i<225; i++){
+              let x = pnt.point[i].x;
+              let y = pnt.point[i].y;
+              if (newarr[y][x]==0) {
+                sPoint.push(y*15 + x);
+                cBoard.wLb(y*15 + x, "●", "#888888");
+              } 
+              else {
+                cBoard.cleLb(y*15+x);
+              }
             }
-          }
-          if (sPoint.length==0) {callback();return;};
+            if (sPoint.length==0) {callback();return;};
           
-          let workCount = 0;
-          for (let i=0; i<maxThread; i++) {
-            if (sPoint.length) {
-              works[i] =  new Worker("./script/engine-20200803.js");
-              workCount++;
-              works[i].onmessage = function(e){
-                let idx = sPoint.length ? sPoint.splice(0,1) : -1;
-                let command = e.data.cmd;
-                let p = e.data.parameter;
-                const f = {
-                  "cleLb":             function(){cBoard.cleLb(p[0]);},
-                  "wLb":               function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
-                  "printSearchPoint":  function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
-                  "end":               function(){}, 
-                };
-                f[command]();
-                if (idx>-1) {
-                  cBoard.printSearchPoint(i, idx, "⊙", "green");
-                  works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
-                }
-                else {
-                  works[i].terminate();
-                  cBoard.printSearchPoint(i);
-                  workCount--;
-                  if (workCount==0) {
-                    callback();
+            let workCount = 0;
+            for (let i=0; i<maxThread; i++) {
+              if (sPoint.length) {
+                works[i] =  new Worker("./script/engine-20200804.js");
+                workCount++;
+                works[i].onmessage = function(e){
+                  let idx = sPoint.length ? sPoint.splice(0,1) : -1;
+                  let command = e.data.cmd;
+                  let p = e.data.parameter;
+                  const f = {
+                    "cleLb":             function(){cBoard.cleLb(p[0]);},
+                    "wLb":               function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
+                    "printSearchPoint":  function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
+                    "end":               function(){}, 
+                  };
+                  f[command]();
+                  if (idx>-1) {
+                    cBoard.printSearchPoint(i, idx, "⊙", "green");
+                    works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+                  }
+                  else {
+                    works[i].terminate();
+                    cBoard.printSearchPoint(i);
+                    workCount--;
+                    if (workCount==0) {
+                      callback();
+                    } 
                   } 
-                } 
-              };
-              let idx = sPoint.splice(0,1);
-              cBoard.printSearchPoint(i, idx, "⊙", "green");
-              works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
-             }
+                };
+                let idx = sPoint.splice(0,1);
+                cBoard.printSearchPoint(i, idx, "⊙", "green");
+                works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+               }
             
-          }
+            }
+          } 
         }
         else if(cmd=="getBlockVCFb") {
           let sPoint = [];
-          work = new Worker("./script/engine-20200803.js");
+          work = new Worker("./script/engine-20200804.js");
           work.onmessage = function(e) {
             let command = e.data.cmd;
             let p = e.data.parameter;
+            let fclr = p[1] == 1 ? "黑棋" : "白棋";
             if (command =="findVCF_End") {
-              work.terminate();
               cBoard.cleLb("all");
               if (p[0].length) {
-                sPoint = getBlockVCF(p[0],p[1],p[3],true);
-                if (sPoint.length) {
-                  //console.log("sPoint = " + sPoint);
-                  for (let i=0; i<sPoint.length; i++) {
-                    cBoard.wLb(sPoint[i], "●", "#888888");
-                  } 
-                  excludeBP("isBlockVCF");
-                }
-                else {
-                  callback();
-                  msg("❌❌❌没有成立的防点");
-                }
+                msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
               }
               else {
+                work.terminate();
                 callback();
-                msg("❌❌❌没有VCF");
+                msg("❌❌❌ " + fclr + " 没有VCF ❌❌❌");
               }
             }
             else if (command =="printMoves") {
               cBoard.printMoves(p[0],p[1]);
             }
+            else if (command == "getBlockVCFEnd") {
+              closeMsg();
+              work.terminate();
+              sPoint = p[0];
+              if (sPoint.length) {
+              //console.log("sPoint = " + sPoint);
+                for (let i = 0; i < sPoint.length; i++) {
+                  cBoard.wLb(sPoint[i], "●", "#888888");
+                }
+                excludeBP("isBlockVCF");
+              }
+              else {
+                callback();
+                msg("❌❌❌没有成立的防点❌❌❌");
+              }
+            }
           };
           
-          work.postMessage({"cmd":"findVCF", parameter:[param[0],null,null,1,null,param[1]]});
+          work.postMessage({"cmd":cmd, parameter:[param[0],null,null,1,null,param[1]]});
           function excludeBP(cmd, parameter){
              let workCount = 0;
              for (let i=0; i<maxThread; i++) { 
                if (sPoint.length) { 
-                 works[i]=new Worker("./script/engine-20200803.js");
+                 works[i]=new Worker("./script/engine-20200804.js");
                  workCount++; 
                  works[i].onmessage=function(e){ 
                    let idx=sPoint.length ? sPoint.splice(0,1) : -1; 
@@ -1099,7 +1158,7 @@
           but.input.value = 0;
           return;
         }
-        setCmd(but);
+        setCmd();
         let arr = [];
         cBoard.getPointArray(arr);
         // findVCF(color,timeOut,depth,count,backStage,arr,callback,callbackParameter) 
@@ -1153,7 +1212,6 @@
             postMsg("getBlockVCFb", [getRenjuSelColor(), arr]);
             break;
           case 5:
-            setCmd(but);
             postMsg("blockCatchFoul", [arr]);
             break;
           case 8:
@@ -1183,7 +1241,6 @@
             }
             break;
           case 4:
-            setCmd(but);
             postMsg("isSimpleWin", [arr, getRenjuSelColor(), getArr([]), 4]);
             break;
         }

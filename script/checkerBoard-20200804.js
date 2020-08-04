@@ -157,6 +157,7 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.resetNum = 0; //重置显示的手数，控制从第几手开始显示序号
   this.notShowLastNum = false; // = true ,取消最后一手高亮显示
   this.alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  this.printMovesTimer = 0;
 
   this.XL = 0; //棋盘落子范围，左右上下的4条边
   this.XR = 0;
@@ -1523,7 +1524,10 @@ checkerBoard.prototype.printCheckerBoard = function() {
 // 在棋盘上面打印一个VCF手顺   
 checkerBoard.prototype.printMoves = function(moves, firstColor) {
 
+  let nowTimer = new Date().getTime();
   let idx = 0;
+  if (nowTimer - this.printMovesTimer < 500) return;
+  this.printMovesTimer = nowTimer;
   for (let y = 0; y < this.SLTY; y++) {
     for (let x = 0; x < this.SLTX; x++) {
       idx = y * this.SLTX + x;

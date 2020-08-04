@@ -120,6 +120,13 @@
       "isSimpleWin":     function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
       "blockCatchFoul":  function() { blockCatchFoul(p[0]) },
       "isBlockVCF":      function() { isBlockVCF(p[0], p[1], p[2]) },
+      "selectPoint":     function() {selectPoint(p[0],p[1],p[2],p[3],p[4],p[5],p[6])}, 
+      "getBlockVCFb":    function() {
+                           if (findVCF(p[0],p[1],p[2],p[3],p[4],p[5])) {
+                             let sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial, true);
+                             post ("getBlockVCFEnd", [sPoint]);
+                           };
+                         }, 
      
     };
     
@@ -184,7 +191,7 @@
 
       try {
         //console.log("vcf start");
-        timeOut = timeOut == null ? 1800000 : timeOut;
+        timeOut = timeOut == null ? 36000000 : timeOut;
         depth = depth == null ? 225 : depth;
         count = count == null ? 225 : count * 1;
         backStage = backStage ? true : false;
@@ -2920,7 +2927,9 @@
 
       if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth);
       if (level.level >= 5) {
-        return getArr(newarr, -9999);
+        getArr(newarr, -9999);
+        post("selectPointEnd",[newarr]);
+        return newarr;
       }
       else if (level.level >= 4.5) {
         let narr = getArr([]);
@@ -2930,6 +2939,7 @@
             newarr[y][x] = narr[y][x] != 0 ? 0 : -9999;
           }
         }
+        post("selectPointEnd",[newarr]);
         return newarr;
       }
       else if (level.level >= 4) {
@@ -2981,6 +2991,7 @@
 
       if (!backstage) printNewarr(newarr);
 
+      post("selectPointEnd",[newarr]);
       return newarr;
 
       function printNewarr(newarr) {
