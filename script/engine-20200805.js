@@ -107,38 +107,88 @@
       }
 
     }
-
-
-
-  onmessage=function(e){
-    let p = e.data.parameter;
-    const cmd = {
-      "findVCF":         function() {findVCF(p[0],p[1],p[2],p[3],p[4],p[5]);}, 
-      "cancelFind":      function() {cancelFind();}, 
-      "isTwoVCF":        function() {isTwoVCF(p[0],p[1],p[2]);}, 
-      "isLevelThreePoint":function() {isLevelThreePoint(p[0],p[1],p[2],p[3])}, 
-      "isSimpleWin":     function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
-      "blockCatchFoul":  function() { blockCatchFoul(p[0]) },
-      "isBlockVCF":      function() { isBlockVCF(p[0], p[1], p[2]) },
-      "selectPoint":     function() {selectPoint(p[0],p[1],p[2],p[3],p[4],p[5],p[6])}, 
-      "getBlockVCFb":    function() {
-                           if (findVCF(p[0],p[1],p[2],p[3],p[4],p[5])) {
-                             let sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial, true);
-                             post ("getBlockVCFEnd", [sPoint]);
-                           };
-                         }, 
-     
+    
+    
+    function tree (arr) {
+      this.arr = [];
+      this.root = null;
+      this.parentNode = [];
+      this.childNode = [];
+    }
+    
+    
+    
+    function node (value) {
+      this.value = value || null;
+      this.parentNode = [];
+      this.childNode = [];
+    }
+    
+    
+    node.prototype.appenChild = function(child) {
+      this.childNode[this.childNode.length] = child;
     };
     
-    //console.log("engine.onmessage parameter =" + p);
-    cmd[e.data.cmd]();
-  }
+    
+    node.prototype.removeChild = function(child) {
+      let type = typeof(child);
+      switch (type) {
+        case "object":
+          for (let i=this.childNode.length-1; i>=0; i--) {
+            if (this.childNode[i] == child) {
+              this.childNode[i] = null;
+              this.childNode.splice(i, 1);
+              break;
+            }
+          }
+          break;
+        case "strint":  // child == "all"
+          for (let i = this.childNode.length - 1; i >= 0; i--) {
+            this.childNode[i] = null;
+          }
+          this.childNode = [];
+          break;
+        case "number":
+          child = parseInt(child);
+          if (child>=0 && child<this.childNode.length) {
+            this.childNode[child] = null;
+            this.childNode.splice(child, 1);
+          }
+          break;
+      }
+    };
 
 
 
-  function post(cmd, param) {
-    postMessage({"cmd":cmd, "parameter":param});
-  }
+    onmessage=function(e){
+      let p = e.data.parameter;
+      const cmd = {
+        "findVCF":         function() {findVCF(p[0],p[1],p[2],p[3],p[4],p[5]);}, 
+        "cancelFind":      function() {cancelFind();}, 
+        "isTwoVCF":        function() {isTwoVCF(p[0],p[1],p[2]);}, 
+        "isLevelThreePoint":function() {isLevelThreePoint(p[0],p[1],p[2],p[3])}, 
+        "isSimpleWin":     function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
+        "blockCatchFoul":  function() { blockCatchFoul(p[0]) },
+        "isBlockVCF":      function() { isBlockVCF(p[0], p[1], p[2]) },
+        "selectPoint":     function() {selectPoint(p[0],p[1],p[2],p[3],p[4],p[5],p[6])}, 
+        "getBlockVCFb":    function() {
+                             if (findVCF(p[0],p[1],p[2],p[3],p[4],p[5])) {
+                               let sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial, true);
+                               post ("getBlockVCFEnd", [sPoint]);
+                             };
+                           }, 
+     
+      };
+    
+      //console.log("engine.onmessage parameter =" + p);
+      if (typeof(e.data.cmd)=="function") cmd[e.data.cmd]();
+    }
+
+
+
+    function post(cmd, param) {
+      postMessage({"cmd":cmd, "parameter":param});
+    }
 
 
 
@@ -167,21 +217,6 @@
       return arr;
     }
     
-    
-    
-    function tree (arr) {
-      this.arr = [];
-      this.parentNode = [];
-      this.childNode = [];
-    }
-    
-    
-    function node () {
-      this.level = 0;
-      this.parentNode = [];
-      this.childNode = [];
-    }
-
 
 
     // 连续查找,VCF

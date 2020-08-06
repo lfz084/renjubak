@@ -87,8 +87,8 @@
    }
    else {
      msgTextarea.readOnly = false;
-     s.autofocus = true;
-     msgTextarea.focus();
+     setTimeout(function(){s.autofocus = true;}, 100);
+     setTimeout(function(){msgTextarea.focus();}, 500);
      s.textAlign = "left";
      s.backgroundColor = "white";
    }

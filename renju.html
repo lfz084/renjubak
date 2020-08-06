@@ -14,14 +14,16 @@
 
 <body>
   <script src="./script/viewport.js"></script>
+  <script src="./script/vConsole/vConsole.min.js"></script>
   <script src="./script/NoSleep.min.js"></script>
   <script src="./script/button.js"></script>
-  <script src="./script/msgbox.js"></script>
+  <script src="./script/msgbox20200806.js"></script>
   <script src="./script/checkerBoard-20200804.js"></script>
-  <script src="./script/engine-20200804.js"></script>
+  <script src="./script/engine-20200805.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
+    let vConsole = null;
     let viewport = new view();
     let d = document;
     let dw = d.documentElement.clientWidth;
@@ -631,6 +633,7 @@
     let cLoadImg = null;
     let cSLTX = null;
     let cSLTY = null;
+    let prePostTimer = 0;  //记录上次post事件时间，配合lbTime 监控后台是否停止计算
     let lbTime = new function(){
           this.div = document.createElement("div");
           this.startTime = 0;
@@ -656,8 +659,11 @@
             this.div.innerHTML = "00:00:00"
             let lbDiv = this.div;
             let sTime = this.startTime;
+            prePostTimer = new Date().getTime();
             this.timer = setInterval(function(){
-              let t = new Date().getTime() - sTime;
+              let t = new Date().getTime();
+                  sTime = t-prePostTimer < 60000 ? sTime : sTime + t - prePostTimer;
+                  t -= sTime;
               let h = parseInt(t/3600000);
                   h = h<10 ? "0"+h : h;
               let m = parseInt((t%3600000)/60000);
@@ -668,7 +674,7 @@
             },1000);
           };
           this.close = function() {
-            renjuCmddiv.removeChild(this.div);
+            if (this.div.parentNode) this.div.parentNode.removeChild(this.div);
             clearInterval(this.timer);
           };
         };
@@ -911,7 +917,7 @@
         cFindVCF.setText("解题");
         cCancelFind.hide();
         lbTime.close();
-        //closeMsg();   //closeNoSleep 里面有重复代码
+        closeMsg();   
         closeNoSleep();
       }
       let printMsg = function() {
@@ -925,8 +931,9 @@
         }
       }
       let createWork = function(){
-        let wk = new Worker("./script/engine-20200804.js");
+        let wk = new Worker("./script/engine-20200805.js");
         wk.onmessage=function(e){
+          prePostTimer = new Date().getTime();
           let cmd = e.data.cmd;
           let p = e.data.parameter;
           const f = {
@@ -992,8 +999,9 @@
           let arr = param[0];
           let color = param[1];
           let newarr = param[2];
-          work = new Worker("./script/engine-20200804.js");
+          work = new Worker("./script/engine-20200805.js");
           work.onmessage = function(e) {
+            prePostTimer = new Date().getTime();
             newarr = e.data.parameter[0];
             continuefun();
           };
@@ -1019,9 +1027,10 @@
             let workCount = 0;
             for (let i=0; i<maxThread; i++) {
               if (sPoint.length) {
-                works[i] =  new Worker("./script/engine-20200804.js");
+                works[i] =  new Worker("./script/engine-20200805.js");
                 workCount++;
                 works[i].onmessage = function(e){
+                  prePostTimer = new Date().getTime();
                   let idx = sPoint.length ? sPoint.splice(0,1) : -1;
                   let command = e.data.cmd;
                   let p = e.data.parameter;
@@ -1055,8 +1064,9 @@
         }
         else if(cmd=="getBlockVCFb") {
           let sPoint = [];
-          work = new Worker("./script/engine-20200804.js");
+          work = new Worker("./script/engine-20200805.js");
           work.onmessage = function(e) {
+            prePostTimer = new Date().getTime();
             let command = e.data.cmd;
             let p = e.data.parameter;
             let fclr = p[1] == 1 ? "黑棋" : "白棋";
@@ -1097,9 +1107,10 @@
              let workCount = 0;
              for (let i=0; i<maxThread; i++) { 
                if (sPoint.length) { 
-                 works[i]=new Worker("./script/engine-20200804.js");
+                 works[i]=new Worker("./script/engine-20200805.js");
                  workCount++; 
                  works[i].onmessage=function(e){ 
+                   prePostTimer = new Date().getTime();
                    let idx=sPoint.length ? sPoint.splice(0,1) : -1; 
                    let command=e.data.cmd;
                    let p=e.data.parameter;
@@ -1426,6 +1437,17 @@
       cInputcode.setText("输入代码");
       let inputCode = function(msgStr) {
         // 成功设置棋盘 ，就开始解析棋盘摆盘
+        
+        if (msgStr.indexOf("debug")>-1) {
+          if (vConsole==null) vConsole = new VConsole();
+          return;
+        }
+        else if (msgStr.indexOf("close")>-1) {
+          if (vConsole) vConsole.destroy();
+          vConsole = null;
+          return;
+        }
+        
         let st = 0;
         let end = msgStr.indexOf("{");
         end = end == -1 ? msgStr.length : end;
@@ -1481,6 +1503,7 @@
       cLoadImg.input.accept = "image/*";
       cLoadImg.setText("输入图片");
       cLoadImg.setonchange(function() {
+        postMsg("cancelFind");
         let reader = new FileReader();
         let file = cLoadImg.input.files[0];
         cLoadImg.input.value = "";
@@ -1489,11 +1512,11 @@
         reader.readAsDataURL(file);
         reader.onload = function() {
           img.src = reader.result;
-        }
+        };
         img.onload = function() {
           img.onload = null;
           putImg();
-        }
+        };
       });
 
       function putImg() {
