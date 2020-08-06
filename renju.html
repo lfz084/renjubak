@@ -19,7 +19,7 @@
   <script src="./script/button.js"></script>
   <script src="./script/msgbox20200806.js"></script>
   <script src="./script/checkerBoard-20200806.js"></script>
-  <script src="./script/engine-20200805.js"></script>
+  <script src="./script/engine-20200806.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
@@ -931,7 +931,7 @@
         }
       }
       let createWork = function(){
-        let wk = new Worker("./script/engine-20200805.js");
+        let wk = new Worker("./script/engine-20200806.js");
         wk.onmessage=function(e){
           prePostTimer = new Date().getTime();
           let cmd = e.data.cmd;
@@ -999,7 +999,7 @@
           let arr = param[0];
           let color = param[1];
           let newarr = param[2];
-          work = new Worker("./script/engine-20200805.js");
+          work = new Worker("./script/engine-20200806.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             newarr = e.data.parameter[0];
@@ -1027,7 +1027,7 @@
             let workCount = 0;
             for (let i=0; i<maxThread; i++) {
               if (sPoint.length) {
-                works[i] =  new Worker("./script/engine-20200805.js");
+                works[i] =  new Worker("./script/engine-20200806.js");
                 workCount++;
                 works[i].onmessage = function(e){
                   prePostTimer = new Date().getTime();
@@ -1064,7 +1064,7 @@
         }
         else if(cmd=="getBlockVCFb") {
           let sPoint = [];
-          work = new Worker("./script/engine-20200805.js");
+          work = new Worker("./script/engine-20200806.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             let command = e.data.cmd;
@@ -1107,7 +1107,7 @@
              let workCount = 0;
              for (let i=0; i<maxThread; i++) { 
                if (sPoint.length) { 
-                 works[i]=new Worker("./script/engine-20200805.js");
+                 works[i]=new Worker("./script/engine-20200806.js");
                  workCount++; 
                  works[i].onmessage=function(e){ 
                    prePostTimer = new Date().getTime();

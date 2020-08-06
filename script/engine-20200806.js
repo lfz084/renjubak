@@ -181,7 +181,7 @@
       };
     
       //console.log("engine.onmessage parameter =" + p);
-      if (typeof(e.data.cmd)=="function") cmd[e.data.cmd]();
+      if (typeof(cmd[e.data.cmd])=="function") cmd[e.data.cmd]();
     }
 
 
