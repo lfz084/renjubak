@@ -72,13 +72,13 @@
    s.backgroundColor = "#666666";
 
    s = msgTextarea.style;
-   msgTextarea.value = text || "";
    s.left = "10px";
    s.top = "10px";
    s.width = parseInt(windowDiv.style.width) - 20+"px";
    s.fontSize = parseInt(s.width) * 0.05 + "px";
    s.height = parseInt(s.fontSize) * 1.3 * lineNum+"px";
    s.borderColor = "#666666";
+   msgTextarea.value = text || "";
    if (type == "msgbox") {
      msgTextarea.readOnly = true;
      s.autofocus = false;

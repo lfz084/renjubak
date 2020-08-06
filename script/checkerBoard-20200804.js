@@ -806,6 +806,8 @@ checkerBoard.prototype.autoPut = function() {
       //alert(rgb.r+"\n"+rgb.g+"\n"+rgb.b);
       cNum = (rgb.r + rgb.g + rgb.b) / 3;
       // 黑，白以外-1000，表示空子。
+      console.log(`cNum=${cNum}, ${j} - ${i} `);
+      console.log(`r=${rgb.r},g=${rgb.g}, b=${rgb.b}`);
       if (Math.abs(rgb.r - rgb.g) < 60 && Math.abs(rgb.r - rgb.b) < 60 && Math.abs(rgb.g - rgb.b) < 60) {
         arr[i][j] = cNum;
         max = cNum > max ? cNum : max; // 设置最白，最黑
@@ -819,10 +821,22 @@ checkerBoard.prototype.autoPut = function() {
   }
   
   //alert("end");
+  console.log("max="+max);
+  console.log("min="+min);
+  console.log("wBoard="+wBoard);
+  
   
   imgData = null;
   ctx = null;
-  
+  // 棋盘上只有一种颜色时重新设置 max，min
+  if (Math.abs(max-min)<30) {
+    if ((max+min)/2 < 128) {
+      max = 255;
+    }
+    else {
+      min = 0;
+    }
+  }
   for (let i = this.SLTY - 1; i >= 0; i--) {
     for (let j = this.SLTX - 1; j >= 0; j--) {
       idx = i * this.SLTX + j;
@@ -874,17 +888,19 @@ checkerBoard.prototype.autoPut = function() {
     
     //alert("Set arr end");
     if (isLine((r + g + b) / h / w / 3, cBoard)) {
-      //alert("line")
+      console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 + 18, cBoard)) {
+      console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 - 18, cBoard)) {
+      console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else {
-      //alert("not Line")
+      console.log("not Line");
       return ({ r: r / w / h, g: g / w / h, b: b / w / h }); //不是网格
     }
  
