@@ -2,24 +2,22 @@
 <html>
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes" >
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="shortcut icon" href="./pic/favicon1.ico">
   <link href="./style/renju.css" rel="stylesheet" type="text/css">
   <title> 摆棋小工具</title>
-
 </head>
-
 
 <body>
   <script src="./script/viewport.js"></script>
   <script src="./script/vConsole/vconsole.min.js"></script>
   <script src="./script/NoSleep.min.js"></script>
   <script src="./script/button.js"></script>
-  <script src="./script/msgbox20200806.js"></script>
-  <script src="./script/checkerBoard-20200806.js"></script>
-  <script src="./script/engine-20200806.js"></script>
+  <script src="./script/msgbox20200807.js"></script>
+  <script src="./script/checkerBoard-20200807.js"></script>
+  <script src="./script/engine-20200807.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
@@ -30,7 +28,7 @@
     //alert(dw);
     let dh = d.documentElement.clientHeight;
     let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
-    cWidth = dw < dh ? cWidth : dh  < dw/2 ? dh : dw/2;
+    cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
     //cWidth = 950;
     // dw = 2000;
     //  dh = 2000;
@@ -41,25 +39,25 @@
       noSleep = new NoSleep();
       setInterval(function() {
         if (isNoSleep) {
-          noSleep.enable(); 
+          noSleep.enable();
         }
         else {
-          noSleep.disable(); 
+          noSleep.disable();
         }
       }, 15 * 1000);
     }
-    let openNoSleep = function(){
+    let openNoSleep = function() {
       if (noSleep) {
         //msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
         //closeMsg(2000);
-        isNoSleep = true; 
+        isNoSleep = true;
       }
     };
-    let closeNoSleep = function(){
+    let closeNoSleep = function() {
       //closeMsg();
-      isNoSleep = false; 
+      isNoSleep = false;
     };
-    
+
 
     //用来保存跟踪正在发送的触摸事件
 
@@ -87,40 +85,50 @@
     let cBoard = null; //棋盘对象
 
 
-    document.write(`<div width = 100% style = "height:${cWidth*4}px" ></div>`);
-    if (dw > dh) {
-      d.write(`<div id="up" style="position:absolute;left:${0}px;top:0px;" > </div>`);
-      d.write(`<div id="down" style="position:absolute;left:${cWidth*1.06}px;top:0px;" > </div>`);
-    }
-    else {
-      d.write(`<div id="up" style="position:absolute;left:${(dw-cWidth)/2}px;top:${cWidth}px;" > </div>`);
-      d.write(`<div id="down" style="position:absolute;left:0px;top:${cWidth*2.06}px;" > </div>`);
-    }
-
-
 
     document.body.onload = function() {
-    try {
-      //测试脚本是否加载成功;
-      if (!button || !checkerBoard || !msg || !findVCF || !view || !NoSleep) { location.reload(); return;} 
-      
-      cBoard = new checkerBoard(d.getElementById("up"), 0, 0, cWidth, cWidth);
-      cBoard.printCheckerBoard();
+      try {
+        //测试脚本是否加载成功;
+        if (!button || !checkerBoard || !msg || !findVCF || !view || !NoSleep) { location.reload(); return; }
+        let bodyDiv = d.createElement("div");
+        d.body.appendChild(bodyDiv);
+        bodyDiv.style.position = "absolute";
+        bodyDiv.style.width = "100%";
+        bodyDiv.style.height = cWidth*4 + "px";
+        bodyDiv.style.left = 0;
+        bodyDiv.style.top = 0;
+        let upDiv = d.createElement("div");
+        d.body.appendChild(upDiv);
+        upDiv.style.position = "absolute";
+        upDiv.style.width = "100%";
+        upDiv.style.height = 50 + "px";
+        upDiv.style.left = dw>dh ? "0px" : (dw-cWidth)/2+"px";
+        upDiv.style.top = dw>dh ? "0px" : cWidth +"px";
+        let downDiv = d.createElement("div");
+        d.body.appendChild(downDiv);
+        downDiv.style.position = "absolute";
+        downDiv.style.width = "100%";
+        downDiv.style.height = 50 + "px";
+        downDiv.style.left = dw>dh ? cWidth*1.06+"px" : "0px";
+        downDiv.style.top = dw>dh ? "0px" : cWidth*2.06+"px";
+       
+        cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
+        cBoard.printCheckerBoard();
 
-      setCheckerBoardEvent(cBoard.canvas);
+        setCheckerBoardEvent(cBoard.canvas);
 
-      createRenjuCmdDiv(d.getElementById("down"), 0, 0, cWidth, cWidth);
+        createRenjuCmdDiv(downDiv, 0, 0, cWidth, cWidth);
 
-      createImgCmdDiv(d.getElementById("down"), 0, 0, cWidth, cWidth);
+        createImgCmdDiv(downDiv, 0, 0, cWidth, cWidth);
 
-      renjuLoad();
-      
-      if (dw<=dh) window.scrollTo(0,cWidth);
-    } 
-    catch (err) {
-      console.log ("reLoad");
-      location.reload(); 
-    }
+        renjuLoad();
+
+        if (dw <= dh) window.scrollTo(0, cWidth);
+      }
+      catch (err) {
+        //console.log ("reLoad");
+        location.reload();
+      }
 
     }
 
@@ -176,7 +184,7 @@
     //处理触摸移动事件
 
     function handleMove(evt) {
-    
+
       if (timerContinueSetCutDiv) evt.preventDefault();
 
     }
@@ -241,7 +249,7 @@
       }
       else
       {
-       
+
         // 多点触摸取消长按事件
         if (timerBodyKeepTouch) {
           clearTimeout(timerBodyKeepTouch);
@@ -262,7 +270,7 @@
     //处理触摸移动事件
 
     function bodyTouchMove(evt) {
-      
+
       if (timerContinueSetCutDiv) evt.preventDefault();
       let touches = evt.changedTouches;
 
@@ -435,7 +443,7 @@
 
       for (let i = 0; i < touches.length; i++) {
         let id = touches[i].identifier;
-        if (id == idToFind) {  return i;  }
+        if (id == idToFind) { return i; }
       }
       return -1; //notfound
 
@@ -574,11 +582,12 @@
 
     }
   </script>
-  
   <script language="javascript">
     "use strict";
-    const maxThread = 0 || window.navigator.hardwareConcurrency-1 || 2;
-    //setTimeout("alert(maxThread)", 3000);
+    const maxThread = 0 || window.navigator.hardwareConcurrency - 1 || 2;
+    setTimeout(function() {
+      //alert(maxThread);
+    }, 3000);
     const renjuModel = 0;
     const imgModel = 1;
     let playModel = renjuModel;
@@ -633,51 +642,55 @@
     let cLoadImg = null;
     let cSLTX = null;
     let cSLTY = null;
-    let prePostTimer = 0;  //记录上次post事件时间，配合lbTime 监控后台是否停止计算
-    let lbTime = new function(){
-          this.div = document.createElement("div");
-          this.startTime = 0;
-          this.timer = null;
-            
-          this.move = function (left, top, width, height, fontSize) {
-            renjuCmddiv.appendChild(this.div);
-            this.startTime = new Date().getTime();
-            this.div.style.position = "absolute";
-            this.div.style.left = left;
-            this.div.style.top = top;
-            this.div.style.height = height;
-            this.div.style.width = width;
-            this.div.style.fontFamily = "黑体";
-            this.div.style.fontSize = fontSize;
-            this.div.style.textAlign = "center";
-            this.div.style.lineHeight = height;
-            /*
-            this.div.style.borderStyle = "solid";
-            this.div.style.borderWidth = "1px";
-            this.div.style.borderColor = "red";
-            */
-            this.div.innerHTML = "00:00:00"
-            let lbDiv = this.div;
-            let sTime = this.startTime;
-            prePostTimer = new Date().getTime();
-            this.timer = setInterval(function(){
-              let t = new Date().getTime();
-                  sTime = t-prePostTimer < 60000 ? sTime : sTime + t - prePostTimer;
-                  t -= sTime;
-              let h = parseInt(t/3600000);
-                  h = h<10 ? "0"+h : h;
-              let m = parseInt((t%3600000)/60000);
-                  m = m<10 ? "0"+m : m;
-              let s = parseInt((t%60000)/1000);
-                  s = s<10 ? "0"+s : s;
-              lbDiv.innerHTML = `${h}:${m}:${s}`;
-            },1000);
-          };
-          this.close = function() {
-            if (this.div.parentNode) this.div.parentNode.removeChild(this.div);
-            clearInterval(this.timer);
-          };
-        };
+    let prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止计算
+    let lbTime = new function() {
+      this.div = document.createElement("div");
+      this.startTime = 0;
+      this.timer = null;
+
+      this.move = function(left, top, width, height, fontSize) {
+        renjuCmddiv.appendChild(this.div);
+        this.startTime = new Date().getTime();
+        this.div.style.position = "absolute";
+        this.div.style.left = left;
+        this.div.style.top = top;
+        this.div.style.height = height;
+        this.div.style.width = width;
+        this.div.style.fontFamily = "黑体";
+        this.div.style.fontSize = fontSize;
+        this.div.style.textAlign = "center";
+        this.div.style.lineHeight = height;
+        /*
+        this.div.style.borderStyle = "solid";
+        this.div.style.borderWidth = "1px";
+        this.div.style.borderColor = "red";
+        */
+        this.div.innerHTML = "00:00:00"
+        let lbDiv = this.div;
+        let sTime = this.startTime;
+        prePostTimer = this.startTime;
+        this.timer = setInterval(function() {
+          let t = new Date().getTime();
+          if (t - prePostTimer > 300000) {
+            sTime = sTime + t - prePostTimer;
+            prePostTimer = t;
+          }
+          t -= sTime;
+          //console.log(t);
+          let h = parseInt(t / 3600000);
+          h = h < 10 ? "0" + h : h;
+          let m = parseInt((t % 3600000) / 60000);
+          m = m < 10 ? "0" + m : m;
+          let s = parseInt((t % 60000) / 1000);
+          s = s < 10 ? "0" + s : s;
+          lbDiv.innerHTML = `${h}:${m}:${s}`;
+        }, 1000);
+      };
+      this.close = function() {
+        if (this.div.parentNode) this.div.parentNode.removeChild(this.div);
+        clearInterval(this.timer);
+      };
+    };
     let putCheckerBoard = function() {};
 
 
@@ -687,11 +700,11 @@
       renjuCmddiv = document.createElement("div");
       parentNode.appendChild(renjuCmddiv);
       renjuCmddiv.style.position = "absolute";
-      renjuCmddiv.style.width = width/1.15 +"px";
-      renjuCmddiv.style.height = width+"px";
-      renjuCmddiv.style.top = parseInt(top)+"px";
-      renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2+"px";
-      if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2+"px";
+      renjuCmddiv.style.width = width / 1.15 + "px";
+      renjuCmddiv.style.height = width + "px";
+      renjuCmddiv.style.top = parseInt(top) + "px";
+      renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2 + "px";
+      if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2 + "px";
 
       let sw = parseInt(renjuCmddiv.style.width);
       let w = sw / 9;
@@ -749,7 +762,7 @@
       w = sw / 9;
       t = t + h * 1.5;
 
-  
+
 
       cFlipY = new button(renjuCmddiv, "button", w * 0, t, w, h);
       cFlipY.show();
@@ -862,22 +875,22 @@
             findThreePoint(arr, getRenjuSelColor(), newarr, onlyFree);
             cBoard.printArray(newarr, "③", "red");
             break;
-            
+
           case 5:
             findTTPoint(arr, getRenjuSelColor(), newarr);
             cBoard.printArray(newarr, "❌", "red");
             break;
-            
+
           case 6:
             findFFPoint(arr, getRenjuSelColor(), newarr);
             cBoard.printArray(newarr, "❌", "red");
             break;
-            
+
           case 7:
             findSixPoint(arr, getRenjuSelColor(), newarr, null);
             cBoard.printArray(newarr, "❌", "red");
             break;
-            
+
           case 8:
             findFivePoint(arr, getRenjuSelColor(), newarr, null);
             cBoard.printArray(newarr, "⑤", "red");
@@ -907,7 +920,7 @@
         let but = cFindVCF;
         cCancelFind.move(but.left, but.top, but.width, but.height);
         let lb = cFindPoint;
-        lbTime.move(lb.left, lb.top, lb.width, lb.height, parseInt(parseInt(lb.width)/4)+"px");
+        lbTime.move(lb.left, lb.top, lb.width, lb.height, parseInt(parseInt(lb.width) / 4) + "px");
         openNoSleep();
       }
       let callback = function() {
@@ -917,12 +930,12 @@
         cFindVCF.setText("解题");
         cCancelFind.hide();
         lbTime.close();
-        closeMsg();   
+        closeMsg();
         closeNoSleep();
       }
       let printMsg = function() {
         let fclr = cObjVCF.color == 1 ? "黑棋" : "白棋";
-        console.log(cObjVCF.winMoves)
+        //console.log(cObjVCF.winMoves)
         if (cObjVCF.winMoves.length) {
           msg("✔ " + fclr + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
         }
@@ -930,147 +943,153 @@
           msg("❌❌❌ " + fclr + " 查找VCF失败了❌❌❌");
         }
       }
-      let createWork = function(){
-        let wk = new Worker("./script/engine-20200806.js");
-        wk.onmessage=function(e){
+      let createWork = function() {
+        let wk = new Worker("./script/engine-20200807.js");
+        wk.onmessage = function(e) {
           prePostTimer = new Date().getTime();
           let cmd = e.data.cmd;
           let p = e.data.parameter;
           const f = {
-            "cleLb":               function(){cBoard.cleLb(p[0]);}, 
-            "wLb":                 function(){cBoard.wLb(p[0],p[1],p[2]);}, 
-            "printSearchPoint":    function(){cBoard.printSearchPoint(0,p[0],p[1],p[2]);},
-            "printMoves":          function(){cBoard.printMoves(p[0],p[1]);},
-            "findVCF_addVCF":      function(){
-                                     cObjVCF.arr = copyArr([], p[3]);
-                                     cObjVCF.winMoves = [];
-                                     cObjVCF.color = p[1];
-                                     cObjVCF.time = p[2];
-                                     for (let i = 0; i < p[0].length; i++) { 
-                                       cObjVCF.winMoves.push(p[0][i].slice(0)); 
-                                     }
-                                   }, 
-            "findVCF_End":         function(){
-                                     cObjVCF.arr = copyArr([], p[3]);
-                                     cObjVCF.winMoves = [];
-                                     cObjVCF.color = p[1];
-                                     cObjVCF.time = p[2];
-                                     for (let i = 0; i < p[0].length; i++) { 
-                                       cObjVCF.winMoves.push(p[0][i].slice(0)); 
-                                     }
-                                     cBoard.cleLb("all");
-                                     if (cObjVCF.winMoves.length) setTimeout(function(){cBoard.printMoves(cObjVCF.winMoves[0] ,cObjVCF.color);}, 800);
-                                     callback();
-                                     printMsg();
-                                     work.terminate();
-                                   }, 
-                                   
-          "blockCatchFoul_End":    function(){       
-                                     callback();
-                                     work.terminate();
-                                     if (p[0] == -1) {
-                                       msg("❌❌❌ 没有找到冲四抓禁 ❌❌❌");
-                                     }
-                                     else if (p[0] == 0) {
-                                       msg("❌❌❌ 没有成立的解禁点 ❌❌❌");
-                                     } 
-                                   }, 
-           
+            "cleLb": function() { cBoard.cleLb(p[0]); },
+            "wLb": function() { cBoard.wLb(p[0], p[1], p[2]); },
+            "printSearchPoint": function() { cBoard.printSearchPoint(0, p[0], p[1], p[2]); },
+            "printMoves": function() {
+              cBoard.printMoves(p[0], p[1]);
+              //console.log(p[2]);
+            },
+            "findVCF_addVCF": function() {
+              cObjVCF.arr = copyArr([], p[3]);
+              cObjVCF.winMoves = [];
+              cObjVCF.color = p[1];
+              cObjVCF.time = p[2];
+              for (let i = 0; i < p[0].length; i++) {
+                cObjVCF.winMoves.push(p[0][i].slice(0));
+              }
+            },
+            "findVCF_End": function() {
+              cObjVCF.arr = copyArr([], p[3]);
+              cObjVCF.winMoves = [];
+              cObjVCF.color = p[1];
+              cObjVCF.time = p[2];
+              for (let i = 0; i < p[0].length; i++) {
+                cObjVCF.winMoves.push(p[0][i].slice(0));
+              }
+              cBoard.cleLb("all");
+              if (cObjVCF.winMoves.length) setTimeout(function() { cBoard.printMoves(cObjVCF.winMoves[0], cObjVCF.color); }, 800);
+              callback();
+              printMsg();
+              work.terminate();
+            },
+
+            "blockCatchFoul_End": function() {
+              callback();
+              work.terminate();
+              if (p[0] == -1) {
+                msg("❌❌❌ 没有找到冲四抓禁 ❌❌❌");
+              }
+              else if (p[0] == 0) {
+                msg("❌❌❌ 没有成立的解禁点 ❌❌❌");
+              }
+            },
+
           };
-          wk.onerror = function(){alert("worker error");};
-          console.log(cmd);
+          wk.onerror = function() {
+            //alert("worker error");
+          };
+          //console.log(cmd);
           f[cmd]();
         };
         return wk;
       };
       let work = [];
       let works = [];
-      let postMsg = function(cmd,param){
-        console.log(cmd);
-        if (cmd=="cancelFind") {
-          if (work && typeof(work.terminate)=="function") work.terminate();
-          for (let i=0; i<works.length; i++) works[i].terminate();
+      let postMsg = function(cmd, param) {
+        //console.log(cmd);
+        if (cmd == "cancelFind") {
+          if (work && typeof(work.terminate) == "function") work.terminate();
+          for (let i = 0; i < works.length; i++) works[i].terminate();
           cBoard.cleLb("all");
           callback();
           //printMsg();
         }
-        else if (cmd=="isTwoVCF" || cmd=="isLevelThreePoint" || cmd=="isSimpleWin") {
-          
+        else if (cmd == "isTwoVCF" || cmd == "isLevelThreePoint" || cmd == "isSimpleWin") {
+
           let arr = param[0];
           let color = param[1];
           let newarr = param[2];
-          work = new Worker("./script/engine-20200806.js");
+          work = new Worker("./script/engine-20200807.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             newarr = e.data.parameter[0];
             continuefun();
           };
-          work.postMessage({"cmd":"selectPoint", parameter:[arr, color, newarr, null, null, true, { level: 2}]});
+          work.postMessage({ "cmd": "selectPoint", parameter: [arr, color, newarr, null, null, true, { level: 2 }] });
           //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
           function continuefun() {
-            if(cmd=="isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
+            if (cmd == "isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
             let sPoint = [];
             let pnt = aroundPoint[112];
-            for (let i=0; i<225; i++){
+            for (let i = 0; i < 225; i++) {
               let x = pnt.point[i].x;
               let y = pnt.point[i].y;
-              if (newarr[y][x]==0) {
-                sPoint.push(y*15 + x);
-                cBoard.wLb(y*15 + x, "●", "#888888");
-              } 
+              if (newarr[y][x] == 0) {
+                sPoint.push(y * 15 + x);
+                cBoard.wLb(y * 15 + x, "●", "#888888");
+              }
               else {
-                cBoard.cleLb(y*15+x);
+                cBoard.cleLb(y * 15 + x);
               }
             }
-            if (sPoint.length==0) {callback();return;};
-          
+            if (sPoint.length == 0) { callback(); return; };
+
             let workCount = 0;
-            for (let i=0; i<maxThread; i++) {
+            for (let i = 0; i < maxThread; i++) {
               if (sPoint.length) {
-                works[i] =  new Worker("./script/engine-20200806.js");
+                works[i] = new Worker("./script/engine-20200807.js");
                 workCount++;
-                works[i].onmessage = function(e){
+                works[i].onmessage = function(e) {
                   prePostTimer = new Date().getTime();
-                  let idx = sPoint.length ? sPoint.splice(0,1) : -1;
+                  let idx = sPoint.length ? sPoint.splice(0, 1) : -1;
                   let command = e.data.cmd;
                   let p = e.data.parameter;
                   const f = {
-                    "cleLb":             function(){cBoard.cleLb(p[0]);},
-                    "wLb":               function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
-                    "printSearchPoint":  function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
-                    "end":               function(){}, 
+                    "cleLb": function() { cBoard.cleLb(p[0]); },
+                    "wLb": function() { cBoard.printSearchPoint(i);
+                      cBoard.wLb(p[0], p[1], p[2]); },
+                    "printSearchPoint": function() { cBoard.printSearchPoint(i, p[0], p[1], p[2]); },
+                    "end": function() {},
                   };
                   f[command]();
-                  if (idx>-1) {
+                  if (idx > -1) {
                     cBoard.printSearchPoint(i, idx, "⊙", "green");
-                    works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
+                    works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
                   }
                   else {
                     works[i].terminate();
                     cBoard.printSearchPoint(i);
                     workCount--;
-                    if (workCount==0) {
+                    if (workCount == 0) {
                       callback();
-                    } 
-                  } 
+                    }
+                  }
                 };
-                let idx = sPoint.splice(0,1);
+                let idx = sPoint.splice(0, 1);
                 cBoard.printSearchPoint(i, idx, "⊙", "green");
-                works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
-               }
-            
+                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
+              }
+
             }
-          } 
+          }
         }
-        else if(cmd=="getBlockVCFb") {
+        else if (cmd == "getBlockVCFb") {
           let sPoint = [];
-          work = new Worker("./script/engine-20200806.js");
+          work = new Worker("./script/engine-20200807.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             let command = e.data.cmd;
             let p = e.data.parameter;
             let fclr = p[1] == 1 ? "黑棋" : "白棋";
-            if (command =="findVCF_End") {
+            if (command == "findVCF_End") {
               cBoard.cleLb("all");
               if (p[0].length) {
                 msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
@@ -1081,15 +1100,15 @@
                 msg("❌❌❌ " + fclr + " 没有VCF ❌❌❌");
               }
             }
-            else if (command =="printMoves") {
-              cBoard.printMoves(p[0],p[1]);
+            else if (command == "printMoves") {
+              cBoard.printMoves(p[0], p[1]);
             }
             else if (command == "getBlockVCFEnd") {
               closeMsg();
               work.terminate();
               sPoint = p[0];
               if (sPoint.length) {
-              //console.log("sPoint = " + sPoint);
+                //console.log("sPoint = " + sPoint);
                 for (let i = 0; i < sPoint.length; i++) {
                   cBoard.wLb(sPoint[i], "●", "#888888");
                 }
@@ -1101,51 +1120,53 @@
               }
             }
           };
-          
-          work.postMessage({"cmd":cmd, parameter:[param[0],null,null,1,null,param[1]]});
-          function excludeBP(cmd, parameter){
-             let workCount = 0;
-             for (let i=0; i<maxThread; i++) { 
-               if (sPoint.length) { 
-                 works[i]=new Worker("./script/engine-20200806.js");
-                 workCount++; 
-                 works[i].onmessage=function(e){ 
-                   prePostTimer = new Date().getTime();
-                   let idx=sPoint.length ? sPoint.splice(0,1) : -1; 
-                   let command=e.data.cmd;
-                   let p=e.data.parameter;
-                   const f={ 
-                     "cleLb" : function(){cBoard.cleLb(p[0]);},
-                     "wLb" : function(){cBoard.printSearchPoint(i);cBoard.wLb(p[0],p[1],p[2]);},
-                     "printSearchPoint" : function(){cBoard.printSearchPoint(i,p[0],p[1],p[2]);},
-                     "end" : function(){}, 
-                     
-                   }; 
-                   f[command]();
-                   if (idx>-1) {
-                     cBoard.printSearchPoint(i,idx, "⊙", "green");
-                     works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
-                   }
-                   else {
-                     works[i].terminate();
-                     cBoard.printSearchPoint(i);
-                     workCount--;
-                     if (workCount==0) {
-                       callback();
-                     }
-                    }
+
+          work.postMessage({ "cmd": cmd, parameter: [param[0], null, null, 1, null, param[1]] });
+
+          function excludeBP(cmd, parameter) {
+            let workCount = 0;
+            for (let i = 0; i < maxThread; i++) {
+              if (sPoint.length) {
+                works[i] = new Worker("./script/engine-20200807.js");
+                workCount++;
+                works[i].onmessage = function(e) {
+                  prePostTimer = new Date().getTime();
+                  let idx = sPoint.length ? sPoint.splice(0, 1) : -1;
+                  let command = e.data.cmd;
+                  let p = e.data.parameter;
+                  const f = {
+                    "cleLb": function() { cBoard.cleLb(p[0]); },
+                    "wLb": function() { cBoard.printSearchPoint(i);
+                      cBoard.wLb(p[0], p[1], p[2]); },
+                    "printSearchPoint": function() { cBoard.printSearchPoint(i, p[0], p[1], p[2]); },
+                    "end": function() {},
+
                   };
-                  let idx = sPoint.splice(0,1);
-                  cBoard.printSearchPoint(i,idx, "⊙", "green");
-                  works[i].postMessage({"cmd":cmd,parameter:[idx,param[0],param[1],param[3],param[4],param[5],param[6]]});
-               } 
-             }
-            
+                  f[command]();
+                  if (idx > -1) {
+                    cBoard.printSearchPoint(i, idx, "⊙", "green");
+                    works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
+                  }
+                  else {
+                    works[i].terminate();
+                    cBoard.printSearchPoint(i);
+                    workCount--;
+                    if (workCount == 0) {
+                      callback();
+                    }
+                  }
+                };
+                let idx = sPoint.splice(0, 1);
+                cBoard.printSearchPoint(i, idx, "⊙", "green");
+                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
+              }
+            }
+
           }
         }
         else {
           work = createWork();
-          work.postMessage({"cmd":cmd,parameter:param});
+          work.postMessage({ "cmd": cmd, parameter: param });
         }
       };
 
@@ -1175,10 +1196,10 @@
         // findVCF(color,timeOut,depth,count,backStage,arr,callback,callbackParameter) 
         switch (but.input.value * 1) {
           case 1:
-            postMsg("findVCF",[getRenjuSelColor(),null,null,1,null,arr]);
+            postMsg("findVCF", [getRenjuSelColor(), null, null, 1, null, arr]);
             break;
           case 2:
-            postMsg("findVCF",[getRenjuSelColor(),null,null,null,null,arr]);
+            postMsg("findVCF", [getRenjuSelColor(), null, null, null, null, arr]);
             break;
           case 3:
             postMsg("isTwoVCF", [arr, getRenjuSelColor(), getArr([])]);
@@ -1437,17 +1458,17 @@
       cInputcode.setText("输入代码");
       let inputCode = function(msgStr) {
         // 成功设置棋盘 ，就开始解析棋盘摆盘
-        
-        if (msgStr.indexOf("debug")>-1) {
-          if (vConsole==null) vConsole = new VConsole();
+
+        if (msgStr.indexOf("debug") > -1) {
+          if (vConsole == null) vConsole = new VConsole();
           return;
         }
-        else if (msgStr.indexOf("close")>-1) {
+        else if (msgStr.indexOf("close") > -1) {
           if (vConsole) vConsole.destroy();
           vConsole = null;
           return;
         }
-        
+
         let st = 0;
         let end = msgStr.indexOf("{");
         end = end == -1 ? msgStr.length : end;
@@ -1530,11 +1551,11 @@
         // 画图之前，设置画布大小
         cBoard.canvas.width = w1;
         cBoard.canvas.height = h1;
-        cBoard.canvas.style.width = w1+"px";
-        cBoard.canvas.style.height = h1+"px";
+        cBoard.canvas.style.width = w1 + "px";
+        cBoard.canvas.style.height = h1 + "px";
         let ctx = cBoard.canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
-        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
+        parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         cBoard.resetCutDiv();
         parentNode.removeChild(renjuCmddiv);
         parentNode.appendChild(imgCmdDiv);
@@ -1618,11 +1639,11 @@
       let s = imgCmdDiv.style;
       //parentNode.appendChild(imgCmdDiv);
       s.position = "absolute";
-      s.width = width / 1.15+"px";
-      s.height = width+"px";
-      s.top = parseInt(top)+"px";
-      s.left = (dw - parseInt(s.width)) / 2+"px";
-      if (dw > dh) s.left = (dw - cWidth * 2) / 2+"px";
+      s.width = width / 1.15 + "px";
+      s.height = width + "px";
+      s.top = parseInt(top) + "px";
+      s.left = (dw - parseInt(s.width)) / 2 + "px";
+      if (dw > dh) s.left = (dw - cWidth * 2) / 2 + "px";
 
       let sw = parseInt(s.width);
       let w = sw / 5;
@@ -1653,11 +1674,11 @@
         // 画图之前，设置画布大小
         cBoard.canvas.width = w1;
         cBoard.canvas.height = h1;
-        cBoard.canvas.style.width = w1+"px";
-        cBoard.canvas.style.height = h1+"px";
+        cBoard.canvas.style.width = w1 + "px";
+        cBoard.canvas.style.height = h1 + "px";
         let ctx = cBoard.canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
-        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
+        parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         cBoard.resetCutDiv();
         ctx = null;
         viewport.userScalable();
@@ -1677,8 +1698,8 @@
         //alert(`div.offsetLeft${div.offsetLeft},div.offsetTop${div.offsetTop}`)
         cBoard.bakCanvas.width = w2;
         cBoard.bakCanvas.height = h2;
-        cBoard.bakCanvas.style.width = w2+"px";
-        cBoard.bakCanvas.style.height = h2+"px";
+        cBoard.bakCanvas.style.width = w2 + "px";
+        cBoard.bakCanvas.style.height = h2 + "px";
 
         let ctx = cBoard.bakCanvas.getContext("2d");
         ctx.fillStyle = cBoard.backgroundColor;
@@ -1702,7 +1723,7 @@
 
             h = parseInt(cBoard.canvas.height);
             cBoard.canvas.height = parseInt(cBoard.width) * h2 / w2;
-            cBoard.canvas.style.height = parseInt(cBoard.width) * h2 / w2+"px";
+            cBoard.canvas.style.height = parseInt(cBoard.width) * h2 / w2 + "px";
             ctx.drawImage(cBoard.cutImg, 0, 0, w2, h2, 0, 0, parseInt(cBoard.width), parseInt(cBoard.width) * h2 / w2);
 
             cBoard.XL = parseInt(cBoard.canvas.width) / 13;
@@ -1710,7 +1731,7 @@
             cBoard.YT = parseInt(cBoard.canvas.height) / 13;
             cBoard.YB = parseInt(cBoard.canvas.height) / 13 * 12;
             cBoard.resetP(cBoard.XL, cBoard.XR, cBoard.YT, cBoard.YB);
-            parentNode.style.top = parseInt(cBoard.canvas.height) + parentNode.offsetTop - h+"px";
+            parentNode.style.top = parseInt(cBoard.canvas.height) + parentNode.offsetTop - h + "px";
 
             cBoard.cleAllPointBorder();
             cBoard.hideCutDiv();
@@ -1734,16 +1755,16 @@
       cAutoPut.setText(" 自动识别");
       cAutoPut.setontouchend(function() {
         if (!cLockImg.checked) {
-          lockImg(function(){cBoard.autoPut();});
+          lockImg(function() { cBoard.autoPut(); });
           cLockImg.setChecked(1);
         }
         else {
           cBoard.autoPut();
         }
-        nSetChecked(cAddwhite2); 
+        nSetChecked(cAddwhite2);
       });
 
-      
+
 
       cPutBoard = new button(imgCmdDiv, "button", w * 2.66, t, w, h);
       cPutBoard.show();
@@ -1767,7 +1788,7 @@
         cBoard.cle();
         cBoard.printCheckerBoard();
         cBoard.hideCutDiv();
-        parentNode.style.top = h1 + parentNode.offsetTop - h2+"px";
+        parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         parentNode.removeChild(imgCmdDiv);
         parentNode.appendChild(renjuCmddiv);
         playModel = renjuModel;
@@ -1863,7 +1884,7 @@
         cAddblack2.setChecked(0);
         cAddwhite2.setChecked(0);
         chk.setChecked(1);
-        if (!cLockImg.checked) { 
+        if (!cLockImg.checked) {
           lockImg();
           cLockImg.setChecked(1);
         }
@@ -1954,7 +1975,7 @@
               return { type: tLb, cmd: "☆", showNum: isShow };
           }
       }
-    
+
     }
 
 
@@ -2106,8 +2127,8 @@
       }
 
     }
-    
-    function inputLabel(idx){
+
+    function inputLabel(idx) {
       let w = cBoard.width * 0.8;
       let h;
       let l = (dw - w) / 2;
@@ -2115,13 +2136,13 @@
       let color = getRenjuLbColor();
       // 设置弹窗，让用户手动输入标记
       msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-        let str = msgStr.substr(0, 3);
-        cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
-        if (str!="" && str!=" ") cBoard.wLb(idx, str, color);
-      },
-      function(msgStr) { //用户取消，删除标记
-        //cBoard.clePoint(idx);
-      });
+          let str = msgStr.substr(0, 3);
+          cBoard.clePoint(idx); // 清除原来标记，打印用户选定的标记
+          if (str != "" && str != " ") cBoard.wLb(idx, str, color);
+        },
+        function(msgStr) { //用户取消，删除标记
+          //cBoard.clePoint(idx);
+        });
     }
 
 
@@ -2182,7 +2203,6 @@
       }, 300);
     }
   </script>
-
 </body>
 
 </html>

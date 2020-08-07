@@ -52,7 +52,7 @@
 
       // 在这个点上放一个棋子or数字;
       this.printNb = function(n, color) {
-        // alert("printNb")
+        //alert("printNb")
         //alert(this.x + "-" + this.y);
         let size;
         let temp;
@@ -85,7 +85,7 @@
 
       //在这个点上记一个标记
       this.printLb = function(s, color) {
-        // alert("printLb")
+        //alert("printLb")
         let size;
         let temp;
         this.type = tLb;
@@ -108,7 +108,7 @@
 
       //清空这个点上面的棋子，数字，标记              
       this.cle = function() {
-        // alert("p.cle")
+        //alert("p.cle")
         this.d.innerHTML = "";
         this.d.style.borderStyle = "";
         this.d.style.background = "";
@@ -223,7 +223,7 @@
       if (Loading) return;
       loadStart();
       let r = isConfirm ? confirm("你确定删除当前记录吗？") : true;
-      // alert(r)
+      //alert(r)
       if (!r) { loadEnd(); return; }
       let i;
       let j;
@@ -419,7 +419,7 @@
       callback = callback || function() {};
       callback2 = callback2 || function() {};
       let srcStr = localStorage.getItem("pic" + index);
-      // alert("openimg" + index) 
+      //alert("openimg" + index) 
       if (srcStr != null)
       {
         img.src = srcStr;
@@ -448,7 +448,7 @@
       let height = parseInt(div.style.height);
       let SLTX = String(sltx.input.value);
       let SLTY = String(slty.input.value);
-      // alert("saveDiv");
+      //alert("saveDiv");
       localStorage.setItem("sltx" + index, SLTX);
       localStorage.setItem("slty" + index, SLTY);
 
@@ -556,10 +556,10 @@
       {
         str = localStorage.getItem("p" + index + "_" + String(i));
         strToxy(str, p);
-        // alert(p.x +"-"+p.y);
+        //alert(p.x +"-"+p.y);
         // if( getP(p.x,p.y).d == null) getP(p.x,p.y).setd(getfreeLb());
         wNb(getP(p.x, p.y));
-        //  alert(p.x +"-"+p.y);
+        //alert(p.x +"-"+p.y);
 
       }
       return true;
@@ -1224,7 +1224,7 @@
       //alert("i=" +i)  
       MS[i] = p;
       //MS.length++;
-      // alert("wNb");
+      //alert("wNb");
 
       if (rNC1.checked)
       {
@@ -1249,7 +1249,7 @@
     //悔一手
     function cleNb()
     {
-      // alert("cleNb sta p=" +p)
+      //alert("cleNb sta p=" +p)
       let i;
       i = MS.length;
       if (i == 0) return;
@@ -1277,7 +1277,7 @@
         }
         else
         {
-          // alert("2")
+          //alert("2")
           if (rNC2.checked)
           {
             color = i % 2 ? 'black' : 'white';
@@ -1732,7 +1732,7 @@
       window.scrollTo(0,parseInt(fileDiv.style.top)-sw/9/1.5*1.8);
     } 
     catch (err) {
-      console.log("reLoad");
+      //console.log("reLoad");
       location.reload(); 
     }
     }

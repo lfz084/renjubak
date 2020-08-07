@@ -16,10 +16,10 @@ view.prototype.resize = function() {
   document.head.appendChild(this.viewport);
   */
   let self = this;
-  self.viewport.setAttribute("content",  `initial-scale=${self.scale+0.01} `);
+  self.viewport.setAttribute("content", `initial-scale=${self.scale+0.01} `);
   //setTimeout(function() {
-    self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${self.scale}, user-scalable=no`);
-    //alert(self.viewport.getAttribute("content"));
+  self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${self.scale}, user-scalable=no`);
+  //alert(self.viewport.getAttribute("content"));
   //}, 10);
 };
 
@@ -33,7 +33,7 @@ view.prototype.userScalable = function(scalable) {
   let self = this;
   self.viewport.setAttribute("content", `initial-scale=${self.scale+0.01} `);
   //setTimeout(function() {
-    self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${2}, user-scalable=yes`);
-    //alert(self.viewport.getAttribute("content"));
+  self.viewport.setAttribute("content", `width=1000, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${2}, user-scalable=yes`);
+  //alert(self.viewport.getAttribute("content"));
   //}, 10);
 };

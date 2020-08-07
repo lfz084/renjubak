@@ -47,8 +47,8 @@ point.prototype.printBorder = function(gW, gH) {
   this.d.style.position = "absolute";
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2)+"px";
-  this.d.style.top = this.y - parseInt(size / 2)+"px";
+  this.d.style.left = this.x - parseInt(size / 2) + "px";
+  this.d.style.top = this.y - parseInt(size / 2) + "px";
   this.d.style.borderStyle = "dashed";
   this.d.style.borderWidth = "1px";
   this.d.style.borderColor = "red";
@@ -59,7 +59,7 @@ point.prototype.printBorder = function(gW, gH) {
 
 //在这个点上记一个标记
 point.prototype.printLb = function(s, color, gW, gH) {
-  // alert("printLb")
+  //alert("printLb")
   var size;
   var temp;
   this.type = tLb;
@@ -69,15 +69,15 @@ point.prototype.printLb = function(s, color, gW, gH) {
   this.d.innerHTML = this.text;
   temp = (gW < gH) ? gW : gH;
   size = parseInt(temp / 4 * 3);
-  this.d.style.fontSize = size+"px";
+  this.d.style.fontSize = size + "px";
   this.d.style.color = color;
   this.d.style.position = "absolute";
   this.d.style.background = "";
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
   this.d.style.lineHeight = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2)+"px";
-  this.d.style.top = this.y - parseInt(size / 2)+"px";
+  this.d.style.left = this.x - parseInt(size / 2) + "px";
+  this.d.style.top = this.y - parseInt(size / 2) + "px";
   this.d.style.zIndex = 0;
 
 };
@@ -94,7 +94,7 @@ point.prototype.printNb = function(n, color, gW, gH) {
   this.d.innerHTML = this.text;
   temp = (gW < gH) ? gW : gH;
   size = (color == "black" || color == "white") ? parseInt(temp / 4 * 1.5) : parseInt(temp / 4 * 3);
-  this.d.style.fontSize = size+"px";
+  this.d.style.fontSize = size + "px";
   size = parseInt(temp / 4 * 2);
   this.d.style.color = color == "white" ? "black" : "pink";
   this.d.style.position = "absolute";
@@ -102,8 +102,8 @@ point.prototype.printNb = function(n, color, gW, gH) {
   this.d.style.width = size + "px";
   this.d.style.height = size + "px";
   this.d.style.lineHeight = size + "px";
-  this.d.style.left = this.x - parseInt(size / 2)+"px";
-  this.d.style.top = this.y - parseInt(size / 2)+"px";
+  this.d.style.left = this.x - parseInt(size / 2) + "px";
+  this.d.style.top = this.y - parseInt(size / 2) + "px";
   this.d.style.borderStyle = "";
   this.d.style.zIndex = 0;
   if (color == "black" || color == "white")
@@ -168,22 +168,22 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.SLTX = 15;
   this.SLTY = 15; //默认是15×15棋盘;
   this.searchIdx = []; // 记录正在计算的点
-  for (let i=0; i<30; i++) {this.searchIdx[i]=-1;};
+  for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
   this.backgroundColor = "#f0f0f0";
 
   //页面显示的棋盘
   this.canvas = d.createElement("canvas");
   this.canvas.style.position = "absolute";
   if (width == null || height == null) {
-    this.canvas.style.width = dw < dh ? dw+"px" : dh+"px";
+    this.canvas.style.width = dw < dh ? dw + "px" : dh + "px";
     this.canvas.style.height = this.canvas.style.width;
   }
   else {
-    this.canvas.style.width = parseInt(width)+"px";
-    this.canvas.style.height = parseInt(height)+"px";
+    this.canvas.style.width = parseInt(width) + "px";
+    this.canvas.style.height = parseInt(height) + "px";
   }
-  this.canvas.style.left = parseInt(left)+"px";
-  this.canvas.style.top = parseInt(top)+"px";
+  this.canvas.style.left = parseInt(left) + "px";
+  this.canvas.style.top = parseInt(top) + "px";
   this.parentNode.appendChild(this.canvas);
 
   //后台保存的空棋盘
@@ -191,8 +191,8 @@ function checkerBoard(parentNode, left, top, width, height) {
   this.bakCanvas.style.position = "absolute";
   this.bakCanvas.style.width = this.canvas.style.width;
   this.bakCanvas.style.height = this.canvas.style.height;
-  this.bakCanvas.style.left = this.canvas.offsetLeft+"px";
-  this.bakCanvas.style.top = this.canvas.offsetTop+"px";
+  this.bakCanvas.style.left = this.canvas.offsetLeft + "px";
+  this.bakCanvas.style.top = this.canvas.offsetTop + "px";
   //this.parentNode.appendChild(this.bakCanvas);
   //后台裁剪图片的canvas
   this.cutCanvas = d.createElement("canvas");
@@ -797,17 +797,17 @@ checkerBoard.prototype.autoPut = function() {
   let idx;
   let wBoard = true; // 默认白色棋盘
   let ctx = cBoard.canvas.getContext("2d");
-  let imgData =  ctx.getImageData(0, 0, parseInt(this.width), parseInt(this.height)).data;
-  
+  let imgData = ctx.getImageData(0, 0, parseInt(this.width), parseInt(this.height)).data;
+
   for (let i = this.SLTY - 1; i >= 0; i--) {
     for (let j = this.SLTX - 1; j >= 0; j--) {
       idx = i * this.SLTX + j;
-      rgb = getPointColor(idx,this);
+      rgb = getPointColor(idx, this);
       //alert(rgb.r+"\n"+rgb.g+"\n"+rgb.b);
       cNum = (rgb.r + rgb.g + rgb.b) / 3;
       // 黑，白以外-1000，表示空子。
-      console.log(`cNum=${cNum}, ${j} - ${i} `);
-      console.log(`r=${rgb.r},g=${rgb.g}, b=${rgb.b}`);
+      //console.log(`cNum=${cNum}, ${j} - ${i} `);
+      //console.log(`r=${rgb.r},g=${rgb.g}, b=${rgb.b}`);
       if (Math.abs(rgb.r - rgb.g) < 60 && Math.abs(rgb.r - rgb.b) < 60 && Math.abs(rgb.g - rgb.b) < 60) {
         arr[i][j] = cNum;
         max = cNum > max ? cNum : max; // 设置最白，最黑
@@ -816,21 +816,21 @@ checkerBoard.prototype.autoPut = function() {
       else {
         arr[i][j] = -1000;
         wBoard = false;
-      } 
+      }
     }
   }
-  
+
   //alert("end");
-  console.log("max="+max);
-  console.log("min="+min);
-  console.log("wBoard="+wBoard);
-  
-  
+  //console.log("max="+max);
+  //console.log("min="+min);
+  //console.log("wBoard="+wBoard);
+
+
   imgData = null;
   ctx = null;
   // 棋盘上只有一种颜色时重新设置 max，min
-  if (Math.abs(max-min)<30) {
-    if ((max+min)/2 < 128) {
+  if (Math.abs(max - min) < 30) {
+    if ((max + min) / 2 < 128) {
       max = 255;
     }
     else {
@@ -853,12 +853,12 @@ checkerBoard.prototype.autoPut = function() {
       }
     }
   }
-  
-  
-  
+
+
+
   //取得一个点的平均颜色
-  function getPointColor (idx, cBoard) {
-    
+  function getPointColor(idx, cBoard) {
+
     //alert("getPointc");
     let width = parseInt(cBoard.width);
     let w = parseInt(cBoard.gW / 2);
@@ -870,49 +870,49 @@ checkerBoard.prototype.autoPut = function() {
     let b = 0;
     let arr = []; //  记录彩色
     let narr = []; // 记录黑白色
-    
+
     for (let i = 0; i < w; i++) {
       arr[i] = [];
       for (let j = 0; j < h; j++) {
         //let black = (i>w/4*1.5 && i<w/4*2.5 || j>h/4*1.5 && j<h/4*2.5) && c[0]<50 && c[1]<50 && c[2]<50 ? -38 : 0;
         arr[i][j] = [];
-        arr[i][j][0] = imgData[(width*(t+j)+l+i)*4];
-        arr[i][j][1] = imgData[(width*(t+j)+l+i)*4+1];
-        arr[i][j][2] = imgData[(width*(t+j)+l+i)*4+2];
-        arr[i][j][3] = imgData[(width*(t+j)+l+i)*4+3];
+        arr[i][j][0] = imgData[(width * (t + j) + l + i) * 4];
+        arr[i][j][1] = imgData[(width * (t + j) + l + i) * 4 + 1];
+        arr[i][j][2] = imgData[(width * (t + j) + l + i) * 4 + 2];
+        arr[i][j][3] = imgData[(width * (t + j) + l + i) * 4 + 3];
         r += arr[i][j][0];
         g += arr[i][j][1];
         b += arr[i][j][2];
       }
     }
-    
+
     //alert("Set arr end");
     if (isLine((r + g + b) / h / w / 3, cBoard)) {
-      console.log("line");
+      //console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 + 18, cBoard)) {
-      console.log("line");
+      //console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else if (isLine((r + g + b) / h / w / 3 - 18, cBoard)) {
-      console.log("line");
+      //console.log("line");
       return ({ r: 255, g: 125, b: 255 }); //网格, 无棋子
     }
     else {
-      console.log("not Line");
+      //console.log("not Line");
       return ({ r: r / w / h, g: g / w / h, b: b / w / h }); //不是网格
     }
- 
- 
- 
+
+
+
     function isLine(cnum, cboard) {
       let tx;
       let ty; //网格的x，y 线
       let x = idx % cboard.SLTX;
-      let y = parseInt(idx/cboard.SLTX);
+      let y = parseInt(idx / cboard.SLTX);
       let count = 0; // 记录黑点
-      let c; 
+      let c;
       for (let i = 0; i < w; i++) {
         narr[i] = [];
         for (let j = 0; j < h; j++) {
@@ -927,7 +927,7 @@ checkerBoard.prototype.autoPut = function() {
         }
       }
       if (count > w * h / 8 * 3) return false;
-    
+
       /*
           // 测试
       let str = idx+"\n";
@@ -937,15 +937,15 @@ checkerBoard.prototype.autoPut = function() {
           }
           str+="\n"
       }
-      alert(str)
+      //alert(str)
       */
-    
+
       // 针对白底棋盘，搜索棋盘网格线
       if (y == null) {
         x = idx % cboard.SLTX;
         y = parseInt(idx / cboard.SLTX);
       }
-    
+
       if (x == 0) {
         if (idx == 0) {
           if (right() && buttom()) return true;
@@ -977,7 +977,7 @@ checkerBoard.prototype.autoPut = function() {
       else {
         if (left() && right() && top() && buttom()) return true;
       }
-    
+
       function left() {
         let i;
         let j;
@@ -1000,7 +1000,7 @@ checkerBoard.prototype.autoPut = function() {
         }
         //alert("__left")
       }
-    
+
       function right() {
         let i;
         let j;
@@ -1023,7 +1023,7 @@ checkerBoard.prototype.autoPut = function() {
         }
         //alert("__right")
       }
-    
+
       function top() {
         let i;
         let j;
@@ -1046,7 +1046,7 @@ checkerBoard.prototype.autoPut = function() {
         }
         //alert("__top")
       }
-    
+
       function buttom() {
         let i;
         let j;
@@ -1070,8 +1070,8 @@ checkerBoard.prototype.autoPut = function() {
         //alert("__buttom")
       }
     }
-   
-  } 
+
+  }
 
 };
 
@@ -1090,9 +1090,9 @@ checkerBoard.prototype.getSVG = function() {
   let y2;
   let lineWidth;
   let canvas = this.canvas;
-  console.log("checkerBoard.getSVG");
+  //console.log("checkerBoard.getSVG");
   for (let i = 0; i < this.SLTX; i++) {
-    lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size  : parseInt(canvas.width) / 1000 * 2 * size;
+    lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
     x1 = this.P[i].x * size;
     y1 = this.P[i].y * size;
     x2 = this.P[i + (this.SLTY - 1) * this.SLTX].x * size;
@@ -1376,7 +1376,7 @@ checkerBoard.prototype.MSToMoves = function() {
   for (let i = 0; i <= this.MSindex; i++) {
     this.Moves += this.indexToName(this.MS[i]);
   }
-  
+
 };
 
 
@@ -1403,7 +1403,7 @@ checkerBoard.prototype.printBorder = function() {
   {
     if (this.P[i] != null) this.P[i].printBorder(this.gW, this.gH);
   }
-  
+
 };
 
 
@@ -1463,7 +1463,7 @@ checkerBoard.prototype.printCheckerBoard = function() {
   this.YB = parseInt(parseInt(this.height) / siz * (siz - 1));
 
   this.resetP(this.XL, this.XR, this.YT, this.YB);
- // 画图之前，设置画布大小
+  // 画图之前，设置画布大小
   canvas.width = parseInt(this.width);
   canvas.height = parseInt(this.height);
   let ctx = canvas.getContext("2d");
@@ -1522,8 +1522,8 @@ checkerBoard.prototype.printCheckerBoard = function() {
   ctx = canvas2.getContext("2d");
   canvas2.width = canvas.width;
   canvas2.height = canvas.height;
-  canvas2.style.width = canvas.width+"px";
-  canvas2.style.height = canvas.height+"px";
+  canvas2.style.width = canvas.width + "px";
+  canvas2.style.height = canvas.height + "px";
   //图片转移后，重新设置每个点的坐标
   ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
   /*this.XL += canvas2.offsetLeft - canvas.offsetLeft ;
@@ -1554,7 +1554,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
   }
   for (let i = 0; i < moves.length; i++) {
     let color;
-    if (i==moves.length-1) {
+    if (i == moves.length - 1) {
       color = "red";
     }
     else if (firstColor == 1) {
@@ -1563,7 +1563,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
     else {
       color = i % 2 ? "black" : "#9e9999";
     }
-    
+
     this.wLb(moves[i], i + 1, color);
   }
 };
@@ -1841,7 +1841,7 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
 
 // 涂鸦模式，边框初始化
 checkerBoard.prototype.resetCutDiv = function() {
-  
+
   let canvas = this.canvas;
   let w = parseInt(canvas.width);
   let h = parseInt(canvas.height);
@@ -1856,10 +1856,10 @@ checkerBoard.prototype.resetCutDiv = function() {
   s.borderWidth = "3px";
   s.borderColor = "red";
   s.zIndex = 0;
-  s.width = XR - XL+"px";
-  s.height = YB - YT+"px";
-  s.left = XL+"px";
-  s.top = YT+"px";
+  s.width = XR - XL + "px";
+  s.height = YB - YT + "px";
+  s.left = XL + "px";
+  s.top = YT + "px";
 
   /*
   if (XR == 0  || YB == 0)  {
@@ -1909,7 +1909,7 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
       this.P[l].setxy(x, y);
     }
   }
-  
+
 };
 
 
@@ -1981,7 +1981,7 @@ checkerBoard.prototype.saveAsSVG = function(type) {
   let blob = new Blob([this.getSVG()], { type: mimetype });
   save_link.href = URL.createObjectURL(blob);
   save_link.download = name;
-  console.log("checkerBoard.saveAsSVG Download" );
+  //console.log("checkerBoard.saveAsSVG Download" );
   let event = document.createEvent("MouseEvents");
   event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
   save_link.dispatchEvent(event);
@@ -2058,11 +2058,11 @@ checkerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘�
 
   let canvas = this.canvas;
   s.position = "absolute";
-  s.left = canvas.offsetLeft < l ? l+"px" : canvas.offsetLeft+"px";
-  s.top = canvas.offsetTop < t ? t+"px" : canvas.offsetTop+"px";
-  s.width = w > parseInt(canvas.style.width) - l ? parseInt(canvas.style.width) - l+"px" : w+"px";
-  s.height = h > parseInt(canvas.style.height) - t ? parseInt(canvas.style.height) - t+"px" : h+"px";
-  
+  s.left = canvas.offsetLeft < l ? l + "px" : canvas.offsetLeft + "px";
+  s.top = canvas.offsetTop < t ? t + "px" : canvas.offsetTop + "px";
+  s.width = w > parseInt(canvas.style.width) - l ? parseInt(canvas.style.width) - l + "px" : w + "px";
+  s.height = h > parseInt(canvas.style.height) - t ? parseInt(canvas.style.height) - t + "px" : h + "px";
+
   this.XL = l;
   this.XR = this.XL + w;
   this.YT = t;
@@ -2437,7 +2437,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
     }
     // 棋谱坐标转成 index 后添加棋子
     this.wNb(this.nameToIndex(a), color, showNum)
-    
+
   }
 };
 
