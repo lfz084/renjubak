@@ -17,7 +17,7 @@
   <script src="./script/button.js"></script>
   <script src="./script/msgbox20200807.js"></script>
   <script src="./script/checkerBoard-20200807.js"></script>
-  <script src="./script/engine-20200807.js"></script>
+  <script src="./script/engine-20200808.js"></script>
   <script src="./script/jsPDF/jspdf.customfonts.min.js"></script>
   <script language="javascript">
     "use strict";
@@ -94,7 +94,7 @@
         d.body.appendChild(bodyDiv);
         bodyDiv.style.position = "absolute";
         bodyDiv.style.width = "100%";
-        bodyDiv.style.height = cWidth*4 + "px";
+        bodyDiv.style.height = cWidth * 4 + "px";
         bodyDiv.style.left = 0;
         bodyDiv.style.top = 0;
         let upDiv = d.createElement("div");
@@ -102,16 +102,16 @@
         upDiv.style.position = "absolute";
         upDiv.style.width = "100%";
         upDiv.style.height = 50 + "px";
-        upDiv.style.left = dw>dh ? "0px" : (dw-cWidth)/2+"px";
-        upDiv.style.top = dw>dh ? "0px" : cWidth +"px";
+        upDiv.style.left = dw > dh ? "0px" : (dw - cWidth) / 2 + "px";
+        upDiv.style.top = dw > dh ? "0px" : cWidth + "px";
         let downDiv = d.createElement("div");
         d.body.appendChild(downDiv);
         downDiv.style.position = "absolute";
         downDiv.style.width = "100%";
         downDiv.style.height = 50 + "px";
-        downDiv.style.left = dw>dh ? cWidth*1.06+"px" : "0px";
-        downDiv.style.top = dw>dh ? "0px" : cWidth*2.06+"px";
-       
+        downDiv.style.left = dw > dh ? cWidth * 1.06 + "px" : "0px";
+        downDiv.style.top = dw > dh ? "0px" : cWidth * 2.06 + "px";
+
         cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
         cBoard.printCheckerBoard();
 
@@ -931,6 +931,7 @@
         cCancelFind.hide();
         lbTime.close();
         closeMsg();
+        saveContinueData();
         closeNoSleep();
       }
       let printMsg = function() {
@@ -944,7 +945,7 @@
         }
       }
       let createWork = function() {
-        let wk = new Worker("./script/engine-20200807.js");
+        let wk = new Worker("./script/engine-20200808.js");
         wk.onmessage = function(e) {
           prePostTimer = new Date().getTime();
           let cmd = e.data.cmd;
@@ -992,12 +993,17 @@
               }
             },
 
+            "saveContinueData": function() {
+              //console.log(p[0]);
+              saveContinueData(p[0]);
+            },
+
           };
           wk.onerror = function() {
             //alert("worker error");
           };
           //console.log(cmd);
-          f[cmd]();
+          if (typeof(f[cmd]) == "function") f[cmd]();
         };
         return wk;
       };
@@ -1017,7 +1023,7 @@
           let arr = param[0];
           let color = param[1];
           let newarr = param[2];
-          work = new Worker("./script/engine-20200807.js");
+          work = new Worker("./script/engine-20200808.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             newarr = e.data.parameter[0];
@@ -1045,7 +1051,7 @@
             let workCount = 0;
             for (let i = 0; i < maxThread; i++) {
               if (sPoint.length) {
-                works[i] = new Worker("./script/engine-20200807.js");
+                works[i] = new Worker("./script/engine-20200808.js");
                 workCount++;
                 works[i].onmessage = function(e) {
                   prePostTimer = new Date().getTime();
@@ -1054,12 +1060,14 @@
                   let p = e.data.parameter;
                   const f = {
                     "cleLb": function() { cBoard.cleLb(p[0]); },
-                    "wLb": function() { cBoard.printSearchPoint(i);
-                      cBoard.wLb(p[0], p[1], p[2]); },
+                    "wLb": function() {
+                      cBoard.printSearchPoint(i);
+                      cBoard.wLb(p[0], p[1], p[2]);
+                    },
                     "printSearchPoint": function() { cBoard.printSearchPoint(i, p[0], p[1], p[2]); },
                     "end": function() {},
                   };
-                  f[command]();
+                  if (typeof(f[command]) == "function") f[command]();
                   if (idx > -1) {
                     cBoard.printSearchPoint(i, idx, "⊙", "green");
                     works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
@@ -1083,7 +1091,7 @@
         }
         else if (cmd == "getBlockVCFb") {
           let sPoint = [];
-          work = new Worker("./script/engine-20200807.js");
+          work = new Worker("./script/engine-20200808.js");
           work.onmessage = function(e) {
             prePostTimer = new Date().getTime();
             let command = e.data.cmd;
@@ -1127,7 +1135,7 @@
             let workCount = 0;
             for (let i = 0; i < maxThread; i++) {
               if (sPoint.length) {
-                works[i] = new Worker("./script/engine-20200807.js");
+                works[i] = new Worker("./script/engine-20200808.js");
                 workCount++;
                 works[i].onmessage = function(e) {
                   prePostTimer = new Date().getTime();
@@ -1136,13 +1144,15 @@
                   let p = e.data.parameter;
                   const f = {
                     "cleLb": function() { cBoard.cleLb(p[0]); },
-                    "wLb": function() { cBoard.printSearchPoint(i);
-                      cBoard.wLb(p[0], p[1], p[2]); },
+                    "wLb": function() {
+                      cBoard.printSearchPoint(i);
+                      cBoard.wLb(p[0], p[1], p[2]);
+                    },
                     "printSearchPoint": function() { cBoard.printSearchPoint(i, p[0], p[1], p[2]); },
                     "end": function() {},
 
                   };
-                  f[command]();
+                  if (typeof(f[command]) == "function") f[command]();
                   if (idx > -1) {
                     cBoard.printSearchPoint(i, idx, "⊙", "green");
                     works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
@@ -1625,6 +1635,18 @@
         cLABC.setChecked(0);
         chk.setChecked(1);
       }
+
+     
+      setTimeout(function() {
+        let continueData = loadContinueData();
+        if (continueData) {
+          msg("上次意外退出,继续计算...", null, null, null, null, null, null, null, null, null, 0);
+          closeMsg(2000);
+          postMsg(continueData.cmd, [continueData]);
+          setCmd();
+        }
+      }, 1000 * 1);
+     
 
 
     }
@@ -2187,7 +2209,6 @@
 
 
 
-
     function renjuLoad() {
 
       setTimeout(function() {
@@ -2202,6 +2223,23 @@
 
       }, 300);
     }
+
+
+
+    // 数据量太大，localStorage存不下
+    function saveContinueData(data) {
+      let strData = JSON.stringify(data);
+      //console.log(strData ? strData.length : "removeContinueData");
+      localStorage.setItem("continueData", strData);
+    }
+
+    function loadContinueData() {
+      let strData = localStorage.getItem("continueData");
+      let data = JSON.parse(strData);
+      //console.log(data);
+      return data;
+    }
+ 
   </script>
 </body>
 
