@@ -171,7 +171,7 @@ onmessage = function(e) {
         "cancelFind": function() { cancelFind(); },
         "isTwoVCF": function() { isTwoVCF(p[0], p[1], p[2]); },
         "isLevelThreePoint": function() { isLevelThreePoint(p[0], p[1], p[2], p[3]) },
-        "isSimpleWin": function() { isSimpleWin(p[0], p[1], p[2], p[3]) },
+        "isSimpleWin": function() { isSimpleWin(p[0], p[1], p[2], p[3], p[4]) },
         "blockCatchFoul": function() { blockCatchFoul(p[0]) },
         "isBlockVCF": function() { isBlockVCF(p[0], p[1], p[2]) },
         "selectPoint": function() { selectPoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6]) },
@@ -3042,7 +3042,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
     gDepth = gDepth || 2;
     maxNum = maxNum || 1000;
     // 判断对手进攻级别
-    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
+    let nLevel = getLevelB(arr, color==1?2:1, getArr([]), timeout, depth, true);
     let winLevel;
     //console.log("对手进攻级别="+nLevel.level)
     if (nLevel.level == 5) { // 对手已胜

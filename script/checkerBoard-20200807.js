@@ -624,7 +624,7 @@ checkerBoard.prototype.clePoint = function(idx) {
     let ctx = this.canvas.getContext("2d");
     ctx.drawImage(this.bakCanvas, p.x - (this.gW / 2), p.y - (this.gH / 2), this.gW, this.gH, p.x - (this.gW / 2), p.y - (this.gH / 2), this.gW, this.gH);
     ctx = null;
-    if (renjuSave) renjuSave();
+    if (appData.renjuSave) appData.renjuSave(this);
 };
 
 
@@ -1815,7 +1815,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum) {
         this.showLastNum(showNum);
     }
     ctx = null;
-    if (renjuSave) renjuSave();
+    if (appData.renjuSave) appData.renjuSave(this);
     return true;
 };
 
