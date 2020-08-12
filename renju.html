@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -8,14 +9,15 @@
     <link href="./style/renju.css" rel="stylesheet" type="text/css">
     <title> 摆棋小工具</title>
 </head>
+
 <body>
     <script src="./script/viewport.js"></script>
     <script src="./script/button.js"></script>
-    <script src="./script/worker.js"></script>
+    <script src="./script/engine.js"></script>
     <script src="./script/appData.js"></script>
     <script src="./script/msgbox20200807.js"></script>
     <script src="./script/checkerBoard-20200807.js"></script>
-    <script src="./script/engine-20200808.js"></script>
+    <script src="./script/worker.js"></script>
     <script src="./script/NoSleep.min.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
     <script src="./script/jsPDF/jspdf.min.js"></script>
@@ -639,8 +641,8 @@
         let cLoadImg = null;
         let cSLTX = null;
         let cSLTY = null;
-        let prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止计算
         let lbTime = new function() {
+            this.prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止
             this.div = document.createElement("div");
             this.startTime = 0;
             this.timer = null;
@@ -665,12 +667,12 @@
                 this.div.innerHTML = "00:00:00"
                 let lbDiv = this.div;
                 let sTime = this.startTime;
-                prePostTimer = this.startTime;
+                this.prePostTimer = this.startTime;
                 this.timer = setInterval(function() {
                     let t = new Date().getTime();
-                    if (t - prePostTimer > 300000) {
-                        sTime = sTime + t - prePostTimer;
-                        prePostTimer = t;
+                    if (t - this.prePostTimer > 180000) {
+                        sTime = sTime + t - this.prePostTimer;
+                        this.prePostTimer = t;
                     }
                     t -= sTime;
                     //console.log(t);
@@ -687,10 +689,13 @@
                 if (this.div.parentNode) this.div.parentNode.removeChild(this.div);
                 clearInterval(this.timer);
             };
+            this.setPrePostTimer = function(time) {
+                this.prePostTimer = this.prePostTimer < time ? time : this.prePostTimer;
+            };
         };
+
+
         let putCheckerBoard = function() {};
-
-
         // renju 模式控制面板
         function createRenjuCmdDiv(parentNode, left, top, width, height) {
 
@@ -753,6 +758,7 @@
             cCleLb.setontouchend(function() {
                 cBoard.cle();
                 cBoard.resetNum = 0;
+                engine.postMsg("cancelFind");
             });
 
 
@@ -854,15 +860,15 @@
                 let newarr = getArr([]);
                 switch (but.input.value * 1) {
                     case 1:
-                        engine.postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlyVCF]);
+                        engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlyVCF]);
                         break;
 
                     case 2:
-                        engine.postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, onlySimpleWin]);
+                        engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlySimpleWin]);
                         break;
 
                     case 3:
-                        engine.postMsg("isLevelThreePoint", [arr, getRenjuSelColor(), newarr, null]);
+                        engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, null]);
                         break;
 
                     case 4:
@@ -922,10 +928,12 @@
             cFindVCF.addOption(2, "找全\b  VCF");
             cFindVCF.addOption(3, "找\b 双杀");
             cFindVCF.addOption(4, "大道五目");
-            cFindVCF.addOption(5, "四手五连");
-            cFindVCF.addOption(6, "防\b冲四抓禁");
-            cFindVCF.addOption(7, "找\b VCF防点");
-            cFindVCF.addOption(8, "活3级别");
+            cFindVCF.addOption(5, "三手五连");
+            cFindVCF.addOption(6, "四手五连");
+            cFindVCF.addOption(7, "防\b冲四抓禁");
+            cFindVCF.addOption(8, "找\b VCF防点");
+            cFindVCF.addOption(9, "找\b VCF防点(深度)");
+            cFindVCF.addOption(10, "活3级别");
             //cFindVCF.addOption(8, "判断\b简单必胜");
 
             cFindVCF.show();
@@ -947,27 +955,27 @@
                         engine.postMsg("findVCF", [getRenjuSelColor(), null, null, null, null, arr]);
                         break;
                     case 3:
-                        engine.postMsg("isTwoVCF", [arr, getRenjuSelColor(), getArr([])]);
+                        engine.postMsg("isTwoVCF", [getRenjuSelColor(), arr, getArr([])]);
                         break;
                     case 4:
-                        engine.postMsg("isSimpleWin", [arr, getRenjuSelColor(), getArr([]), 4, 3]);
+                        engine.postMsg("isSimpleWin", [getRenjuSelColor(), arr, getArr([]), 4, 3]);
                         break;
                     case 5:
-                        engine.postMsg("isSimpleWin", [arr, getRenjuSelColor(), getArr([]), 4]);
-                        break;
-                    case 8:
-                        let idx = findThreeWin(arr, getRenjuSelColor(), getArr([]));
-                        let ps = findLevelThreePoint(arr, getRenjuSelColor(), getArr([]), null, null, true, 3);
-                        cBoard.wLb(idx, "©", "red");
-                        //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, null, 3]);
-                        break;
-                    case 7:
-                        engine.postMsg("getBlockVCFb", [getRenjuSelColor(), arr]);
+                        engine.postMsg("isThreeWinPoint", [getRenjuSelColor(), arr, getArr([])]);
                         break;
                     case 6:
-                        engine.postMsg("blockCatchFoul", [arr]);
+                        engine.postMsg("isFourWinPoint", [getRenjuSelColor(), arr, getArr([])]);
+                        break;
+                    case 8:
+                        engine.postMsg("getBlockVCF", [getRenjuSelColor(), arr]);
                         break;
                     case 9:
+                        engine.postMsg("getBlockVCFb", [getRenjuSelColor(), arr]);
+                        break;
+                    case 7:
+                        engine.postMsg("blockCatchFoul", [arr]);
+                        break;
+                    case 10:
                         /*
                         function* gwl() {
                             let lvl = yield* getWinLevel(arr, getRenjuSelColor());
@@ -1248,7 +1256,6 @@
             cLoadImg.input.accept = "image/*";
             cLoadImg.setText("输入图片");
             cLoadImg.setonchange(function() {
-                engine.postMsg("cancelFind");
                 let reader = new FileReader();
                 let file = cLoadImg.input.files[0];
                 cLoadImg.input.value = "";
@@ -1262,6 +1269,7 @@
                     img.onload = null;
                     putImg();
                 };
+                engine.postMsg("cancelFind");
             });
 
             function putImg() {
@@ -1353,6 +1361,8 @@
 
             setTimeout(function() {
                 engine.reset({
+                    "maxThread": maxThread,
+                    "cObjVCF": cObjVCF,
                     "cBoard": cBoard,
                     "cFindVCF": cFindVCF,
                     "cFindPoint": cFindPoint,
@@ -1363,10 +1373,10 @@
                     "saveContinueData": appData.saveContinueData,
                     "saveData": appData.saveData,
                 });
-                let continueData = appData.loadContinueData();
+                let continueData = appData.loadContinueData(cBoard);
                 if (continueData) {
                     msg("上次意外退出,继续计算...", null, null, null, null, null, null, null, null, null, 0);
-                    closeMsg(2000);
+                    closeMsg(3000);
                     engine.postMsg(continueData.cmd, [continueData]);
                 }
             }, 1000 * 1);

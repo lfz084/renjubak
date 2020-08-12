@@ -2490,7 +2490,7 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
 
 //  在棋盘的一个点上面，打印一个标记
 checkerBoard.prototype.wLb = function(idx, text, color) {
-
+    if (idx<0) return;
     if (this.P[idx].type != tEmpty) this.clePoint(idx);
     this.P[idx].color = color;
     this.P[idx].type = tLb;
