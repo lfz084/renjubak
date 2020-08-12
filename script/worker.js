@@ -1411,17 +1411,31 @@ function isFourWinPoint(idx, color, arr, backStage) {
     //console.log(idx)
     let isWin = true;
     let OV = arr[y][x];
+    let tWinPoint = [];
     arr[y][x] = color;
     let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), null, 3 - 2, true, null, true, null, true);
     for (let tx = 0; tx < 15; tx++) {
         for (let ty = 0; ty < 15; ty++) {
             if (newarr[ty][tx] == 0) {
                 arr[ty][tx] = color == 1 ? 2 : 1;
-                if (findThreeWin(arr, color, getArr([])).length == 0) {
-                    isWin = false;
-                    arr[ty][tx] = 0;
-                    tx = 9999;
-                    ty = 9999;
+                let i;
+                for (i = tWinPoint.length - 1; i >= 0; i--) {
+                    if (isThreeWinPoint(tWinPoint[i], color, arr, true)) {
+                        break;
+                    }
+                }
+                if (i < 0) {
+                    let wp = findThreeWin(arr, color, getArr([]), tWinPoint);
+                    if (wp.length) {
+                        tWinPoint.push(wp[0]);
+                        arr[ty][tx] = 0;
+                    }
+                    else {
+                        isWin = false;
+                        arr[ty][tx] = 0;
+                        tx = 9999;
+                        ty = 9999;
+                    }
                 }
                 else {
                     arr[ty][tx] = 0;
@@ -2658,11 +2672,18 @@ function findTTPoint(arr, color, newarr, setnum) {
 }
 
 // 找三手五连
-function findThreeWin(arr, color, newarr) {
+function findThreeWin(arr, color, newarr, passPoint) {
+    passPoint = passPoint || [];
     let wPoint = [];
     let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
     let fPoint = findFourPoint(arr, color, getArr([]));
     tPoint = fPoint ? tPoint.concat(fPoint) : tPoint;
+    for (let i = passPoint.length-1; i>=0; i--) {
+        let idx = tPoint.indexOf(passPoint[i]*1);
+        if (idx>-1) {
+            tPoint.splice(idx,1);
+        }
+    }
     for (let i = tPoint.length - 1; i >= 0; i--) {
         if (isThreeWinPoint(tPoint[i], color, arr, true)) {
             wPoint.push(tPoint[i] * 1);
