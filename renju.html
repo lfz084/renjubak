@@ -933,7 +933,7 @@
             cFindVCF.addOption(7, "防\b冲四抓禁");
             cFindVCF.addOption(8, "找\b VCF防点");
             cFindVCF.addOption(9, "找\b VCF防点(深度)");
-            //cFindVCF.addOption(10, "活3级别");
+            cFindVCF.addOption(10, "活3级别");
             //cFindVCF.addOption(8, "判断\b简单必胜");
 
             cFindVCF.show();
@@ -976,36 +976,7 @@
                         engine.postMsg("blockCatchFoul", [arr]);
                         break;
                     case 10:
-                        /*
-                        function* gwl() {
-                            let lvl = yield* getWinLevel(arr, getRenjuSelColor());
-                            let str = getRenjuSelColor() == 1 ? "黑棋" : "白棋";
-                            str += winToStr(lvl);
-                            callback();
-                            msg(str);
-                        }
-                        generator = gwl();
-                        generator.next();
-                        */
-                        let lvl = getWinLevel(arr, getRenjuSelColor());
-                        let str = getRenjuSelColor() == 1 ? "黑棋" : "白棋";
-                        str += winToStr(lvl);
-                        msg(str);
-
-                        function winToStr(level) {
-                            switch (level) {
-                                case 5:
-                                    return "已胜";
-                                case 4.5:
-                                    return "活4级必胜(44，冲四抓)";
-                                case 4.4:
-                                    return "VCF必胜";
-                                case 3.5:
-                                    return "33级必胜(双杀)";
-                                default:
-                                    return "没有找到33以上的必胜";
-                            }
-                        }
+                        engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, true] );
                         break;
                 }
                 but.input.value = 0;

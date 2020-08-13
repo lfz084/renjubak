@@ -168,6 +168,7 @@ onmessage = function(e) {
         },
         "findLevelThreePoint": function() {
             let sPoint = findLevelThreePoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+            console.log(sPoint)
             post("findLevelThreePointEnd", [sPoint]);
         },
         "cancelFind": function() { cancelFind(); },
@@ -484,7 +485,7 @@ function findVCF(color, timeOut, depth, count, backStage, arr) {
                                 let x = fs[idx] % 15;
                                 let y = parseInt(fs[idx] / 15);
                                 // 如果没有活4，白棋继续找44，冲4抓
-                                if (isFFWin(x, y, color, arr)) {
+                                if (isFFWin(x, y, color, arr, true)) {
                                     let v = fs.splice(idx, 1);
                                     fs.splice(st - 1, ed - st + 1);
                                     let wMoves = moves.concat(v);
@@ -543,7 +544,7 @@ function findVCF(color, timeOut, depth, count, backStage, arr) {
                     ty = cfLevel.p.y;
                     // //console.log(printArr(arr)+"\n"+cfLevel.p.x+"-"+cfLevel.p.y+"-")
                     if (isFour(tx, ty, color, arr)) { // 有反4，继续计算
-                        if (isFFWin(tx, ty, color, arr)) {
+                        if (isFFWin(tx, ty, color, arr, true)) {
                             let wMoves = moves.concat(ty * 15 + tx);
                             if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
                             if (pushWinMoves(WinMoves, wMoves) && !backStage) {
@@ -926,21 +927,27 @@ function isWin(color, arr) {
 
 // 不判断对手是否五连
 // 判断是否活四级别胜
-function isFFWin(x, y, color, arr) {
+function isFFWin(x, y, color, arr, pass) {
 
+    let win = false;
     if (isFour(x, y, color, arr, true)) {
-        return true;
+        win = true;
     }
     if (color == 2) {
         if (isFF(x, y, 2, arr) || isCatchFoul(x, y, arr)) {
-            return true;
+            win = true;
         }
     }
-    return false;
+    if (win && !pass) {
+        let lvl = getLevel(arr, color == 1 ? 2 : 1);
+        if (lvl.level >= 4) win = false;
+    }
+    return win;
 }
 
 
 
+/*
 // 判断是否活三级别胜
 function isTTWin(x, y, color, arr, timeout, depth, gDepth) {
 
@@ -1021,10 +1028,12 @@ function isTTWin(x, y, color, arr, timeout, depth, gDepth) {
     }
 
 }
+*/
+
 
 
 // 判断是idx否三手五连点
-function isThreeWinPoint(idx, color, arr, backStage) {
+function isThreeWinPoint(idx, color, arr, backStage, pass) {
     let x = idx % 15;
     let y = parseInt(idx / 15);
     let isWin = false;
@@ -1037,6 +1046,10 @@ function isThreeWinPoint(idx, color, arr, backStage) {
         arr[ty][tx] = color == 1 ? 2 : 1;
         isWin = findFFWin(arr, color, getArr([])).length > 0;
         arr[ty][tx] = 0;
+        if (isWin && !pass) { //验证对手先手
+            let lvl = getLevel(arr, color == 1 ? 2 : 1);
+            isWin = lvl.level < 4;
+        }
     }
     else {
         if (findVCF(color, null, 0, 1, true, copyArr([], arr))) {
@@ -1054,7 +1067,12 @@ function isThreeWinPoint(idx, color, arr, backStage) {
                 arr[ty][tx] = 0;
             }
         }
+        if (isWin && !pass) { //验证对手先手
+            let fNum = findVCF(color == 1 ? 2 : 1, null, null, 1, true, arr);
+            isWin = fNum == 0;
+        }
     }
+
     arr[y][x] = OV;
     if (isWin && !backStage) post("wLb", [idx, "◎", "red"]);
     return isWin;
@@ -1405,11 +1423,11 @@ function isLineFour(x, y, model, color, arr, free, pass) {
 
 
 
-function isFourWinPoint(idx, color, arr, backStage) {
+function isFourWinPoint(idx, color, arr, backStage, pass) {
     let x = idx % 15;
     let y = parseInt(idx / 15);
     //console.log(idx)
-    let isWin = true;
+    let isWin = false; //初始为false, 后续如果无防点就是手数太短不算四手五连
     let OV = arr[y][x];
     let tWinPoint = [];
     arr[y][x] = color;
@@ -1418,31 +1436,34 @@ function isFourWinPoint(idx, color, arr, backStage) {
         for (let ty = 0; ty < 15; ty++) {
             if (newarr[ty][tx] == 0) {
                 arr[ty][tx] = color == 1 ? 2 : 1;
-                let i;
-                for (i = tWinPoint.length - 1; i >= 0; i--) {
-                    if (isThreeWinPoint(tWinPoint[i], color, arr, true)) {
-                        break;
-                    }
+                //if (idx == 95) testidx = true;
+                //如果出现活四级的杀就直接排除防点
+                if (findFFWin(arr, color, getArr([])).length) {
+                    arr[ty][tx] = 0;
                 }
-                if (i < 0) {
+                else {
                     let wp = findThreeWin(arr, color, getArr([]), tWinPoint);
+                    //if (idx == 95) testidx = false;
                     if (wp.length) {
-                        tWinPoint.push(wp[0]);
+                        isWin = true;
                         arr[ty][tx] = 0;
                     }
                     else {
                         isWin = false;
+                        //if (idx == 95) console.log(arr)
                         arr[ty][tx] = 0;
                         tx = 9999;
                         ty = 9999;
                     }
                 }
-                else {
-                    arr[ty][tx] = 0;
-                }
             }
         }
     }
+    if (isWin && !pass) { //验证对方先手, 先不验证对手VCT
+        let fNum = findVCF(color == 1 ? 2 : 1, 3000, 5, 1, true, arr);
+        isWin = fNum == 0;
+    }
+
     arr[y][x] = OV;
     if (isWin && !backStage) post("wLb", [idx, "◎", "red"]);
     return isWin;
@@ -2286,26 +2307,20 @@ function findFourPoint(arr, color, newarr, ftype, setnum) {
 }
 
 
+
 // 找活四级别杀
 function findFFWin(arr, color, newarr) {
     let wPoint = [];
-    let lvl = getLevel(arr, color == 1 ? 2 : 1);
-    if (lvl.level == 4) {
-        if (isFFWin(lvl.p.x, lvl.p.y, color, arr)) {
-            wPoint.push(lvl.p.x + lvl.p.y * 15);
+    let fPoint = findFourPoint(arr, color, newarr) || [];
+    for (let i = fPoint.length - 1; i >= 0; i--) {
+        let x = fPoint[i] % 15;
+        let y = parseInt(fPoint[i] / 15);
+        if (isFFWin(x, y, color, arr)) {
+            wPoint.push(fPoint[i] * 1);
+            i = -1;
         }
     }
-    else if (lvl.level < 4) {
-        let fPoint = findFourPoint(arr, color, newarr) || [];
-        for (let i = fPoint.length - 1; i >= 0; i--) {
-            let x = fPoint[i] % 15;
-            let y = parseInt(fPoint[i] / 15);
-            if (isFFWin(x, y, color, arr)) {
-                wPoint.push(fPoint[i] * 1);
-                i = -1;
-            }
-        }
-    }
+
     return wPoint;
 }
 
@@ -2437,8 +2452,7 @@ function findThreePoint(arr, color, newarr, ftype, setnum) {
 
 
 
-//let testarr = false;
-// 找活3级别攻击点
+//找出可能的，活3级别攻击点(不验证做V后是否也给对手做了V)
 function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
     num = typeof(num) == "number" ? parseInt(num) : 9999;
     backstage = backstage == null ? true : backstage;
@@ -2455,11 +2469,14 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
         let y = pnt.point[i].y;
 
         if (!stopFind && newarr[y][x] == 0) {
+
             arr[y][x] = color;
             if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
             let level = getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : null, null, num == 9999 ? 9999 : num - 1);
             let nColor = color == 1 ? 2 : 1;
+            //let fNum = findVCF(nColor, null, null, 1, true, arr);
             if (level.level < 4 && level.level >= 3) {
+                //console.log(x+15*y)
                 let l = level.moves.length; // 保存手数，待后面判断43杀
                 // 已经确认对手低于活三级别
                 if (!backstage) post("wLb", [pnt.index[i]]);
@@ -2672,23 +2689,40 @@ function findTTPoint(arr, color, newarr, setnum) {
 }
 
 // 找三手五连
-function findThreeWin(arr, color, newarr, passPoint) {
-    passPoint = passPoint || [];
+function findThreeWin(arr, color, newarr, tWinPoint) {
+    tWinPoint = tWinPoint || [];
     let wPoint = [];
-    let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
-    let fPoint = findFourPoint(arr, color, getArr([]));
-    tPoint = fPoint ? tPoint.concat(fPoint) : tPoint;
-    for (let i = passPoint.length-1; i>=0; i--) {
-        let idx = tPoint.indexOf(passPoint[i]*1);
-        if (idx>-1) {
-            tPoint.splice(idx,1);
-        }
+    //快速搜索VCF
+    if (findVCF(color, null, 3 - 2, 1, true, arr)) {
+        wPoint.push(vcfWinMoves[0][0]*1);
     }
-    for (let i = tPoint.length - 1; i >= 0; i--) {
-        if (isThreeWinPoint(tPoint[i], color, arr, true)) {
-            wPoint.push(tPoint[i] * 1);
-            //console.log("win")
-            i = -1;
+    else {  //再搜索活3的3手胜
+        let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
+        let twIdx;
+        //if (testidx) console.log(tPoint)
+        //if (testidx) console.log(arr)
+        for (twIdx = tWinPoint.length - 1; twIdx >= 0; twIdx--) {
+            let idx = tPoint.indexOf(tWinPoint[twIdx] * 1);
+            if (idx > -1) {
+                tPoint.splice(idx, 1);
+                if (isThreeWinPoint(tWinPoint[twIdx], color, arr, true)) {
+                    wPoint.push(tWinPoint[twIdx] * 1);
+                    //console.log("复用")
+                    break;
+                }
+            }
+        }
+        if (twIdx < 0) {
+            //if (testidx) console.log("twIdx < 0_____" + tPoint)
+            for (let i = tPoint.length - 1; i >= 0; i--) {
+                //if (testidx) console.log(tPoint[i])
+                if (isThreeWinPoint(tPoint[i], color, arr, true)) {
+                    wPoint.push(tPoint[i] * 1);
+                    tWinPoint.push(tPoint[i] * 1);
+                    //console.log("push")
+                    i = -1;
+                }
+            }
         }
     }
     return wPoint;
@@ -2840,7 +2874,7 @@ function excludeBP(arr, color, bPoint, timeout, depth) {
 }
 
 
-
+/*
 //限珠题
 function findSimpleWin(arr, color, newarr, num) {
 
@@ -2877,7 +2911,7 @@ function findSimpleWin(arr, color, newarr, num) {
     }
     return rt;
 }
-
+*/
 
 
 function isSimpleWin(idx, color, arr, num, level) {
@@ -2888,86 +2922,13 @@ function isSimpleWin(idx, color, arr, num, level) {
             let x = idx % 15;
             let y = parseInt(idx / 15);
             arr[y][x] = color;
-            let winLevel = getWinLevel(arr, color, timeout, depth, 2, 2);
+            let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2);
             if (winLevel > 3) {
                 post("wLb", [idx, "◎", "red"]);
             }
             arr[y][x] = 0;
         }
-        else { //四手五连
-            isSimpleWinB(idx, color, arr, num);
-        }
     }
-}
-
-
-
-// 四手五连
-function isSimpleWinB(idx, color, arr, num) {
-    if (num == 4) {
-        let timeout = 30000;
-        let depth = 1;
-        let x = idx % 15;
-        let y = parseInt(idx / 15);
-        //console.log(1);
-        arr[y][x] = color;
-        let narr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), timeout, null, true, null, true, null, true);
-        //arr[y][x] = 0;post("end"); return;
-        let count = 0;
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (narr[y][x] == 0 && arr[y][x] == 0) {
-                    //console.log(narr);
-                    arr[y][x] = color == 1 ? 2 : 1;
-                    let isWin = findWin(arr, color, timeout, depth - 1, 1, 1);
-                    arr[y][x] = 0;
-                    if (isWin) {
-                        count++;
-                        //console.log("3");
-                    }
-                    else {
-                        x = 1000;
-                        y = 1000;
-                        //console.log("1");
-                    }
-                }
-                else {
-                    count++;
-                }
-            }
-        }
-        arr[y][x] = 0;
-        if (count == 15 * 15) {
-            post("wLb", [idx, "◎", "red"]);
-            post("end");
-            return true;
-        }
-    }
-    post("end");
-
-    function findWin(arr, color, timeout, depth, gDepth, maxNum) {
-        let narr = selectPoint(arr, color, getArr([]), timeout, null, null, null, null, null, true);
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (narr[y][x] == 0 && arr[y][x] == 0) {
-                    //console.log(narr);
-                    arr[y][x] = color;
-                    let winLevel = getWinLevel(arr, color, timeout, depth, gDepth, maxNum);
-                    arr[y][x] = 0;
-                    if (winLevel > 3) return true;
-
-                }
-            }
-        }
-    }
-
-}
-
-
-// 
-function findVCT(arr, color, idx, timeOut, depth, count, backStage) {
-
-
 }
 
 
@@ -3043,7 +3004,6 @@ function getBlockVCF(VCF, color, arr, backStage, passFour) {
     }
     return p.length ? p : false;
 }
-
 
 
 
@@ -3161,13 +3121,12 @@ function getLevelB(arr, color, newarr, timeout, depth, backstage, num) {
 
 
 // 轮到对手落子
-// 判断必胜级别 depth==vcf深度，gDepth==递归深度, maxNum==最大手数，单色手数
-function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
+// 判断必胜级别 depth==vcf深度，gDepth(递归深度) ==1不计算先手防, ==2计算先手防
+function getWinLevel(arr, color, timeout, depth, gDepth) {
 
     timeout = timeout || 30000;
     depth = depth || 1000;
     gDepth = gDepth || 2;
-    maxNum = maxNum || 1000;
     // 判断对手进攻级别
     let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
     let winLevel;
@@ -3210,15 +3169,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
                 //处理先手防
                 let fMoves = []; //  保存对手连续冲四分支
                 continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
-                for (let i = fMoves.length - 1; i >= 0; i--) {
-                    if (fMoves[i].length / 2 >= maxNum) {
-                        notWin = true;
-                        fMoves = [];
-                        break;
-                    }
-                }
                 let j;
-
                 for (j = fMoves.length - 1; j >= 0; j--) {
                     //console.log("gDepth="+gDepth+"\nj="+j);
 
@@ -3235,7 +3186,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
                      }
                      //console.log(j+"\n"+str)
                     */
-                    winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1, maxNum - fMoves[j].length / 2);
+                    winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1);
                     //console.log("_____"+winLevel)
                     if (winLevel < 3.5) notWin = true;
 
@@ -3258,6 +3209,81 @@ function getWinLevel(arr, color, timeout, depth, gDepth, maxNum) {
 
 
 
+// 轮到对手落子
+// num 剩余手数，根据棋子数目控制深度
+function getWinLevelSimple(arr, color, timeout, maxNum, gDepth) {
+
+    timeout = timeout || 30000;
+    gDepth = gDepth || 2;
+    // 判断对手进攻级别
+    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, null, true);
+    let winLevel;
+    //console.log("对手进攻级别="+nLevel.level)
+    if (nLevel.level == 5) { // 对手已胜
+        return 2;
+    }
+    else if (nLevel.level >= 3) { // 对手有攻,没五连就败了
+        winLevel = getLevel(arr, color, maxNum);
+        return winLevel.level == 5 ? 5 : 2;
+    }
+    else { // 对方没有V
+        winLevel = getLevel(arr, color, maxNum);
+        if (winLevel.level >= 4.5) {
+            return winLevel.level; //==5 or ==4.5
+        }
+        else if (winLevel.level == 4) {
+            let y = winLevel.p.y;
+            let x = winLevel.p.x;
+            arr[y][x] = color == 1 ? 2 : 1;
+            let num = findVCF(color, timeout, maxNum - 2, 1, true, arr);
+            arr[y][x] = 0;
+            if (num) return 4.4;
+        }
+        //findVCF(color,timeOut,depth,count,backStage,arr) 
+        let fNum = findVCF(color, timeout, maxNum - 2, 1, true, arr);
+        if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
+            let notWin = false; //后续计算，如果双杀不成立==true
+            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
+            if (bPoint) { //排除直接防
+                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, maxNum - 2))) {
+                    //排除失败，双杀不成立
+                    notWin = true;
+                }
+            }
+            if (!notWin && gDepth >= 2) { // 没有找到直接共防，继续寻找先手防
+                //处理先手防
+                let fMoves = []; //  保存对手连续冲四分支
+                continueFour(arr, color == 1 ? 2 : 1, maxNum, fMoves, getArr([]));
+                let j;
+                for (j = fMoves.length - 1; j >= 0; j--) {
+                    // 摆棋
+                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
+                        let x = fMoves[j][k] % 15;
+                        let y = parseInt(fMoves[j][k] / 15);
+                        arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
+                    }
+                    winLevel = getWinLevelSimple(arr, color, timeout, maxNum - fMoves[j].length / 2, gDepth - 1);
+                    //console.log("_____"+winLevel)
+                    if (winLevel < 3.5) notWin = true;
+
+                    // 复原棋子
+                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
+                        let x = fMoves[j][k] % 15;
+                        let y = parseInt(fMoves[j][k] / 15);
+                        arr[y][x] = 0;
+                    }
+                    if (notWin) j = -1;
+                }
+            }
+            return notWin ? 2 : 3.5;
+        }
+        return 2;
+    }
+
+}
+
+
+
 // 确定选点范围
 function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allColor, num, selFour) {
     num = typeof(num) == "number" ? parseInt(num) : 9999;
@@ -3266,15 +3292,16 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
     backstage = backstage == null ? true : backstage;
     // 确定活三级选点范围
     // 先判断对手进攻级别,快速选点
-
     if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth);
     if (level.level >= 5) {
+        //if (testidx) console.log(5)
         getArr(newarr, -9999);
         return newarr;
     }
     else if (level.level >= 4.5) {
+        //if (testidx) console.log(4.5)
         let narr = getArr([]);
-        findFivePoint(arr, color == 1 ? 2 : 1, narr);
+        findFivePoint(arr, color, narr);
         for (let y = 0; y < 15; y++) {
             for (let x = 0; x < 15; x++) {
                 newarr[y][x] = narr[y][x] != 0 ? 0 : -9999;
@@ -3283,14 +3310,15 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
         return newarr;
     }
     else if (level.level >= 4) {
-
+        //if (testidx) console.log(4)
         // 对手冲四，选点唯一
         getArr(newarr, -9999);
-        // p保存的是防点
+        // p保存的是成立防点，不会是禁手，如果禁手level==4.5 
         newarr[level.p.y][level.p.x] = 0;
 
     }
     else if (level.level >= 3) {
+        //if (testidx) console.log(3)
 
         // 对手有V，选点范围在V的防点内
         let mv = []; //转二维数组
@@ -3304,10 +3332,9 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
             let y = parseInt(p[i] / 15);
             newarr[y][x] = 0;
         }
-
     }
     else { // level.level<3
-
+        //if (testidx) console.log(2)
         let narr = getArr([]);
         let narr1 = getArr([]);
         findFourPoint(arr, color == 1 ? 2 : 1, narr1, null); // 保存对手冲四点
