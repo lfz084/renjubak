@@ -131,6 +131,7 @@ let engine = (() => {
             cFP = param.cFindPoint;
             cCancel = param.cCancelFind;
             labelTime = param.lbTime;
+            msg = param.msg;
             closeMsg = param.closeMsg;
             closeNoSleep = param.closeNoSleep;
             saveContinueData = param.saveContinueData;
@@ -328,37 +329,40 @@ let engine = (() => {
                         let command = e.data.cmd;
                         let p = e.data.parameter;
                         let fclr = p[1] == 1 ? "黑棋" : "白棋";
-                        if (command == "findVCF_End") {
-                            cBd.cleLb("all");
-                            if (p[0].length) {
-                                msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
-                                closeMsg(2000);
-                            }
-                            else {
-                                work.terminate();
-                                callback();
-                                msg("❌❌❌ " + fclr + " 没有VCF ❌❌❌");
-                            }
-                        }
-                        else if (command == "printMoves") {
-                            cBd.printMoves(p[0], p[1]);
-                        }
-                        else if (command == "getBlockVCFbEnd") {
-                            closeMsg();
-                            work.terminate();
-                            sPoint = p[0];
-                            if (sPoint.length) {
-                                //console.log("sPoint = " + sPoint);
-                                for (let i = 0; i < sPoint.length; i++) {
-                                    cBd.wLb(sPoint[i], "●", "#888888");
+                        let f = {
+                            "findVCF_End": () => {
+                                cBd.cleLb("all");
+                                if (p[0].length) {
+                                    msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
+                                    closeMsg(2000);
                                 }
-                                excludeBP("isBlockVCF");
-                            }
-                            else {
-                                callback();
-                                msg("❌❌❌没有成立的防点❌❌❌");
-                            }
-                        }
+                                else {
+                                    work.terminate();
+                                    callback();
+                                    msg("❌❌❌ " + fclr + " 没有VCF ❌❌❌");
+                                }
+                            }, 
+                            "printMoves": () => {
+                                cBd.printMoves(p[0], p[1]);
+                            }, 
+                            "getBlockVCFbEnd": () => {
+                                closeMsg();
+                                work.terminate();
+                                sPoint = p[0];
+                                if (sPoint.length) {
+                                    //console.log("sPoint = " + sPoint);
+                                    for (let i = 0; i < sPoint.length; i++) {
+                                        cBd.wLb(sPoint[i], "●", "#888888");
+                                    }
+                                    excludeBP("isBlockVCF");
+                                }
+                                else {
+                                    callback();
+                                    msg("❌❌❌没有成立的防点❌❌❌");
+                                }
+                            }, 
+                        };
+                        if (typeof(f[command]) == "function") f[command]();
                     };
 
                     work.postMessage({ "cmd": cmd, parameter: [param[0], null, null, 1, null, param[1]] });

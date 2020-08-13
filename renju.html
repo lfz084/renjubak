@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
     <link rel="shortcut icon" href="./pic/favicon1.ico">
     <link href="./style/renju.css" rel="stylesheet" type="text/css">
     <title> 摆棋小工具</title>
 </head>
-
 <body>
     <script src="./script/viewport.js"></script>
     <script src="./script/button.js"></script>
@@ -49,6 +45,7 @@
             }, 15 * 1000);
         }
         let openNoSleep = function() {
+            return;
             if (noSleep) {
                 //msg("计算时,不锁屏", null, null, null, null, null, null, null, null, null, 0);
                 //closeMsg(2000);
@@ -56,6 +53,7 @@
             }
         };
         let closeNoSleep = function() {
+            return;
             //closeMsg();
             isNoSleep = false;
         };
@@ -583,7 +581,7 @@
     </script>
     <script language="javascript">
         "use strict";
-        const maxThread = 0 || window.navigator.hardwareConcurrency - 1 || 2;
+        const maxThread = 0 || window.navigator.hardwareConcurrency - 2 || 2;
         setTimeout(function() {
             //alert(maxThread);
         }, 3000);
@@ -1339,6 +1337,7 @@
                     "cFindPoint": cFindPoint,
                     "cCancelFind": cCancelFind,
                     "lbTime": lbTime,
+                    "msg": msg, 
                     "closeMsg": closeMsg,
                     "closeNoSleep": closeNoSleep,
                     "saveContinueData": appData.saveContinueData,
