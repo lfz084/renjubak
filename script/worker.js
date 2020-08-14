@@ -168,7 +168,7 @@ onmessage = function(e) {
         },
         "findLevelThreePoint": function() {
             let sPoint = findLevelThreePoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
-            console.log(sPoint)
+            //console.log(sPoint)
             post("findLevelThreePointEnd", [sPoint]);
         },
         "cancelFind": function() { cancelFind(); },
@@ -215,10 +215,11 @@ onmessage = function(e) {
         },
         "getBlockVCFb": function() {
             let sPoint = [];
-            if (findVCF(p[0], p[1], p[2], p[3], p[4], p[5])) {
-                sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial, true);
-            }
+            findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
             post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+            if (vcfWinMoves.length) {
+                sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial);
+            }
             post("getBlockVCFbEnd", [sPoint]);
         },
         "findThreeWin": function() {
@@ -2543,9 +2544,9 @@ function isLevelThreePoint(idx, color, arr, fType) {
     let nColor = color == 1 ? 2 : 1;
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
-        if ((color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
+        if (isThree(x, y, color, arr, true) || l == 1) {
             if (fType == null) {
-                post("wLb", [idx, "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]);
+                post("wLb", [idx, "③", !isThreeWinPoint(x, y, color, arr, true) ? "black" : "red"]);
             }
         }
         else {
@@ -2694,9 +2695,9 @@ function findThreeWin(arr, color, newarr, tWinPoint) {
     let wPoint = [];
     //快速搜索VCF
     if (findVCF(color, null, 3 - 2, 1, true, arr)) {
-        wPoint.push(vcfWinMoves[0][0]*1);
+        wPoint.push(vcfWinMoves[0][0] * 1);
     }
-    else {  //再搜索活3的3手胜
+    else { //再搜索活3的3手胜
         let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
         let twIdx;
         //if (testidx) console.log(tPoint)

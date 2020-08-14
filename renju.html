@@ -60,28 +60,17 @@
 
 
         //用来保存跟踪正在发送的触摸事件
-
         let canvasStartTouches = [];
-
         let bodyStartTouches = [];
-
         let previousTouch = []; // 辅助判断双击
-
         let bodyPreviousTouch = [];
-
         let bodyMoveTouches = [];
-
         let continueSetCutDivX = 0;
         let continueSetCutDivY = 0;
-
         let isBodyClick = false; // 辅助判断单击
-
         let timerCanvasKeepTouch = null;
-
         let timerBodyKeepTouch = null;
-
         let timerContinueSetCutDiv = null;
-
         let cBoard = null; //棋盘对象
 
 
@@ -116,11 +105,10 @@
                 cBoard.printCheckerBoard();
 
                 setCheckerBoardEvent(cBoard.canvas);
-
+               
                 createRenjuCmdDiv(downDiv, 0, 0, cWidth, cWidth);
-
                 createImgCmdDiv(downDiv, 0, 0, cWidth, cWidth);
-
+                
                 appData.renjuLoad(cBoard);
 
                 if (dw <= dh) window.scrollTo(0, cWidth);
@@ -172,63 +160,44 @@
 
 
         //处理触摸开始事件
-
         function handleStart(evt) {
-
             //evt.preventDefault();//阻止事件的默认行为
-
         }
 
 
 
         //处理触摸移动事件
-
         function handleMove(evt) {
-
             if (timerContinueSetCutDiv) evt.preventDefault();
-
         }
 
 
 
         //处理触摸结束事件
-
         function handleEnd(evt) {
-
             evt.preventDefault();
-
         }
 
 
 
         //处理触摸对出事件
-
         function handleCancel(evt) {
-
             evt.preventDefault();
-
-
         }
 
 
 
         //处理触摸开始事件
-
         function bodyTouchStart(evt) {
-
             //evt.preventDefault();
             //阻止事件的默认行为
             if (isMsgShow) return;
             // 防止锁屏
-
             let touches = evt.changedTouches;
-
             //记录坐标，给continueSetCutDiv使用
             continueSetCutDivX = touches[0].pageX;
             continueSetCutDivY = touches[0].pageY;
-
             if (bodyStartTouches.length == 0) {
-
                 if (bodyPreviousTouch.length) { //触发滑动调整
                     //evt.preventDefault();
                     if (timerContinueSetCutDiv == null) {
@@ -245,24 +214,20 @@
                 bodyStartTouches.push(copyTouch(touches[0], 1));
                 //初始化单击事件
                 isBodyClick = true;
-
             }
             else
             {
-
                 // 多点触摸取消长按事件
                 if (timerBodyKeepTouch) {
                     clearTimeout(timerBodyKeepTouch);
                     timerBodyKeepTouch = null;
                 }
-
                 let touchNum = bodyStartTouches.length + 1; //判断是第几个手指触摸屏幕
                 if (touchNum > 3) return; //超过3指忽略
                 // 多点触摸 取消单击事件。
                 isBodyClick = false;
                 bodyStartTouches.push(copyTouch(touches[0], touchNum));
             }
-
         }
 
 
@@ -270,10 +235,9 @@
         //处理触摸移动事件
 
         function bodyTouchMove(evt) {
-
             if (timerContinueSetCutDiv) evt.preventDefault();
             let touches = evt.changedTouches;
-
+            
             if (isMsgShow) return;
 
             if (timerBodyKeepTouch != null) { //取消长按事件
@@ -322,7 +286,6 @@
             }
 
             if (idx >= 0) {
-
                 let sX = bodyStartTouches[idx].pageX;
                 let sY = bodyStartTouches[idx].pageY;
                 let tX = touches[0].pageX;
@@ -336,8 +299,7 @@
                     bodyStartTouches.length = 0; //remove it; we're done
                     return;
                 }
-
-
+                
                 if ((!cancelClick) && isBodyClick) {
                     if ((bodyPreviousTouch.length > 0) && (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) && (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)) {
                         bodyPreviousTouch.length = 0;
@@ -368,6 +330,7 @@
                         }
                     }
                 }
+                /*
                 else if (xMove > 380 && Math.abs(xMove / yMove) > 2) {
 
                     //log("右滑", "red");
@@ -384,16 +347,14 @@
 
                     //log("上滑", "red");
                 }
-
+                */
 
                 bodyStartTouches.splice(idx, 1); //remove it;we're done
 
-            } else {
-                // 出错重新初始化 触摸跟踪
+            } 
+            else {// 出错重新初始化 触摸跟踪
                 bodyStartTouches.length = 0;
-
             }
-
             bodyStartTouches.length = 0;
         }
 
@@ -495,7 +456,7 @@
                     cBoard.P[idx].cle();
                 }
                 else {
-                    cBoard.P[idx].printNb("★", color, cBoard.gW, cBoard.gH);
+                    cBoard.P[idx].printNb("★", color, cBoard.gW, cBoard.gH, color=="white"? cBoard.wNumColor:cBoard.bNumColor);
                 }
             }
         }
@@ -657,6 +618,7 @@
                 this.div.style.fontSize = fontSize;
                 this.div.style.textAlign = "center";
                 this.div.style.lineHeight = height;
+                this.div.style.color = "#cccccc";
                 /*
                 this.div.style.borderStyle = "solid";
                 this.div.style.borderWidth = "1px";

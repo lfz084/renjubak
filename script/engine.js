@@ -341,10 +341,10 @@ let engine = (() => {
                                     callback();
                                     msg("❌❌❌ " + fclr + " 没有VCF ❌❌❌");
                                 }
-                            }, 
+                            },
                             "printMoves": () => {
                                 cBd.printMoves(p[0], p[1]);
-                            }, 
+                            },
                             "getBlockVCFbEnd": () => {
                                 closeMsg();
                                 work.terminate();
@@ -354,13 +354,18 @@ let engine = (() => {
                                     for (let i = 0; i < sPoint.length; i++) {
                                         cBd.wLb(sPoint[i], "●", "#888888");
                                     }
+                                    msg(fclr + "开始验证防点...... ", null, null, null, null, null, null, null, null, null, 0);
+                                    closeMsg(2000);
                                     excludeBP("isBlockVCF");
                                 }
                                 else {
                                     callback();
                                     msg("❌❌❌没有成立的防点❌❌❌");
                                 }
-                            }, 
+                            },
+                            "wLb": () => {
+                                cBd.wLb(p[0], p[1], p[2]);
+                            },
                         };
                         if (typeof(f[command]) == "function") f[command]();
                     };
