@@ -23,8 +23,8 @@
       this.color = "#333333"; //字体默认颜色
       this.selectColor = "black"; //按钮按下时字体颜色
       this.notChangeColor = false; // 不自动调整按钮字体颜色
-      this.backgroundColor = "#cccccc"; //按钮颜色
-      this.selectBackgroundColor = "#777777";
+      this.backgroundColor = "#999999"; //按钮颜色
+      this.selectBackgroundColor = "#666666";
       /*if (this.type=="button") {
         let col = this.backgroundColor;
         this.backgroundColor = this.selectBackgroundColor;

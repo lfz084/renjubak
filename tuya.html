@@ -8,7 +8,7 @@
 </head>
 
 <body onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()">
-  <script src="./script/button.js?version=1"></script>
+  <script src="./script/button20200814.js?version=1"></script>
   <script src="./script/viewport.js?version=1"></script>
   <script >
     const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
@@ -640,7 +640,7 @@
     fileDiv.style.height = parseInt(dw / 18);
     fileDiv.style.left = (dw - sw) / 2 - 10;
     fileDiv.style.top = parseInt(dh * 0.6 + dw / 6);
-    fileDiv.style.backgroundColor = "white";
+    //fileDiv.style.backgroundColor = "white";
     let chkLock = new button(fileDiv, "checkbox", cW * 0, cT, cW, cH);
     chkLock.show();
     chkLock.setText("选定棋盘");
@@ -731,7 +731,7 @@
     let ndiv = document.createElement("div");
     bodyDiv.appendChild(ndiv);
     ndiv.style.position = "absolute";
-    ndiv.style.backgroundColor = "white";
+    //ndiv.style.backgroundColor = "white";
     ndiv.style.width = sw;
     ndiv.style.left = (dw - sw) / 2;
     ndiv.style.height = 100;

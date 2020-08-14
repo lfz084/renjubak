@@ -2546,7 +2546,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
         if (isThree(x, y, color, arr, true) || l == 1) {
             if (fType == null) {
-                post("wLb", [idx, "③", !isThreeWinPoint(x, y, color, arr, true) ? "black" : "red"]);
+                post("wLb", [idx, "③", !isThree(x, y, color, arr, true) ? "black" : "red"]);
             }
         }
         else {
