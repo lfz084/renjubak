@@ -1729,7 +1729,7 @@
       saveMaxHistory();
       tempHistoryIndex = loadHistoryIndex();
       loadHistory();
-      window.scrollTo(0,parseInt(fileDiv.style.top)-sw/9/1.5*1.8);
+      setTimeout(() =>{window.scrollTo(0,parseInt(fileDiv.style.top)-sw/9/1.5*1.8);}, 1);
     } 
     catch (err) {
       //console.log("reLoad");

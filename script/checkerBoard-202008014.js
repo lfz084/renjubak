@@ -171,18 +171,18 @@ function checkerBoard(parentNode, left, top, width, height) {
     for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
     this.backgroundColor = "#888888";
     this.wNumColor = "#dddddd";
-    this.bNumColor = "#000000";
-    this.wNumFontColor = "#000000";
+    this.bNumColor = "#333333";
+    this.wNumFontColor = "#333333";
     this.bNumFontColor = "#dddddd";
     this.LbBackgroundColor = "#888888";
     this.coordinateColor = "#111111";
     this.lineColor = "#111111";
     this.lastNumColor = "#dd0000";
-    this.moveWhiteColor = "#aaaaaa";
-    this.moveBlackColor = "#555555";
-    this.moveWhiteFontColor = "#000000";
-    this.moveBlackFontColor = "#dddddd";
-    this.moveLastFontColor = "#dd0000";
+    this.moveWhiteColor = "#bbbbbb";
+    this.moveBlackColor = "#666666";
+    this.moveWhiteFontColor = "#ffffff";
+    this.moveBlackFontColor = "#000000";
+    this.moveLastFontColor = "#ff0000";
 
     //页面显示的棋盘
     this.canvas = d.createElement("canvas");
@@ -1252,11 +1252,12 @@ checkerBoard.prototype.indexToName = function(idx) {
 
 
 //  判断坐标是否出界，出界返回 true
-checkerBoard.prototype.isOut = function(x, y, htmlObj) {
-    let xL = 0;
-    let xR = xL + parseInt(htmlObj.style.width);
-    let yT = 0;
-    let yB = yT + parseInt(htmlObj.style.height);
+checkerBoard.prototype.isOut = function(x, y, htmlObj, width) {
+    width = width ? width : 0;
+    let xL = 0 - width;
+    let xR = xL + parseInt(htmlObj.style.width) + 2 * width;
+    let yT = 0 - width;
+    let yB = yT + parseInt(htmlObj.style.height) + 2 * width;
     let p = tempp;
     p.setxy(x, y);
     this.xyPageToObj(p, htmlObj);
@@ -1555,7 +1556,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
 
     let nowTimer = new Date().getTime();
     let idx = 0;
-    if (nowTimer - this.printMovesTimer < 500) return;
+    if (nowTimer - this.printMovesTimer < 1000) return;
     this.printMovesTimer = nowTimer;
     for (let y = 0; y < this.SLTY; y++) {
         for (let x = 0; x < this.SLTX; x++) {
@@ -1811,7 +1812,8 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
         ctx.beginPath();
         ctx.fillStyle = backgroundColor || this.LbBackgroundColor;
         ctx.arc(p.x, p.y, backgroundColor ? w : text.length > 1 ? w : w / 2, 0, 2 * Math.PI);
-        ctx.fill();
+        if (!backgroundColor) ctx.fill();
+        if (backgroundColor) ctx.stroke();
         ctx.fillStyle = color;
         ctx.font = "bolder " + parseInt(w * 1.1) + "px  黑体";
     }

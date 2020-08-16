@@ -77,7 +77,7 @@ let engine = (() => {
                         cObjVCF.winMoves.push(p[0][i].slice(0));
                     }
                     cBd.cleLb("all");
-                    if (cObjVCF.winMoves.length) setTimeout(() => { cBd.printMoves(cObjVCF.winMoves[0], cObjVCF.color); }, 800);
+                    if (cObjVCF.winMoves.length) setTimeout(() => { cBd.printMoves(cObjVCF.winMoves[0], cObjVCF.color); }, 1100);
                     callback();
                     printMsg();
                     work.terminate();
@@ -153,7 +153,7 @@ let engine = (() => {
                 "findThreePoint": () => {
                     let newarr = getArr([]);
                     findThreePoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "③", "red");
+                    cBd.printArray(newarr, "③", param[3]==onlyFree?"red":"black");
                     callback();
                 },
                 "findTTPoint": () => {
@@ -183,21 +183,9 @@ let engine = (() => {
                 "findFourPoint": () => {
                     let newarr = getArr([]);
                     findFourPoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "④", "red");
+                    cBd.printArray(newarr, "④",  param[3]==onlyFree?"red":"black");
                     callback();
-                },
-                "findFourPoint": () => {
-                    let newarr = getArr([]);
-                    findFourPoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "④", "black");
-                    callback();
-                },
-                "findThreePoint": () => {
-                    let newarr = getArr([]);
-                    findThreePoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "③", "black");
-                    callback();
-                },
+                }, 
                 "isTwoVCF": () => {
                     let color = param[0];
                     let arr = param[1];
@@ -208,7 +196,7 @@ let engine = (() => {
                         newarr = e.data.parameter[0];
                         continuefun();
                     };
-                    let lvl = (cmd == "isFourWinPoint" || cmd == "isLevelThreePoint") ? { level: 2 } : null;
+                    let lvl = (cmd == "isLevelThreePoint") ? { level: 2 } : null;
                     let selFour = (cmd != "isLevelThreePoint" && cmd != "isTwoVCF");
                     work.postMessage({ "cmd": "selectPoint", parameter: [arr, color, newarr, null, null, true, lvl, null, null, selFour] });
                     //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
