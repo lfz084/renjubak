@@ -15,7 +15,8 @@ let control = (() => {
     let dh;
 
     let playModel = renjuModel;
-    let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
+    //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
+    let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"红色标记", "color":"red"}, {"colName":"蓝色标记", "color":"#3333ff"}];
     let parentNode;
     let renjuCmddiv = null;
     let imgCmdDiv = null;
