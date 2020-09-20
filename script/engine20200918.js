@@ -13,6 +13,7 @@ let engine = (() => {
     let closeNoSleep;
     let saveContinueData;
     let save = {};
+    let tree = null;
     let setCmd = () => {
         //msg ("","msgbox",0,cBd.height,dw+8,dh-cBd.height,"停止计算",null,
         //  cancelFind,null,null,"auto");
@@ -46,7 +47,7 @@ let engine = (() => {
         }
     };
     let createWork = () => {
-        let wk = new Worker("./script/worker20200814.js");
+        let wk = new Worker("./script/worker20200918.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -148,12 +149,16 @@ let engine = (() => {
                             cBd.cleLb(i);
                         }
                     }
+                    if (tree) {
+                        cBd.addTree(tree);
+                        tree = null;
+                    }
                     callback();
                 },
                 "findThreePoint": () => {
                     let newarr = getArr([]);
                     findThreePoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "③", param[3]==onlyFree?"red":"black");
+                    cBd.printArray(newarr, "③", param[3] == onlyFree ? "red" : "black");
                     callback();
                 },
                 "findTTPoint": () => {
@@ -183,14 +188,15 @@ let engine = (() => {
                 "findFourPoint": () => {
                     let newarr = getArr([]);
                     findFourPoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "④",  param[3]==onlyFree?"red":"black");
+                    cBd.printArray(newarr, "④", param[3] == onlyFree ? "red" : "black");
                     callback();
-                }, 
+                },
                 "isTwoVCF": () => {
+                    tree = null;
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
-                    work = new Worker("./script/worker20200814.js");
+                    work = new Worker("./script/worker20200918.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
@@ -221,7 +227,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker20200814.js");
+                                works[i] = new Worker("./script/worker20200918.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());
@@ -233,10 +239,18 @@ let engine = (() => {
                                             cBd.printSearchPoint(i);
                                             cBd.wLb(p[0], p[1], p[2]);
                                         },
+                                        "addTree": () => {
+                                            if (tree) {
+                                                tree.childNode.push(p[0].childNode[0]);
+                                            }
+                                            else {
+                                                tree = p[0];
+                                            }
+                                        },
                                         "printSearchPoint": () => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                         "end": () => {
 
-                                            let idx = sPoint.length ? sPoint.splice(0, 1) : -1;
+                                            let idx = sPoint.length ? sPoint.splice(0, 1) * 1 : -1;
                                             if (idx > -1) {
                                                 cBd.printSearchPoint(i, idx, "⊙", "green");
                                                 works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
@@ -246,6 +260,10 @@ let engine = (() => {
                                                 cBd.printSearchPoint(i);
                                                 workCount--;
                                                 if (workCount == 0) {
+                                                    if (tree) {
+                                                        cBd.addTree(tree);
+                                                        tree = null;
+                                                    }
                                                     callback();
                                                 }
                                             }
@@ -263,7 +281,7 @@ let engine = (() => {
                 },
                 "getBlockVCF": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker20200814.js");
+                    work = new Worker("./script/worker20200918.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -311,7 +329,7 @@ let engine = (() => {
                 },
                 "getBlockVCFb": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker20200814.js");
+                    work = new Worker("./script/worker20200918.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -364,7 +382,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker20200814.js");
+                                works[i] = new Worker("./script/worker20200918.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());

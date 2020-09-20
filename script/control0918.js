@@ -379,6 +379,7 @@ let control = (() => {
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
         cFindVCF.addOption(10, "活3级别");
+        cFindVCF.addOption(11, "isFFwin");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 
         cFindVCF.show();
@@ -423,6 +424,13 @@ let control = (() => {
                 case 10:
                     engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, true]);
                     break;
+                case 11:
+                    console.log(isFFWin(8,12,2,arr))
+                    arr[12][8] = "*"
+                    console.log(arr)
+                    arr[12][8] = 0
+                    //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, true]);
+                break;
             }
             but.input.value = 0;
 
@@ -605,7 +613,6 @@ let control = (() => {
         cInputcode.setText("输入代码");
         let inputCode = function(msgStr) {
             // 成功设置棋盘 ，就开始解析棋盘摆盘
-
             if (msgStr.indexOf("debug") > -1) {
                 if (vConsole == null) vConsole = new VConsole();
                 return;
@@ -615,28 +622,8 @@ let control = (() => {
                 vConsole = null;
                 return;
             }
-
-            let st = 0;
-            let end = msgStr.indexOf("{");
-            end = end == -1 ? msgStr.length : end;
-            let moves;
-            let blackMoves;
-            let whiteMoves;
-            moves = cBd.setMoves(msgStr.slice(st, end));
-            st = end + 1;
-            end = msgStr.indexOf("}{", st);
-            end = end == -1 ? msgStr.length : end;
-            blackMoves = cBd.setMoves(msgStr.slice(st, end));
-            st = end + 2;
-            end = msgStr.length;
-            whiteMoves = cBd.setMoves(msgStr.slice(st, end));
-            if (moves || blackMoves || whiteMoves) {
-                cBd.cle();
-                cBd.resetNum = 0;
-                if (moves) cBd.unpackMoves(cShownum.checked, "auto", moves);
-                if (blackMoves) cBd.unpackMoves(cShownum.checked, "black", blackMoves);
-                if (whiteMoves) cBd.unpackMoves(cShownum.checked, "white", whiteMoves);
-            }
+            cBd.unpackCode(cShownum.checked, msgStr);
+            
         }
         cInputcode.setontouchend(function() {
             let w = cBd.width * 0.8;
@@ -658,10 +645,8 @@ let control = (() => {
             let l = (dw - w) / 2;
             let t = (dh - dw) / 4;
             t = t < 0 ? 1 : t;
-            let code = cBd.getMoves();
-            code += "\n{" + cBd.getMoves(tBlack) + "}";
-            code += "{" + cBd.getMoves(tWhite) + "}";
-            code = code == "" ? "空棋盘没有棋盘代码" : code;
+            let code = cBd.getCode();
+            code = code == "\n{}{}" ? "空棋盘没有棋盘代码" : code;
             msg(code + "\n\n\n" + "-------------" + "\n" + "长按上面代码，复制棋谱代码 ", "input", l, t, w, h, "输入代码", null,
                 inputCode, null, null, 10);
         });
@@ -1144,7 +1129,7 @@ let control = (() => {
                         //点击棋子，触发悔棋
                         cBd.cleNb(idx, cmds.showNum);
                     }
-                    else if (cBd.P[idx].type == tEmpty) {
+                    else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
                         // 添加棋子  wNb(idx,color,showNum)
                         cBd.wNb(idx, "auto", cmds.showNum);
                     }
@@ -1153,7 +1138,7 @@ let control = (() => {
                 case tBlack:
                     if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
                         //点击棋子，触发悔棋
-                        cBd.clePoint(idx);
+                        cBd.cleNb(idx);
                     }
                     else if (cBd.P[idx].type == tEmpty) {
                         // 添加棋子  wNb(idx,color,showNum)
@@ -1164,7 +1149,7 @@ let control = (() => {
                 case tWhite:
                     if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
                         //点击棋子，触发悔棋
-                        cBd.clePoint(idx);
+                        cBd.cleNb(idx);
                     }
                     else if (cBd.P[idx].type == tEmpty) {
                         // 添加棋子  wNb(idx,color,showNum)
@@ -1175,7 +1160,7 @@ let control = (() => {
                 case tLb:
                     if (cBd.P[idx].type == tLb) {
                         // 点击标记，删除标记
-                        cBd.clePoint(idx);
+                        cBd.cleLb(idx);
                     }
                     else if (cBd.P[idx].type == tEmpty) {
                         // 添加标记 wLb(idx,text,color, showNum:isShow) 
@@ -1261,7 +1246,7 @@ let control = (() => {
         // 设置弹窗，让用户手动输入标记
         msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
                 let str = msgStr.substr(0, 3);
-                cBd.clePoint(idx); // 清除原来标记，打印用户选定的标记
+                cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
                 if (str != "" && str != " ") cBd.wLb(idx, str, color);
             },
             function(msgStr) { //用户取消，删除标记
