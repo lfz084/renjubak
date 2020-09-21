@@ -661,30 +661,6 @@ function findVCF(color, timeOut, depth, count, backStage, arr) {
                     }
                 }
 
-
-                // 去掉VCF无谓冲四
-                function simpleVCF(color, arr, moves) {
-
-                    let nColor = color == 1 ? 2 : 1;
-                    for (let j = moves.length - 6; j >= 0; j--) { // 摆棋子
-                        let x = moves[j] % 15;
-                        let y = parseInt(moves[j] / 15);
-                        arr[y][x] = j % 2 == 0 ? color : nColor;
-                    }
-
-                    for (let i = moves.length - 5; i >= 0; i -= 2) {
-                        let VCF = moves.slice(i + 2); // 判断是否无谓冲四      
-                        if (isVCF(color, arr, VCF)) moves.splice(i, 2); //删除无谓冲四
-                        for (let j = 1; j < 3; j++) { // 复原两步
-                            if (i - 1 < 0) break;
-                            let x = moves[i - j] % 15;
-                            let y = parseInt(moves[i - j] / 15);
-                            arr[y][x] = 0;
-                        }
-                    }
-
-                }
-
             }
             catch (err) {
                 //console.log("continueFindVCF err=" + err.message);
@@ -694,6 +670,30 @@ function findVCF(color, timeOut, depth, count, backStage, arr) {
     catch (err) {
         //console.log("findVCF err=" + err.message);
     }
+}
+
+
+// 去掉VCF无谓冲四
+function simpleVCF(color, arr, moves) {
+
+    let nColor = color == 1 ? 2 : 1;
+    for (let j = moves.length - 6; j >= 0; j--) { // 摆棋子
+        let x = moves[j] % 15;
+        let y = parseInt(moves[j] / 15);
+        arr[y][x] = j % 2 == 0 ? color : nColor;
+    }
+
+    for (let i = moves.length - 5; i >= 0; i -= 2) {
+        let VCF = moves.slice(i + 2); // 判断是否无谓冲四      
+        if (isVCF(color, arr, VCF)) moves.splice(i, 2); //删除无谓冲四
+        for (let j = 1; j < 3; j++) { // 复原两步
+            if (i - 1 < 0) break;
+            let x = moves[i - j] % 15;
+            let y = parseInt(moves[i - j] / 15);
+            arr[y][x] = 0;
+        }
+    }
+
 }
 
 
@@ -1566,7 +1566,7 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
                             }
                             */
                             if (isFFWin(ttx, tty, color, arr)) {
-                                console.log("true")
+                                //console.log("true")
                                 isT = true;
                                 arr[ty][tx] = 0;
                             }
@@ -2928,12 +2928,19 @@ function isTwoVCF(idx, color, arr) {
     let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
     //findVCF(color,timeOut,depth,count,backStage,arr) 
     let fNum = nLevel.level >= 3 ? 0 : findVCF(color, timeout, depth, 2, true, arr);
+    let node = new Node();
+    let cNode = node.childNode;
+    cNode[0] = { idx: idx, node: new Node() };
     if (fNum >= 2 || (fNum == 1 && vcfWinMoves[0].length == 1)) { // 有两套V，判断双杀是否成立
         let notWin = false; //后续计算，如果双杀不成立==true
-        let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
+        let winMoves = [];
+        winMoves.push(vcfWinMoves[0].slice(0));
+        simpleVCF(color, arr, winMoves[0]);
+        let bPoint = getBlockVCF(winMoves, color, arr, true, true);
         //console.log(bPoint)
         if (bPoint) { //排除直接防
-            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+            let nd = cNode[0].node;
+            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, nd))) {
                 //排除失败，双杀不成立
                 notWin = true;
             }
@@ -2951,7 +2958,9 @@ function isTwoVCF(idx, color, arr) {
                     let y = parseInt(fMoves[j][k] / 15);
                     arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
                 }
-                let winLevel = getWinLevel(arr, color, timeout, depth, 1);
+                let nd = cNode[0].node;
+                nd = movesToNode(fMoves[j], nd);
+                let winLevel = getWinLevel(arr, color, timeout, depth, 1, nd);
                 //console.log("winLevel="+winLevel)
                 if (winLevel < 3.5) notWin = true; // 复原棋子
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
@@ -2967,21 +2976,24 @@ function isTwoVCF(idx, color, arr) {
     arr[y][x] = 0;
     //console.log(pNum + "--"+idx);
     if (pNum) {
-        post("wLb", [idx, "◎", "red"]);
+        post("wLb", [idx, "◎", "black"]);
+        node.firstColor = color == 1 ? "black" : "white";
+        post("addTree", [node]);
     }
 }
 
 
-
 // 排除直接防
-function excludeBP(arr, color, bPoint, timeout, depth) {
+function excludeBP(arr, color, bPoint, timeout, depth, node) {
 
     let i;
     let x;
     let y;
     let fNum;
     let fMoves = []; // 临时保存找到的VCF
+    node = node || new Node();
     for (i = bPoint.length - 1; i >= 0; i--) {
+        let cNode = node.childNode;
         x = bPoint[i] % 15;
         y = parseInt(bPoint[i] / 15);
         arr[y][x] = color;
@@ -2991,16 +3003,52 @@ function excludeBP(arr, color, bPoint, timeout, depth) {
         }
         fNum = j >= 0 ? 1 : findVCF(color == 1 ? 2 : 1, timeout, depth, 1, true, arr);
         arr[y][x] = 0;
+
         if (fNum == 0) {
+            node.childNode = [];
             return false;
         }
-        else if (j < 0) { // 新的V
-            fMoves.push(vcfWinMoves[0].slice(0));
+        else {
+            let moves = j >= 0 ? fMoves[j].slice(0) : vcfWinMoves[0].slice(0);
+            arr[y][x] = color;
+            simpleVCF(color == 1 ? 2 : 1, arr, moves);
+            arr[y][x] = 0;
+            cNode[cNode.length] = { idx: y * 15 + x, node: new Node() };
+            //cNode = cNode[cNode.length - 1].node.childNode;
+            movesToNode(moves, cNode[cNode.length - 1].node);
+            if (j < 0) { // 新的V
+                fMoves.push(vcfWinMoves[0].slice(0));
+            }
         }
 
     }
     return true;
 }
+
+
+
+function movesToNode(moves, node) {
+    let cNode = node.childNode;
+    let leng = moves.length;
+    let startIdx = 0;
+    let sIdx;
+    for (sIdx = 0; sIdx < leng; sIdx++) {
+        for (startIdx = 0; startIdx < cNode.length; startIdx++) {
+            if (moves[sIdx] == cNode[startIdx].idx) break;
+        }
+        if (startIdx == cNode.length) break;
+        node = cNode[startIdx].node;
+        cNode = cNode[startIdx].node.childNode;
+    }
+    for (let i = sIdx; i < leng; i++) {
+        let idx = i == sIdx ? startIdx : 0;
+        cNode[idx] = { idx: moves[i] * 1, node: new Node() };
+        node = cNode[idx].node;
+        cNode = cNode[idx].node.childNode;
+    }
+    return node;
+}
+
 
 
 /*
@@ -3051,9 +3099,14 @@ function isSimpleWin(idx, color, arr, num, level) {
             let x = idx % 15;
             let y = parseInt(idx / 15);
             arr[y][x] = color;
-            let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2);
+            let node = new Node();
+            node.childNode[0] = { idx: idx, node: new Node() };
+            let nd = node.childNode[0].node;
+            let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2, nd);
             if (winLevel > 3) {
-                post("wLb", [idx, "◎", "red"]);
+                post("wLb", [idx, "◎", "black"]);
+                node.firstColor = color == 1 ? "black" : "white";
+                post("addTree", [node]);
             }
             arr[y][x] = 0;
         }
@@ -3251,14 +3304,16 @@ function getLevelB(arr, color, newarr, timeout, depth, backstage, num) {
 
 // 轮到对手落子
 // 判断必胜级别 depth==vcf深度，gDepth(递归深度) ==1不计算先手防, ==2计算先手防
-function getWinLevel(arr, color, timeout, depth, gDepth) {
+function getWinLevel(arr, color, timeout, depth, gDepth, node) {
 
+    node = node || new Node();
     timeout = timeout || 30000;
     depth = depth || 1000;
     gDepth = gDepth || 2;
     // 判断对手进攻级别
     let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
     let winLevel;
+    let cNode = node.childNode;
     //console.log("对手进攻级别="+nLevel.level)
     if (nLevel.level == 5) { // 对手已胜
         return 2;
@@ -3278,7 +3333,16 @@ function getWinLevel(arr, color, timeout, depth, gDepth) {
             arr[y][x] = color == 1 ? 2 : 1;
             let num = findVCF(color, timeout, depth, 1, true, arr);
             arr[y][x] = 0;
-            if (num) return 4.4;
+            if (num) {
+                cNode[cNode.length] = { idx: y * 15 + x, node: new Node() };
+                let nd = cNode[cNode.length-1].node;
+                let moves = vcfWinMoves[0];
+                arr[y][x] = color == 1 ? 2 : 1;
+                simpleVCF(color, arr, moves);
+                arr[y][x] = 0;
+                movesToNode(moves, nd);
+                return 4.4;
+            }
         }
 
         //findVCF(color,timeOut,depth,count,backStage,arr) 
@@ -3288,7 +3352,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth) {
             let notWin = false; //后续计算，如果双杀不成立==true
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
             if (bPoint) { //排除直接防
-                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth))) {
+                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, node))) {
                     //排除失败，双杀不成立
                     notWin = true;
                 }
@@ -3315,7 +3379,8 @@ function getWinLevel(arr, color, timeout, depth, gDepth) {
                      }
                      //console.log(j+"\n"+str)
                     */
-                    winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1);
+                    let nd = movesToNode(fMoves[j], node);
+                    winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1, nd);
                     //console.log("_____"+winLevel)
                     if (winLevel < 3.5) notWin = true;
 
@@ -3342,11 +3407,13 @@ function getWinLevel(arr, color, timeout, depth, gDepth) {
 // num 剩余手数，根据棋子数目控制深度
 function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
 
+    node = node || new Node();
     timeout = timeout || 30000;
     gDepth = gDepth || 2;
     // 判断对手进攻级别
     let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, null, true);
     let winLevel;
+    let cNode = node.childNode;
     //console.log("对手进攻级别="+nLevel.level)
     if (nLevel.level == 5) { // 对手已胜
         return 2;
@@ -3366,7 +3433,16 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             arr[y][x] = color == 1 ? 2 : 1;
             let num = findVCF(color, timeout, maxNum - 2, 1, true, arr);
             arr[y][x] = 0;
-            if (num) return 4.4;
+            if (num) {
+                cNode[0] = { idx: y * 15 + x, node: new Node() };
+                cNode = cNode[0].node.childNode;
+                cNode[0] = { idx: vcfWinMoves[0][0] * 1, node: new Node() };
+                cNode = cNode[0].node.childNode;
+                cNode[0] = { idx: vcfWinMoves[0][1] * 1, node: new Node() };
+                cNode = cNode[0].node.childNode;
+                cNode[0] = { idx: vcfWinMoves[0][2] * 1, node: new Node() };
+                return 4.4;
+            }
         }
         //findVCF(color,timeOut,depth,count,backStage,arr) 
         let fNum = findVCF(color, timeout, maxNum - 2, 1, true, arr);
@@ -3374,7 +3450,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             let notWin = false; //后续计算，如果双杀不成立==true
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
             if (bPoint) { //排除直接防
-                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, maxNum - 2))) {
+                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, maxNum - 2, node))) {
                     //排除失败，双杀不成立
                     notWin = true;
                 }
@@ -3391,7 +3467,8 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
                         let y = parseInt(fMoves[j][k] / 15);
                         arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
                     }
-                    winLevel = getWinLevelSimple(arr, color, timeout, maxNum - fMoves[j].length / 2, gDepth - 1);
+                    let nd = movesToNode(fMoves[j], node);
+                    winLevel = getWinLevelSimple(arr, color, timeout, maxNum - fMoves[j].length / 2, gDepth - 1, nd);
                     //console.log("_____"+winLevel)
                     if (winLevel < 3.5) notWin = true;
 

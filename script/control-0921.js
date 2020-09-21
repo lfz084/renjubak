@@ -1122,6 +1122,7 @@ let control = (() => {
 
         if (idx > -1) {
             let cmds = getRenjuCmd();
+            if (cBd.oldCode)  cmds.type = tNum;
             switch (cmds.type) {
                 case tNum:
                     cancelKeepTouck();

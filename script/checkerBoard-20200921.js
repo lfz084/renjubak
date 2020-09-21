@@ -182,7 +182,7 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.moveBlackColor = "#bbbbbb"; //666666
     this.moveWhiteFontColor = "#ffffff"; //ffffff
     this.moveBlackFontColor = "#000000"; //000000
-    this.moveLastFontColor = "#ff0000"; //ff0000
+    this.moveLastFontColor = "red"; //ff0000
     this.firstColor = "black";
 
     this.node = function(value) {
@@ -2490,7 +2490,7 @@ checkerBoard.prototype.toNext = function(isShowNum) {
     }
     else {
         //console.log("toNext")
-        if (this.oldCode == "") this.addTree();
+        //if (this.oldCode == "") this.addTree();
     }
 };
 
@@ -2577,6 +2577,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 
 checkerBoard.prototype.unpackTree = function() {
 
+    if (this.oldCode == "") return;
     this.cleLb("all");
     if (this.oldCode) {
         if (this.timerUnpackTree) {
