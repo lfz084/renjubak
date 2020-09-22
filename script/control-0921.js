@@ -746,6 +746,7 @@ let control = (() => {
 
 
 
+
         function nSetChecked(chk) {
             cLba.setChecked(0);
             cLbb.setChecked(0);
@@ -759,7 +760,9 @@ let control = (() => {
         }
 
 
+
         setTimeout(function() {
+            
             engine.reset({
                 "maxThread": maxThread,
                 "cObjVCF": cObjVCF,
@@ -774,14 +777,16 @@ let control = (() => {
                 "saveContinueData": appData.saveContinueData,
                 "saveData": appData.saveData,
             });
+            
             let continueData = appData.loadContinueData(cBd);
+            
             if (continueData) {
                 msg("上次意外退出,继续计算...", null, null, null, null, null, null, null, null, null, 0);
                 closeMsg(3000);
                 engine.postMsg(continueData.cmd, [continueData]);
             }
+            
         }, 1000 * 1);
-
 
 
     }

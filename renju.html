@@ -110,6 +110,7 @@
                 downDiv.style.height = 50 + "px";
                 downDiv.style.left = dw > dh ? cWidth * 1.06 + "px" : "0px";
                 downDiv.style.top = dw > dh ? "0px" : cWidth * 2.06 + "px";
+                
                 if (dw <= dh) setTimeout(() =>{scrollTo(0, cWidth);}, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
