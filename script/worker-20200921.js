@@ -2607,7 +2607,7 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
                             post("printSearchPoint", []);
                             post("wLb", [pnt.index[i], "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]);
                         }
-                        threeP.splice(0, 0, pnt.index[i]);
+                        threeP.splice(0, 0, {idx:pnt.index[i],moves:level.moves});
                     }
 
                 }
@@ -2619,10 +2619,10 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
                             post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
                         }
                         if (l > 3) {
-                            vcfP.splice(0, 0, pnt.index[i]);
+                            vcfP.splice(0, 0, {idx:pnt.index[i],moves:level.moves});
                         }
                         else {
-                            simpleP.splice(0, 0, pnt.index[i]);
+                            simpleP.splice(0, 0, {idx:pnt.index[i],moves:level.moves});
                         }
                     }
                     else { // 进一步判断是否做V
@@ -2632,10 +2632,10 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
                                 post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
                             }
                             if (l > 3) {
-                                vcfP.splice(0, 0, pnt.index[i]);
+                                vcfP.splice(0, 0, {idx:pnt.index[i],moves:level.moves});
                             }
                             else {
-                                simpleP.splice(0, 0, pnt.index[i]);
+                                simpleP.splice(0, 0, {idx:pnt.index[i],moves:level.moves});
                             }
                         }
                     }
@@ -2827,6 +2827,12 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
     }
     else { //再搜索活3的3手胜
         let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
+        let tempPs = [];
+        for (let i=tPoint.length-1; i>=0; i--) {
+            tempPs.push (tPoint[i].idx*1);
+        }
+        tPoint = tempPs;
+        /*
         let twIdx;
         //if (testidx) console.log(tPoint)
         //if (testidx) console.log(arr)
@@ -2836,23 +2842,24 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
                 tPoint.splice(idx, 1);
                 if (isThreeWinPoint(tWinPoint[twIdx], color, arr, true, null, node)) {
                     wPoint.push(tWinPoint[twIdx] * 1);
-                    //console.log("复用")
+                    console.log("复用")
                     break;
                 }
             }
         }
         if (twIdx < 0) {
+        */
             //if (testidx) console.log("twIdx < 0_____" + tPoint)
             for (let i = tPoint.length - 1; i >= 0; i--) {
                 //if (testidx) console.log(tPoint[i]);
                 if (isThreeWinPoint(tPoint[i], color, arr, true, null, node)) {
                     wPoint.push(tPoint[i] * 1);
-                    tWinPoint.push(tPoint[i] * 1);
+                    //tWinPoint.push(tPoint[i] * 1);
                     //console.log("push")
                     i = -1;
                 }
             }
-        }
+        //}
     }
     return wPoint;
 }

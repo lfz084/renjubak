@@ -86,6 +86,9 @@
                     setTimeout(() => { location.reload(); }, 100);
                     return;
                 }
+                if (String(window.location).indexOf("http://localhost") == 0) {
+                    if (vConsole == null) vConsole = new VConsole();
+                }
                 let bodyDiv = d.createElement("div");
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";
@@ -110,7 +113,6 @@
                 if (dw <= dh) setTimeout(() =>{scrollTo(0, cWidth);}, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
-
                 setCheckerBoardEvent(cBoard.canvas);
 
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth]);
@@ -435,6 +437,7 @@
             }
 
         }
+
 
 
         function canvasClick(x, y) {
