@@ -94,9 +94,9 @@ let appData = (() => {
     };
 
     let loadContinueData = (cBd) => {
-    
+
         let strData = localStorage.getItem("continueData");
-        let data = strData!="undefined" ? JSON.parse(strData) : false;
+        let data = strData != "undefined" ? JSON.parse(strData) : false;
         if (typeof(data) == "object") {
             //console.log("load")
             cBd.cle();
