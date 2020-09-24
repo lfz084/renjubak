@@ -392,13 +392,12 @@ let control = (() => {
             }
             let arr = [];
             cBd.getPointArray(arr);
-            // findVCF(color,timeOut,depth,count,backStage,arr,callback,callbackParameter) 
             switch (but.input.value * 1) {
                 case 1:
-                    engine.postMsg("findVCF", [getRenjuSelColor(), null, null, 1, null, arr]);
+                    engine.postMsg("findVCF", [arr, getRenjuSelColor(), 1, null, null, null]);
                     break;
                 case 2:
-                    engine.postMsg("findVCF", [getRenjuSelColor(), null, null, null, null, arr]);
+                    engine.postMsg("findVCF", [arr, getRenjuSelColor(), null, null, null, null]);
                     break;
                 case 3:
                     engine.postMsg("isTwoVCF", [getRenjuSelColor(), arr, getArr([])]);
