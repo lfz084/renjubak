@@ -1,6 +1,6 @@
 "use strict";
 let control = (() => {
-    const maxThread = 0 || window.navigator.hardwareConcurrency - 2 || 2;
+    const maxThread = 0 || window.navigator.hardwareConcurrency - 2 || 4;
     setTimeout(function() {
         //alert(maxThread);
     }, 3000);

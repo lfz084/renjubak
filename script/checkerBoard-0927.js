@@ -186,7 +186,8 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.firstColor = "black";
 
     this.node = function(value) {
-        this.parentNode = [];
+        this.parentNode;
+        this.idx = value==undefined ?  -1 : value;
         this.childNode = [];
     };
     this.oldResetNum = 0;
@@ -2595,7 +2596,7 @@ checkerBoard.prototype.unpackTree = function() {
                 let j = 0; //find idx
                 for (j = nd.childNode.length - 1; j >= 0; j--) {
                     if (nd.childNode[j].idx == MS[i]) {
-                        nd = nd.childNode[j].node;
+                        nd = nd.childNode[j];
                         break;
                     }
                 }
