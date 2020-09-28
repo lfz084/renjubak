@@ -116,10 +116,10 @@ function tree(arr) {
 
 
 
-function Node(value) {
-    this.parentNode;
-    this.idx = value==undefined ?  -1 : value;
-    this.childNode = [];
+function Node(idx, parentNode, childNode) {
+    this.parentNode = parentNode;
+    this.idx = idx==undefined ?  -1 : idx;
+    this.childNode = childNode == undefined ? [] : childNode;
 }
 
 
@@ -351,7 +351,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
         for (i = tPoint.length - 1; i >= 0; i--) {  //find VCT point
             if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
                 cNode.splice(0,cNode.length-1);
-                ctnNode = cNode[0];
+                ctnNode = cNode[0].parentNode;
                 break;
             }
             else {
@@ -376,11 +376,11 @@ function findVCT(arr, color, node, count, depth, backStage) {
             for (i = tPoint.length - 1; i >= 0; i--) {
                 if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
                     cNode.splice(0, cNode.length - 1);
-                    ctnNode = cNode[0];
+                    ctnNode = cNode[0].parentNode;
                     break;;
                 }
                 else {
-            
+                    
                 }
             }
         
@@ -394,10 +394,11 @@ function findVCT(arr, color, node, count, depth, backStage) {
         }
         if (j >= 0) return true;
         if (cNode.length) {
+            ctnNode = cNode[cNode.length - 1];
             let bPoint = getBlockVCF(vcf, color, arr, true, true);  
             bPoint = bPoint ? bPoint : [];
             for (let i=bPoint.length-1; i>=0; i--){  // add block point
-                ctnNode.childNode.push(new Node(bPoint[i]*1));
+                ctnNode.childNode.push(new Node(bPoint[i]*1, ctnNode));
             }
             let fMoves = []; //  保存先手连续冲四分支
             continueFour(arr, color, 10, fMoves, getArr([]));
@@ -1093,15 +1094,15 @@ function isTTWinPoint(point, color, arr, node) {
     let y = parseInt(point.idx/15);
     let notWin = false;
     let cNode = node.childNode;
-    cNode[cNode.length] = new Node(point.idx);
+    cNode[cNode.length] = new Node(point.idx, node);
     let moves = [];
     moves.push(point.moves);
     arr[y][x] = color;
     let bPoint = getBlockVCF(moves, color, arr, true);
     if (bPoint) { //排除直接防
-        if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, cNode[cNode.length-1].node))) {
+        if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, cNode[cNode.length-1]))) {
             //排除失败，双杀不成立
-            cNode[cNode.length-1] = new Node(point.idx);
+            cNode = [];
             notWin = true;
         }
     }
@@ -1163,21 +1164,24 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
             let lvl = getLevel(arr, color == 1 ? 2 : 1);
             isWin = lvl.level < 4;
             if (isWin) { //add node
-                nd.childNode[0] = new Node(idx);
+                nd.childNode[0] = new Node(idx, nd);
                 nd = nd.childNode[0];
-                nd.childNode[0] = new Node(p*1);
+                nd.childNode[0] = new Node(p*1, nd);
                 nd = nd.childNode[0];
-                nd.childNode[0] = new Node(fPoint[0] * 1);
+                nd.childNode[0] = new Node(fPoint[0] * 1, nd);
             }
         }
     }
     else {
         if (findVCF(arr, color, 1, 0, null, true)) {
             isWin = true;
+            let VCF = new Node();
+            movesToNode(vcfWinMoves[0], VCF);
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true);
             bPoint = bPoint || [];
-            node.childNode[0] = new Node(idx);
+            node.childNode[0] = new Node(idx, node);
             node.childNode[0].childNode.length = bPoint.length;
+            node.childNode[0].defaultChildNode = VCF;
             for (let i = bPoint.length - 1; i >= 0; i--) {
                 let tx = bPoint[i] % 15;
                 let ty = parseInt(bPoint[i] / 15);
@@ -1191,9 +1195,9 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
                 }
                 else {
                     nd = node.childNode[0];
-                    nd.childNode[i] = new Node(bPoint[i] * 1);
+                    nd.childNode[i] = new Node(bPoint[i] * 1, nd);
                     nd = nd.childNode[i];
-                    nd.childNode[0] = new Node(fPoint[0] * 1);
+                    nd.childNode[0] = new Node(fPoint[0] * 1, nd);
                 }
                 arr[ty][tx] = 0;
             }
@@ -1571,7 +1575,17 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
     arr[y][x] = color;
     let lvl = getLevelB(arr, color, getArr([]), 3000, null, true, 3);
     if (lvl.level >= 3 || findThreeWin(arr, color, getArr([]), [], VCT).length) {
-        node.childNode[0] = new Node(idx);
+        node.childNode[0] = new Node(idx, node);
+        if (lvl.level >= 3 && lvl.moves) {
+                let VCF = new Node();
+                movesToNode(lvl.moves,VCF);
+                node.childNode[0].defaultChildNode = VCF;
+                VCF.parentNode = node.childNode[0];
+        }
+        else {
+            node.childNode[0].defaultChildNode = VCT;
+            VCT.parentNode = node.childNode[0];
+        }
         let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), null, 3 - 2, true, null, true, null, true);
         for (let i = 0; i < 225; i++) { //find blockVCT point
             if (lvl.level >= 3) break;
@@ -1598,12 +1612,12 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
                 arr[ty][tx] = color == 1 ? 2 : 1;
                 //如果出现活四级的杀就直接排除防点
                 let cNode = node.childNode[0].childNode;
-                cNode[cNode.length] = new Node(ty * 15 + tx);
+                cNode[cNode.length] = new Node(ty * 15 + tx, node.childNode[0]);
                 let nd = cNode[cNode.length - 1];
                 let fPoint = findFFWin(arr, color, getArr([]));
                 if (fPoint.length) {
                     arr[ty][tx] = 0;
-                    nd.childNode[0] = new Node(fPoint[0] * 1);
+                    nd.childNode[0] = new Node(fPoint[0] * 1, nd);
                 }
                 else {
                     let wp = findThreeWin(arr, color, getArr([]), tWinPoint, nd);
@@ -2936,12 +2950,12 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
     //快速搜索VCF
     if (findVCF(arr, color, 1, 3 - 2, null, true)) {
         wPoint.push(vcfWinMoves[0][0] * 1);
-        let cNode = node.childNode;
-        cNode[0] = new Node(vcfWinMoves[0][0] * 1);
-        cNode = cNode[0].childNode;
-        cNode[0] = new Node(vcfWinMoves[0][1] * 1);
-        cNode = cNode[0].childNode;
-        cNode[0] = new Node(vcfWinMoves[0][2] * 1);
+        let nd = node;
+        nd.childNode[0] = new Node(vcfWinMoves[0][0] * 1, nd);
+        nd = nd.childNode[0];
+        nd.childNode[0] = new Node(vcfWinMoves[0][1] * 1, nd);
+        nd = nd.childNode[0];
+        nd.childNode = new Node(vcfWinMoves[0][2] * 1, nd);
 
     }
     else { //再搜索活3的3手胜
@@ -3050,12 +3064,16 @@ function isTwoVCF(idx, color, arr) {
     let fNum = nLevel.level >= 3 ? 0 : findVCF(arr, color, 2, depth, timeout, true);
     let node = new Node();
     let cNode = node.childNode;
-    cNode[0] = new Node(idx);
+    cNode[0] = new Node(idx, node);
     if (fNum >= 2 || (fNum == 1 && vcfWinMoves[0].length == 1)) { // 有两套V，判断双杀是否成立
         let notWin = false; //后续计算，如果双杀不成立==true
         let winMoves = [];
         winMoves.push(vcfWinMoves[0].slice(0));
         simpleVCF(color, arr, winMoves[0]);
+        let VCF = new Node();
+        movesToNode(winMoves[0], VCF);
+        cNode[0].defaultChildNode = VCF;
+        VCF.parentNode = cNode[0];
         let bPoint = getBlockVCF(winMoves, color, arr, true, true);
         //console.log(bPoint)
         if (bPoint) { //排除直接防
@@ -3132,8 +3150,7 @@ function excludeBP(arr, color, bPoint, timeout, depth, node) {
             arr[y][x] = color;
             simpleVCF(color == 1 ? 2 : 1, arr, moves);
             arr[y][x] = 0;
-            cNode[cNode.length] = new Node(y * 15 + x);
-            cNode[cNode.length - 1].parentNode = node;
+            cNode[cNode.length] = new Node(y * 15 + x, node);
             //cNode = cNode[cNode.length - 1].node.childNode;
             movesToNode(moves, cNode[cNode.length - 1]);
             if (j < 0) { // 新的V
@@ -3162,8 +3179,7 @@ function movesToNode(moves, node) {
     }
     for (let i = sIdx; i < leng; i++) {
         let idx = i == sIdx ? startIdx : 0;
-        cNode[idx] = new Node(moves[i] * 1);
-        cNode[idx].parentNode = node;
+        cNode[idx] = new Node(moves[i] * 1, node);
         node = cNode[idx];
         cNode = cNode[idx].childNode;
     }
@@ -3222,7 +3238,7 @@ function isSimpleWin(idx, color, arr, num, level) {
             let y = parseInt(idx / 15);
             arr[y][x] = color;
             let node = new Node();
-            node.childNode[0] = new Node(idx);
+            node.childNode[0] = new Node(idx, node);
             let nd = node.childNode[0];
             let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2, nd);
             if (winLevel > 3) {
@@ -3456,7 +3472,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, node) {
             let num = findVCF(arr, color, 1, depth, timeout, true);
             arr[y][x] = 0;
             if (num) {
-                cNode[cNode.length] = new Node(y * 15 + x);
+                cNode[cNode.length] = new Node(y * 15 + x, node);
                 let nd = cNode[cNode.length - 1];
                 let moves = vcfWinMoves[0];
                 arr[y][x] = color == 1 ? 2 : 1;
@@ -3556,13 +3572,13 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             let num = findVCF(arr, color, 1, maxNum - 2, timeout, true);
             arr[y][x] = 0;
             if (num) {
-                cNode[0] = new Node(y * 15 + x);
-                cNode = cNode[0].childNode;
-                cNode[0] = new Node(vcfWinMoves[0][0] * 1);
-                cNode = cNode[0].childNode;
-                cNode[0] = new Node(vcfWinMoves[0][1] * 1);
-                cNode = cNode[0].childNode;
-                cNode[0] = new Node(vcfWinMoves[0][2] * 1);
+                cNode[0] = new Node(y * 15 + x, node);
+                let nd = cNode[0];
+                nd.childNode[0] = new Node(vcfWinMoves[0][0] * 1, nd);
+                nd = nd.childNode[0];
+                nd.childNode[0] = new Node(vcfWinMoves[0][1] * 1, nd);
+                nd = nd.childNode[0];
+                nd.childNode[0] = new Node(vcfWinMoves[0][2] * 1, nd);
                 return 4.4;
             }
         }
@@ -3570,6 +3586,9 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
         let fNum = findVCF(arr, color, 1, maxNum - 2, timeout, true);
         if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
             let notWin = false; //后续计算，如果双杀不成立==true
+            let VCF = new Node();
+            movesToNode(vcfWinMoves[0], VCF);
+            node.defaultChildNode = VCF;
             let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
             if (bPoint) { //排除直接防
                 if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, maxNum - 2, node))) {

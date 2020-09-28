@@ -52,6 +52,7 @@ let appData = (() => {
             localStorage.setItem("whiteMoves", whiteMoves);
             localStorage.setItem("blackMoves", blackMoves);
             localStorage.setItem("resetNum", cBd.resetNum);
+            localStorage.setItem("firstColor", cBd.firstColor);
             timerSave = null;
             //log("保存棋谱:" + moves);
         }
@@ -59,6 +60,7 @@ let appData = (() => {
 
     let loadData = (cBd) => {
         //console.log("loadData");
+        let firstColor = localStorage.getItem("firstColor");
         let resetNum = localStorage.getItem("resetNum");
         let moves = localStorage.getItem("moves");
         let whiteMoves = localStorage.getItem("whiteMoves");
@@ -68,6 +70,7 @@ let appData = (() => {
         console.log(blackMoves)
         console.log(whiteMoves)
         */
+        if (firstColor != "undefined") cBd.firstColor = firstColor;
         if (parseInt(resetNum) > 0) cBd.resetNum = parseInt(resetNum);
         if (cBd.setMoves(moves)) cBd.unpackMoves(true);
         if (whiteMoves != "") cBd.unpackMoves(true, "white", whiteMoves);

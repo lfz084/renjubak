@@ -190,6 +190,7 @@ function checkerBoard(parentNode, left, top, width, height) {
         this.idx = value==undefined ?  -1 : value;
         this.childNode = [];
     };
+    this.oldFirstColor = tBlack;
     this.oldResetNum = 0;
     this.oldCode = "";
     this.tree = new this.node();
@@ -250,8 +251,9 @@ function checkerBoard(parentNode, left, top, width, height) {
 checkerBoard.prototype.addTree = function(tree) {
     let code = this.getCode();
     let arr = this.getPointArray([]);
-    this.cle();
-
+    
+    this.oldFirstColor = this.firstColor;  // 在this.cle 前面
+    this.cle();  
     this.firstColor = tree ? tree.firstColor : null || "white";
     for (let y = 0; y < this.SLTY; y++) {
         for (let x = 0; x < this.SLTX; x++) {
@@ -353,7 +355,7 @@ checkerBoard.prototype.CCW = function(arrobj, count) {
 // 顺时针 翻转棋盘90°
 checkerBoard.prototype.boardCW = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode);
+    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     let tMS = [];
     let tMS1 = [];
     let wMS = [];
@@ -397,8 +399,11 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
             bMS = tMS.slice();
         }
     }
-
+    let resetNum = this.resetNum;
+    let firstColor = this.firstColor;
     this.cle(); // 清空棋盘
+    this.resetNum = resetNum;
+    this.firstColor = firstColor;
     this.MS = tMS;
 
     //  打印棋盘
@@ -420,7 +425,7 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
 // 逆时针 翻转棋盘90°
 checkerBoard.prototype.boardCCW = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode);
+    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     let tMS = [];
     let tMS1 = [];
     let wMS = [];
@@ -466,7 +471,11 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
         }
     }
 
+    let resetNum = this.resetNum;
+    let firstColor = this.firstColor;
     this.cle(); // 清空棋盘
+    this.resetNum = resetNum;
+    this.firstColor = firstColor;
     this.MS = tMS;
 
     //  打印棋盘
@@ -488,7 +497,7 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
 // 上下 翻转棋盘
 checkerBoard.prototype.boardFlipX = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode);
+    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     let tMS = [];
     let tMS1 = [];
     let wMS = [];
@@ -533,7 +542,11 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
         }
     }
 
+    let resetNum = this.resetNum;
+    let firstColor = this.firstColor;
     this.cle(); // 清空棋盘
+    this.resetNum = resetNum;
+    this.firstColor = firstColor;
     this.MS = tMS;
 
     //  打印棋盘
@@ -554,7 +567,7 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
 // 左右 翻转棋盘90°
 checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode);
+    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     let tMS = [];
     let tMS1 = [];
     let wMS = [];
@@ -599,7 +612,11 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
         }
     }
 
+    let resetNum = this.resetNum;
+    let firstColor = this.firstColor;
     this.cle(); // 清空棋盘
+    this.resetNum = resetNum;
+    this.firstColor = firstColor;
     this.MS = tMS;
 
     //  打印棋盘
@@ -2504,10 +2521,7 @@ checkerBoard.prototype.toPrevious = function(isShowNum) {
         this.cleNb(this.MS[this.MSindex], isShowNum);
     }
     else if (this.oldCode) {
-        let code = this.oldCode;
-        this.resetNum = this.oldCode;
-        this.cle();
-        this.unpackCode(isShowNum, code);
+        this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     }
 
 };
@@ -2524,7 +2538,7 @@ checkerBoard.prototype.toStart = function(isShowNum) {
 
 
 
-checkerBoard.prototype.unpackCode = function(showNum, codeStr) {
+checkerBoard.prototype.unpackCode = function(showNum, codeStr, resetNum, firstColor) {
     let st = 0;
     let end = codeStr.indexOf("{");
     end = end == -1 ? codeStr.length : end;
@@ -2541,7 +2555,8 @@ checkerBoard.prototype.unpackCode = function(showNum, codeStr) {
     whiteMoves = this.setMoves(codeStr.slice(st, end));
     if (moves || blackMoves || whiteMoves) {
         this.cle();
-        this.resetNum = 0;
+        this.resetNum = resetNum == undefined ? 0 : resetNum;
+        this.firstColor = firstColor == undefined ? "black" : firstColor;
         if (moves) this.unpackMoves(showNum, "auto", moves);
         if (blackMoves) this.unpackMoves(showNum, "black", blackMoves);
         if (whiteMoves) this.unpackMoves(showNum, "white", whiteMoves);
@@ -2604,7 +2619,14 @@ checkerBoard.prototype.unpackTree = function() {
                         break;
                     }
                 }
-                if (j == -1) break; // not find idx
+                if (j == -1) {
+                    if (nd.defaultChildNode) {
+                        nd = nd.defaultChildNode;
+                    }
+                    else {
+                        break; // not find idx
+                    }
+                }
             }
             if (i > MSindex) { // print points
                 for (let i = nd.childNode.length - 1; i >= 0; i--) {

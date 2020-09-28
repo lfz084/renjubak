@@ -296,7 +296,7 @@ let control = (() => {
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cFindPoint.addOption(0, "<<");
         cFindPoint.addOption(1, "做V点");
-        cFindPoint.addOption(2, "做杀(43,冲44,冲冲抓)");
+        cFindPoint.addOption(2, "做43杀(冲4再44,冲4冲4抓)");
         cFindPoint.addOption(3, "活三级别");
         cFindPoint.addOption(4, "活三");
         cFindPoint.addOption(5, "❌\b三三");
@@ -378,8 +378,8 @@ let control = (() => {
         cFindVCF.addOption(7, "防\b冲四抓禁");
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
-        cFindVCF.addOption(10, "活3级别");
-        cFindVCF.addOption(11, "isFFwin");
+        //cFindVCF.addOption(10, "活3级别");
+        //cFindVCF.addOption(11, "isFFwin");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 
         cFindVCF.show();
