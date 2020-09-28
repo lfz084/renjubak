@@ -2697,10 +2697,14 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
 
 
 // 在棋盘的一个点上面，摆一颗棋子
-checkerBoard.prototype.wNb = function(idx, color, showNum, type) {
+checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
 
-    if (color != "auto" && this.oldCode) return;
     let i = this.MSindex + 1;
+    if (this.oldCode) {
+        if (color != "auto") return;
+        let c = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
+        if (isFoulPoint && c == "black") return;
+    }
     if (color == "auto" || type == tNum) { // 顺序添加棋子
 
         this.MSindex++;

@@ -2955,7 +2955,7 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
         nd = nd.childNode[0];
         nd.childNode[0] = new Node(vcfWinMoves[0][1] * 1, nd);
         nd = nd.childNode[0];
-        nd.childNode = new Node(vcfWinMoves[0][2] * 1, nd);
+        nd.childNode[0] = new Node(vcfWinMoves[0][2] * 1, nd);
 
     }
     else { //再搜索活3的3手胜

@@ -47,7 +47,7 @@ let engine = (() => {
         }
     };
     let createWork = () => {
-        let wk = new Worker("./script/worker-0928.js");
+        let wk = new Worker("./script/worker-0929.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -202,7 +202,7 @@ let engine = (() => {
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
-                    work = new Worker("./script/worker-0928.js");
+                    work = new Worker("./script/worker-0929.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
@@ -233,7 +233,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-0928.js");
+                                works[i] = new Worker("./script/worker-0929.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());
@@ -287,7 +287,7 @@ let engine = (() => {
                 },
                 "getBlockVCF": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-0928.js");
+                    work = new Worker("./script/worker-0929.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -330,12 +330,12 @@ let engine = (() => {
                         if (typeof(f[command]) == "function") f[command]();
                     };
 
-                    work.postMessage({ "cmd": cmd, parameter: [param[0], null, null, 1, null, param[1]] });
+                    work.postMessage({ "cmd": cmd, parameter: [param[0], param[1], 1, null, null, null] });
 
                 },
                 "getBlockVCFb": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-0928.js");
+                    work = new Worker("./script/worker-0929.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -382,13 +382,13 @@ let engine = (() => {
                         if (typeof(f[command]) == "function") f[command]();
                     };
 
-                    work.postMessage({ "cmd": cmd, parameter: [param[0], null, null, 1, null, param[1]] });
+                    work.postMessage({ "cmd": cmd, parameter: [param[0], param[1], 1, null, null, null] });
 
                     let excludeBP = (cmd, parameter) => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-0928.js");
+                                works[i] = new Worker("./script/worker-0929.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());
@@ -405,7 +405,7 @@ let engine = (() => {
                                             let idx = sPoint.length ? sPoint.splice(0, 1) : -1;
                                             if (idx > -1) {
                                                 cBd.printSearchPoint(i, idx, "⊙", "green");
-                                                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
+                                                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[1], param[0], param[3], param[4], param[5], param[6]] });
                                             }
                                             else {
                                                 works[i].terminate();
@@ -423,7 +423,7 @@ let engine = (() => {
                                 };
                                 let idx = sPoint.splice(0, 1);
                                 cBd.printSearchPoint(i, idx, "⊙", "green");
-                                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
+                                works[i].postMessage({ "cmd": cmd, parameter: [idx, param[1], param[0], param[3], param[4], param[5], param[6]] });
                             }
                         }
 

@@ -299,7 +299,7 @@ let control = (() => {
         cFindPoint.addOption(2, "做43杀(冲4再44,冲4冲4抓)");
         cFindPoint.addOption(3, "活三级别");
         cFindPoint.addOption(4, "活三");
-        cFindPoint.addOption(5, "❌\b三三");
+        cFindPoint.addOption(5, "❌\b三三");    
         cFindPoint.addOption(6, "❌\b四四");
         cFindPoint.addOption(7, "❌\b长连");
         cFindPoint.addOption(8, "五连");
@@ -412,10 +412,10 @@ let control = (() => {
                     engine.postMsg("isFourWinPoint", [getRenjuSelColor(), arr, getArr([])]);
                     break;
                 case 8:
-                    engine.postMsg("getBlockVCF", [getRenjuSelColor(), arr]);
+                    engine.postMsg("getBlockVCF", [arr, getRenjuSelColor()]);
                     break;
                 case 9:
-                    engine.postMsg("getBlockVCFb", [getRenjuSelColor(), arr]);
+                    engine.postMsg("getBlockVCFb", [arr, getRenjuSelColor()]);
                     break;
                 case 7:
                     engine.postMsg("blockCatchFoul", [arr]);
@@ -1136,7 +1136,9 @@ let control = (() => {
                     }
                     else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
                         // 添加棋子  wNb(idx,color,showNum)
-                        cBd.wNb(idx, "auto", cmds.showNum);
+                        let arr = cBd.getPointArray([]);
+                        let isF = isFoul(idx%15,parseInt(idx/15),arr);
+                        cBd.wNb(idx, "auto", cmds.showNum, null, isF);
                     }
                     break;
 
