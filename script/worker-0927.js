@@ -344,11 +344,12 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
     function continueFindVCT() {
         let arr = vctArr;
+        let color = vctColor;
         let cNode = ctnNode.childNode;
         let tPoint = findLevelThreePoint(arr, color, getArr([]), null, idx, true);
         let i;
         for (i = tPoint.length - 1; i >= 0; i--) {  //find VCT point
-            if (isTTWinPoint(tPoint[i], vctColor, vctArr, ctnNode)) {
+            if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
                 cNode.splice(0,cNode.length-1);
                 ctnNode = cNode[0];
                 break;
@@ -370,10 +371,10 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 arr[y][x] = k % 2 ? color == 1 ? 2 : 1 : color;
             }
       
-            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, idx, true);
+            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, fMoves[j][fMoves[j].length-1]*1, true);
             let i;
             for (i = tPoint.length - 1; i >= 0; i--) {
-                if (isTTWinPoint(tPoint[i], vctColor, vctArr, ctnNode)) {
+                if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
                     cNode.splice(0, cNode.length - 1);
                     ctnNode = cNode[0];
                     break;;
@@ -393,7 +394,6 @@ function findVCT(arr, color, node, count, depth, backStage) {
         }
         if (j >= 0) return true;
         if (cNode.length) {
-            cNode.splice(0,0,{idx:-1});
             let bPoint = getBlockVCF(vcf, color, arr, true, true);  
             bPoint = bPoint ? bPoint : [];
             for (let i=bPoint.length-1; i>=0; i--){  // add block point
@@ -402,9 +402,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
             let fMoves = []; //  保存先手连续冲四分支
             continueFour(arr, color, 10, fMoves, getArr([]));
             for (let j = fMoves.length - 1; j >= 0; j--) {  // continue add block point
-                movesToNode(fMoves[j].slice(0,fMoves[j].length-1));
+                movesToNode(fMoves[j].slice(0,fMoves[j].length-1), ctnNode);
             }
-            cNode = cNode[cNode.length -1].childNode;
+            cNode = ctnNode.childNode;
             cNode.splice(0,0,{idx:-1});
             ctnNode = cNode[cNode.length - 1];
             while (ctnNode.childNode.length) { //move to last node 
@@ -425,7 +425,6 @@ function findVCT(arr, color, node, count, depth, backStage) {
         while (node) {
             changeArr(arr, node.idx, 0);
             moves.length--;
-            movesDepth.length--;
             movesDepth.length = moves.length - 1;
             let cNode = node.childNode;
             if (moves.length % 2) {
@@ -462,23 +461,23 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 }
             }
         }
-        let depthUp = false;
+
         while (node) {
-            let dp = 0;
+            let dp = movesDepth.length ? movesDepth[movesDepth.length-1] : 0;
             let x = node.idx % 15;
             let y = parseInt(node.idx/15);
             let color = moves.length % 2 ? vctColor : vctnColor;
-            changeArr(arr, node.idx, color);
+            arr[y][x] = color;
             moves.push(node.idx);
-            if (!depthUp && color==vctColor && !isFour(x,y,color,arr)) { // find first three
-                depthUp = true;
-                dp = 1;
-            }
-            movesDepth[moves.length] = moves.length==0 ? 0 : movesDepth[moves.length-1]  + dp;
+            movesDepth.push(dp);
             ctnNode = node;
             node = node.childNode[node.childNode.length -1];
         }
         
+        if (moves.length && moves.length % 2) {
+            movesDepth[movesDepth.length - 1] ++;
+        }
+        return moves.length > 0;
     }
     
     function changeArr(arr,idx,color) {
@@ -2315,12 +2314,28 @@ function blockCatchFoul(arr) {
 
 }
 
-
 function findFoulPoint(arr, newarr, setnum) {
-
-    findSixPoint(arr, 1, newarr, setnum);
-    findFFPoint(arr, 1, newarr, setnum);
-    findTTPoint(arr, 1, newarr, setnum);
+    
+    let narr = getArr([]);
+    findSixPoint(arr, 1, narr, setnum);
+    addFoulPoint(newarr, narr);
+    narr = getArr([]);
+    findFFPoint(arr, 1, narr, setnum);
+    addFoulPoint(newarr, narr);
+    narr = getArr([]);
+    findTTPoint(arr, 1, narr, setnum);
+    addFoulPoint(newarr, narr);
+    return newarr;
+    
+    function addFoulPoint(newarr, narr) {
+        for(let y = 0; y <15; y++) {
+            for(let x =0; x < 15; x++) {
+                if (narr[y][x] != 0) {
+                    newarr[y][x] = narr[y][x]*1;
+                }
+            }
+        }
+    }
 
 }
 
@@ -3108,7 +3123,6 @@ function excludeBP(arr, color, bPoint, timeout, depth, node) {
         }
         fNum = j >= 0 ? 1 : findVCF(arr, color == 1 ? 2 : 1, 1, depth, timeout, true);
         arr[y][x] = 0;
-
         if (fNum == 0) {
             node.childNode = [];
             return false;
@@ -3199,6 +3213,7 @@ function findSimpleWin(arr, color, newarr, num) {
 
 
 function isSimpleWin(idx, color, arr, num, level) {
+    
     if (num == 4) {
         if (level == 3) { //大道五目
             let timeout = 30000;

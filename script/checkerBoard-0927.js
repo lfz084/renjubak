@@ -2579,7 +2579,6 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 checkerBoard.prototype.unpackTree = function() {
 
     if (this.oldCode == "") return;
-    this.cleLb("all");
     if (this.oldCode) {
         if (this.timerUnpackTree) {
             clearTimeout(this.timerUnpackTree);
@@ -2589,6 +2588,11 @@ checkerBoard.prototype.unpackTree = function() {
         let MSindex = this.MSindex;
         let cBoard = this;
         this.timerUnpackTree = setTimeout(function() {
+            cBoard.cleLb("all");
+            let arr = cBoard.getPointArray(getArr([]));
+            let newarr = getArr([]);
+            findFoulPoint(arr, newarr);
+            cBoard.printArray(newarr, "❌", "red");
             let nd = cBoard.tree;
             let txt = MSindex % 2 ? "W" : "L";
             let i = 0; //unpackTree

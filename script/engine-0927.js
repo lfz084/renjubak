@@ -179,6 +179,12 @@ let engine = (() => {
                     cBd.printArray(newarr, "❌", "red");
                     callback();
                 },
+                "findFoulPoint": () => {
+                    let newarr = getArr([]);
+                    findFoulPoint(param[0], newarr, param[3]);
+                    cBd.printArray(newarr, "❌", "red");
+                    callback();
+                },
                 "findFivePoint": () => {
                     let newarr = getArr([]);
                     findFivePoint(param[0], param[1], newarr, param[3]);
