@@ -197,6 +197,27 @@ let engine = (() => {
                     cBd.printArray(newarr, "④", param[3] == onlyFree ? "red" : "black");
                     callback();
                 },
+                "findVCT": () => {
+                    tree = null;
+                    let arr = param[0];
+                    let color = param[1];
+                    work = new Worker("./script/worker-0929.js");
+                    work.onmessage = (e) => {
+                        let p = e.data.parameter;
+                        if (e.data.cmd == "findVCT_End") {
+                            console.log(e.data.cmd);
+                            tree = p[0];
+                            if (tree) {
+                                console.log(tree);
+                                cBd.addTree(tree);
+                                tree = null;
+                            }
+                            callback();
+                            work.terminate();
+                        }
+                    };
+                    work.postMessage({ "cmd": "findVCT", parameter: [param[0], param[1], param[2], param[3], param[4], param[5]] });
+                },
                 "isTwoVCF": () => {
                     tree = null;
                     let color = param[0];

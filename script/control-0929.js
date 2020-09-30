@@ -378,7 +378,7 @@ let control = (() => {
         cFindVCF.addOption(7, "防\b冲四抓禁");
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
-        //cFindVCF.addOption(10, "活3级别");
+        cFindVCF.addOption(10, "findVCT");
         //cFindVCF.addOption(11, "isFFwin");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 
@@ -421,7 +421,7 @@ let control = (() => {
                     engine.postMsg("blockCatchFoul", [arr]);
                     break;
                 case 10:
-                    engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, true]);
+                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 3, true]);
                     break;
                 case 11:
                     console.log(isFFWin(8,12,2,arr))
