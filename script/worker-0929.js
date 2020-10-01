@@ -394,6 +394,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             console.log("rt >>> 1");
             return nextNode(!!nd) ? 0 : -1;
         }
+        
 
         //return nextNode(!(nd == false));
         if ((moves.length + 1) % 2) {
