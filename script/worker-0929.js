@@ -1526,9 +1526,8 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
 
 
 // moves.length 为单数
-function isVCF(color, arr, moves, getBlockVCF_arr) {
+function isVCF(color, arr, moves) {
 
-    getBlockVCF_arr = getBlockVCF_arr || getArr([]);
     let pnt = aroundPoint[112];
     let nColor = color == 1 ? 2 : 1;
     let OV = [];
@@ -1605,12 +1604,7 @@ function isVCF(color, arr, moves, getBlockVCF_arr) {
                 let x = fP[0] % 15;
                 let y = parseInt(fP[0] / 15);
                 if (color == 2 && isFoul(x, y, arr)) isV = true;
-
             }
-        }
-        if (!isV) {  // if last is 43 find new freeFourPoint
-            arr[OV[l-1].y][OV[l-1].x] = OV[i].v;
-            isV = findFFWin(arr, color, getArr([])).length;
         }
     }
 
@@ -2883,6 +2877,9 @@ function findFFWin(arr, color, newarr) {
         let x = fPoint[i] % 15;
         let y = parseInt(fPoint[i] / 15);
         if (isFFWin(x, y, color, arr)) {
+            arr[y][x] = "*";
+            console.log(printArr(arr));
+            arr[y][x] = 0;
             wPoint.push(fPoint[i] * 1);
             i = -1;
         }
