@@ -421,7 +421,7 @@ let control = (() => {
                     engine.postMsg("blockCatchFoul", [arr]);
                     break;
                 case 10:
-                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 3, true]);
+                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 2, true]);
                     break;
                 case 11:
                     /*
