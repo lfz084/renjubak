@@ -374,7 +374,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
         console.log("moves=\n."  + moves);
         //console.log("depth=" + movesDepth)
-        console.log(printArr(arr))
+        //console.log(printArr(arr))
 
         if (movesDepth[movesDepth.length - 1] == depth) {
             console.log("rt >>> -1 >>> depth out");
@@ -505,26 +505,23 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 m.push(cd[i].idx)
             }
             console.log("moves = \n." + moves +  ".\n threePoint = \n." +  m);
-            //console.log(arr)
+            //console.log(printArr(arr));
             
             
             let key = getKey(arr);
-            let tPoint = vctThreePointMap.get(key);
-            if (!tPoint) {
-                tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true);
-                vctThreePointMap.set(key, tPoint);
-            }
-            else {
-                //console.log("has tPoint")
-            }
+            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true);
+            vctThreePointMap.set(key, tPoint);
+            
             let i;
-            for (i = tPoint.length - 1; i >= 0; i--) { //find VCT point
+            let leng = tPoint.length;
+            for (i = 0; i < leng; i++) { //find VCT point
                 if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
                     ctnNode.childNode.length = 1;
+                    
                     //ctnNode = ctnNode.parentNode;
                     //post("findVCT_End", [vctNode]);
                     //console.log(1)
-                    //console.log("-----\n" + arr)
+                    //console.log(printArr(arr))
                     break;
                 }
                 else {
@@ -534,7 +531,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     changeArr(arr, tPoint[i].idx, 0);
                 }
             }
-            if (i >= 0) {
+            if (i < leng) {
                 console.log("rt >>> 3 >>> isTTWinPoint");
                 return nextNode(true) ? 0 : -1;
             }
@@ -567,6 +564,21 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     console.log("rt >>> 4 >>> continue");
                     return 0;
                 }
+                let key = getKey(arr);
+                if (vctHistoryNode.has(key)) {
+                    let nd = vctHistoryNode.get(key);
+                    if (nd) {
+                        for (let i = nd.childNode.length - 1; i >= 0; i--) {
+                            nd.childNode[i].parentNode = ctnNode;
+                            ctnNode.childNode[i] = nd.childNode[0];
+                        }
+                    }
+                    else {
+                        //ctnNode.childNode = [];
+                    }
+                    console.log("rt >>> 6 >>> has Node2");
+                    return nextNode(!!nd) ? 0 : -1;
+                }
                 //console.log(4)
             }
             else {
@@ -579,26 +591,12 @@ function findVCT(arr, color, node, count, depth, backStage) {
         
 
         key = getKey(arr);
-        if (vctHistoryNode.has(key)) {
-            let nd = vctHistoryNode.get(key);
-            if (nd) {
-                for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                    nd.childNode[i].parentNode = ctnNode;
-                    ctnNode.childNode[i] = nd.childNode[0];
-                }
-            }
-            else {
-                //ctnNode.childNode = [];
-            }
-            console.log("rt >>> 6 >>> has Node2");
-            return nextNode(!!nd) ? 0 : -1;
-        }
         let w = vcfMap.get(key);
         let winMoves = [];
         winMoves.push(w);
         //console.log("--moves = "+moves+"\n length = "+moves.length)
         //console.log("w = "+w)
-        let bPoint = getBlockVCFb(winMoves, color, arr, true, true, ctnNode);
+        let bPoint = getBlockVCFb(winMoves, color, arr, true, true, ctnNode, ctnNode.idx);
         //bPoint = bPoint ? bPoint : [];
         let VCF = new Node(-1, ctnNode);
         movesToNode(winMoves[0], VCF);
@@ -3044,8 +3042,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
                 let l = level.moves.length; // 保存手数，待后面判断43杀
                 // 已经确认对手低于活三级别
                 //if (!backstage) post("cleLb", [pnt.index[i]]);
-                if ((color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
-                    if (fType == null) {
+                if (true || (color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
+                    if (true || fType == null) {
                         if (!backstage) {
                             post("printSearchPoint", []);
                             post("wLb", [pnt.index[i], "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]);
@@ -3092,7 +3090,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
     }
 
     if (!backstage) post("printSearchPoint", []);
-
+    
+    return threeP;
     return simpleP.concat(threeP, vcfP);
     return vcfP.concat(simpleP, threeP);
 
@@ -3613,12 +3612,12 @@ function isBlockVCF(idx, color, arr) {
 
 // 找VCF(活三级别)防点，返回一个数组,不存在防点返回 false
 // VCF 二维数组保存保存了 n 套color色VCF,
-function getBlockVCF(VCF, color, arr, backStage, passFour) {
+function getBlockVCF(VCF, color, arr, backStage, passFour,idx) {
     let p = [];
-    let pnt = aroundPoint[112];
+    let pnt = aroundPoint[idx || 112];
     let len = VCF.length;
     let nColor = color == 1 ? 2 : 1;
-    for (let i = 0; i < 225; i++) {
+    for (let i = 225 - 1; i >= 0; i--) {
         let x = pnt.point[i].x;
         let y = pnt.point[i].y;
         // color是进攻方颜色
@@ -3643,9 +3642,9 @@ function getBlockVCF(VCF, color, arr, backStage, passFour) {
 
 
 // 找出成立的VCF(活三级别)防点
-function getBlockVCFb(VCF, color, arr, backStage, passFour, node) {
+function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
     node = node || new Node();
-    let p = getBlockVCF(VCF, color, arr, true, passFour);
+    let p = getBlockVCF(VCF, color, arr, true, passFour, idx);
     if (!p) return false;
     for (let i = p.length - 1; i >= 0; i--) {
         let x = p[i] % 15;
