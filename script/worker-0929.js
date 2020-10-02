@@ -463,7 +463,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 let i;
                 for (i = tPoint.length - 1; i >= 0; i--) {
                     if (isTTWinPoint(tPoint[i], color, arr, nd)) {
-                        nd.childNode.length = 1;
+                        nd.childNode.splice(0,nd.childNode.length-1);
                         //ctnNode = ctnNode.parentNode;
                         //console.log(2)
                         break;;
@@ -516,12 +516,12 @@ function findVCT(arr, color, node, count, depth, backStage) {
             let leng = tPoint.length;
             for (i = 0; i < leng; i++) { //find VCT point
                 if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
-                    ctnNode.childNode.length = 1;
-                    
-                    //ctnNode = ctnNode.parentNode;
-                    //post("findVCT_End", [vctNode]);
-                    //console.log(1)
-                    //console.log(printArr(arr))
+                    ctnNode.childNode.splice(0,ctnNode.childNode.length-1);
+                    /*
+                    changeArr(arr,tPoint[i].idx,"*");
+                    console.log(printArr(arr));
+                    changeArr(arr,tPoint[i].idx,0);
+                    */
                     break;
                 }
                 else {
