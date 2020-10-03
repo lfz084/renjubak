@@ -295,17 +295,18 @@ let control = (() => {
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cFindPoint.addOption(0, "<<");
-        cFindPoint.addOption(1, "做V点");
-        cFindPoint.addOption(2, "做43杀(冲4再44,冲4冲4抓)");
-        cFindPoint.addOption(3, "活三级别");
-        cFindPoint.addOption(4, "活三");
-        cFindPoint.addOption(5, "❌\b三三");    
-        cFindPoint.addOption(6, "❌\b四四");
-        cFindPoint.addOption(7, "❌\b长连");
-        cFindPoint.addOption(8, "五连");
-        cFindPoint.addOption(9, "活四");
-        cFindPoint.addOption(10, "冲四");
-        cFindPoint.addOption(11, "眠三");
+        cFindPoint.addOption(1, "VCT选点");
+        cFindPoint.addOption(2, "做V点");
+        cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
+        cFindPoint.addOption(4, "活三级别");
+        cFindPoint.addOption(5, "活三");
+        cFindPoint.addOption(6, "❌\b三三");    
+        cFindPoint.addOption(7, "❌\b四四");
+        cFindPoint.addOption(8, "❌\b长连");
+        cFindPoint.addOption(9, "五连");
+        cFindPoint.addOption(10, "活四");
+        cFindPoint.addOption(11, "冲四");
+        cFindPoint.addOption(12, "眠三");
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
@@ -321,43 +322,46 @@ let control = (() => {
             let newarr = getArr([]);
             switch (but.input.value * 1) {
                 case 1:
+                    engine.postMsg("vctSelectPoint", [getRenjuSelColor(), arr, newarr]);
+                break;
+                case 2:
                     engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlyVCF]);
                     break;
 
-                case 2:
+                case 3:
                     engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlySimpleWin]);
                     break;
 
-                case 3:
+                case 4:
                     engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, null]);
                     break;
 
-                case 4:
+                case 5:
                     engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, onlyFree]);
                     break;
 
-                case 5:
+                case 6:
                     engine.postMsg("findTTPoint", [arr, 1, newarr]);
                     break;
 
-                case 6:
+                case 7:
                     engine.postMsg("findFFPoint", [arr, 1, newarr]);
                     break;
 
-                case 7:
+                case 8:
                     engine.postMsg("findSixPoint", [arr, 1, newarr]);
                     break;
 
-                case 8:
+                case 9:
                     engine.postMsg("findFivePoint", [arr, getRenjuSelColor(), newarr, null]);
                     break;
-                case 9:
+                case 10:
                     engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, onlyFree]);
                     break;
-                case 10:
+                case 11:
                     engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, onlyNoFree]);
                     break;
-                case 11:
+                case 12:
                     engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, onlyNoFree]);
                     break;
             }
@@ -378,7 +382,7 @@ let control = (() => {
         cFindVCF.addOption(7, "防\b冲四抓禁");
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
-        cFindVCF.addOption(10, "坂田三手胜");
+        cFindVCF.addOption(10, "坂田三手胜(测试)");
         cFindVCF.addOption(11, "findLevelThree");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 

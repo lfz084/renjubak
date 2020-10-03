@@ -53,8 +53,9 @@ let engine = (() => {
             let cmd = e.data.cmd;
             let p = e.data.parameter;
             const f = {
+                "vConsole": () => { console.log(p) },
                 "cleLb": () => { cBd.cleLb(p[0]); },
-                "wLb": () => { cBd.wLb(p[0], p[1], p[2]); },
+                "wLb": () => { console.log(11);cBd.wLb(p[0], p[1], p[2]); },
                 "printSearchPoint": () => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
                 "printMoves": () => {
                     cBd.printMoves(p[0], p[1]);
@@ -93,6 +94,10 @@ let engine = (() => {
                     else if (p[0] == 0) {
                         msg("❌❌❌ 没有成立的解禁点 ❌❌❌");
                     }
+                },
+                "vctSelectPointEnd": () => {
+                    callback();
+                    work.terminate();
                 },
                 "findLevelThreePointEnd": () => {
                     p[0] = p[0] || []; //iffalse to []
@@ -201,10 +206,13 @@ let engine = (() => {
                     tree = null;
                     let arr = param[0];
                     let color = param[1];
-                    work = new Worker("./script/worker-0929.js");
+                    work = createWork();
                     work.onmessage = (e) => {
                         let p = e.data.parameter;
-                        if (e.data.cmd == "findVCT_End") {
+                        if (e.data.cmd == "vConsole") {
+                            console.log(p);
+                        }
+                        else if (e.data.cmd == "findVCT_End") {
                             console.log(e.data.cmd);
                             tree = p[0];
                             if (tree) {
@@ -261,6 +269,7 @@ let engine = (() => {
                                     let command = e.data.cmd;
                                     let p = e.data.parameter;
                                     const f = {
+                                        "vConsole": () => { console.log(p) },
                                         "cleLb": () => { cBd.cleLb(p[0]); },
                                         "wLb": () => {
                                             cBd.printSearchPoint(i);
@@ -416,6 +425,7 @@ let engine = (() => {
                                     let command = e.data.cmd;
                                     let p = e.data.parameter;
                                     const f = {
+                                        "vConsole": () => { console.log(p) },
                                         "cleLb": () => { cBd.cleLb(p[0]); },
                                         "wLb": () => {
                                             cBd.printSearchPoint(i);
