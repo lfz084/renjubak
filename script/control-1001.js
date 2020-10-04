@@ -384,7 +384,7 @@ let control = (() => {
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
         cFindVCF.addOption(10, "坂田三手胜(测试)");
-        cFindVCF.addOption(11, "VCT(5层）");
+        cFindVCF.addOption(11, "VCT(测试）");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 
         cFindVCF.show();
@@ -622,7 +622,8 @@ let control = (() => {
         cInputcode.setText("输入代码");
         let inputCode = function(msgStr) {
             // 成功设置棋盘 ，就开始解析棋盘摆盘
-            if (msgStr.indexOf("color==" > -1)) {
+            if (msgStr.indexOf("color==") > -1) {
+                
                 let st = msgStr.indexOf("color==");
                 let color = Number(msgStr.slice(st + 7, st + 8));
                 st = msgStr.indexOf("[");
@@ -643,14 +644,17 @@ let control = (() => {
                 }
             }
             else if (msgStr.indexOf("debug") > -1) {
+                
                 if (vConsole == null) vConsole = new VConsole();
                 return;
             }
             else if (msgStr.indexOf("close") > -1) {
+                
                 if (vConsole) vConsole.destroy();
                 vConsole = null;
                 return;
             }
+            
             cBd.unpackCode(cShownum.checked, msgStr);
 
         }
