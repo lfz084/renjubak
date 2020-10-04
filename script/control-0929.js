@@ -16,7 +16,7 @@ let control = (() => {
 
     let playModel = renjuModel;
     //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
-    let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"红色标记", "color":"red"}, {"colName":"蓝色标记", "color":"#3333ff"}];
+    let lbColor = [{ "colName": "黑色标记", "color": "black" }, { "colName": "红色标记", "color": "red" }, { "colName": "蓝色标记", "color": "#3333ff" }];
     let parentNode;
     let renjuCmddiv = null;
     let imgCmdDiv = null;
@@ -124,7 +124,7 @@ let control = (() => {
 
 
     let putCheckerBoard = putBoard;
-    
+
     function putBoard(idx) {
         if (idx < 0) return;
         let arr = cBd.getPointArray([]);
@@ -140,22 +140,23 @@ let control = (() => {
         cBd.unpackArray(changeCoordinate(arr, idx));
         viewport.resize();
     }
+
     function changeCoordinate(arr, idx) {
-            let nArr = getArr([]);
-            idx = idx || 112;
-            let l = 7 - parseInt(idx % arr[0].length);
-            l = l < 0 ? 0 : l;
-            l = l + arr[0].length > 15 ? 15 - arr[0].length : l;
-            let t = 7 - parseInt(idx / arr.length);
-            t = t < 0 ? 0 : t;
-            t = t + arr.length > 15 ? 15 - arr.length : t;
-            for (let i = 0; i < arr.length; i++) {
-                for (let j = 0; j < arr[i].length; j++) {
-                    nArr[i + t][j + l] = arr[i][j];
-                }
+        let nArr = getArr([]);
+        idx = idx || 112;
+        let l = 7 - parseInt(idx % arr[0].length);
+        l = l < 0 ? 0 : l;
+        l = l + arr[0].length > 15 ? 15 - arr[0].length : l;
+        let t = 7 - parseInt(idx / arr.length);
+        t = t < 0 ? 0 : t;
+        t = t + arr.length > 15 ? 15 - arr.length : t;
+        for (let i = 0; i < arr.length; i++) {
+            for (let j = 0; j < arr[i].length; j++) {
+                nArr[i + t][j + l] = arr[i][j];
             }
-            return nArr;
         }
+        return nArr;
+    }
 
     // renju 模式控制面板
     function createRenjuCmdDiv(parentNode, left, top, width, height) {
@@ -300,7 +301,7 @@ let control = (() => {
         cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
         cFindPoint.addOption(4, "活三级别");
         cFindPoint.addOption(5, "活三");
-        cFindPoint.addOption(6, "❌\b三三");    
+        cFindPoint.addOption(6, "❌\b三三");
         cFindPoint.addOption(7, "❌\b四四");
         cFindPoint.addOption(8, "❌\b长连");
         cFindPoint.addOption(9, "五连");
@@ -323,7 +324,7 @@ let control = (() => {
             switch (but.input.value * 1) {
                 case 1:
                     engine.postMsg("vctSelectPoint", [getRenjuSelColor(), arr, newarr]);
-                break;
+                    break;
                 case 2:
                     engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlyVCF]);
                     break;
@@ -383,7 +384,7 @@ let control = (() => {
         cFindVCF.addOption(8, "找\b VCF防点");
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
         cFindVCF.addOption(10, "坂田三手胜(测试)");
-        cFindVCF.addOption(11, "findLevelThree");
+        cFindVCF.addOption(11, "VCT(5层）");
         //cFindVCF.addOption(8, "判断\b简单必胜");
 
         cFindVCF.show();
@@ -434,8 +435,9 @@ let control = (() => {
                     console.log(arr)
                     arr[12][8] = 0
                     */
-                    engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, false]);
-                break;
+                    //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, false]);
+                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, true]);
+                    break;
                 case 12:
                     alert(isttw)
                     break;
@@ -612,7 +614,6 @@ let control = (() => {
 
 
 
-
         t = t + h * 1.5;
 
         cInputcode = new button(renjuCmddiv, "button", w * 0, t, w, h);
@@ -621,7 +622,27 @@ let control = (() => {
         cInputcode.setText("输入代码");
         let inputCode = function(msgStr) {
             // 成功设置棋盘 ，就开始解析棋盘摆盘
-            if (msgStr.indexOf("debug") > -1) {
+            if (msgStr.indexOf("color==" > -1)) {
+                let st = msgStr.indexOf("color==");
+                let color = Number(msgStr.slice(st + 7, st + 8));
+                st = msgStr.indexOf("[");
+                let end = msgStr.indexOf("]");
+                if (st > -1 && end - st >= 2) {
+                    let str = msgStr.slice(st + 1, end);
+                    let mv = [];
+                    st = 0;
+                    end = str.indexOf(",", st + 1);
+                    while (end > -1) {
+                        mv.push(Number(str.slice(st, end)));
+                        st = end + 1;
+                        end = str.indexOf(",", st + 1);
+                    }
+                    mv.push(Number(str.slice(st)));
+                    cBd.printMoves(mv, color);
+                    return;
+                }
+            }
+            else if (msgStr.indexOf("debug") > -1) {
                 if (vConsole == null) vConsole = new VConsole();
                 return;
             }
@@ -631,7 +652,7 @@ let control = (() => {
                 return;
             }
             cBd.unpackCode(cShownum.checked, msgStr);
-            
+
         }
         cInputcode.setontouchend(function() {
             let w = cBd.width * 0.8;
@@ -770,7 +791,7 @@ let control = (() => {
 
 
         setTimeout(function() {
-            
+
             engine.reset({
                 "maxThread": maxThread,
                 "cObjVCF": cObjVCF,
@@ -785,15 +806,15 @@ let control = (() => {
                 "saveContinueData": appData.saveContinueData,
                 "saveData": appData.saveData,
             });
-            
+
             let continueData = appData.loadContinueData(cBd);
-            
+
             if (continueData) {
                 msg("上次意外退出,继续计算...", null, null, null, null, null, null, null, null, null, 0);
                 closeMsg(3000);
                 engine.postMsg(continueData.cmd, [continueData]);
             }
-            
+
         }, 1000 * 1);
 
 
@@ -946,9 +967,9 @@ let control = (() => {
                 msg("小棋盘,长按 H8(天元) 定位到15路棋盘");
             }
         });
-        
 
-        
+
+
         cCleAll = new button(imgCmdDiv, "button", w * 3.99, t, w, h);
         cCleAll.show();
         cCleAll.setColor("black");
@@ -1135,7 +1156,7 @@ let control = (() => {
 
         if (idx > -1) {
             let cmds = getRenjuCmd();
-            if (cBd.oldCode)  cmds.type = tNum;
+            if (cBd.oldCode) cmds.type = tNum;
             switch (cmds.type) {
                 case tNum:
                     cancelKeepTouck();
@@ -1146,7 +1167,7 @@ let control = (() => {
                     else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
                         // 添加棋子  wNb(idx,color,showNum)
                         let arr = cBd.getPointArray([]);
-                        let isF = isFoul(idx%15,parseInt(idx/15),arr);
+                        let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
                         cBd.wNb(idx, "auto", cmds.showNum, null, isF);
                     }
                     break;
@@ -1261,9 +1282,38 @@ let control = (() => {
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
         msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
+                
+                if (msgStr.length > 3) {  // printMoves  || add Num
+                        let add = msgStr.indexOf("add");
+                        let str = msgStr.slice(add>-1?add+3:0);
+                        let mv = [];  //save moves
+                        let st = 0;
+                        let end = str.indexOf(",", st + 1);
+                        while (end > -1) {
+                            mv.push(Number(str.slice(st, end)));
+                            st = end + 1;
+                            end = str.indexOf(",", st + 1);
+                        }
+                        mv.push(Number(str.slice(st)));
+                        for (let i = mv.length -1; i >=0; i--) {  // if err exit
+                            if (!mv[i]) return;
+                        }
+                        let color = getRenjuSelColor();
+                        if (add>-1) {  // add Num
+                            for (let i = 0; i < mv.length; i++) {
+                                cBd.wNb(mv[i],"auto",true);
+                            }
+                        }
+                        else {  //printMoves
+                            cBd.printMoves(mv, color);
+                        }
+                        return;
+                }
+
                 let str = msgStr.substr(0, 3);
                 cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
                 if (str != "" && str != " ") cBd.wLb(idx, str, color);
+
             },
             function(msgStr) { //用户取消，删除标记
                 //cBd.clePoint(idx);
@@ -1286,8 +1336,8 @@ let control = (() => {
         "getPlayModel": () => { return playModel },
         "renjuModel": renjuModel,
         "cLockImgChecked": () => { return cLockImg.checked; },
-        "cAddwhite2Checked": ()=> { return cAddwhite2.checked;}, 
-        "putCheckerBoard": putCheckerBoard, 
+        "cAddwhite2Checked": () => { return cAddwhite2.checked; },
+        "putCheckerBoard": putCheckerBoard,
         "renjuKeepTouch": renjuKeepTouch,
         "renjuDblClick": renjuDblClick,
         "renjuClick": renjuClick,
