@@ -349,6 +349,7 @@ function cutFailMoves(arrs, hash) {
 function findVCT(arr, color, node, count, depth, backStage) {
     node = node || new Node();
     depth = depth || 5;
+    backStage = backStage ? true : false;
     vctNode = node;
     let vctCount = 0;
     let vctArr = arr; // 保存棋盘初始状态
@@ -373,6 +374,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case 0:
                     //mConsole("vctFinding = 0")
                     vctFinding = continueFindVCT();
+                    if (!backStage) post("printMoves",[vctMoves,vctColor]);
                     break;
                 case 1:
                     //mConsole("vctFinding = 1")
@@ -382,6 +384,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case -1:
                     //mConsole("vctFinding = -1")
                     //post("findVCT_End", [vctNode]);
+                    if (!backStage) post("cleLb",["all"]);
                     vctNode.firstColor = vctColor == 1 ? "black" : "white";
                     return;
                     break;

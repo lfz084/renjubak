@@ -47,7 +47,7 @@ let engine = (() => {
         }
     };
     let createWork = () => {
-        let wk = new Worker("./script/worker-1001.js");
+        let wk = new Worker("./script/worker-1002.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -55,12 +55,23 @@ let engine = (() => {
             const f = {
                 "vConsole": () => { console.log(p) },
                 "cleLb": () => { cBd.cleLb(p[0]); },
-                "wLb": () => { console.log(11);cBd.wLb(p[0], p[1], p[2]); },
+                "wLb": () => { cBd.wLb(p[0], p[1], p[2]); },
                 "printSearchPoint": () => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
                 "printMoves": () => {
                     cBd.printMoves(p[0], p[1]);
                     //console.log(p[2]);
                 },
+                 "findVCT_End": () => {
+                     console.log(e.data.cmd);
+                     tree = p[0];
+                     if (tree) {
+                         console.log(tree);
+                         cBd.addTree(tree);
+                         tree = null;
+                     }
+                     callback();
+                     work.terminate();
+                 },
                 "findVCF_addVCF": () => {
                     cObjVCF.arr = copyArr([], p[3]);
                     cObjVCF.winMoves = [];
@@ -207,23 +218,6 @@ let engine = (() => {
                     let arr = param[0];
                     let color = param[1];
                     work = createWork();
-                    work.onmessage = (e) => {
-                        let p = e.data.parameter;
-                        if (e.data.cmd == "vConsole") {
-                            console.log(p);
-                        }
-                        else if (e.data.cmd == "findVCT_End") {
-                            console.log(e.data.cmd);
-                            tree = p[0];
-                            if (tree) {
-                                console.log(tree);
-                                cBd.addTree(tree);
-                                tree = null;
-                            }
-                            callback();
-                            work.terminate();
-                        }
-                    };
                     work.postMessage({ "cmd": "findVCT", parameter: [param[0], param[1], param[2], param[3], param[4], param[5]] });
                 },
                 "isTwoVCF": () => {
@@ -231,7 +225,7 @@ let engine = (() => {
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
-                    work = new Worker("./script/worker-1001.js");
+                    work = new Worker("./script/worker-1002.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
@@ -262,7 +256,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-1001.js");
+                                works[i] = new Worker("./script/worker-1002.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());
@@ -317,7 +311,7 @@ let engine = (() => {
                 },
                 "getBlockVCF": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-1001.js");
+                    work = new Worker("./script/worker-1002.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -365,7 +359,7 @@ let engine = (() => {
                 },
                 "getBlockVCFb": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-1001.js");
+                    work = new Worker("./script/worker-1002.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -418,7 +412,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-1001.js");
+                                works[i] = new Worker("./script/worker-1002.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());

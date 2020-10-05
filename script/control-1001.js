@@ -426,7 +426,7 @@ let control = (() => {
                     engine.postMsg("blockCatchFoul", [arr]);
                     break;
                 case 10:
-                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 2, true]);
+                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 2, null]);
                     break;
                 case 11:
                     /*
@@ -436,7 +436,7 @@ let control = (() => {
                     arr[12][8] = 0
                     */
                     //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, false]);
-                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, true]);
+                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
                     break;
                 case 12:
                     alert(isttw)

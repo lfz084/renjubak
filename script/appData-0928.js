@@ -22,6 +22,8 @@ let appData = (() => {
         let moves;
         let whiteMoves;
         let blackMoves;
+        let firstColor;
+        let resetNum;
         if (cBd.oldCode) {
             let codeStr = cBd.oldCode;
             let st = 0;
@@ -35,6 +37,8 @@ let appData = (() => {
             st = end + 2;
             end = codeStr.length;
             whiteMoves = cBd.setMoves(codeStr.slice(st, end)) || "";
+            firstColor = cBd.oldFirstColor;
+            resetNum = cBd.oldResetNum;
             /*
             console.log(moves)
             console.log(blackMoves)
@@ -45,14 +49,16 @@ let appData = (() => {
             moves = cBd.getMoves();
             whiteMoves = cBd.getMoves(tWhite);
             blackMoves = cBd.getMoves(tBlack);
+            firstColor = cBd.firstColor;
+            resetNum = cBd.resetNum;
         }
 
         if (moves != "" || whiteMoves != "" || blackMoves != "") {
             localStorage.setItem("moves", moves);
             localStorage.setItem("whiteMoves", whiteMoves);
             localStorage.setItem("blackMoves", blackMoves);
-            localStorage.setItem("resetNum", cBd.resetNum);
-            localStorage.setItem("firstColor", cBd.firstColor);
+            localStorage.setItem("resetNum", resetNum);
+            localStorage.setItem("firstColor", firstColor);
             timerSave = null;
             //log("保存棋谱:" + moves);
         }
