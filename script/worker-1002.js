@@ -176,7 +176,7 @@ onmessage = function(e) {
             let fNum = findVCF(p[0], p[1], 1, null, null, true);
             if (fNum) {
                 vctNode = new Node();
-                movesToNode(vcfWinMoves[0],vctNode);
+                movesToNode(vcfWinMoves[0], vctNode);
                 vctNode.firstColor = p[1] == 1 ? "black" : "white";
             }
             else {
@@ -374,7 +374,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case 0:
                     //mConsole("vctFinding = 0")
                     vctFinding = continueFindVCT();
-                    if (!backStage) post("printMoves",[vctMoves,vctColor]);
+                    if (!backStage) post("printMoves", [vctMoves, vctColor]);
                     break;
                 case 1:
                     //mConsole("vctFinding = 1")
@@ -384,7 +384,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case -1:
                     //mConsole("vctFinding = -1")
                     //post("findVCT_End", [vctNode]);
-                    if (!backStage) post("cleLb",["all"]);
+                    if (!backStage) post("cleLb", ["all"]);
                     vctNode.firstColor = vctColor == 1 ? "black" : "white";
                     return;
                     break;
@@ -393,6 +393,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
     }
 
     function continueFindVCT() {
+        const notVCT = -1;
+        const isTTWin = 1;
+        const continueVCT = 0;
         let arr = vctArr;
         let color = vctColor;
         let nColor = vctnColor;
@@ -403,23 +406,14 @@ function findVCT(arr, color, node, count, depth, backStage) {
         let cd = moves.length ? ctnNode.parentNode : ctnNode;
         mConsole(`moves= ${moves}  (${moves.length}) \n selectPoint= [${getChildNodeIdx(cd)}]`);
 
-        if (movesDepth[movesDepth.length - 1] == depth && moves.length % 2 == 0) {
+        if (movesDepth[movesDepth.length - 1] == depth) {
             mConsole(`rt >>> -1 >>> depth out : [depth=${movesDepth[movesDepth.length-1]}]`);
             return nextNode(false) ? 0 : -1;
         }
 
         let key = getKey(arr);
         if (vctHistoryNode.has(key)) {
-            let nd = vctHistoryNode.get(key);
-            if (nd) {
-                for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                    nd.childNode[i].parentNode = ctnNode;
-                    ctnNode.childNode[i] = nd.childNode[i];
-                }
-            }
-            else {
-                //ctnNode.childNode = [];
-            }
+            let nd = loadHistoryNode(key, ctnNode);
             mConsole(`rt >>> 1 >>> has Node : [${!!nd}]`);
             return nextNode(!!nd) ? 0 : -1;
         }
@@ -430,72 +424,33 @@ function findVCT(arr, color, node, count, depth, backStage) {
             continueFour(arr, color, 1, fMoves, getArr([]));
             let j;
             for (j = fMoves.length - 1; j >= 0; j--) { // continue find VCT point
-                /*
-                    // 摆棋
-                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
-                        arr[y][x] = k % 2 ? color == 1 ? 2 : 1 : color;
-                    }
-                */
                 let nd = movesToNode(fMoves[j], ctnNode);
-                /*
-                    // 复原棋子
-                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
-                        arr[y][x] = 0;
-                    }
-                    if (i >= 0) break;
-                */
-            }
-            if (j >= 0) {
-                mConsole(`rt >>> 2 >>> isTTWinPoint : [${ctnNode.childNode[0]}]`);
-                return nextNode(true) ? 0 : -1;
             }
 
             //mConsole(` fourPoint =  ${getChildNodeIdx(ctnNode)}`);
             let key = getKey(arr);
             let tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true);
-            vctThreePointMap.set(key, tPoint);
-
             let i;
+            let t;
             let leng = tPoint.length;
             for (i = 0; i < leng; i++) { //find VCT point
-                if (isTTWinPoint(tPoint[i], color, arr, ctnNode)) {
-                    ctnNode.childNode.splice(0, ctnNode.childNode.length - 1);
-                    break;
-                }
-                else {
-                    changeArr(arr, tPoint[i].idx, color);
-                    let key = getKey(arr);
-                    if (!tPoint[i].moves.length) { //test code
-                        mConsole(printArr(arr));
-                        mConsole(`tPoint[i].moves.length = ${tPoint[i].moves.length} \n tPoint[i].moves = ${tPoint[i].moves}`);
-                        return -1;
-                    }
-                    vcfMap.set(key, tPoint[i].moves);
-                    changeArr(arr, tPoint[i].idx, 0);
-                }
-            }
-            if (i < leng) {
-                mConsole(`rt >>> 3 >>> isTTWinPoint : [${ctnNode.childNode[0].idx}]`);
-                return nextNode(true) ? 0 : -1;
-            }
-
-            /*
-            if (moves.length==0) {  //test code
-                mConsole("leng="+moves.length)
-                for (let i = ctnNode.childNode.length -1; i>=0; i--) {
-                    mConsole(ctnNode.childNode[i].idx)
-                    if (ctnNode.childNode[i].idx==97) {
-                        ctnNode.childNode.length = i+2;
-                        mConsole(ctnNode.childNode)
+                t = isTTWinPoint(tPoint[i], color, arr, ctnNode);
+                switch (t) {
+                    case isTTWin:
+                        mConsole("isTTWin");
+                        ctnNode.childNode.splice(0, ctnNode.childNode.length - 1);
+                        return nextNode(true) ? 0 : -1;
                         break;
-                    }
+                    case notVCT:
+                        mConsole("notVCT");
+                        ctnNode.childNode = [];
+                        return nextNode(false) ? 0 : -1;
+                        break;
+                    case continueVCT:
+                        //mConsole("continueVCT");
+                        break;
                 }
             }
-            */
 
             mConsole(`vctPoint =  [${getChildNodeIdx(ctnNode)}]`);
 
@@ -504,191 +459,34 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 let dp = movesDepth.length ? movesDepth[movesDepth.length - 1] : 0;
                 do {
                     let c = moves.length % 2 ? nColor : color;
-                    if (c == nColor) {
-                        ctnNode.childNode.splice(0, 0, { idx: -1 });
-                        mConsole("1 >>> add -1");
+                    if (c == nColor) { // add -1 mark
+                        addMark(ctnNode);
                     }
                     ctnNode = ctnNode.childNode[ctnNode.childNode.length - 1];
+                    if (c == color) {
+                        dp += depthUp(arr, color, ctnNode);
+                    }
                     changeArr(arr, ctnNode.idx, c);
                     moves.push(ctnNode.idx);
                     movesDepth.push(dp);
                     node = ctnNode.childNode[ctnNode.childNode.length - 1];
+                    let key = getKey(arr);
+                    if (vctHistoryNode.has(key)) {
+                        let nd = loadHistoryNode(key, ctnNode);
+                        mConsole(`rt >>> 2 >>> has Node : [${!!nd}]`);
+                        return nextNode(!!nd) ? 0 : -1;
+                    }
                 } while (node);
-                if ((moves.length + 1) % 2) {
-                    mConsole(`rt >>> 4 >>> continue `);
-                    return 0;
-                }
-                else {
-                    movesDepth[movesDepth.length - 1]++;
-                }
-                let key = getKey(arr);
-                if (vctHistoryNode.has(key)) {
-                    let nd = vctHistoryNode.get(key);
-                    if (nd) {
-                        for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                            nd.childNode[i].parentNode = ctnNode;
-                            ctnNode.childNode[i] = nd.childNode[0];
-                        }
-                    }
-                    else {
-                        //ctnNode.childNode = [];
-                    }
-                    mConsole(`rt >>> 5 >>> has Node2 : [${!!nd}]`);
-                    return nextNode(!!nd) ? 0 : -1;
-                }
+
             }
             else {
-                mConsole(`rt >>> 6 >>> not finded threePoint `);
+                mConsole(`rt >>> 3 >>> not finded threePoint `);
                 return nextNode(false) ? 0 : -1;
             }
 
         }
 
-
-
-        let tx = ctnNode.idx % 15;
-        let ty = parseInt(ctnNode.idx / 15);
-        if (isFour(tx, ty, color, arr)) { // is Four
-            arr[ty][tx] = 0;
-            key = getKey(arr);
-            let w = vcfMap.get(key);
-            if (w) {
-                let VCF = new Node();
-                movesToNode(w, VCF);
-                ctnNode.parentNode.childNode.push(VCF.childNode[0]);
-                VCF.childNode[0].parentNode = ctnNode.parentNode;
-                let l = ctnNode.parentNode.childNode.length;
-                ctnNode.parentNode.childNode.splice(0, l - 1);
-                ctnNode = ctnNode.parentNode;
-                moves.length--;
-                movesDepth.length = moves.length;
-                mConsole(`rt >>> 7 >>> has VCF [${w}] `);
-                return nextNode(true) ? 0 : -1;
-            }
-            else {
-                let idx = getBlockFour(tx, ty, arr);
-                ctnNode.childNode.push({ idx: -1 });
-                ctnNode.childNode.push(new Node(idx, ctnNode));
-                arr[ty][tx] = color;
-            }
-
-        }
-        else { // is VCF
-            key = getKey(arr);
-            let w = vcfMap.get(key);
-            if (!w || !w.length) {
-                mConsole(printArr(arr));
-                mConsole(`w.length = ${w.length} \n w = ${w}`);
-                return -1;
-            }
-            let winMoves = [];
-            winMoves.push(w);
-            //mConsole(`--moves = ${moves}  _${moves.length} `);
-            //mConsole("w = "+w)
-            let bPoint = getBlockVCFb(winMoves, color, arr, true, true, ctnNode, ctnNode.idx);
-            //bPoint = bPoint ? bPoint : [];
-            let VCF = new Node(-1, ctnNode);
-            movesToNode(winMoves[0], VCF);
-            ctnNode.defaultChildNode = VCF;
-            if (bPoint) {
-                for (let i = bPoint.length - 1; i >= 0; i--) { // add block point
-                    ctnNode.childNode.push(new Node(bPoint[i] * 1, ctnNode));
-                }
-            }
-            else {
-                ctnNode.childNode.push({ idx: -1 });
-            }
-
-            let fMoves = []; //  保存先手连续冲四分支
-            continueFour(arr, nColor, 10, fMoves, getArr([]));
-            let j
-            for (j = fMoves.length - 1; j >= 0; j--) { // continue add block point
-                // 摆棋
-                for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                    let x = fMoves[j][k] % 15;
-                    let y = parseInt(fMoves[j][k] / 15);
-                    arr[y][x] = k % 2 ? color : nColor;
-                }
-
-                console.log(`________${fMoves[j]}`);
-                let fNum;
-                let tx = fMoves[j][fMoves[j].length - 1] % 15;
-                let ty = parseInt(fMoves[j][fMoves[j].length - 1] / 15);
-                if (isFour(tx, ty, color, arr)) {
-                    arr[ty][tx] = 0;
-                    fNum = findVCF(arr, color, 1, null, null, true);
-                    if (fNum) {
-                        //let VCF = new Node();
-                        let key = getKey(arr);
-                        vcfMap.set(key, vcfWinMoves[0]);
-                        movesToNode(fMoves[j], ctnNode);
-                        /*
-                        //let nd = movesToNode(fMoves[j].slice(0, fMoves[j].length - 1), ctnNode);
-                        movesToNode(vcfWinMoves[0], VCF);
-                        nd.childNode.push(VCF.childNode);
-                        nd.childNode[0].parentNode = nd;
-                        nd = ctnNode.childNode.splice(ctnNode.childNode.length - 1, 1);
-                        ctnNode.childNode.splice(0, 0, nd[0]);
-                        */
-                    }
-                    arr[ty][tx] = color;
-                }
-                let notVCT;
-                if (!fNum) {
-                    fNum = findVCF(arr, color, 1, null, null, true);
-                    if (fNum) { // continue find vct
-                        let key = getKey(arr);
-                        vcfMap.set(key, vcfWinMoves[0]);
-                        movesToNode(fMoves[j], ctnNode);
-                    }
-                    else { // is not VCT
-                        notVCT = true;
-                    }
-                }
-
-                //mConsole(fMoves[j].slice(0, fMoves[j].length - 1))
-                // 复原棋子
-                for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                    let x = fMoves[j][k] % 15;
-                    let y = parseInt(fMoves[j][k] / 15);
-                    arr[y][x] = 0;
-                }
-                if (notVCT) break;
-            }
-            if (j >= 0) {
-                mConsole(`rt >>> 8 >>> not finded threePoint`);
-                return nextNode(false) ? 0 : -1;
-            }
-            if (ctnNode.childNode[ctnNode.childNode.length - 1].idx == -1) {
-                ctnNode.childNode.length--;
-                mConsole(`rt >>> 9 >>> exclude blockPoint true`);
-                return nextNode(true) ? 0 : -1;
-            }
-        }
-
-        mConsole(`-moves =  ${moves} (${moves.length}) \n blockPoint =  [${getChildNodeIdx(ctnNode)}]`);
-
-        let addIdx = false;
-        let dp = movesDepth[movesDepth.length - 1];
-        do { //move to last node 
-            let c = moves.length % 2 ? nColor : color;
-            if (addIdx && c == nColor) {
-                ctnNode.childNode.splice(0, 0, { idx: -1 });
-                mConsole("2 >>> add -1");
-            }
-            ctnNode = ctnNode.childNode[ctnNode.childNode.length - 1];
-            changeArr(arr, ctnNode.idx, c);
-            moves.push(ctnNode.idx);
-            movesDepth.push(dp);
-            addIdx = true;
-            //mConsole(ctnNode.idx)
-        } while (ctnNode.childNode.length);
-        /*
-        if (moves.length % 2) {
-            movesDepth[movesDepth.length - 1]++;
-        }
-        */
-        mConsole(`rt >>> 10 >>> continue`);
+        mConsole(`rt >>> 4 >>> continue`);
         return 0;
     }
 
@@ -703,15 +501,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
         while (moves.length) {
 
-            let key = getKey(arr);
-            if (isT) {
-                vctHistoryNode.set(key, ctnNode);
-                //mConsole(vctHistoryNode.get(key))
-            }
-            else {
-                vctHistoryNode.set(key, false);
-                //mConsole(vctHistoryNode.get(key))
-            }
+            setHistoryNode(arr, isT ? ctnNode : false);
             changeArr(arr, node.idx, 0);
             /*
             mConsole("nextNode moves=" + moves)
@@ -776,21 +566,16 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
         if (moves.length || node.parentNode) {
 
-            let depthUp = (moves.length + 1) % 2;
+            let dp = movesDepth.length ? movesDepth[movesDepth.length - 1] : 0;
             while (node) {
-                let dp = movesDepth.length ? movesDepth[movesDepth.length - 1] : 0;
                 let x = node.idx % 15;
                 let y = parseInt(node.idx / 15);
                 let c = moves.length % 2 ? vctnColor : vctColor;
-                if (c == vctnColor) {
-                    let i; // find -1
-                    for (i = node.parentNode.childNode.length - 1; i >= 0; i--) {
-                        if (node.parentNode.childNode[i].idx == -1) break;
-                    }
-                    if (i < 0) { // if not finded -1 add
-                        node.parentNode.childNode.splice(0, 0, { idx: -1 });
-                        mConsole("3 >>> add -1");
-                    }
+                if (c == vctnColor) { // add -1 mark
+                    addMark(node.parentNode);
+                }
+                if (c == vcfColor) {
+                    dp += depthUp(arr, vcfColor, node);
                 }
                 //mConsole("node.idx=" + node.idx + "  node=" + node)
                 arr[y][x] = c;
@@ -798,9 +583,11 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 movesDepth.push(dp);
                 ctnNode = node;
                 node = node.childNode[node.childNode.length - 1];
-            }
-            if (moves.length % 2 && depthUp) {
-                movesDepth[movesDepth.length - 1]++;
+                let key = getKey(arr);
+                if (vctHistoryNode.has(key)) {
+                    pStr += (`\n nextNode >>> has Node `);
+                    break;
+                }
             }
             mConsole(pStr);
             return true;
@@ -822,13 +609,39 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
     }
 
+    function addMark(node) {
+        if (findIdx(node, -1) == -1) {
+            node.childNode.splice(0, 0, { idx: -1 });
+            mConsole("1 >>> add -1");
+        }
+    }
+
     function changeArr(arr, idx, color) {
         let x = idx % 15;
         let y = parseInt(idx / 15);
         arr[y][x] = color;
     }
 
-    function getChildNodeIdx(node) {
+    function depthUp(arr, color, node) {
+        let nColor = color == 1 ? 2 : 1;
+        let x = node.idx % 15;
+        let y = parseInt(node.idx / 15);
+        if (!isFour(x, y, color, arr)) {
+            if (node.parentNode && node.parentNode.idx != -1) {
+                let tx = node.parentNode.idx % 15;
+                let ty = parseInt(node.parentNode.idx / 15);
+                if (!isFour(tx, ty, nColor, arr)) {
+                    return 1;
+                }
+            }
+            else {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    function getChildNodeIdx(node) { // push idx to array;
         let cd = node.childNode;
         let m = [];
         for (let i = cd.length - 1; i >= 0; i--) {
@@ -840,7 +653,34 @@ function findVCT(arr, color, node, count, depth, backStage) {
     function findIdx(node, idx) {
         let i;
         for (i = node.childNode.length - 1; i >= 0; i--) {
-            if (node.childNode[i] == idx) break;
+            if (node.childNode[i].idx == idx) break;
+        }
+        return i;
+    }
+
+    function loadHistoryNode(key, node) {
+        let nd = vctHistoryNode.get(key);
+        if (nd) {
+            for (let i = nd.childNode.length - 1; i >= 0; i--) {
+                nd.childNode[i].parentNode = node;
+                node.childNode[i] = nd.childNode[i];
+            }
+        }
+        else {
+            //ctnNode.childNode = [];
+        }
+        return nd;
+    }
+
+    function setHistoryNode(arr, node) {
+        let key = getKey(arr);
+        if (!vctHistoryNode.has(key)) {
+            if (node) {
+                vctHistoryNode.set(key, node);
+            }
+            else {
+                vctHistoryNode.set(key, false);
+            }
         }
     }
 
@@ -1470,57 +1310,119 @@ function isFFWin(x, y, color, arr, pass) {
 // 判断是否活三级别胜
 function isTTWinPoint(point, color, arr, node) {
 
+    const notVCT = -1;
+    const isTTWin = 1;
+    const continueVCT = 0;
     let timeout = 30000;
     let depth = 1000;
     let x = point.idx % 15;
     let y = parseInt(point.idx / 15);
     let notWin = false;
+    let VCF = new Node();
+    movesToNode(point.moves, VCF);
     node.childNode.push(new Node(point.idx, node));
+    node = node.childNode[node.childNode.length - 1];
+    node.defaultChildNode = VCF;
+    node.childNode.push({ idx: -1 });
     let moves = [];
     moves.push(point.moves);
     arr[y][x] = color;
-    let bPoint = getBlockVCF(moves, color, arr, true);
+    let bPoint = getBlockVCF(moves, color, arr, true, true, point.idx);
     if (bPoint) { //排除直接防
-        let VCF = new Node();
-        movesToNode(moves[0], VCF);
-        node.childNode[node.childNode.length - 1].defaultChildNode = VCF;
-        if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, node.childNode[node.childNode.length - 1]))) {
-            //排除失败，双杀不成立
-            node.childNode[node.childNode.length - 1].childNode = [];
+    
+        for (let i = bPoint.length - 1; i >= 0; i--) {
+            let x = bPoint[i] % 15;
+            let y = parseInt(bPoint[i] / 15);
+            let nd = new Node(bPoint[i], node);
+            arr[y][x] = color == 1 ? 2 : 1;
+            // 确保没有新的VCF
+            let fNum = findVCF(arr, color, 1, null, 60000, true);
+            arr[y][x] = 0;
+            if (fNum) {
+                movesToNode(vcfWinMoves[0], nd);
+                node.childNode.splice(0, 0, nd);
+                bPoint.splice(i, 1);
+                // 用新VCF排除剩下防点
+                for (let j = i - 1; j >= 0; j--) {
+                    x = bPoint[j] % 15;
+                    y = parseInt(bPoint[j] / 15);
+                    arr[y][x] = color == 1 ? 2 : 1;
+                    if (isVCF(color, arr, vcfWinMoves[0])) {
+                        nd = new Node(bPoint[j], node);
+                        movesToNode(vcfWinMoves[0], nd);
+                        node.childNode.splice(0, 0, nd);
+                        bPoint.splice(j, 1);
+                        i--;
+                    }
+                    arr[y][x] = 0;
+                }
+
+            }
+            else { // is block
+            /*
+                let st = findIdx(node, -1);
+                node.childNode.splice(st,0,nd);
+                */
+                node.childNode.push(nd);
+                notWin = true;
+            }
+
+        }
+
+    }
+
+    let fMoves = []; //  保存先手连续冲四分支
+    continueFour(arr, color == 1 ? 2 : 1, null, fMoves, getArr([]));
+    let j;
+    for (j = fMoves.length - 1; j >= 0; j--) { // continue add block point
+        // 摆棋
+        for (let k = fMoves[j].length - 1; k >= 0; k--) {
+            let x = fMoves[j][k] % 15;
+            let y = parseInt(fMoves[j][k] / 15);
+            arr[y][x] = k % 2 ? color : nColor;
+        }
+
+        let fNum;
+        let tx = fMoves[j][fMoves[j].length - 1] % 15;
+        let ty = parseInt(fMoves[j][fMoves[j].length - 1] / 15);
+        if (isFour(tx, ty, color, arr)) {
+            arr[ty][tx] = 0;
+            fNum = findVCF(arr, color, 1, null, null, true);
+            if (fNum) {
+                let V = movesToNode(fMoves[j].slice(0, fMoves[j].length - 1), node);
+                movesToNode(vcfWinMoves[0], V);
+                let nIdx = findIdx(node, fMoves[j][0]);
+                let cIdx = findIdx(node, -1);
+                if (nIdx > cIdx) {
+                    let nd = node.childNode.splice(nIdx, 1);
+                    node.childNode.splice(0, 0, nd[0]);
+                }
+            }
+            arr[ty][tx] = color;
+        }
+        let notV;
+        if (!fNum) {
             notWin = true;
-        }
-    }
-    /*
-    if (!notWin) { // 没有找到直接共防，继续寻找先手防
-        //处理先手防
-        let fMoves = []; //  保存先手连续冲四分支
-        continueFour(arr, color == 1 ? 2 : 1, 10, fMoves, getArr([]));
-        let j;
-
-        for (j = fMoves.length - 1; j >= 0; j--) {
-
-            // 摆棋
-            for (let k = fMoves[j].length - 2; k >= 0; k--) {
-                let x = fMoves[j][k] % 15;
-                let y = parseInt(fMoves[j][k] / 15);
-                arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
+            fNum = findVCF(arr, color, 1, null, null, true);
+            if (fNum) { // continue find vct
+                movesToNode(fMoves[j], node);
             }
-
-            let fNum = findVCF(arr, color, 1, null, timeout, true);
-            if (fNum) notWin = true;
-
-            // 复原棋子
-            for (let k = fMoves[j].length - 2; k >= 0; k--) {
-                let x = fMoves[j][k] % 15;
-                let y = parseInt(fMoves[j][k] / 15);
-                arr[y][x] = 0;
+            else { // is not VCT
+                notV = true;
             }
-            if (notWin) j = -1;
         }
+        //mConsole(fMoves[j].slice(0, fMoves[j].length - 1))
+        // 复原棋子
+        for (let k = fMoves[j].length - 1; k >= 0; k--) {
+            let x = fMoves[j][k] % 15;
+            let y = parseInt(fMoves[j][k] / 15);
+            arr[y][x] = 0;
+        }
+        if (notV) break;
     }
-    */
+
     arr[y][x] = 0;
-    return !notWin;
+    return j >= 0 ? notVCT : notWin ? continueVCT : isTTWin;
 
 }
 
