@@ -609,6 +609,168 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
     }
 
+    // 判断是否活三级别胜
+    function isTTWinPoint(point, color, arr, node) {
+
+        const notVCT = -1;
+        const isTTWin = 1;
+        const continueVCT = 0;
+        let timeout = 30000;
+        let depth = 1000;
+        let x = point.idx % 15;
+        let y = parseInt(point.idx / 15);
+        let notWin = false;
+        let VCF = new Node();
+        movesToNode(point.moves, VCF);
+        node.childNode.push(new Node(point.idx, node));
+        node = node.childNode[node.childNode.length - 1];
+        node.defaultChildNode = VCF;
+        node.childNode.push({ idx: -1 });
+        let start = 0;
+        let moves = [];
+        moves.push(point.moves);
+        arr[y][x] = color;
+        let bPoint = getBlockVCF(moves, color, arr, true, true, point.moves[point.moves.length - 1]);
+        if (bPoint) { //排除直接防
+
+            for (let i = bPoint.length - 1; i >= 0; i--) {
+                let x = bPoint[i] % 15;
+                let y = parseInt(bPoint[i] / 15);
+                let nd = new Node(bPoint[i], node);
+                arr[y][x] = color == 1 ? 2 : 1;
+                // 确保没有新的VCF
+                let fNum = findVCF(arr, color, 1, null, 60000, true);
+                arr[y][x] = 0;
+                if (fNum) {
+                    movesToNode(vcfWinMoves[0], nd);
+                    node.childNode.splice(0, 0, nd);
+                    start++;
+                    bPoint.splice(i, 1);
+                    // 用新VCF排除剩下防点
+                    for (let j = i - 1; j >= 0; j--) {
+                        x = bPoint[j] % 15;
+                        y = parseInt(bPoint[j] / 15);
+                        arr[y][x] = color == 1 ? 2 : 1;
+                        if (isVCF(color, arr, vcfWinMoves[0])) {
+                            nd = new Node(bPoint[j], node);
+                            movesToNode(vcfWinMoves[0], nd);
+                            node.childNode.splice(0, 0, nd);
+                            start++;
+                            bPoint.splice(j, 1);
+                            i--;
+                        }
+                        arr[y][x] = 0;
+                    }
+
+                }
+                else { // is block
+
+                    node.childNode.splice(start + 1, 0, nd);
+                    //node.childNode.push(nd);
+                    notWin = true;
+                }
+
+            }
+
+        }
+
+        let fMoves = []; //  保存先手连续冲四分支
+        continueFour(arr, color == 1 ? 2 : 1, null, fMoves, getArr([]));
+        let j;
+        for (j = fMoves.length - 1; j >= 0; j--) { // continue add block point
+            // 摆棋
+            for (let k = fMoves[j].length - 1; k >= 0; k--) {
+                let x = fMoves[j][k] % 15;
+                let y = parseInt(fMoves[j][k] / 15);
+                arr[y][x] = k % 2 ? color : nColor;
+            }
+
+            let fNum;
+            let tx = fMoves[j][fMoves[j].length - 1] % 15;
+            let ty = parseInt(fMoves[j][fMoves[j].length - 1] / 15);
+            if (isFour(tx, ty, color, arr)) {
+                arr[ty][tx] = 0;
+                fNum = findVCF(arr, color, 1, null, null, true);
+                if (fNum) {
+                    let V = movesToNode(fMoves[j].slice(0, fMoves[j].length - 1), node);
+                    movesToNode(vcfWinMoves[0], V);
+                    let nIdx = findIdx(node, fMoves[j][0]);
+                    let cIdx = findIdx(node, -1);
+                    if (nIdx > cIdx) {
+                        let nd = node.childNode.splice(nIdx, 1);
+                        node.childNode.splice(0, 0, nd[0]);
+                    }
+                }
+                arr[ty][tx] = color;
+            }
+            let notV;
+            if (!fNum) {
+                notWin = true;
+                fNum = findVCF(arr, color, 1, null, null, true);
+                if (fNum) { // continue find vct
+                    movesToNode(fMoves[j], node);
+                }
+                else { // is not VCT
+                    notV = true;
+                }
+            }
+            //mConsole(fMoves[j].slice(0, fMoves[j].length - 1))
+            // 复原棋子
+            for (let k = fMoves[j].length - 1; k >= 0; k--) {
+                let x = fMoves[j][k] % 15;
+                let y = parseInt(fMoves[j][k] / 15);
+                arr[y][x] = 0;
+            }
+            if (notV) break;
+        }
+
+        let vStart = node.childNode.length;
+        let fStart = node.childNode.length;
+        let tStart = node.childNode.length;
+        for (let i = node.childNode.length - 1; i >= 0; i--) {
+            if (node.childNode[i].idx != -1) {
+                let x = node.childNode[i].idx % 15;
+                let y = parseInt(node.childNode[i].idx / 15);
+                arr[y][x] = color == 1 ? 2 : 1;
+
+                let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, 2, 6000, true);
+                if (fNum) {
+                    if (i < vStart) {
+                        let nd = node.childNode.splice(i, 1);
+                        node.childNode.splice(vStart, 0, nd[0]);
+                        vStart--;
+                        fStart--;
+                        tStart--;
+                    }
+                }
+                else if (isFour(x, y, color == 1 ? 2 : 1, arr)) {
+                    if (i < fStart) {
+                        let nd = node.childNode.splice(i, 1);
+                        node.childNode.splice(fStart, 0, nd[0]);
+                        fStart--
+                        tStart--;
+                    }
+                }
+                else if (isThree(x, y, color == 1 ? 2 : 1, arr)) {
+                    if (i < tStart) {
+                        let nd = node.childNode.splice(i, 1);
+                        node.childNode.splice(tStart, 0, nd[0]);
+                        tStart--;
+                    }
+                }
+
+                arr[y][x] = 0;
+            }
+            else {
+                break;
+            }
+        }
+
+        arr[y][x] = 0;
+        return j >= 0 ? notVCT : notWin ? continueVCT : isTTWin;
+
+    }
+
     function addMark(node) {
         if (findIdx(node, -1) == -1) {
             node.childNode.splice(0, 0, { idx: -1 });
@@ -1307,124 +1469,7 @@ function isFFWin(x, y, color, arr, pass) {
 
 
 
-// 判断是否活三级别胜
-function isTTWinPoint(point, color, arr, node) {
 
-    const notVCT = -1;
-    const isTTWin = 1;
-    const continueVCT = 0;
-    let timeout = 30000;
-    let depth = 1000;
-    let x = point.idx % 15;
-    let y = parseInt(point.idx / 15);
-    let notWin = false;
-    let VCF = new Node();
-    movesToNode(point.moves, VCF);
-    node.childNode.push(new Node(point.idx, node));
-    node = node.childNode[node.childNode.length - 1];
-    node.defaultChildNode = VCF;
-    node.childNode.push({ idx: -1 });
-    let moves = [];
-    moves.push(point.moves);
-    arr[y][x] = color;
-    let bPoint = getBlockVCF(moves, color, arr, true, true, point.idx);
-    if (bPoint) { //排除直接防
-    
-        for (let i = bPoint.length - 1; i >= 0; i--) {
-            let x = bPoint[i] % 15;
-            let y = parseInt(bPoint[i] / 15);
-            let nd = new Node(bPoint[i], node);
-            arr[y][x] = color == 1 ? 2 : 1;
-            // 确保没有新的VCF
-            let fNum = findVCF(arr, color, 1, null, 60000, true);
-            arr[y][x] = 0;
-            if (fNum) {
-                movesToNode(vcfWinMoves[0], nd);
-                node.childNode.splice(0, 0, nd);
-                bPoint.splice(i, 1);
-                // 用新VCF排除剩下防点
-                for (let j = i - 1; j >= 0; j--) {
-                    x = bPoint[j] % 15;
-                    y = parseInt(bPoint[j] / 15);
-                    arr[y][x] = color == 1 ? 2 : 1;
-                    if (isVCF(color, arr, vcfWinMoves[0])) {
-                        nd = new Node(bPoint[j], node);
-                        movesToNode(vcfWinMoves[0], nd);
-                        node.childNode.splice(0, 0, nd);
-                        bPoint.splice(j, 1);
-                        i--;
-                    }
-                    arr[y][x] = 0;
-                }
-
-            }
-            else { // is block
-            /*
-                let st = findIdx(node, -1);
-                node.childNode.splice(st,0,nd);
-                */
-                node.childNode.push(nd);
-                notWin = true;
-            }
-
-        }
-
-    }
-
-    let fMoves = []; //  保存先手连续冲四分支
-    continueFour(arr, color == 1 ? 2 : 1, null, fMoves, getArr([]));
-    let j;
-    for (j = fMoves.length - 1; j >= 0; j--) { // continue add block point
-        // 摆棋
-        for (let k = fMoves[j].length - 1; k >= 0; k--) {
-            let x = fMoves[j][k] % 15;
-            let y = parseInt(fMoves[j][k] / 15);
-            arr[y][x] = k % 2 ? color : nColor;
-        }
-
-        let fNum;
-        let tx = fMoves[j][fMoves[j].length - 1] % 15;
-        let ty = parseInt(fMoves[j][fMoves[j].length - 1] / 15);
-        if (isFour(tx, ty, color, arr)) {
-            arr[ty][tx] = 0;
-            fNum = findVCF(arr, color, 1, null, null, true);
-            if (fNum) {
-                let V = movesToNode(fMoves[j].slice(0, fMoves[j].length - 1), node);
-                movesToNode(vcfWinMoves[0], V);
-                let nIdx = findIdx(node, fMoves[j][0]);
-                let cIdx = findIdx(node, -1);
-                if (nIdx > cIdx) {
-                    let nd = node.childNode.splice(nIdx, 1);
-                    node.childNode.splice(0, 0, nd[0]);
-                }
-            }
-            arr[ty][tx] = color;
-        }
-        let notV;
-        if (!fNum) {
-            notWin = true;
-            fNum = findVCF(arr, color, 1, null, null, true);
-            if (fNum) { // continue find vct
-                movesToNode(fMoves[j], node);
-            }
-            else { // is not VCT
-                notV = true;
-            }
-        }
-        //mConsole(fMoves[j].slice(0, fMoves[j].length - 1))
-        // 复原棋子
-        for (let k = fMoves[j].length - 1; k >= 0; k--) {
-            let x = fMoves[j][k] % 15;
-            let y = parseInt(fMoves[j][k] / 15);
-            arr[y][x] = 0;
-        }
-        if (notV) break;
-    }
-
-    arr[y][x] = 0;
-    return j >= 0 ? notVCT : notWin ? continueVCT : isTTWin;
-
-}
 
 
 
