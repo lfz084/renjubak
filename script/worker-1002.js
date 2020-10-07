@@ -494,6 +494,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
     function nextNode(isT, backStage) {
         backStage = backStage == null ? true : backStage;
         backStage = false;
+        const notVCT = -1;
+        const isTTWin = 1;
+        const continueVCT = 0;
         let node = ctnNode;
         let moves = vctMoves;
         let movesDepth = vctMovesDepth;
@@ -517,7 +520,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             if (!backStage) pStr += `<< moves = ${moves} (${moves.length})  [${getChildNodeIdx(node)}]`;
 
             if (moves.length % 2) {
-                if (isT) {
+                if (isT==isTTWin) {
                     let nd = cNode.splice(cNode.length - 1, 1);
                     cNode.splice(0, 0, nd[0]);
                     if (cNode[cNode.length - 1].idx == -1) {
@@ -537,18 +540,22 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         break;
                     }
                 }
-                else {
+                else if(isT==notVCT) {
                     cNode.splice(0, cNode.length);
                     if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 3 delete all\n`;
                 }
+                else {  //continueVCT
+                    let nd = cNode.splice(cNode.length - 1, 1);
+                    cNode.splice(findIdx(ctnNode, -1)+1, 0, nd[0]);
+                }
             }
             else {
-                if (isT) {
+                if (isT==isTTWin) {
                     cNode.splice(0, cNode.length - 1);
                     if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 4 reserve one\n`;
                     //mConsole("isT= " + moves);
                 }
-                else {
+                else if (isT==notVCT){
                     if (cNode.length == 1) {
                         cNode.splice(0, cNode.length);
                         if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 5 delete all\n`;
@@ -559,6 +566,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         node = node.childNode[node.childNode.length - 1];
                         break;
                     }
+                }
+                else {  //continueVC
+                    
                 }
             }
 
@@ -852,6 +862,26 @@ function findVCT(arr, color, node, count, depth, backStage) {
             else {
                 vctHistoryNode.set(key, false);
             }
+        }
+    }
+    
+    function selectNode(node) {
+        
+        let idx = node.childNode.length -1;
+        let max = node.childNode[idx].score;
+        for (let i = node.childNode.length -2; i>=0; i--) {
+            if (node.childNode[i].score > max) {
+                max = node.childNode[i].score;
+                idx = i;
+            }
+        }
+        if (max > 50) {
+            let nd = node.childNode.splice(i, 1);
+            node.childNode.push(nd[0]);
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
