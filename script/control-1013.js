@@ -385,7 +385,7 @@ let control = (() => {
         cFindVCF.addOption(9, "找\b VCF防点(深度)");
         cFindVCF.addOption(10, "坂田三手胜(测试)");
         cFindVCF.addOption(11, "VCT(测试）");
-        //cFindVCF.addOption(8, "判断\b简单必胜");
+        //cFindVCF.addOption(12, "test two");
 
         cFindVCF.show();
         cFindVCF.setText("解题");
@@ -439,7 +439,11 @@ let control = (() => {
                     engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
                     break;
                 case 12:
-                    alert(isttw)
+                    let cModel = ["x","y","d","u"];
+                    for (let i=0; i<4; i++) {
+                        let two = isLineTwo(7,7,cModel[i],getRenjuSelColor(),arr,false);
+                        alert(two);
+                    }
                     break;
             }
             but.input.value = 0;
