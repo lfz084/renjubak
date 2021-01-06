@@ -164,10 +164,11 @@ onmessage = function(e) {
     const cmd = {
         "vctSelectPoint": function() {
             findLevelThreePoint(p[1], p[0], p[2], null, null, false);
-            let fPoint = findFourPoint(p[1], p[0], getArr([]));
-            if (fPoint) {
-                for (let i = fPoint.length - 1; i >= 0; i--) {
-                    post("wLb", [fPoint[i], "④", "black"]);
+            let fMoves = [];
+            continueFour(p[1], p[0], 1, fMoves, getArr([]));
+            if (fMoves) {
+                for (let i = fMoves.length - 1; i >= 0; i--) {
+                    post("wLb", [fMoves[i][0], "④", "black"]);
                 }
             }
             post("vctSelectPointEnd", []);
@@ -954,7 +955,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             }
         }
 
-        let score = getScore(x, y, color, arr) - point.moves.length * 1 - vCount * 1 - fCount * 1 - tCount + (findIdx(node, -1) + 1) * 5;
+        let score = getScore(x, y, color, arr) - point.moves.length * 10 - vCount * 10 - fCount * 1 - tCount;
         node.score = score;
         scoreCount[node.idx]++;
         arr[y][x] = 0;
@@ -1035,16 +1036,16 @@ function findVCT(arr, color, node, count, depth, backStage) {
         let score = 0;
         for (let i = 0; i < 4; i++) {
             if (isLineFour(x, y, Cmodel[i], color, arr)) {
-                score += 190;
+                score += 210;
             }
             else if (isLineThree(x, y, Cmodel[i], color, arr, true)) {
-                score += 200;
+                score += 230;
             }
             else if (isLineThree(x, y, Cmodel[i], color, arr)) {
-                score += 180;
+                score += 200;
             }
             else if (isLineTwo(x, y, Cmodel[i], color, arr, true)) {
-                score += 170;
+                score += 190;
             }
         }
         //if (score>150 && score>scoreCount[y*15+x]) scoreCount[y*15+x] = score;
