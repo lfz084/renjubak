@@ -743,7 +743,7 @@ let control = (() => {
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         cCutImage.addOption(0, "<<");
         cCutImage.addOption(1, "JPEG/(*.jpg)__压缩");
-        cCutImage.addOption(2, "PNG/(*.png)__清晰");
+        cCutImage.addOption(2, "%/(*.png)__清晰");
         cCutImage.addOption(3, "SVG/(*.svg)__矢量,无损");
         cCutImage.addOption(4, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(5, "PDF/(*.pdf)__矢量，无损");
