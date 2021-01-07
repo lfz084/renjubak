@@ -439,9 +439,9 @@ let control = (() => {
                     engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
                     break;
                 case 12:
-                    let cModel = ["x","y","d","u"];
-                    for (let i=0; i<4; i++) {
-                        let two = isLineTwo(7,7,cModel[i],getRenjuSelColor(),arr,false);
+                    let cModel = ["x", "y", "d", "u"];
+                    for (let i = 0; i < 4; i++) {
+                        let two = isLineTwo(7, 7, cModel[i], getRenjuSelColor(), arr, false);
                         alert(two);
                     }
                     break;
@@ -627,7 +627,7 @@ let control = (() => {
         let inputCode = function(msgStr) {
             // 成功设置棋盘 ，就开始解析棋盘摆盘
             if (msgStr.indexOf("color==") > -1) {
-                
+
                 let st = msgStr.indexOf("color==");
                 let color = Number(msgStr.slice(st + 7, st + 8));
                 st = msgStr.indexOf("[");
@@ -648,17 +648,17 @@ let control = (() => {
                 }
             }
             else if (msgStr.indexOf("debug") > -1) {
-                
+
                 if (vConsole == null) vConsole = new VConsole();
                 return;
             }
             else if (msgStr.indexOf("close") > -1) {
-                
+
                 if (vConsole) vConsole.destroy();
                 vConsole = null;
                 return;
             }
-            
+
             cBd.unpackCode(cShownum.checked, msgStr);
 
         }
@@ -742,29 +742,33 @@ let control = (() => {
 
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         cCutImage.addOption(0, "<<");
-        cCutImage.addOption(1, "JPEG/(*.jpg)__压缩");
-        cCutImage.addOption(2, "%/(*.png)__清晰");
-        cCutImage.addOption(3, "SVG/(*.svg)__矢量,无损");
-        cCutImage.addOption(4, "SVG/(*.svg.html__矢量，无损");
-        cCutImage.addOption(5, "PDF/(*.pdf)__矢量，无损");
+        cCutImage.addOption(1, "分享图片");
+        cCutImage.addOption(2, "JPEG/(*.jpg)__压缩");
+        cCutImage.addOption(3, "%/(*.png)__清晰");
+        cCutImage.addOption(4, "SVG/(*.svg)__矢量,无损");
+        cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
+        cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
         cCutImage.show();
         cCutImage.setText("✄\b截图");
         cCutImage.setonchange(function(but) {
             but.setText("✄\b截图");
             switch (but.input.value * 1) {
                 case 1:
-                    cBd.saveAsImage("jpeg");
+                    share();
                     break;
                 case 2:
-                    cBd.saveAsImage("png");
+                    cBd.saveAsImage("jpeg");
                     break;
                 case 3:
-                    cBd.saveAsSVG("svg");
+                    cBd.saveAsImage("png");
                     break;
                 case 4:
-                    cBd.saveAsSVG("html");
+                    cBd.saveAsSVG("svg");
                     break;
                 case 5:
+                    cBd.saveAsSVG("html");
+                    break;
+                case 6:
                     cBd.saveAsPDF();
                     break;
             }
@@ -1160,6 +1164,7 @@ let control = (() => {
 
     function renjuClick(x, y) {
 
+        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
 
         if (idx > -1) {
@@ -1221,6 +1226,7 @@ let control = (() => {
 
     function renjuDblClick(x, y) {
 
+        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
             // 触发快速悔棋
@@ -1244,6 +1250,7 @@ let control = (() => {
 
     function renjuKeepTouch(x, y) {
 
+        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx < 0) return;
         let w = cBd.width * 0.8;
@@ -1290,32 +1297,32 @@ let control = (() => {
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
         msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
-                
-                if (msgStr.length > 3) {  // printMoves  || add Num
-                        let add = msgStr.indexOf("add");
-                        let str = msgStr.slice(add>-1?add+3:0);
-                        let mv = [];  //save moves
-                        let st = 0;
-                        let end = str.indexOf(",", st + 1);
-                        while (end > -1) {
-                            mv.push(Number(str.slice(st, end)));
-                            st = end + 1;
-                            end = str.indexOf(",", st + 1);
+
+                if (msgStr.length > 3) { // printMoves  || add Num
+                    let add = msgStr.indexOf("add");
+                    let str = msgStr.slice(add > -1 ? add + 3 : 0);
+                    let mv = []; //save moves
+                    let st = 0;
+                    let end = str.indexOf(",", st + 1);
+                    while (end > -1) {
+                        mv.push(Number(str.slice(st, end)));
+                        st = end + 1;
+                        end = str.indexOf(",", st + 1);
+                    }
+                    mv.push(Number(str.slice(st)));
+                    for (let i = mv.length - 1; i >= 0; i--) { // if err exit
+                        if (!mv[i]) return;
+                    }
+                    let color = getRenjuSelColor();
+                    if (add > -1) { // add Num
+                        for (let i = 0; i < mv.length; i++) {
+                            cBd.wNb(mv[i], "auto", true);
                         }
-                        mv.push(Number(str.slice(st)));
-                        for (let i = mv.length -1; i >=0; i--) {  // if err exit
-                            if (!mv[i]) return;
-                        }
-                        let color = getRenjuSelColor();
-                        if (add>-1) {  // add Num
-                            for (let i = 0; i < mv.length; i++) {
-                                cBd.wNb(mv[i],"auto",true);
-                            }
-                        }
-                        else {  //printMoves
-                            cBd.printMoves(mv, color);
-                        }
-                        return;
+                    }
+                    else { //printMoves
+                        cBd.printMoves(mv, color);
+                    }
+                    return;
                 }
 
                 let str = msgStr.substr(0, 3);
@@ -1339,6 +1346,117 @@ let control = (() => {
         }
     }
 
+    
+    // 创建一个window
+    let sharing = false;
+    
+    let shareWindow = document.createElement("div");
+    shareWindow.ontouch = function() { event.preventDefault(); };
+    
+    let imgWindow = document.createElement("div");
+    imgWindow.ontouch = function() { event.preventDefault(); };
+    shareWindow.appendChild(imgWindow);
+    
+    let shareLabel = document.createElement("div");
+    imgWindow.appendChild(shareLabel);
+    
+    let shareImg = document.createElement("img");
+    imgWindow.appendChild(shareImg);
+
+    let bkShareImg = document.createElement("img");
+    //imgWindow.appendChild(bkShareImg);
+    let bkCanvas = document.createElement("canvas");
+    imgWindow.appendChild(bkCanvas);
+    //取消按钮
+    let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
+
+    function share(data) {
+
+        sharing = true;
+        document.body.appendChild(shareWindow);
+        let s = shareWindow.style;
+        s.position = "fixed";
+        s.zIndex = 9998;
+        s.width = dw + "px";
+        s.height = dh * 2 + "px";
+        s.top = "0px";
+        s.left = "0px";
+        
+        let imgWidth = dw < dh ? dw : dh;
+        imgWidth = parseInt(imgWidth * 3 / 4);
+        s = imgWindow.style;
+        s.position = "relative";
+        s.width = imgWidth + "px";
+        s.height = imgWidth + "px";
+        s.top = parseInt((dh - imgWidth) / 2) + "px";
+        s.left = parseInt((dw - imgWidth) / 2) + "px";
+        s.backgroundColor = "#666666";
+
+        let iWidth = parseInt(imgWidth *3/5);
+        shareImg.src = cBd.canvas.toDataURL();
+        s = shareImg.style;
+        s.position = "absolute";
+        s.width = iWidth + "px";
+        s.height = iWidth + "px";
+        s.top = parseInt((imgWidth - iWidth) / 2) + "px";
+        s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+        
+        /*let mimetype = "image/svg+xml";
+        let blob = new Blob([cBd.getSVG()], { type: mimetype });
+        bkShareImg.src = URL.createObjectURL(blob);
+        s = bkShareImg.style;
+        s.width = 1000 + "px";
+        s.height = 1000 + "px";
+        //shareImg.src = bkShareImg.src;
+        //shareImg.src = bkShareImg.toDataURL();
+        
+        
+        let ctx = bkCanvas.getContext("2d");
+        bkCanvas.width = 1000;
+        bkCanvas.height = 1000;
+        s = bkCanvas.style;
+        s.width = 1000 + "px";
+        s.height = 1000 + "px";
+        ctx.drawImage(bkShareImg, 0, 0, 1000,1000,0,0,1000,1000);
+        shareImg.src = bkCanvas.toDataURL();
+        */
+        /*
+        bkCanvas.toBlob(function(blob) {
+            shareImg.src = URL.createObjectURL(blob);
+        }, "image/" + "jpeg", 0.1);
+        */
+        //s.top = "0px";
+        //s.left = "0px";
+        
+        
+        let h = parseInt((imgWidth - iWidth) / 2 / 2);
+        let w = h * 3;
+        let l = (imgWidth - w) / 2;
+        let t = imgWidth - h - (imgWidth - iWidth) / 8;
+        
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.5}px">长按图片分享</h1>`;
+        s = shareLabel.style;
+        s.position = "absolute";
+        s.width = w + "px";
+        s.height = h + "px";
+        s.top = (imgWidth - iWidth) / 8 + "px";
+        s.left = l + "px";
+        s.backgroundColor = "#666666";
+        
+        butShareCancel.show(l, t, w, h);
+        butShareCancel.setText("关闭分享");
+        butShareCancel.setontouchend(function() {
+            shareClose();
+        });
+
+    }
+
+    function shareClose() {
+
+        shareWindow.parentNode.removeChild(shareWindow);
+        sharing = false;
+
+    }
 
     return {
         "getPlayModel": () => { return playModel },

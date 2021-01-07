@@ -74,6 +74,7 @@
      s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3 + "px";
      s.backgroundColor = "#666666";
 
+
      s = msgTextarea.style;
      s.left = "10px";
      s.top = "10px";

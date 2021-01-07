@@ -98,14 +98,15 @@ let appData = (() => {
             data.resetNum = initialCBoard.resetNum;
         }
         let strData = JSON.stringify(data);
-        //console.log(strData ? strData.length : "removeContinueData");
+        //console.log(strData ? strData.length : "saveContinueData");
         localStorage.setItem("continueData", strData);
     };
 
     let loadContinueData = (cBd) => {
-
         let strData = localStorage.getItem("continueData");
-        let data = strData != "undefined" ? JSON.parse(strData) : false;
+        localStorage.removeItem("continueData");
+        //console.log(strData);
+        let data = (strData != "undefined") &&  strData  ? JSON.parse(strData) : false;
         if (typeof(data) == "object") {
             //console.log("load")
             cBd.cle();

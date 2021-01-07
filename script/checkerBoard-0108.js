@@ -170,7 +170,7 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.searchIdx = []; // 记录正在计算的点
     for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
     this.backgroundColor = "#f0f0f0"; //888888
-    this.wNumColor = "#ffffff"; //dddddd
+    this.wNumColor = "white"; //do not change (printPDF && getSVG)
     this.bNumColor = "#000000"; //333333
     this.wNumFontColor = "#000000"; //333333
     this.bNumFontColor = "#ffffff"; //333333
@@ -187,7 +187,7 @@ function checkerBoard(parentNode, left, top, width, height) {
 
     this.node = function(value) {
         this.parentNode;
-        this.idx = value==undefined ?  -1 : value;
+        this.idx = value == undefined ? -1 : value;
         this.childNode = [];
     };
     this.oldFirstColor = tBlack;
@@ -251,9 +251,9 @@ function checkerBoard(parentNode, left, top, width, height) {
 checkerBoard.prototype.addTree = function(tree) {
     let code = this.getCode();
     let arr = this.getPointArray([]);
-    
-    this.oldFirstColor = this.firstColor;  // 在this.cle 前面
-    this.cle();  
+
+    this.oldFirstColor = this.firstColor; // 在this.cle 前面
+    this.cle();
     this.firstColor = tree ? tree.firstColor : null || "white";
     for (let y = 0; y < this.SLTY; y++) {
         for (let x = 0; x < this.SLTX; x++) {
@@ -1184,7 +1184,7 @@ checkerBoard.prototype.getSVG = function() {
 
     let showNum = this.isShowNum;
     let size = 2000 / this.canvas.width;
-    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" >`;
+    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" >`;
     // 划竖线
     let x1;
     let x2;
@@ -1272,7 +1272,7 @@ checkerBoard.prototype.getSVG = function() {
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
-            color = this.P[i].color == "white" ? "black" : "white";
+            color = this.P[i].color == this.wNumColor ? "black" : "white";
             if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
                 color = this.notShowLastNum ? color : "#ff6666";
                 txt = !showNum && !this.notShowLastNum ? "◤" : txt;
@@ -1781,7 +1781,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             lineWidth = w / 25;
             doc.setLineWidth(lineWidth * size);
             doc.setDrawColor(0, 0, 0);
-            if (this.P[i].color == "white") {
+            if (this.P[i].color == this.wNumColor) {
                 doc.setFillColor(255, 255, 255);
             }
             else {
@@ -1808,7 +1808,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
-            color = this.P[i].color == "white" ? "black" : "white";
+            color = this.P[i].color == this.wNumColor ? "black" : "white";
             if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
                 color = this.notShowLastNum ? color : "#ff6666";
                 txt = !showNum && !this.notShowLastNum ? "◤" : txt;
@@ -1855,9 +1855,13 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             case "#9e9999":
                 doc.setTextColor(157, 153, 153);
                 break;
+            case "#3333ff":
+                doc.setTextColor(0, 0, 255);
+                break;
             case "blue":
                 doc.setTextColor(0, 0, 255);
                 break;
+
         }
         if (txt == "❌") { // 不支持的字符
             txt = "×";
