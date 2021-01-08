@@ -1463,7 +1463,7 @@ let control = (() => {
                 s.height = 1000 + "px";
                 s.top = "1000px";
                 s.left = "0px";
-                ctx.drawImage(bkShareImg, 0, 0);
+                ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
                 shareImg.src = bkCanvas.toDataURL();
             }
         }
