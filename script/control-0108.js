@@ -26,7 +26,7 @@ let control = (() => {
     let cAutoPut = null;
     let cCleAll = null;
     let cShownum = null;
-    let cCleLb = null;
+    let cNewGame = null;
     let cLocknum = null;
     let cAutoadd = null;
     let cAddblack = null;
@@ -68,6 +68,10 @@ let control = (() => {
     let cLoadImg = null;
     let cSLTX = null;
     let cSLTY = null;
+    let cShare = null;
+    let cShareWhite = null;
+    let cCleLb = null;
+    let cHelp = null;
     let lbTime = new function() {
         this.prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止
         this.div = document.createElement("div");
@@ -214,10 +218,10 @@ let control = (() => {
             //cShownum.setText(cShownum.checked?"❶" :"●");
         });
 
-        cCleLb = new button(renjuCmddiv, "button", w * 8, t, w, h);
-        cCleLb.show();
-        cCleLb.setText("新棋局");
-        cCleLb.setontouchend(function() {
+        cNewGame = new button(renjuCmddiv, "button", w * 8, t, w, h);
+        cNewGame.show();
+        cNewGame.setText("新棋局");
+        cNewGame.setontouchend(function() {
             cBd.cle();
             cBd.resetNum = 0;
             engine.postMsg("cancelFind");
@@ -742,9 +746,9 @@ let control = (() => {
 
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         cCutImage.addOption(0, "<<");
-        cCutImage.addOption(1, "分享图片");
+        //cCutImage.addOption(1, "分享图片");
         cCutImage.addOption(2, "JPEG/(*.jpg)__压缩");
-        cCutImage.addOption(3, "%/(*.png)__清晰");
+        cCutImage.addOption(3, "PNG(*.png)__清晰");
         cCutImage.addOption(4, "SVG/(*.svg)__矢量,无损");
         cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
@@ -776,8 +780,46 @@ let control = (() => {
         });
 
 
-        t = t + h * 1.3;
-
+        t = t + h * 1.5;
+        if (dw<dh) {
+            t = 0 - cBd.width - h*2.5;
+        }
+        
+        cShareWhite = new button(renjuCmddiv, "button", w * 0, t, w, h);
+        cShareWhite.show();
+        cShareWhite.setColor("black");
+        cShareWhite.setText(" 分享图片");
+        cShareWhite.setontouchend(function() {
+            share("white");
+        });
+        
+        cShare = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
+        cShare.show();
+        cShare.setColor("black");
+        cShare.setText(" 分享原图");
+        cShare.setontouchend(function() {
+            share();
+        });
+        
+        cCleLb = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
+        cCleLb.show();
+        cCleLb.setColor("black");
+        cCleLb.setText(" 清除标记");
+        cCleLb.setontouchend(function() {
+            cBd.cleLb("all");
+        });
+        
+        cHelp = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
+        cHelp.show();
+        cHelp.setColor("black");
+        cHelp.setText(" 帮助 ");
+        cHelp.setontouchend(function() {
+            window.open("./help/renjuhelp/renjuhelp.html","_self");
+        });
+        
+        
+        
+        t = t + h * 1.5;
 
         function cSelChecked(chk) {
             cSelBlack.setChecked(0);
@@ -1346,31 +1388,31 @@ let control = (() => {
         }
     }
 
-    
+
     // 创建一个window
     let sharing = false;
-    
+
     let shareWindow = document.createElement("div");
     shareWindow.ontouch = function() { event.preventDefault(); };
-    
+
     let imgWindow = document.createElement("div");
     imgWindow.ontouch = function() { event.preventDefault(); };
     shareWindow.appendChild(imgWindow);
-    
+
     let shareLabel = document.createElement("div");
     imgWindow.appendChild(shareLabel);
-    
+
     let shareImg = document.createElement("img");
     imgWindow.appendChild(shareImg);
 
     let bkShareImg = document.createElement("img");
     //imgWindow.appendChild(bkShareImg);
     let bkCanvas = document.createElement("canvas");
-    imgWindow.appendChild(bkCanvas);
+    //imgWindow.appendChild(bkCanvas);
     //取消按钮
     let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
 
-    function share(data) {
+    function share(cBoardColor) {
 
         sharing = true;
         document.body.appendChild(shareWindow);
@@ -1381,7 +1423,7 @@ let control = (() => {
         s.height = dh * 2 + "px";
         s.top = "0px";
         s.left = "0px";
-        
+
         let imgWidth = dw < dh ? dw : dh;
         imgWidth = parseInt(imgWidth * 3 / 4);
         s = imgWindow.style;
@@ -1392,7 +1434,7 @@ let control = (() => {
         s.left = parseInt((dw - imgWidth) / 2) + "px";
         s.backgroundColor = "#666666";
 
-        let iWidth = parseInt(imgWidth *3/5);
+        let iWidth = parseInt(imgWidth * 3 / 5);
         shareImg.src = cBd.canvas.toDataURL();
         s = shareImg.style;
         s.position = "absolute";
@@ -1400,41 +1442,41 @@ let control = (() => {
         s.height = iWidth + "px";
         s.top = parseInt((imgWidth - iWidth) / 2) + "px";
         s.left = parseInt((imgWidth - iWidth) / 2) + "px";
-        
-        /*let mimetype = "image/svg+xml";
-        let blob = new Blob([cBd.getSVG()], { type: mimetype });
-        bkShareImg.src = URL.createObjectURL(blob);
-        s = bkShareImg.style;
-        s.width = 1000 + "px";
-        s.height = 1000 + "px";
-        //shareImg.src = bkShareImg.src;
-        //shareImg.src = bkShareImg.toDataURL();
-        
-        
-        let ctx = bkCanvas.getContext("2d");
-        bkCanvas.width = 1000;
-        bkCanvas.height = 1000;
-        s = bkCanvas.style;
-        s.width = 1000 + "px";
-        s.height = 1000 + "px";
-        ctx.drawImage(bkShareImg, 0, 0, 1000,1000,0,0,1000,1000);
-        shareImg.src = bkCanvas.toDataURL();
-        */
-        /*
-        bkCanvas.toBlob(function(blob) {
-            shareImg.src = URL.createObjectURL(blob);
-        }, "image/" + "jpeg", 0.1);
-        */
-        //s.top = "0px";
-        //s.left = "0px";
-        
-        
+
+        if (cBoardColor == "white") {
+            let mimetype = "image/svg+xml";
+            let blob = new Blob([cBd.getSVG()], { type: mimetype });
+            bkShareImg.width = 1000;
+            bkShareImg.height = 1000;
+            s = bkShareImg.style;
+            s.width = 1000 + "px";
+            s.height = 1000 + "px";
+            //bkShareImg.src = "./help/renjuhelp/499accad-b0e5-46c4-a199-af7c826d45df.002.jpeg"; //URL.createObjectURL(blob);
+            bkShareImg.src = URL.createObjectURL(blob);
+            bkShareImg.onload = function() {
+                let ctx = bkCanvas.getContext("2d");
+                bkCanvas.width = 1000;
+                bkCanvas.height = 1000;
+                s = bkCanvas.style;
+                s.position = "absolute";
+                s.width = 1000 + "px";
+                s.height = 1000 + "px";
+                s.top = "1000px";
+                s.left = "0px";
+                ctx.drawImage(bkShareImg, 0, 0);
+                shareImg.src = bkCanvas.toDataURL();
+            }
+        }
+        else {
+            shareImg.src = cBd.canvas.toDataURL();
+        }
+
         let h = parseInt((imgWidth - iWidth) / 2 / 2);
         let w = h * 3;
         let l = (imgWidth - w) / 2;
         let t = imgWidth - h - (imgWidth - iWidth) / 8;
-        
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.5}px">长按图片分享</h1>`;
+
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片分享</h1>`;
         s = shareLabel.style;
         s.position = "absolute";
         s.width = w + "px";
@@ -1442,7 +1484,7 @@ let control = (() => {
         s.top = (imgWidth - iWidth) / 8 + "px";
         s.left = l + "px";
         s.backgroundColor = "#666666";
-        
+
         butShareCancel.show(l, t, w, h);
         butShareCancel.setText("关闭分享");
         butShareCancel.setontouchend(function() {

@@ -18,6 +18,7 @@ function point(x, y, d) {
     this.type = 0; // 这个点是否有棋子，=tEmpty为空，棋子=tNum,bi标记=tLb
     this.text = "";
     this.color = null;
+    this.bkColor = null;
 
 }
 
@@ -34,6 +35,7 @@ point.prototype.cle = function() {
     this.type = 0;
     this.text = "";
     this.color = null;
+    this.bkColor = null;
     //alert("p.cle")
 };
 
@@ -1262,7 +1264,7 @@ checkerBoard.prototype.getSVG = function() {
             */
         }
         else if (this.P[i].type == tLb) {
-            svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
+            svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
             //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
         }
 
@@ -1794,11 +1796,17 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
         }
         else if (this.P[i].type == tLb) {
             doc.setLineWidth(3 * size);
-            doc.setDrawColor(255, 255, 255);
-            doc.setFillColor(255, 255, 255);
+            if (this.P[i].bkColor) {
+                doc.setDrawColor(187, 187, 187);
+                doc.setFillColor(187, 187, 187);
+            }
+            else {
+                doc.setDrawColor(255, 255, 255);
+                doc.setFillColor(255, 255, 255);
+            }
             x1 = left + this.P[i].x * size;
             y1 = top + this.P[i].y * size;
-            doc.circle(x1, y1, this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
+            doc.circle(x1, y1, this.P[i].bkColor?w*size:this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
             //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
         }
 
@@ -1861,6 +1869,15 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             case "blue":
                 doc.setTextColor(0, 0, 255);
                 break;
+            case "#000000":
+                doc.setTextColor(0, 0, 0);
+                break;
+            case "#ffffff":
+                doc.setTextColor(255, 255, 255);
+                break;
+            case "#bbbbbb":
+                doc.setTextColor(187, 187, 187);
+                break;
 
         }
         if (txt == "❌") { // 不支持的字符
@@ -1904,6 +1921,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
         ctx.beginPath();
         ctx.fillStyle = backgroundColor || this.LbBackgroundColor;
         if (backgroundColor) {
+            this.P[idx].bkColor = ctx.fillStyle;
             ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
             //ctx.fill();
             ctx.stroke();
