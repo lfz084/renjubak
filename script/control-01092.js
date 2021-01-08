@@ -662,6 +662,19 @@ let control = (() => {
                 vConsole = null;
                 return;
             }
+            else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
+    
+                cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
+                cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
+                cBd.cutImg.src = "./pic/icon.png";
+                cBd.cutImg.onload = function() {
+                    alert("刷新页面恢复棋盘");
+                    let ctx = cBd.canvas.getContext("2d");
+                    ctx.drawImage(cBd.cutImg,0,0,parseInt(cBd.canvas.width),parseInt(cBd.canvas.height));
+                    renjuCmddiv.parentNode.removeChild(renjuCmddiv);
+                }
+                return;
+            }
 
             cBd.unpackCode(cShownum.checked, msgStr);
 

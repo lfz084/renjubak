@@ -229,6 +229,7 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.bakImg.style.position = "absolute";
     this.cutImg = d.createElement("img");
     this.cutImg.style.position = "absolute";
+    //this.parentNode.appendChild(this.cutImg);
 
 
     this.cutDiv = document.createElement("div");
