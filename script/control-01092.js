@@ -666,12 +666,13 @@ let control = (() => {
     
                 cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
                 cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
-                cBd.cutImg.src = "./pic/icon.png";
-                cBd.cutImg.onload = function() {
-                    alert("刷新页面恢复棋盘");
-                    let ctx = cBd.canvas.getContext("2d");
-                    ctx.drawImage(cBd.cutImg,0,0,parseInt(cBd.canvas.width),parseInt(cBd.canvas.height));
-                    renjuCmddiv.parentNode.removeChild(renjuCmddiv);
+                cBd.cutImg.src = "./icon.png";
+                cBd.parentNode.appendChild(cBd.cutImg);
+                let pNode = renjuCmddiv.parentNode;
+                pNode.removeChild(renjuCmddiv);
+                cBd.cutImg.ontouchend = cBd.cutImg.onclick = function() {
+                    cBd.parentNode.removeChild(cBd.cutImg);
+                    pNode.appendChild(renjuCmddiv);
                 }
                 return;
             }
