@@ -76,7 +76,7 @@ let appData = (() => {
         console.log(blackMoves)
         console.log(whiteMoves)
         */
-        if (firstColor != "undefined") cBd.firstColor = firstColor;
+        if ((firstColor != "undefined") && firstColor) cBd.firstColor = firstColor;
         if (parseInt(resetNum) > 0) cBd.resetNum = parseInt(resetNum);
         if (cBd.setMoves(moves)) cBd.unpackMoves(true);
         if (whiteMoves != "") cBd.unpackMoves(true, "white", whiteMoves);

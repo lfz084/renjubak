@@ -300,6 +300,7 @@ let control = (() => {
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cFindPoint.addOption(0, "<<");
+        /*
         cFindPoint.addOption(1, "VCT选点");
         cFindPoint.addOption(2, "做V点");
         cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
@@ -312,6 +313,10 @@ let control = (() => {
         cFindPoint.addOption(10, "活四");
         cFindPoint.addOption(11, "冲四");
         cFindPoint.addOption(12, "眠三");
+        */
+        cFindPoint.setontouchstart(function() {
+            alert("五子茶馆将在1月17日举行解题大赛(双杀赛)，暂时关闭解题功能。比赛结束后可以正常使用计算功能")
+        });
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
@@ -378,6 +383,7 @@ let control = (() => {
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         cFindVCF.addOption(0, "<<");
+        /*
         cFindVCF.addOption(1, "快速找\b VCF");
         cFindVCF.addOption(2, "找全\b  VCF");
         cFindVCF.addOption(3, "找\b 双杀");
@@ -390,7 +396,10 @@ let control = (() => {
         cFindVCF.addOption(10, "坂田三手胜(测试)");
         cFindVCF.addOption(11, "VCT(测试）");
         //cFindVCF.addOption(12, "test two");
-
+        */
+        cFindVCF.setontouchstart(function(){
+            alert("五子茶馆将在1月17日举行解题大赛(双杀赛)，暂时关闭解题功能。比赛结束后可以正常使用计算功能")
+        });
         cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
