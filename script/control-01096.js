@@ -167,12 +167,12 @@ let control = (() => {
 
         renjuCmddiv = document.createElement("div");
         parentNode.appendChild(renjuCmddiv);
-        renjuCmddiv.style.position = "absolute";
+        renjuCmddiv.style.position = "relative";
         renjuCmddiv.style.width = width / 1.15 + "px";
         renjuCmddiv.style.height = width + "px";
         renjuCmddiv.style.top = parseInt(top) + "px";
         renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2 + "px";
-        if (dw > dh) renjuCmddiv.style.left = (dw - cWidth * 2) / 2 + "px";
+        if (dw > dh) renjuCmddiv.style.left = width/13  + "px";
 
         let sw = parseInt(renjuCmddiv.style.width);
         let w = sw / 9;
@@ -904,12 +904,12 @@ let control = (() => {
         imgCmdDiv = document.createElement("div");
         let s = imgCmdDiv.style;
         //parentNode.appendChild(imgCmdDiv);
-        s.position = "absolute";
+        s.position = "relative";
         s.width = width / 1.15 + "px";
         s.height = width + "px";
         s.top = parseInt(top) + "px";
         s.left = (dw - parseInt(s.width)) / 2 + "px";
-        if (dw > dh) s.left = (dw - cWidth * 2) / 2 + "px";
+        if (dw > dh) s.left = width/13 + "px";
 
         let sw = parseInt(s.width);
         let w = sw / 5;

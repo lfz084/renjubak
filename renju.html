@@ -21,7 +21,7 @@
     <script src="./script/button20200918.js"></script>
     <script src="./script/engine-1013.js"></script>
     <script src="./script/appData-0109.js"></script>
-    <script src="./script/control-01095.js"></script>
+    <script src="./script/control-01096.js"></script>
     <script src="./script/msgbox-0108.js"></script>
     <script src="./script/checkerBoard-0109.js"></script>
     <script src="./script/worker-1013.js"></script>
@@ -108,16 +108,16 @@
                 let upDiv = d.createElement("div");
                 d.body.appendChild(upDiv);
                 upDiv.style.position = "absolute";
-                upDiv.style.width = "100%";
+                upDiv.style.width = "10%";
                 upDiv.style.height = 50 + "px";
-                upDiv.style.left = dw > dh ? "0px" : (dw - cWidth) / 2 + "px";
+                upDiv.style.left = dw > dh ? parseInt((dw-cWidth*2)/2) + "px" : (dw - cWidth) / 2 + "px";
                 upDiv.style.top = dw > dh ? "0px" : cWidth + "px";
                 let downDiv = d.createElement("div");
                 d.body.appendChild(downDiv);
                 downDiv.style.position = "absolute";
-                downDiv.style.width = "100%";
+                downDiv.style.width = "10%";
                 downDiv.style.height = 50 + "px";
-                downDiv.style.left = dw > dh ? cWidth * 1.06 + "px" : "0px";
+                downDiv.style.left = dw > dh ? parseInt((dw-cWidth*2)/2)+cWidth  + "px" : "0px";
                 downDiv.style.top = dw > dh ? parseInt(cWidth/13)+"px" : cWidth * 2.06 + "px";
                 
                 if (dw <= dh) setTimeout(() =>{scrollTo(0, cWidth*9/10);}, 5);
