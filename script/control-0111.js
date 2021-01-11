@@ -731,6 +731,7 @@ let control = (() => {
             };
             img.onload = function() {
                 img.onload = null;
+                cBd.oldXL = cBd.oldXR = 0;
                 putImg();
             };
             engine.postMsg("cancelFind");

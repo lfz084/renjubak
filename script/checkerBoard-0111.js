@@ -165,6 +165,10 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.XR = 0;
     this.YT = 0;
     this.YB = 0;
+    this.oldXL = 0;
+    this.oldXR = 0;
+    this.oldYT = 0;
+    this.oldYB = 0;
     this.gW = 0; //棋盘格子宽度,浮点数
     this.gH = 0; //棋盘格子高度,浮点数
     this.SLTX = 15;
@@ -1987,10 +1991,10 @@ checkerBoard.prototype.resetCutDiv = function() {
     let canvas = this.canvas;
     let w = parseInt(canvas.width);
     let h = parseInt(canvas.height);
-    let XL = w / 3;
-    let XR = w / 3 * 2;
-    let YT = h / 3;
-    let YB = h / 3 * 2;
+    let XL = this.oldXL==this.oldXR ? w / 3 : this.oldXL;
+    let XR = this.oldXL==this.oldXR ? w / 3 * 2 : this.oldXR;
+    let YT = this.oldXL==this.oldXR ? h / 3 : this.oldYT;
+    let YB = this.oldXL==this.oldXR ? h / 3 * 2 : this.oldYB;
     let div = this.cutDiv;
     let s = this.cutDiv.style;
     s.position = "absolute";
@@ -2030,10 +2034,10 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
     let x;
     let y;
     if (xL == null || xR == null || yT == null || yB == null) {
-        xL = this.XL;
-        xR = this.XR;
-        yT = this.YT;
-        yB = this.YB;
+        xL = this.oldXL = this.XL;
+        xR = this.oldXR = this.XR;
+        yT = this.oldYT = this.YT;
+        yB = this.oldYB = this.YB;
     }
     let SLTY = this.SLTY;
     let SLTX = this.SLTX;

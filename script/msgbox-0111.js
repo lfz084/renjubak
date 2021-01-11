@@ -82,7 +82,6 @@
      s.fontSize = parseInt(s.width) * 0.05 + "px";
      s.height = parseInt(s.fontSize) * 1.3 * lineNum + "px";
      s.borderColor = "#666666";
-     msgTextarea.value = text || "";
      if (type == "msgbox") {
          msgTextarea.readOnly = true;
          s.autofocus = false;
@@ -91,11 +90,14 @@
      }
      else {
          msgTextarea.readOnly = false;
-         setTimeout(function() { s.autofocus = true; }, 100);
-         setTimeout(function() { msgTextarea.focus(); }, 500);
+         if (!text) {
+            setTimeout(function() { s.autofocus = true; }, 100);
+            setTimeout(function() { msgTextarea.focus(); }, 500);
+         }
          s.textAlign = "left";
          s.backgroundColor = "white";
      }
+     msgTextarea.value = text || "";
 
      let w = parseInt(s.fontSize) * 5;
      let h = w / 3.1;
