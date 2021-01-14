@@ -80,7 +80,7 @@
      s.top = "10px";
      s.width = parseInt(windowDiv.style.width) - 20 + "px";
      s.fontSize = parseInt(s.width) * 0.05 + "px";
-     s.height = parseInt(s.fontSize) * 1.3 * lineNum + "px";
+     s.height = parseInt(s.fontSize) * 1.3 * 1 + "px" //lineNum + "px";
      s.borderColor = "#666666";
      if (type == "msgbox") {
          msgTextarea.readOnly = true;
@@ -97,7 +97,7 @@
          s.textAlign = "left";
          s.backgroundColor = "white";
      }
-     msgTextarea.value = text || "";
+     msgTextarea.value = "" // text || "";
 
      let w = parseInt(s.fontSize) * 5;
      let h = w / 3.1;
