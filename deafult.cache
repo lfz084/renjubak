@@ -1,0 +1,15 @@
+CACHE MANIFEST
+CACHE:
+#此标题下，将在第一次下载后缓存
+./404.html
+./script/NoSleep.min.js
+./script/vConsole/vconsole.min.js
+./script/jsPDF/jspdf.min.js
+
+NETWORK:
+#此列表下文件需要与服务器关联
+./renju.html
+
+FALLBACK
+# 下面标题下文件，当页面无法访问，跳转
+./404.html
