@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="./deafult.cache">
+<html >
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -127,6 +127,24 @@
 
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth]);
                 appData.renjuLoad(cBoard);
+                
+                navigator.serviceWorker.register('./sw.js',{scope: './'})
+                    .then(function(registration) {
+                        // 注册成功
+                        console.log('ServiceWorker registration successful with scope: ' + registration.scope)
+                        if (registration.installing) {
+                            console.log('Service worker installing');
+                        } else if (registration.waiting) {
+                            console.log('Service worker installed');
+                        } else if (registration.active) {
+                            console.log('Service worker active');
+                        }
+                    })
+                    .catch(function(err) {
+                        // 注册失败:(
+                        console.log('ServiceWorker registration failed: ' + err)
+                    })
+             
 
 
             }
