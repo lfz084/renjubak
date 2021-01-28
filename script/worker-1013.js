@@ -562,7 +562,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
         backStage = backStage == null ? true : backStage;
         backStage = false;
         let node = ctnNode;
-        let moves = vctMoves;   
+        let moves = vctMoves;
         let movesDepth = vctMovesDepth;
         let arr = vctArr;
         let pStr = "";
@@ -682,7 +682,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 if (c == vctnColor) { // add -1 mark
                     addMark(node.parentNode);
                 }
-                else if (ctnNode==node && !selectNode(node.parentNode, c)) {
+                else if (ctnNode == node && !selectNode(node.parentNode, c)) {
                     pStr += (`\n selectNode >>> false __2`);
                     break;
                 }
@@ -1092,7 +1092,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
         let parentNode = node.parentNode;
         if (parentNode) {
             let i = findIdx(parentNode, -1);
-            for (let j=0; j<i; j++) {
+            for (let j = 0; j < i; j++) {
                 let nod = parentNode.childNode[j].childNode[0];
                 let idx = findIdx(node, nod.idx);
                 if (idx > -1) {
@@ -2643,36 +2643,63 @@ function isLineTwo(x, y, model, color, arr, free) {
                 switch (end - st) {
                     case 1:
                         p = getNextEmpty(x, y, arr, model, color, i + st - 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         break;
                     case 2:
                         p = getNextEmpty(x, y, arr, model, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         break;
                     case 3:
                         p = getNextEmpty(x, y, arr, model, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         p = getNextEmpty(x, y, arr, model, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) { isfree = true;
-                            i = -9999; break; }
+                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                            isfree = true;
+                            i = -9999;
+                            break;
+                        }
                         break;
                 }
 
@@ -3519,6 +3546,10 @@ function isLevelThreePoint(idx, color, arr, fType) {
             }
         }
         else {
+            if (fType != onlySimpleWin && l > 3) { //搜索冲4复活3
+                findVCF(arr, color, 1, 1, 3000, true);
+                l = vcfWinMoves.length ? 3 : 5;
+            }
             if (fType == null) {
                 post("wLb", [idx, "V", l > 3 ? "black" : "red"]);
             }

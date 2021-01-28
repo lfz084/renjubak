@@ -3,7 +3,7 @@ var cacheFiles = [
   './index.html'
 ]
 // 定义缓存的key值
-var cacheName = '20190303'
+var cacheName = '20190305'
 
 
 
@@ -39,8 +39,8 @@ self.addEventListener('fetch', function(e) {
         }).catch(function(err) {
             let url = e.request.url;
             if (url.indexOf("renju.html") > -1) {
-                e.request.url = url.substr(0,url.length - 10) + "404.html"
-                caches.match(e.request).then(function(cache) {
+                url = url.substr(0,url.length - 10) + "404.html"
+                caches.match(url).then(function(cache) {
                     // 有缓存就用缓存，没有就从新发请求获取
                     return cache || fetch(e.request)
                 }).catch(function(err) {
