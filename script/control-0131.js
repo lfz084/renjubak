@@ -172,7 +172,7 @@ let control = (() => {
         renjuCmddiv.style.height = width + "px";
         renjuCmddiv.style.top = parseInt(top) + "px";
         renjuCmddiv.style.left = (dw - parseInt(renjuCmddiv.style.width)) / 2 + "px";
-        if (dw > dh) renjuCmddiv.style.left = width/13  + "px";
+        if (dw > dh) renjuCmddiv.style.left = width / 13 + "px";
 
         let sw = parseInt(renjuCmddiv.style.width);
         let w = sw / 9;
@@ -297,28 +297,30 @@ let control = (() => {
         cSelWhite.setontouchend(function() {
             cSelChecked(cSelWhite);
         });
+        
+        const calculate = 10;
+        let tMsg = "1月31日，五子茶馆解题大赛。比赛结束前，暂时关闭计算功能";
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
-        cFindPoint.addOption(0, "<<");
-        /*
-        cFindPoint.addOption(1, "VCT选点");
-        cFindPoint.addOption(2, "做V点");
-        cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
-        cFindPoint.addOption(4, "活三级别");
-        cFindPoint.addOption(5, "活三");
-        cFindPoint.addOption(6, "❌\b三三");
-        cFindPoint.addOption(7, "❌\b四四");
-        cFindPoint.addOption(8, "❌\b长连");
-        cFindPoint.addOption(9, "五连");
-        cFindPoint.addOption(10, "活四");
-        cFindPoint.addOption(11, "冲四");
-        cFindPoint.addOption(12, "眠三");
-        */
-        
-        cFindPoint.setontouchend(function() {
-            alert("五子茶馆将在1月17日举行解题大赛(双杀赛)，暂时关闭解题功能。比赛结束后可以正常使用计算功能")
-        });
-        
+        cFindPoint.addOption(0, calculate?"<<":tMsg);
+        if (calculate) {
+            cFindPoint.addOption(1, "VCT选点");
+            cFindPoint.addOption(2, "做V点");
+            cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
+            cFindPoint.addOption(4, "活三级别");
+            cFindPoint.addOption(5, "活三");
+            cFindPoint.addOption(6, "❌\b三三");
+            cFindPoint.addOption(7, "❌\b四四");
+            cFindPoint.addOption(8, "❌\b长连");
+            cFindPoint.addOption(9, "五连");
+            cFindPoint.addOption(10, "活四");
+            cFindPoint.addOption(11, "冲四");
+            cFindPoint.addOption(12, "眠三");
+        }
+        else {
+
+        }
+
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
@@ -384,26 +386,25 @@ let control = (() => {
 
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        cFindVCF.addOption(0, "<<");
-        /*
-        cFindVCF.addOption(1, "快速找\b VCF");
-        cFindVCF.addOption(2, "找全\b  VCF");
-        cFindVCF.addOption(3, "找\b 双杀");
-        cFindVCF.addOption(4, "大道五目");
-        cFindVCF.addOption(5, "三手五连");
-        cFindVCF.addOption(6, "四手五连");
-        cFindVCF.addOption(7, "防\b冲四抓禁");
-        cFindVCF.addOption(8, "找\b VCF防点");
-        cFindVCF.addOption(9, "找\b VCF防点(深度)");
-        cFindVCF.addOption(10, "坂田三手胜(测试)");
-        cFindVCF.addOption(11, "VCT(测试）");
-        //cFindVCF.addOption(12, "test two");
-        */
-        
-        cFindVCF.setontouchend(function(){
-            alert("五子茶馆将在1月17日举行解题大赛(双杀赛)，暂时关闭解题功能。比赛结束后可以正常使用计算功能")
-        });
-        
+        cFindVCF.addOption(0, calculate?"<<":tMsg);
+        if (calculate) {
+            cFindVCF.addOption(1, "快速找\b VCF");
+            cFindVCF.addOption(2, "找全\b  VCF");
+            cFindVCF.addOption(3, "找\b 双杀");
+            cFindVCF.addOption(4, "大道五目");
+            cFindVCF.addOption(5, "三手五连");
+            cFindVCF.addOption(6, "四手五连");
+            cFindVCF.addOption(7, "防\b冲四抓禁");
+            cFindVCF.addOption(8, "找\b VCF防点");
+            cFindVCF.addOption(9, "找\b VCF防点(深度)");
+            cFindVCF.addOption(10, "坂田三手胜(测试)");
+            cFindVCF.addOption(11, "VCT(测试）");
+            //cFindVCF.addOption(12, "test two");
+        }
+        else {
+
+        }
+
         cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
@@ -676,7 +677,7 @@ let control = (() => {
                 return;
             }
             else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
-    
+
                 cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
                 cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
                 cBd.cutImg.src = "./icon.png";
@@ -809,10 +810,10 @@ let control = (() => {
 
 
         t = t + h * 1.5;
-        if (dw<dh) {
-            t = 0 - cBd.width - h*2.5;
+        if (dw < dh) {
+            t = 0 - cBd.width - h * 2.5;
         }
-        
+
         cShareWhite = new button(renjuCmddiv, "button", w * 0, t, w, h);
         cShareWhite.show();
         cShareWhite.setColor("black");
@@ -820,7 +821,7 @@ let control = (() => {
         cShareWhite.setontouchend(function() {
             share("white");
         });
-        
+
         cShare = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
         cShare.show();
         cShare.setColor("black");
@@ -828,7 +829,7 @@ let control = (() => {
         cShare.setontouchend(function() {
             share();
         });
-        
+
         cCleLb = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
         cCleLb.show();
         cCleLb.setColor("black");
@@ -836,17 +837,17 @@ let control = (() => {
         cCleLb.setontouchend(function() {
             cBd.cleLb("all");
         });
-        
+
         cHelp = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
         cHelp.show();
         cHelp.setColor("black");
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
-            window.open("./help/renjuhelp/renjuhelp.html","_self");
+            window.open("./help/renjuhelp/renjuhelp.html", "_self");
         });
-        
-        
-        
+
+
+
         t = t + h * 1.5;
 
         function cSelChecked(chk) {
@@ -914,7 +915,7 @@ let control = (() => {
         s.height = width + "px";
         s.top = parseInt(top) + "px";
         s.left = (dw - parseInt(s.width)) / 2 + "px";
-        if (dw > dh) s.left = width/13 + "px";
+        if (dw > dh) s.left = width / 13 + "px";
 
         let sw = parseInt(s.width);
         let w = sw / 5;

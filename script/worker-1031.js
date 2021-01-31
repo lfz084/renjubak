@@ -2287,9 +2287,11 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
             let cNode = node.childNode;
             moves.push(cNode[0].idx * 1);
             cNode = cNode[0].childNode;
-            moves.push(cNode[0].idx * 1);
-            cNode = cNode[0].childNode;
-            moves.push(cNode[0].idx * 1);
+            if (cNode[0] != undefined) {
+                moves.push(cNode[0].idx * 1);
+                cNode = cNode[0].childNode;
+                moves.push(cNode[0].idx * 1);
+            }
             isT = isVCF(color, arr, moves);
             //if (y*15+x == 160 && istest) console.log(moves)
         }
