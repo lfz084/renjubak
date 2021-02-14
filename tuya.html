@@ -916,7 +916,7 @@
             touchMoveX = x;
             touchMoveY = y;
 
-            if (!isOut(x, y))
+            if (!isOut(x, y) && !sharing)
             {
                 if ((!chkLock.checked) && isContinueSetCB)
 
@@ -990,7 +990,7 @@
             if (timerSetCheckerBoard)
             {
                 timerSetCheckerBoard = null;
-                if (!isOut(x, y))
+                if (!isOut(x, y) && !sharing)
                 {
                     resetP(XL, XR, YT, YB, true);
                     //printBorder();
@@ -1000,7 +1000,7 @@
 
             if ((y == touchStartY) && (x == touchStartX))
             {
-                if (!isOut(x, y))
+                if (!isOut(x, y) && !sharing)
                 {
                     event.preventDefault(); //阻止事件的默认行为
                     Click(parseInt(x), parseInt(y), 1);
