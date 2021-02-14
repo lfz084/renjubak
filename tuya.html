@@ -1045,7 +1045,6 @@
 
 
 
-
         function rLclk(t)
         {
             rL0.setChecked(false);
@@ -1987,7 +1986,7 @@
         //imgWindow.appendChild(bkCanvas);
         //取消按钮
         let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
-
+        let timerShareClose = null;
         function xyPageToObj(p, obj) {
 
             let l = obj.offsetLeft;
@@ -2008,6 +2007,7 @@
 
         function share(cBoardColor) {
             try {
+                if (timerShareClose) clearTimeout(timerShareClose);
                 sharing = true;
                 document.body.appendChild(shareWindow);
                 let s = shareWindow.style;
@@ -2127,7 +2127,7 @@
         function shareClose() {
 
             shareWindow.parentNode.removeChild(shareWindow);
-            sharing = false;
+            timerShareClose = setTimeout("sharing = false",1000);
 
         }
     </script>
