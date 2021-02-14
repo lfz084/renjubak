@@ -582,6 +582,7 @@ let control = (() => {
         });
 
         cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
+        
         cNextone.show();
         cNextone.setColor("black");
         cNextone.setText(" 下手为❶");
