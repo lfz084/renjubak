@@ -638,6 +638,7 @@
         bodyDiv.style.width = "100%";
         bodyDiv.style.height = dh * 2.2;
         bodyDiv.style.left = 0;
+        bodyDiv.style.top = 0;
         let fileDiv = document.createElement("div");
         bodyDiv.appendChild(fileDiv);
         fileDiv.style.position = "absolute";
@@ -1988,132 +1989,139 @@
         let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
 
         function xyPageToObj(p, obj) {
+
             let l = obj.offsetLeft;
             let t = obj.offsetTop;
             let parentNode = obj.parentNode;
+            //alert (`offsetLeft = ${obj.offsetLeft} , offsetTop = ${obj.offsetTop}, l = ${l} , t = ${t}`)
             while (parentNode != document.body && parentNode != null) {
 
                 l += parentNode.offsetLeft;
                 t += parentNode.offsetTop;
+                //alert (`offsetLeft = ${parentNode.offsetLeft} , offsetTop = ${parentNode.offsetTop}, l = ${l} , t = ${t}`)
                 parentNode = parentNode.parentNode;
+
             }
-            p.x = p.x - l;
-            p.y = p.y - t;
+            p.x = p.x - l + 1;
+            p.y = p.y - t + 1;
         }
 
         function share(cBoardColor) {
+            try {
+                sharing = true;
+                document.body.appendChild(shareWindow);
+                let s = shareWindow.style;
+                s.position = "fixed";
+                s.zIndex = 9998;
+                s.width = dw + "px";
+                s.height = dh * 2 + "px";
+                s.top = "0px";
+                s.left = "0px";
 
-            sharing = true;
-            document.body.appendChild(shareWindow);
-            let s = shareWindow.style;
-            s.position = "fixed";
-            s.zIndex = 9998;
-            s.width = dw + "px";
-            s.height = dh * 2 + "px";
-            s.top = "0px";
-            s.left = "0px";
+                let imgWidth = dw < dh ? dw : dh;
+                imgWidth = parseInt(imgWidth * 3 / 4);
+                s = imgWindow.style;
+                s.position = "relative";
+                s.width = imgWidth + "px";
+                s.height = imgWidth + "px";
+                s.top = parseInt((dh - imgWidth) / 2) + "px";
+                s.left = parseInt((dw - imgWidth) / 2) + "px";
+                s.backgroundColor = "#666666";
 
-            let imgWidth = dw < dh ? dw : dh;
-            imgWidth = parseInt(imgWidth * 3 / 4);
-            s = imgWindow.style;
-            s.position = "relative";
-            s.width = imgWidth + "px";
-            s.height = imgWidth + "px";
-            s.top = parseInt((dh - imgWidth) / 2) + "px";
-            s.left = parseInt((dw - imgWidth) / 2) + "px";
-            s.backgroundColor = "#666666";
+                let ctx = bkCanvas.getContext("2d");
+                let w = parseInt(gW < gH ? gW / 4 * 1.8 : gH / 4 * 1.8);
+                let p = { x: 0, y: 0 };
+                bkCanvas.width = bkimg.width;
+                bkCanvas.height = bkimg.height;
+                ctx.drawImage(bkimg, 0, 0, bkimg.width, bkimg.height);
 
-            let ctx = bkCanvas.getContext("2d");
-            let w = gW < gH ? gW / 4 * 1.8 : gH / 4 * 1.8;
-            let p = { x: 0, y: 0 };
-            bkCanvas.width = bkimg.width;
-            bkCanvas.height = bkimg.height;
-            ctx.drawImage(bkimg, 0, 0, bkimg.width, bkimg.height);
-
-            for (let i = 0; i < MS.length; i++) {
-                let color;
-                let numColor;
-                if (MS[0].color == "black" )
-                {
-                    color = i % 2 ? 'black' : 'white';
-                    numColor = i % 2 ? 'white' : 'black';
-                }
-                else
-                {
-                    if (MS[0].color == "white")
+                for (let i = 0; i < MS.length; i++) {
+                    let color;
+                    let numColor;
+                    if (MS[0].color == "black")
                     {
-                        color = i % 2 ? 'white' : 'black';
-                        numColor = i % 2 ? 'black' : 'white';
+                        color = i % 2 ? 'black' : 'white';
+                        numColor = i % 2 ? 'white' : 'black';
                     }
                     else
                     {
-                        if (MS[0].color == "green") { numColor = i % 2 ? 'red' : 'green'; }
-                        else { numColor = i % 2 ? 'green' : 'red'; }
+                        if (MS[0].color == "white")
+                        {
+                            color = i % 2 ? 'white' : 'black';
+                            numColor = i % 2 ? 'black' : 'white';
+                        }
+                        else
+                        {
+                            if (MS[0].color == "green") { numColor = i % 2 ? 'red' : 'green'; }
+                            else { numColor = i % 2 ? 'green' : 'red'; }
+                        }
                     }
-                }
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                p.x = MS[i].x + (XR - XL) / 470;
-                p.y = MS[i].y + (XR - XL) / 93;
-                xyPageToObj(p, bkimg);
-                ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-                ctx.fillStyle = color;
-                if (MS[0].color == "black" || MS[0].color == "white") {
-                    ctx.fill(); // 填充
-                    ctx.stroke(); // 描边
-                    ctx.font = "bolder " + parseInt(w * 1.08) + "px 黑体";
-                }
-                else {
-                    ctx.font = "bolder " + parseInt(w * 1.08/1.8*3) + "px 黑体";
-                }
-                ctx.fillStyle = numColor;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(i+1, p.x, p.y);
-            }
-            ctx.font = "bolder " + parseInt(w * 1.08/1.8*2) + "px 黑体";
-            for (let i = 0; i < P.length; i++) {
-                if (P[i].type == tLb) {
-                    p.x = P[i].x + (XR - XL) / 470;
-                    p.y = P[i].y + (XR - XL) / 93;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    p.x = MS[i].x;
+                    p.y = MS[i].y;
                     xyPageToObj(p, bkimg);
-                    ctx.fillStyle = P[i].color;
+                    ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+                    ctx.fillStyle = color;
+                    if (MS[0].color == "black" || MS[0].color == "white") {
+                        ctx.fill(); // 填充
+                        ctx.stroke(); // 描边
+                        ctx.font = "bolder " + parseInt(w * 1.08) + "px 黑体";
+                    }
+                    else {
+                        ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 3) + "px 黑体";
+                    }
+                    ctx.fillStyle = numColor;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillText(P[i].text, p.x, p.y);
+                    ctx.fillText(i + 1, p.x, p.y);
                 }
+                ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 2) + "px 黑体";
+                for (let i = 0; i < P.length; i++) {
+                    if (P[i].type == tLb) {
+                        p.x = P[i].x;
+                        p.y = P[i].y;
+                        xyPageToObj(p, bkimg);
+                        ctx.fillStyle = P[i].color;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText(P[i].text, p.x, p.y);
+                    }
+                }
+                ctx = null;
+
+                let iWidth = parseInt(imgWidth * 3 / 5);
+                shareImg.src = bkCanvas.toDataURL();
+                s = shareImg.style;
+                s.position = "absolute";
+                s.width = iWidth + "px";
+                s.height = iWidth + "px";
+                s.top = parseInt((imgWidth - iWidth) / 2) + "px";
+                s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+
+                let h = parseInt((imgWidth - iWidth) / 2 / 2);
+                w = h * 3;
+                let l = (imgWidth - w) / 2;
+                let t = imgWidth - h - (imgWidth - iWidth) / 8;
+
+                shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片分享</h1>`;
+                s = shareLabel.style;
+                s.position = "absolute";
+                s.width = w + "px";
+                s.height = h + "px";
+                s.top = (imgWidth - iWidth) / 8 + "px";
+                s.left = l + "px";
+                s.backgroundColor = "#666666";
+
+                butShareCancel.show(l, t, w, h);
+                butShareCancel.setText("关闭分享");
+                butShareCancel.setontouchend(function() {
+                    shareClose();
+                });
             }
-            ctx = null;
-
-            let iWidth = parseInt(imgWidth * 3 / 5);
-            shareImg.src = bkCanvas.toDataURL();
-            s = shareImg.style;
-            s.position = "absolute";
-            s.width = iWidth + "px";
-            s.height = iWidth + "px";
-            s.top = parseInt((imgWidth - iWidth) / 2) + "px";
-            s.left = parseInt((imgWidth - iWidth) / 2) + "px";
-
-            let h = parseInt((imgWidth - iWidth) / 2 / 2);
-            w = h * 3;
-            let l = (imgWidth - w) / 2;
-            let t = imgWidth - h - (imgWidth - iWidth) / 8;
-
-            shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片分享</h1>`;
-            s = shareLabel.style;
-            s.position = "absolute";
-            s.width = w + "px";
-            s.height = h + "px";
-            s.top = (imgWidth - iWidth) / 8 + "px";
-            s.left = l + "px";
-            s.backgroundColor = "#666666";
-
-            butShareCancel.show(l, t, w, h);
-            butShareCancel.setText("关闭分享");
-            butShareCancel.setontouchend(function() {
+            catch(err) {
                 shareClose();
-            });
-
+            }
         }
 
         function shareClose() {
