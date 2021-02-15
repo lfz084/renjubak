@@ -1987,6 +1987,7 @@
         //取消按钮
         let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
         let timerShareClose = null;
+
         function xyPageToObj(p, obj) {
 
             let l = obj.offsetLeft;
@@ -2031,9 +2032,39 @@
                 let ctx = bkCanvas.getContext("2d");
                 let w = parseInt(gW < gH ? gW / 4 * 1.8 : gH / 4 * 1.8);
                 let p = { x: 0, y: 0 };
-                bkCanvas.width = bkimg.width;
-                bkCanvas.height = bkimg.height;
-                ctx.drawImage(bkimg, 0, 0, bkimg.width, bkimg.height);
+                let lw = 0,
+                    rw = 0,
+                    tw = 0,
+                    bw = 0;
+                if (MS.length) {
+                    let xr = -1000,
+                        xl = 1000,
+                        xt = 1000,
+                        xb = -1000;
+                    for (let i = 0; i < MS.length; i++) {
+                        p.x = MS[i].x;
+                        p.y = MS[i].y;
+                        xyPageToObj(p, bkimg);
+                        xr = p.x > xr ? p.x : xr;
+                        xl = p.x < xl ? p.x : xl;
+                        xt = p.y < xt ? p.y : xt;
+                        xb = p.y > xb ? p.y : xb;
+                    }
+                    xr+= w;
+                    xl-= w;
+                    xt-= w;
+                    xb+= w;
+                    lw = xl < 0 ? lw - xl : lw;
+                    rw = xr > bkimg.width ? xr - bkimg.width : rw;
+                    tw = xt < 0 ? tw - xt : tw;
+                    bw = xb > bkimg.height ? xb - bkimg.height : bw;
+                    //alert(`lw = ${lw}, rw = ${rw}, tw = ${tw}, bw = ${bw}`)
+                }
+                bkCanvas.width = bkimg.width + lw + rw;
+                bkCanvas.height = bkimg.height + tw + bw;
+                ctx.fillStyle = "#eeeeee";
+                ctx.fillRect(0, 0, bkCanvas.width, bkCanvas.height);
+                ctx.drawImage(bkimg, lw, tw, bkimg.width, bkimg.height);
 
                 for (let i = 0; i < MS.length; i++) {
                     let color;
@@ -2052,14 +2083,15 @@
                         }
                         else
                         {
-                            if (MS[0].color == "green") { numColor = i % 2 ? 'red' : 'green'; }
-                            else { numColor = i % 2 ? 'green' : 'red'; }
+                            numColor = MS[i].color;
+                            //if (MS[0].color == "green") { numColor = i % 2 ? 'red' : 'green'; }
+                            //else { numColor = i % 2 ? 'green' : 'red'; }
                         }
                     }
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    p.x = MS[i].x;
-                    p.y = MS[i].y;
+                    p.x = MS[i].x + lw;
+                    p.y = MS[i].y + tw;
                     xyPageToObj(p, bkimg);
                     ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
@@ -2079,8 +2111,8 @@
                 ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 2) + "px 黑体";
                 for (let i = 0; i < P.length; i++) {
                     if (P[i].type == tLb) {
-                        p.x = P[i].x;
-                        p.y = P[i].y;
+                        p.x = P[i].x + lw;
+                        p.y = P[i].y + tw;
                         xyPageToObj(p, bkimg);
                         ctx.fillStyle = P[i].color;
                         ctx.textAlign = "center";
@@ -2095,10 +2127,10 @@
                 s = shareImg.style;
                 s.position = "absolute";
                 if (bkimg.width < bkimg.height) {
-                s.width = parseInt(iWidth * (bkimg.width / bkimg.height)) + "px";
-                s.height = iWidth + "px";
-                s.top = parseInt((imgWidth - iWidth) / 2) + "px";
-                s.left = parseInt((imgWidth - parseInt(s.width)) / 2) + "px";
+                    s.width = parseInt(iWidth * (bkimg.width / bkimg.height)) + "px";
+                    s.height = iWidth + "px";
+                    s.top = parseInt((imgWidth - iWidth) / 2) + "px";
+                    s.left = parseInt((imgWidth - parseInt(s.width)) / 2) + "px";
                 }
                 else {
                     s.width = iWidth + "px";
@@ -2127,7 +2159,7 @@
                     shareClose();
                 });
             }
-            catch(err) {
+            catch (err) {
                 shareClose();
             }
         }
@@ -2135,7 +2167,7 @@
         function shareClose() {
 
             shareWindow.parentNode.removeChild(shareWindow);
-            timerShareClose = setTimeout("sharing = false",1000);
+            timerShareClose = setTimeout("sharing = false", 1000);
 
         }
     </script>
