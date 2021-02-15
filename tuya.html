@@ -2094,10 +2094,18 @@
                 shareImg.src = bkCanvas.toDataURL();
                 s = shareImg.style;
                 s.position = "absolute";
-                s.width = iWidth + "px";
+                if (bkimg.width < bkimg.height) {
+                s.width = parseInt(iWidth * (bkimg.width / bkimg.height)) + "px";
                 s.height = iWidth + "px";
                 s.top = parseInt((imgWidth - iWidth) / 2) + "px";
-                s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+                s.left = parseInt((imgWidth - parseInt(s.width)) / 2) + "px";
+                }
+                else {
+                    s.width = iWidth + "px";
+                    s.height = parseInt(iWidth * (bkimg.height / bkimg.width)) + "px";
+                    s.top = parseInt((imgWidth - parseInt(s.height)) / 2) + "px";
+                    s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+                }
 
                 let h = parseInt((imgWidth - iWidth) / 2 / 2);
                 w = h * 3;
