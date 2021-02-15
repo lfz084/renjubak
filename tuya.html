@@ -2054,10 +2054,10 @@
                     xl-= w;
                     xt-= w;
                     xb+= w;
-                    lw = xl < 0 ? lw - xl : lw;
-                    rw = xr > bkimg.width ? xr - bkimg.width : rw;
-                    tw = xt < 0 ? tw - xt : tw;
-                    bw = xb > bkimg.height ? xb - bkimg.height : bw;
+                    lw = xl < 0 ? lw - xl+2 : lw;
+                    rw = xr > bkimg.width ? xr - bkimg.width+2 : rw;
+                    tw = xt < 0 ? tw - xt+2 : tw;
+                    bw = xb > bkimg.height ? xb - bkimg.height+2 : bw;
                     //alert(`lw = ${lw}, rw = ${rw}, tw = ${tw}, bw = ${bw}`)
                 }
                 bkCanvas.width = bkimg.width + lw + rw;
