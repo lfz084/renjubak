@@ -1263,7 +1263,6 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
         let color = vcfColor;
         let nColor = vcfnColor;
         let dp = moves.length / 2;
-
         // 读取对手进攻级别
         let cfLevel = vcfnLevel;
 
@@ -1287,7 +1286,7 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
 
                 // 上一手棋为中心，查找周围的点。
                 if (fs.length > 1) {
-                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2]));
+                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2],14));
                     vcfFS = fs; // concat方法改变了内存地址， 重新设置两个变量
                 }
                 else { // 如果是第一手，就以h8为中心
