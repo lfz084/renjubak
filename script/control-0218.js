@@ -1495,12 +1495,12 @@ let control = (() => {
                 s.left = "0px";
                 ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
                 shareImg.src = bkCanvas.toDataURL();
-                if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = bkCanvas.toDataURL();
+                //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = bkCanvas.toDataURL();
             }
         }
         else {
             shareImg.src = cBd.canvas.toDataURL();
-            if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = bkCanvas.toDataURL();
+            //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = bkCanvas.toDataURL();
         }
         
 
