@@ -1496,21 +1496,21 @@ let control = (() => {
                 ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
                 shareImg.src = "data:application/png" + bkCanvas.toDataURL().substr(14);
                 //console.log("data:application/png" + bkCanvas.toDataURL().substr(14))
-                if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
+                //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
             }
         }
         else {
             shareImg.src = "data:application/png" + cBd.canvas.toDataURL().substr(14);
-            if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
+            //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
         }
         
 
         let h = parseInt((imgWidth - iWidth) / 2 / 2);
-        let w = h * 3;
+        let w = h * 4;
         let l = (imgWidth - w) / 2;
         let t = imgWidth - h - (imgWidth - iWidth) / 8;
 
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片分享</h1>`;
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片(保存)分享</h1>`;
         s = shareLabel.style;
         s.position = "absolute";
         s.width = w + "px";
