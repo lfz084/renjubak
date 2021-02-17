@@ -1495,11 +1495,15 @@ let control = (() => {
                 s.left = "0px";
                 ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
                 shareImg.src = bkCanvas.toDataURL();
+                let wd = window.open("","_blank");
+                wd.location.href = bkCanvas.toDataURL();
             }
         }
         else {
             shareImg.src = cBd.canvas.toDataURL();
+            window.open(cBd.canvas.toDataURL());
         }
+        
 
         let h = parseInt((imgWidth - iWidth) / 2 / 2);
         let w = h * 3;
@@ -1520,6 +1524,8 @@ let control = (() => {
         butShareCancel.setontouchend(function() {
             shareClose();
         });
+        
+
 
     }
 
