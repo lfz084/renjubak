@@ -2,11 +2,11 @@
 @font-face{
     
     font-family: mHeiTi;
-    src: url('./font/simhei.otf');
+    src: url('../font/simhei.otf');
 }
 
  font {
-   font-family:"mHeiTi" 黑体;
+   font-family:mHeiTi, 黑体;
    font-weight: bold;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
