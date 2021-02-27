@@ -86,7 +86,7 @@ let control = (() => {
             this.div.style.top = top;
             this.div.style.height = height;
             this.div.style.width = width;
-            this.div.style.fontFamily = "黑体";
+            this.div.style.fontFamily = "mHeiTi";
             this.div.style.fontSize = fontSize;
             this.div.style.textAlign = "center";
             this.div.style.lineHeight = height;
@@ -1494,13 +1494,13 @@ let control = (() => {
                 s.top = "1000px";
                 s.left = "0px";
                 ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
-                shareImg.src = "data:application/png" + bkCanvas.toDataURL().substr(14);
+                shareImg.src = bkCanvas.toDataURL();
                 //console.log("data:application/png" + bkCanvas.toDataURL().substr(14))
                 //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
             }
         }
         else {
-            shareImg.src = "data:application/png" + cBd.canvas.toDataURL().substr(14);
+            shareImg.src = cBd.canvas.toDataURL();
             //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
         }
         

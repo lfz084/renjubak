@@ -456,7 +456,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
             //mConsole(` fourPoint =  ${getChildNodeIdx(ctnNode)}`);
             let key = getKey(arr);
-            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true);
+            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true, null, 4);
             let i;
             let t;
             let leng = tPoint.length;
@@ -1286,7 +1286,7 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
 
                 // 上一手棋为中心，查找周围的点。
                 if (fs.length > 1) {
-                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2],14));
+                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2], 14));
                     vcfFS = fs; // concat方法改变了内存地址， 重新设置两个变量
                 }
                 else { // 如果是第一手，就以h8为中心
@@ -3443,7 +3443,7 @@ function findThreePoint(arr, color, newarr, ftype, setnum) {
 
 
 //找出可能的，活3级别攻击点(不验证做V后是否也给对手做了V)
-function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
+function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, depth) {
     num = typeof(num) == "number" ? parseInt(num) : 9999;
     backstage = backstage == null ? true : backstage;
     let threeP = []; // 保存活3点，包括复活3
@@ -3464,9 +3464,9 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
             arr[y][x] = color;
             if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
 
-            let level = getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : null, null, num == 9999 ? 9999 : num - 1);
+            let level = getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : depth, null, num == 9999 ? 9999 : num - 1);
             let nColor = color == 1 ? 2 : 1;
-            let fNum = findVCF(arr, nColor, 1, null, null, true);
+            let fNum = findVCF(arr, nColor, 1, depth, null, true);
             if (level.level < 4 && level.level >= 3 && fNum == 0) {
                 //console.log(x+15*y)
                 let l = level.moves.length; // 保存手数，待后面判断43杀
@@ -3524,8 +3524,6 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num) {
     return threeP;
     return simpleP.concat(threeP, vcfP);
     return vcfP.concat(simpleP, threeP);
-
-
 
 
 }
@@ -4055,7 +4053,7 @@ function getBlockVCF(VCF, color, arr, backStage, passFour, idx) {
         let x = pnt.point[i].x;
         let y = pnt.point[i].y;
         // color是进攻方颜色
-        if (arr[y][x] == 0 && (color == 1 || !isFoul(x, y, arr))) {
+        if (arr[y][x] == 0) {
             let j;
             arr[y][x] = color == 1 ? 2 : 1;
             for (j = 0; j < len; j++) { // 验证之前VCF是否成立
@@ -4064,8 +4062,11 @@ function getBlockVCF(VCF, color, arr, backStage, passFour, idx) {
             arr[y][x] = 0;
             // 防住所有VCF,记录防点,过滤掉先手防
             if (j >= len && (!passFour || !isFour(x, y, nColor, arr))) {
-                p.push(pnt.index[i]);
-                if (!backStage) post("wLb", [pnt.index[i], "◎", "black"]);
+                if (color == 1 || !isFoul(x, y, arr)) {
+                // if color==1 then  blockColor==2
+                    p.push(pnt.index[i]);
+                    if (!backStage) post("wLb", [pnt.index[i], "◎", "black"]);
+                }
             }
         }
 
