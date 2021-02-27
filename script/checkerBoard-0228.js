@@ -1191,7 +1191,7 @@ checkerBoard.prototype.getSVG = function() {
 
     let showNum = this.isShowNum;
     let size = 2000 / this.canvas.width;
-    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" >`;
+    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" > @font-face`;
     // 划竖线
     let x1;
     let x2;
@@ -1240,7 +1240,7 @@ checkerBoard.prototype.getSVG = function() {
             m = j == 0 ? -this.gH : this.gH;
             x1 = this.P[i + j].x * size;
             y1 = (this.P[i + j].y + m) * size;
-            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="mHeiTi"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.alpha.charAt(i)}</text>`;
+            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.alpha.charAt(i)}</text>`;
 
         }
     }
@@ -1250,7 +1250,7 @@ checkerBoard.prototype.getSVG = function() {
             m = j == 0 ? -this.gW : this.gW;
             x1 = (this.P[i * this.SLTX + j].x + m) * size;
             y1 = this.P[i * this.SLTX + j].y * size;
-            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="mHeiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
+            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
 
         }
     }

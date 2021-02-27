@@ -29,10 +29,18 @@
  }
 
  canvas {
-   font-family:黑体;
+   font-family:mHeiTi, 黑体;
    -webkit-user-select: none;
    /* Chrome/Safari/Opera */
  }
+ 
+ image {
+   font-family:mHeiTi, 黑体;
+   -webkit-user-select: none;
+   /* Chrome/Safari/Opera */
+ }
+
+
 
 
  body {
