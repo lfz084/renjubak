@@ -1250,7 +1250,7 @@ checkerBoard.prototype.getSVG = function() {
             m = j == 0 ? -this.gW : this.gW;
             x1 = (this.P[i * this.SLTX + j].x + m) * size;
             y1 = this.P[i * this.SLTX + j].y * size;
-            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
+            svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
 
         }
     }
