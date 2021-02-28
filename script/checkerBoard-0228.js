@@ -1811,7 +1811,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             }
             x1 = left + this.P[i].x * size;
             y1 = top + this.P[i].y * size;
-            doc.circle(x1, y1, this.P[i].bkColor?w*size:this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
+            doc.circle(x1, y1, this.P[i].bkColor ? w * size : this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
             //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
         }
 
@@ -1904,7 +1904,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
 
 
 // 在棋盘上打印一个点
-checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor) {
+checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor, showLastNum) {
 
 
     let p = tempp;
@@ -1925,11 +1925,12 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
     else { //  打印标签
         ctx.beginPath();
         ctx.fillStyle = backgroundColor || this.LbBackgroundColor;
+        //console.log(backgroundColor)
         if (backgroundColor) {
-            this.P[idx].bkColor = ctx.fillStyle;
+            //this.P[idx].bkColor = ctx.fillStyle;
             ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-            //ctx.fill();
-            ctx.stroke();
+            ctx.fill();
+            //ctx.stroke();
         }
         //ctx.beginPath();
         ctx.arc(p.x, p.y, text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
@@ -1958,7 +1959,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
     ctx.fillText(text, p.x, p.y);
     ctx = null;
 
-    if (type == tNum) {
+    if (type == tNum && !showLastNum) {
         this.showLastNum(showNum);
     }
     if (appData.renjuSave) appData.renjuSave(this);
@@ -1985,16 +1986,100 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
 
 
 
+checkerBoard.prototype.refreshCheckerBoard = function() {
+    let canvas = this.bakCanvas;
+    let ctx = canvas.getContext("2d");
+    ctx.fillStyle = this.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = this.lineColor;
+    let p = tempp;
+    // 划竖线
+    for (let i = 0; i < this.SLTX; i++) {
+        ctx.lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
+        p.setxy(this.P[i].x, this.P[i].y);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        p.setxy(this.P[i + (this.SLTY - 1) * this.SLTX].x, this.P[i + (this.SLTY - 1) * this.SLTX].y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    }
+    // 划横线
+    for (let j = 0; j < this.SLTY; j++) {
+        ctx.lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
+        p.setxy(this.P[j * this.SLTX].x, this.P[j * this.SLTX].y);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        p.setxy(this.P[j * this.SLTX + this.SLTX - 1].x, this.P[j * this.SLTX + this.SLTX - 1].y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    }
+    ctx.stroke();
+    //画星位
+    if (this.SLTX == 15 && this.SLTY == 15) {
+
+        for (let i = 48; i < 225; i += 120) {
+            for (let j = 0; j < 9; j += 8) {
+                p.setxy(this.P[i + j].x, this.P[i + j].y);
+                ctx.beginPath();
+                ctx.fillStyle = this.lineColor;
+                ctx.arc(p.x, p.y, parseInt(canvas.width) / 1000 * 6, 0, 2 * Math.PI);
+                ctx.fill();
+                //ctx.stroke();
+            }
+        }
+        p.setxy(this.P[112].x, this.P[112].y);
+        ctx.beginPath();
+        ctx.fillStyle = this.lineColor;
+        ctx.arc(p.x, p.y, parseInt(canvas.width) / 1000 * 6, 0, 2 * Math.PI);
+        ctx.fill();
+        //ctx.stroke();
+
+    }
+
+    this.printCoordinate(); // 打印棋盘坐标
+
+    //把后台的图片显示出来
+    let canvas2 = this.canvas;
+    ctx = null;
+    ctx = canvas2.getContext("2d");
+    canvas2.width = canvas.width;
+    canvas2.height = canvas.height;
+    canvas2.style.width = canvas.width + "px";
+    canvas2.style.height = canvas.height + "px";
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+
+    for (let idx = this.P.length - 1; idx >= 0; idx--) {
+        if (this.P[idx].type == tNum || this.P[idx].type == tWhite || this.P[idx].type == tBlack) {
+            let txt = this.P[idx].text;
+            if (this.P[idx].type == tNum) { //控制从第几手显示❶
+                txt = parseInt(this.P[idx].text) - this.resetNum;
+                txt = parseInt(txt) < 1 ? "" : txt;
+                txt = this.isShowNum ? txt : "";
+            }
+            this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, null, true);
+            //console.log(this.P[idx].type)
+        }
+        else if (this.P[idx].type == tLb) {
+            this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+            //console.log(this.P[idx].type)
+        }
+    }
+    if (this.MS.length) this.showLastNum(this.isShowNum);
+    
+}
+
+
+
 // 涂鸦模式，边框初始化
 checkerBoard.prototype.resetCutDiv = function() {
 
     let canvas = this.canvas;
     let w = parseInt(canvas.width);
     let h = parseInt(canvas.height);
-    let XL = this.oldXL==this.oldXR ? w / 3 : this.oldXL;
-    let XR = this.oldXL==this.oldXR ? w / 3 * 2 : this.oldXR;
-    let YT = this.oldXL==this.oldXR ? h / 3 : this.oldYT;
-    let YB = this.oldXL==this.oldXR ? h / 3 * 2 : this.oldYB;
+    let XL = this.oldXL == this.oldXR ? w / 3 : this.oldXL;
+    let XR = this.oldXL == this.oldXR ? w / 3 * 2 : this.oldXR;
+    let YT = this.oldXL == this.oldXR ? h / 3 : this.oldYT;
+    let YB = this.oldXL == this.oldXR ? h / 3 * 2 : this.oldYB;
     let div = this.cutDiv;
     let s = this.cutDiv.style;
     s.position = "absolute";
@@ -2716,9 +2801,11 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
     if (idx < 0) return;
     if (this.P[idx].type != tEmpty) this.clePoint(idx);
     this.P[idx].color = color;
+    this.P[idx].bkColor = backgroundColor || null;
+    //console.log(backgroundColor)
     this.P[idx].type = tLb;
     this.P[idx].text = text;
-    this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, backgroundColor);
+    this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
 };
 
 

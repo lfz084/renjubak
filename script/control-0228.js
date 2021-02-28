@@ -297,12 +297,12 @@ let control = (() => {
         cSelWhite.setontouchend(function() {
             cSelChecked(cSelWhite);
         });
-        
+
         const calculate = 10;
         let tMsg = "1月31日，五子茶馆解题大赛。比赛结束前，暂时关闭计算功能";
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
-        cFindPoint.addOption(0, calculate?"<<":tMsg);
+        cFindPoint.addOption(0, calculate ? "<<" : tMsg);
         if (calculate) {
             cFindPoint.addOption(1, "VCT选点");
             cFindPoint.addOption(2, "做V点");
@@ -386,7 +386,7 @@ let control = (() => {
 
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        cFindVCF.addOption(0, calculate?"<<":tMsg);
+        cFindVCF.addOption(0, calculate ? "<<" : tMsg);
         if (calculate) {
             cFindVCF.addOption(1, "快速找\b VCF");
             cFindVCF.addOption(2, "找全\b  VCF");
@@ -582,12 +582,13 @@ let control = (() => {
         });
 
         cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        
+
         cNextone.show();
         cNextone.setColor("black");
         cNextone.setText(" 下手为❶");
         cNextone.setontouchend(function() {
             cBd.setResetNum(cBd.MSindex + 1);
+            cBd.isShowNum = cShownum.checked;
         });
 
 
@@ -633,6 +634,7 @@ let control = (() => {
         cResetnum.setontouchend(function() {
             cBd.setResetNum(0);
             cShownum.setChecked(true);
+            cBd.isShowNum = cShownum.checked;
         });
 
 
@@ -1474,6 +1476,7 @@ let control = (() => {
         s.left = parseInt((imgWidth - iWidth) / 2) + "px";
 
         if (cBoardColor == "white") {
+            /*
             let mimetype = "image/svg+xml";
             let blob = new Blob([cBd.getSVG()], { type: mimetype });
             bkShareImg.width = 1000;
@@ -1498,12 +1501,23 @@ let control = (() => {
                 //console.log("data:application/png" + bkCanvas.toDataURL().substr(14))
                 //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
             }
+            */
+            let oldBackgroundColor = cBd.backgroundColor;
+            let oldLbBackgroundColor = cBd.LbBackgroundColor;
+            cBd.backgroundColor = "white";
+            cBd.LbBackgroundColor = "white";
+            cBd.refreshCheckerBoard();
+            shareImg.src = cBd.canvas.toDataURL();
+            shareImg.onload = function() {
+                cBd.backgroundColor = oldBackgroundColor;
+                cBd.LbBackgroundColor = oldLbBackgroundColor;
+                cBd.refreshCheckerBoard();
+            };
         }
         else {
             shareImg.src = cBd.canvas.toDataURL();
             //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
         }
-        
 
         let h = parseInt((imgWidth - iWidth) / 2 / 2);
         let w = h * 4;
@@ -1524,7 +1538,7 @@ let control = (() => {
         butShareCancel.setontouchend(function() {
             shareClose();
         });
-        
+
 
 
     }
