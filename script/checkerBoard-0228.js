@@ -1529,7 +1529,7 @@ checkerBoard.prototype.printCoordinate = function(t, r, d, l) {
     let m;
     let ctx = this.bakCanvas.getContext("2d");
     ctx.fillStyle = this.coordinateColor;
-    ctx.font = parseInt(this.gW * 0.5) + "px mHeiTi";
+    ctx.font = "normal  " + parseInt(this.gW * 0.5) + "px mHeiTi";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (let i = 0; i < this.SLTX; i++) {
