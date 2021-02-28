@@ -2,7 +2,7 @@
 @font-face{
     
     font-family: mHeiTi;
-    src: url('../font/PingFangMediumsubfont.otf');
+    src: url('../font/PingFangLightsubfont.otf') format("embedded-opentype");
 }
 
  font {

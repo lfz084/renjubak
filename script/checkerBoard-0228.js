@@ -1904,7 +1904,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
 
 
 // 在棋盘上打印一个点
-checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor, showLastNum) {
+checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum) {
 
 
     let p = tempp;
@@ -1959,7 +1959,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
     ctx.fillText(text, p.x, p.y);
     ctx = null;
 
-    if (type == tNum && !showLastNum) {
+    if (type == tNum && !notShowLastNum) {
         this.showLastNum(showNum);
     }
     if (appData.renjuSave) appData.renjuSave(this);
@@ -2595,9 +2595,10 @@ checkerBoard.prototype.showNum = function() {
         //从设定的手数开始显示序号
         txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
         txt = parseInt(txt) < 1 ? "" : txt;
-        this.printPoint(this.MS[i], txt, color, tNum, true);
+        this.printPoint(this.MS[i], txt, color, tNum, true, null, true);
     }
-
+    this.showLastNum(true);
+    
 };
 
 

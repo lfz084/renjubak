@@ -50,7 +50,7 @@
       };
 
       this.input.onmousedown = function() {
-          but.defaultontouchstart();
+          if (event.button==0) but.defaultontouchstart();
       };
 
       this.input.ontouchcancel = function() {
@@ -64,8 +64,13 @@
       this.input.ontouchend = function() {
           but.defaultontouchend();
       };
-
+      /*
       this.input.onmouseup = function() {
+          but.defaultontouchend();
+      };
+      */
+      this.input.onmouseout = function() {
+          but.isEventMove = true; 
           but.defaultontouchend();
       };
 
@@ -132,7 +137,7 @@
 
       // radio, checkbox 默认事件
       if ((this.type == "radio" || this.type == "checkbox") && (!cancel)) this.checked = !this.checked;
-
+      //console.log(`checked = ${this.checked} ,this.isEventMove = ${this.isEventMove}`);
       if (this.checked) {
           // 选中的时，按钮外观
           s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
@@ -314,7 +319,7 @@
           if (!but.defaultontouchend(but)) return;
           callbak(but);
       };
-      this.input.onmouseup = this.input.ontouchend;
+      this.input.onclick = this.input.ontouchend;
   };
 
 

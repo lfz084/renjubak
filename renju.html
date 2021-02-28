@@ -12,7 +12,7 @@
     <link rel="shortcut icon" sizes="128x128" href="https://lfz084.github.io/icon.png">
     <link rel="apple-touch-icon" href="https://lfz084.github.io/icon.png">
     <link rel="icon" href="https://lfz084.github.io/icon.ico">
-    <link rel="preload" href="./font/PingFangMediumsubfont.otf" as="font" type="font/otf" crossorigin="anonymous">
+    <link rel="preload" href="./font/PingFangLightsubfont.otf" as="font" type="font/otf" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     
     <title> 摆棋小工具</title>
@@ -190,8 +190,8 @@
 
             document.body.addEventListener("touchmove", bodyTouchMove, true);
 
-            document.body.addEventListener("click", canvasClick, false);
-
+            document.body.addEventListener("click", canvasClick, true);
+            
         }
 
 
@@ -450,12 +450,14 @@
         function canvasKeepTouch(x, y) {
 
             if (control.getPlayModel() == control.renjuModel) {
+                /*
                 if (event && event.type == "contextmenu") {
                     control.renjuKeepTouch(event.pageX, event.pageY);
                 }
                 else {
+                */
                     control.renjuKeepTouch(x, y);
-                }
+                //}
             }
             else {
                 if (control.cLockImgChecked()) {
@@ -472,7 +474,9 @@
 
         function canvasClick(x, y) {
 
+            //console.log(`isMsgShow = ${isMsgShow}`)
             if (isMsgShow) return; // 针对鼠标事件
+            //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
             if (control.getPlayModel() == control.renjuModel) {
@@ -525,8 +529,9 @@
         function bodyKeepTouch() {
             clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
             timerBodyKeepTouch = null;
-            let x = bodyStartTouches[0].pageX;
-            let y = bodyStartTouches[0].pageY;
+            //console.log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
+            let x = bodyStartTouches[0] ? bodyStartTouches[0].pageX : event.pageX;
+            let y = bodyStartTouches[0] ? bodyStartTouches[0].pageY : event.pageY;
             //  针对 msg 弹窗 恢复下一次长按事件
             bodyStartTouches.length = 0;
             //通过 isOut 模拟 canvas事件
