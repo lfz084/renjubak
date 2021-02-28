@@ -1,13 +1,37 @@
 @font-face {
-
     font-family: mHeiTi;
-    src: local("PingFang SC"),
-        local("SimHei"),
+    src:
+        /*url('../font/PingFangMediumsubfont.woff') format('woff'),
+        /* Chrome 6+, Firefox 3.6+, IE 9+, Safari*/
         /*url('../font/PingFangMediumsubfont.ttf') format('truetype'),
         /* Safari, Android, iOS */
-        url('../font/PingFangMediumsubfont.woff') format('woff'),
+        url('../font/PingFangMediumsubfont.eot') format("embedded-opentype")
+    ;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: mHeiTi;
+    src:
+        /*url('../font/PingFangMediumsubfont.woff') format('woff'),
         /* Chrome 6+, Firefox 3.6+, IE 9+, Safari*/
-        /*url('../font/PingFangMediumsubfont.eot') format("embedded-opentype");
+        /*url('../font/PingFangMediumsubfont.ttf') format('truetype'),
+        /* Safari, Android, iOS */
+        url('../font/PingFangBoldsubfont.eot') format("embedded-opentype")
+    ;
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: mHeiTi;
+    src:
+        /*url('../font/PingFangMediumsubfont.woff') format('woff'),
+        /* Chrome 6+, Firefox 3.6+, IE 9+, Safari*/
+        /*url('../font/PingFangMediumsubfont.ttf') format('truetype'),
+        /* Safari, Android, iOS */
+        url('../font/PingFangBoldsubfont.eot') format("embedded-opentype")
+    ;
+    font-weight: bolder;
 }
 
 font {
