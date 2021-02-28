@@ -1,46 +1,51 @@
+@font-face {
 
-@font-face{
-    
     font-family: mHeiTi;
-    src: url('../font/PingFangLightsubfont.otf') format("embedded-opentype");
+    src: url('../font/PingFangLightsubfont.ttf') format('truetype'),
+        /* Safari, Android, iOS */
+        url('../font/PingFangLightsubfont.woff') format('woff'),
+        /* Chrome 6+, Firefox 3.6+, IE 9+, Safari*/
+        url('../font/PingFangLightsubfont.eot') format("embedded-opentype")
+
+    ;
 }
 
- font {
-   font-family:mHeiTi, 黑体;
-   font-weight: bold;
-   -webkit-user-select: none;
-   /* Chrome/Safari/Opera */
- }
+font {
+    font-family: mHeiTi, 黑体;
+    font-weight: bold;
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+}
 
 
 
- button {
-   font-family:黑体;
-   -webkit-user-select: none;
-   /* Chrome/Safari/Opera */
- }
+button {
+    font-family: 黑体;
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+}
 
 
- div {
-   font-family:黑体;
-   font-weight: bolder;
-   -webkit-user-select: none;
-   /* Chrome/Safari/Opera */
- }
+div {
+    font-family: 黑体;
+    font-weight: bolder;
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+}
 
- canvas {
-   font-family:mHeiTi, 黑体;
-   -webkit-user-select: none;
-   /* Chrome/Safari/Opera */
- }
-
-
+canvas {
+    font-family: mHeiTi, 黑体;
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+}
 
 
- body {
-   height: 100%;
-   width: 100%;
-   -webkit-user-select: none;
-   /*background-color: #303030*/
-   /* Chrome/Safari/Opera */
- }
+
+
+body {
+    height: 100%;
+    width: 100%;
+    -webkit-user-select: none;
+    /*background-color: #303030*/
+    /* Chrome/Safari/Opera */
+}
