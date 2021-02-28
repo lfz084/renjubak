@@ -606,7 +606,7 @@ let control = (() => {
 
         cLbd = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
         cLbd.show();
-        cLbd.setText("\b ✖\b");
+        cLbd.setText("\b ✖ \b");
         cLbd.setontouchend(function() {
             nSetChecked(cLbd);
         });
@@ -1286,7 +1286,7 @@ let control = (() => {
                         // 点击标记，删除标记
                         cBd.cleLb(idx);
                     }
-                    else if (cBd.P[idx].type == tEmpty) {this.showLastNum(showNum);this.showLastNum(showNum);
+                    else if (cBd.P[idx].type == tEmpty) {
                         // 添加标记 wLb(idx,text,color, showNum:isShow) 
                         cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
                     }
