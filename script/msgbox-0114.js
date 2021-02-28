@@ -18,6 +18,7 @@
  let msgTextarea = document.createElement("textarea");
  windowDiv.appendChild(msgTextarea);
  msgTextarea.style.position = "relative";
+ msgTextarea.style.fontFamily = "mHeiTi";
  /*
  msgTextarea.oninput = function(event){
    //alert(event.keyCode);

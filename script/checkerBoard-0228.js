@@ -1191,7 +1191,7 @@ checkerBoard.prototype.getSVG = function() {
 
     let showNum = this.isShowNum;
     let size = 2000 / this.canvas.width;
-    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" > @font-face`;
+    let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" > `;
     // 划竖线
     let x1;
     let x2;
@@ -1264,13 +1264,13 @@ checkerBoard.prototype.getSVG = function() {
             /*
              if (this.P[i].type==tNum) {
                  let color = this.P[i].color=="white" ? "black" : "white";
-                 svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="mHeiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+                 svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
              }
             */
         }
         else if (this.P[i].type == tLb) {
             svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
-            //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="mHeiTi" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+            //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
         }
 
         let txt = this.P[i].text;
@@ -1306,7 +1306,7 @@ checkerBoard.prototype.getSVG = function() {
                 }
             }
         }
-        svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="mHeiTi" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+        svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
     }
 
     svgText += "</svg>";
@@ -1896,7 +1896,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
         y1 = top + y1 * size;
         y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
         doc.text(String(txt), x1, y1, "center");
-        //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="mHeiTi" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+        //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
     }
 
 };
