@@ -1,21 +1,21 @@
 @font-face {
     font-family: mHeiTi;
-    src: local("黑体"),
-        url('https://lfz084.github.io/style/font/PingFangMediumsubfont.woff') format('woff');
+    src: local('SimHei'),
+        url('./font/PingFangMediumsubfont.woff') format('woff');
     font-weight: normal;
 }
 
 
 @font-face {
     font-family: mHeiTi;
-    src: local("黑体"),
-        url('https://lfz084.github.io/style/font/PingFangHeavysubfont.woff') format('woff');
+    src: local('SimHei'),
+        url('./font/PingFangHeavysubfont.woff') format('woff');
     font-weight: bolder;
 }
 
 
 font {
-    font-family: mHeiTi, 黑体;
+    font-family: mHeiTi, SimHei;
     font-weight: bold;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
@@ -24,21 +24,21 @@ font {
 
 
 button {
-    font-family: 黑体;
+    font-family: SimHei;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }
 
 
 div {
-    font-family: 黑体;
+    font-family: SimHei;
     font-weight: bolder;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }
 
 canvas {
-    font-family: mHeiTi, 黑体;
+    font-family: mHeiTi, SimHei;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }
