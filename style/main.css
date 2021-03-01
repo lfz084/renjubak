@@ -1,7 +1,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local("黑体"),
-        url('./font/PingFangMediumsubfont.woff') format('woff');
+        url('https://lfz084.github.io/style/font/PingFangMediumsubfont.woff') format('woff');
     font-weight: normal;
 }
 
@@ -9,7 +9,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local("黑体"),
-        url('./font/PingFangHeavysubfont.woff') format('woff');
+        url('https://lfz084.github.io/style/font/PingFangHeavysubfont.woff') format('woff');
     font-weight: bolder;
 }
 
