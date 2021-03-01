@@ -38,11 +38,10 @@
     <script language="javascript">
         "use strict";
         let vConsole = null;
-        let viewport = new view();
         let d = document;
         let dw = d.documentElement.clientWidth;
-        //alert(dw);
         let dh = d.documentElement.clientHeight;
+        let viewport = new view(parseInt(dw/100)*100);
         let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
         //cWidth = 950;
@@ -490,7 +489,7 @@
             else if (!control.cLockImgChecked()) {
                 if (cBoard.isOut(x, y, cBoard.canvas)) return;
                 let p = { x: x, y: y };
-                cBoard.setxy(p, 1);
+                cBoard.setxy(p, event.type == "click" ? 2 :1);
                 cBoard.setCutDiv(p.x, p.y, true);
                 cBoard.resetP();
                 cBoard.printBorder();

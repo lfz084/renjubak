@@ -2416,7 +2416,6 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
     this.xyPageToObj(p, this.canvas);
     let x = parseInt(p.x);
     let y = parseInt(p.y);
-
     if (x < xM)
     {
         if (y < yM)
@@ -2447,7 +2446,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
     }
     // 微调//////
     //alert("微调");
-    if (speed != 1) {
+    if (speed < 1) {  // speed < 1, touchMove
         if (Math.abs(x - tempx) < w && Math.abs(y - tempy) < w)
         {
             var temps = Math.pow((x - tempx) / w, 2);
@@ -2463,7 +2462,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
             return;
         }
     }
-    else {
+    else if(speed == 1){ // speed = 1 touchClick
         if (Math.abs(x - tempx) < parseInt(w / 3) && Math.abs(y - tempy) < parseInt(w / 3))
         {
             x = parseInt((x - tempx) / 10 * speed);
@@ -2485,7 +2484,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
             p.y = y;
             return;
         }
-
+        
         if (Math.abs(x - tempx) < w && Math.abs(y - tempy) < w)
         {
             x = parseInt((x - tempx) / 6 * speed);
@@ -2496,6 +2495,9 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
             p.y = y;
             return;
         }
+    }
+    else {
+        // speed = 2, mouseClick not change
     }
 
 };

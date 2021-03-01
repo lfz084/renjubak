@@ -8,7 +8,7 @@
     <title>五子棋涂鸦代替</title>
 </head>
 
-<body onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()">
+<body onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()" oncontextmenu="keepTouch()">
     <script src="./script/button-0228.js?version=1"></script>
     <script src="./script/viewport.js?version=1"></script>
     <script>
@@ -731,6 +731,7 @@
         mdiv.style.border = "3px dashed red";
         mdiv.style.width = 300;
         mdiv.style.height = 300;
+        //mdiv.onclick = Click;
 
         createDIV();
 
@@ -878,6 +879,7 @@
                 DIV[i].style.border = '1px solid red';
                 DIV[i].style.borderRadius = '50%';
                 DIV[i].style.position = "absolute";
+                //DIV[i].onclick = Click;
 
             }
         }
@@ -931,7 +933,7 @@
                 else
                 {
                     //设置定时器,长按删除记录
-                    if (timerMoveHistory == null) timerMoveHistory = setTimeout("moveHistory(true)", 1500);
+                    //if (timerMoveHistory == null) timerMoveHistory = setTimeout("moveHistory(true)", 1500);
                 }
             }
             //alert("touchstart");
@@ -944,7 +946,7 @@
         {
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
-
+            if (timerSetCheckerBoard) event.preventDefault();
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
             //clearTimeout(timerSetCheckerBoard);
@@ -958,6 +960,8 @@
 
         function touchcancel()
         {
+            touchMoveX = 0;
+            touchMoveY = 0;
             let x = event.changedTouches[0].pageX;
             let y = event.changedTouches[0].pageY;
 
@@ -981,8 +985,10 @@
 
         function touchend()
         {
-            let x = event.changedTouches[0].pageX;
-            let y = event.changedTouches[0].pageY;
+            touchMoveX = 0;
+            touchMoveY = 0;
+            let x = event.pageX || event.changedTouches[0].pageX;
+            let y = event.pageY || event.changedTouches[0].pageY;
 
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
@@ -1362,6 +1368,27 @@
         }
 
 
+        function keepTouch() {
+            event.preventDefault(); //阻止事件的默认行为
+            let x = event.pageX || event.touches[0].pageX;
+            let y = event.pageY || event.touches[0].pageY;
+            if (!isOut(x, y) && !sharing) {
+                
+                if (chkLock.checked) {
+                    moveHistory(true)
+                }
+                else {
+                    if (timerSetCheckerBoard == null && touchMoveX ) {
+                        alert(touchMoveX)
+                        cleALb();
+                        timerSetCheckerBoard = setTimeout("continueSetCheckerBoard()", 1);
+                    }
+                }
+            }
+        }
+
+
+
         //屏幕单击触发
         function Click(x, y, speed)
         {
@@ -1436,7 +1463,7 @@
             {
                 let p = tempp;
                 p.setxy(x, y);
-                setxy(p, speed);
+                setxy(p, event.pageX ? 2 : speed);
                 setCheckerBoard(p.x, p.y, true);
             }
         }
@@ -1539,7 +1566,7 @@
             // 微调//////
             //alert("微调");
 
-            if (speed != 1)
+            if (speed < 1)
             {
                 if (Math.abs(x - tempx) < w && Math.abs(y - tempy) < w)
                 {
@@ -1555,7 +1582,7 @@
                     return;
                 }
             }
-            else
+            else if (speed == 1)
             {
                 if (Math.abs(x - tempx) < parseInt(w / 3) && Math.abs(y - tempy) < parseInt(w / 3))
                 {
@@ -1592,6 +1619,9 @@
                     p.setxy(x, y);
                     return;
                 }
+            }
+            else {
+                //speed == 2 not change
             }
 
         }
@@ -2050,14 +2080,14 @@
                         xt = p.y < xt ? p.y : xt;
                         xb = p.y > xb ? p.y : xb;
                     }
-                    xr+= w;
-                    xl-= w;
-                    xt-= w;
-                    xb+= w;
-                    lw = xl < 0 ? lw - xl+2 : lw;
-                    rw = xr > bkimg.width ? xr - bkimg.width+2 : rw;
-                    tw = xt < 0 ? tw - xt+2 : tw;
-                    bw = xb > bkimg.height ? xb - bkimg.height+2 : bw;
+                    xr += w;
+                    xl -= w;
+                    xt -= w;
+                    xb += w;
+                    lw = xl < 0 ? lw - xl + 2 : lw;
+                    rw = xr > bkimg.width ? xr - bkimg.width + 2 : rw;
+                    tw = xt < 0 ? tw - xt + 2 : tw;
+                    bw = xb > bkimg.height ? xb - bkimg.height + 2 : bw;
                     //alert(`lw = ${lw}, rw = ${rw}, tw = ${tw}, bw = ${bw}`)
                 }
                 bkCanvas.width = bkimg.width + lw + rw;
