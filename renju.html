@@ -19,7 +19,14 @@
     <link rel="preload" href="./style/font/PingFangMediumsubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PingFangHeavysubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    
+    <link rel="preload" href="./script/viewport.js" as = "script">
+    <link rel="preload" href="./script/button-0228.js" as = "script">
+    <link rel="preload" href="./script/engine-1031.js" as = "script">
+    <link rel="preload" href="./script/appData-0109.js" as = "script">
+    <link rel="preload" href="./script/control-0228.js" as = "script">
+    <link rel="preload" href="./script/msgbox-0114.js" as = "script">
+    <link rel="preload" href="./script/checkerBoard-0228.js" as = "script">
+    <link rel="preload" href="./script/worker-1031.js" as = "script">
     <title> 摆棋小工具</title>
 </head>
 
@@ -41,7 +48,7 @@
         let d = document;
         let dw = d.documentElement.clientWidth;
         let dh = d.documentElement.clientHeight;
-        let viewport = new view(parseInt(dw/100)*100);
+        let viewport = new view(parseInt(dw));
         let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
         //cWidth = 950;

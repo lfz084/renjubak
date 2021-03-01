@@ -5,12 +5,14 @@
     <meta http-equiv="Cache-Control" content="no-cache">
     <link rel="shortI icon" sizes=32×32 href="./pic/favicon.ico" />
     <link href="./style/main.css" rel="stylesheet" type="text/css">
+    <link rel="preload" href="./script/viewport.js" as = "script">
+    <link rel="preload" href="./script/button-0228.js" as = "script">
     <title>五子棋涂鸦代替</title>
 </head>
 
 <body onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()" oncontextmenu="keepTouch()">
-    <script src="./script/button-0228.js?version=1"></script>
-    <script src="./script/viewport.js?version=1"></script>
+    <script src="./script/button-0228.js"></script>
+    <script src="./script/viewport.js"></script>
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
@@ -1379,7 +1381,6 @@
                 }
                 else {
                     if (timerSetCheckerBoard == null && touchMoveX ) {
-                        alert(touchMoveX)
                         cleALb();
                         timerSetCheckerBoard = setTimeout("continueSetCheckerBoard()", 1);
                     }

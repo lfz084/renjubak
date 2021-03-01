@@ -1,6 +1,6 @@
 function view(width) {
     this.width = width || 1000;
-    this.scale = window.screen.width / 1000;
+    this.scale = window.screen.width / this.width;
     this.viewport = document.createElement("meta");
     this.viewport.setAttribute("name", "viewport");
     document.head.appendChild(this.viewport);
