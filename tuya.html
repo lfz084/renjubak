@@ -4,6 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="Cache-Control" content="no-cache">
     <link rel="shortI icon" sizes=32×32 href="./pic/favicon.ico" />
+    <link rel="preload" href="./style/font/PingFangMediumsubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
+    <link rel="preload" href="./style/font/PingFangHeavysubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0208.js" as = "script">
     <link rel="preload" href="./script/button-0228.js" as = "script">
@@ -1398,6 +1400,7 @@
             {
                 x = event.pageX;
                 y = event.pageY;
+                speed = 2;
             }
 
             if (Loading || isOut(x, y)) { return };
@@ -1464,7 +1467,7 @@
             {
                 let p = tempp;
                 p.setxy(x, y);
-                setxy(p, event.pageX ? 2 : speed);
+                setxy(p, speed);
                 setCheckerBoard(p.x, p.y, true);
             }
         }
@@ -2129,17 +2132,17 @@
                     if (MS[0].color == "black" || MS[0].color == "white") {
                         ctx.fill(); // 填充
                         ctx.stroke(); // 描边
-                        ctx.font = "bolder " + parseInt(w * 1.08) + "px 黑体";
+                        ctx.font = "bolder " + parseInt(w * 1.08) + "px mHeiTi";
                     }
                     else {
-                        ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 3) + "px 黑体";
+                        ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 3) + "px mHeiTi";
                     }
                     ctx.fillStyle = numColor;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     ctx.fillText(i + 1, p.x, p.y);
                 }
-                ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 2) + "px 黑体";
+                ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 2) + "px mHeiTi";
                 for (let i = 0; i < P.length; i++) {
                     if (P[i].type == tLb) {
                         p.x = P[i].x + lw;

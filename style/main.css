@@ -24,20 +24,21 @@ font {
 
 
 button {
-    font-family: SimHei;
+    font-family: mHeiTi, SimHei;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }
 
 
 div {
-    font-family: SimHei;
+    font-family: mHeiTi, SimHei;
     font-weight: bolder;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }
 
-canvas {
+
+h1 {
     font-family: mHeiTi, SimHei;
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
@@ -49,6 +50,7 @@ canvas {
 body {
     height: 100%;
     width: 100%;
+    font-family: mHeiTi, SimHei;
     -webkit-user-select: none;
     /*background-color: #303030*/
     /* Chrome/Safari/Opera */

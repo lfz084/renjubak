@@ -48,7 +48,7 @@
         let d = document;
         let dw = d.documentElement.clientWidth;
         let dh = d.documentElement.clientHeight;
-        let viewport = new view(parseInt(dw));
+        let viewport = new view(dw);
         let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
         //cWidth = 950;
