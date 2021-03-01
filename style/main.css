@@ -1,13 +1,13 @@
 @font-face {
     font-family: mHeiTi;
-    src: url('../font/PingFangMediumsubfont.ttf') format('truetype');
+    src: url('../font/PingFangMediumsubfont.woff') format('woff');
     font-weight: normal;
 }
 
 
 @font-face {
     font-family: mHeiTi;
-    src: url('../font/PingFangHeavysubfont.ttf') format('truetype');
+    src: url('../font/PingFangHeavysubfont.woff') format('woff');
     font-weight: bolder;
 }
 
