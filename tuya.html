@@ -18,7 +18,6 @@
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
-        let viewport = new view();
         //定义棋盘上的一个点
         function point(x, y, d) {
             this.x = x; // 棋盘一个点的坐标，相对于BODY
@@ -155,7 +154,7 @@
 
 
 
-            function getHistoryIndex(x) { // 返回一个历史记录的索引;
+        function getHistoryIndex(x) { // 返回一个历史记录的索引;
 
             let index = parseInt(tempHistoryIndex);
             //alert("getHistoryIndex index=" +index + "  x=" + x)
@@ -300,7 +299,7 @@
             resetImg();
             MS.length = 0;
             XR = 0;
-            
+
             resetCmdDiv();
             setTimeout(function() {
                 openImg(img, tempHistoryIndex, function() {
@@ -314,7 +313,8 @@
                         generator = n();
                         generator.next();
                     }, 50);
-                }, function() { resetMDiv();loadEnd(); });
+                }, function() { resetMDiv();
+                    loadEnd(); });
             }, 50);
         }
 
@@ -408,7 +408,7 @@
 
 
         function openImg(img, index, callback, callback2) {
-    
+
             //读取get(容器,图片) 
             callback = callback || function() {};
             callback2 = callback2 || function() {};
@@ -605,6 +605,9 @@
         let dh = 0; //网页可见高度
         dw = d.documentElement.clientWidth;
         dh = d.documentElement.clientHeight;
+        let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
+        cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
+        let viewport = new view(dw);
 
         let XL = 0; //棋盘落子范围，左右上下的4条边
         let XR = 0;
@@ -615,11 +618,10 @@
         let SLTX = 15;
         let SLTY = 15; //默认是15×15棋盘;
 
-        let sw = dw / 19 * 17 * 0.95;
+        let sw = dw > dh ? cWidth * 0.95 : dw / 19 * 17 * 0.95;
         let cW = sw / 5;
         let cH = sw / 9 / 1.5;
         let cT = 0;
-
 
         let bodyDiv = document.createElement("div");
         document.body.appendChild(bodyDiv);
@@ -633,8 +635,10 @@
         fileDiv.style.position = "absolute";
         fileDiv.style.width = sw;
         fileDiv.style.height = parseInt(dw / 18);
-        fileDiv.style.left = (dw - sw) / 2 - 10;
-        fileDiv.style.top = parseInt(dh * 0.6 + dw / 6);
+        //fileDiv.style.left = (dw - sw) / 2 - 10;
+        //fileDiv.style.top = parseInt(dh * 0.6 + dw / 6);
+        fileDiv.style.left = `${dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + (cWidth-sw)/2 : (dw - sw) / 2}px`;
+        fileDiv.style.top = `${dw > dh ? parseInt(cH * 1.8 + cWidth/19 + (dh-cWidth)/2) : cWidth}px`;
         //fileDiv.style.backgroundColor = "white";
         let chkLock = new button(fileDiv, "checkbox", cW * 0, cT, cW, cH);
         chkLock.show();
@@ -670,7 +674,6 @@
         });
 
         cT -= cH * 1.8;
-
 
         let cRefresh = new button(fileDiv, "button", cW * 0, cT, cW, cH);
         cRefresh.show();
@@ -715,6 +718,7 @@
         bkimg.style.top = 0;
         bkimg.style.zIndex = -1;
 
+        //continueCutDiv
         let mdiv = document.createElement("div");
         bodyDiv.appendChild(mdiv);
         mdiv.style.position = "absolute";
@@ -723,15 +727,17 @@
         mdiv.style.height = 300;
         //mdiv.onclick = Click;
 
-        createDIV();
+        createDIV(bodyDiv);
 
         let ndiv = document.createElement("div");
         bodyDiv.appendChild(ndiv);
         ndiv.style.position = "absolute";
         //ndiv.style.backgroundColor = "white";
         ndiv.style.width = sw;
-        ndiv.style.left = (dw - sw) / 2;
         ndiv.style.height = 100;
+        ndiv.style.left = fileDiv.style.left;
+        //ndiv.style.top = dw > dh ? "0px" : cWidth + "px";
+
 
         cT = 0;
         cH *= 0.9;
@@ -1034,6 +1040,7 @@
             {
                 //alert("touchend");
                 let m = x - touchStartX;
+                /*
                 if (m < -(dw / 3))
                 {
                     event.preventDefault(); //阻止事件的默认行为
@@ -1046,6 +1053,7 @@
                     tempHistoryIndex = getHistoryIndex(-1);
                     loadHistory();
                 }
+                */
                 touchStartX = 0;
                 touchStartY = 0;
             }
@@ -1126,7 +1134,7 @@
         {
             let c = canvas;
             let v = mdiv;
-            let img = bkimg;    
+            let img = bkimg;
             let s = parseInt(img.width) / ((XR - XL) * 18 / 14);
             let w = parseInt(parseInt(img.width) / 9);
             let left;
@@ -1781,7 +1789,7 @@
                 saveMaxHistory();
                 tempHistoryIndex = loadHistoryIndex();
                 loadHistory();
-                setTimeout(() => { window.scrollTo(0, parseInt(fileDiv.style.top) - sw / 9 / 1.5 * 1.8); }, 1);
+                setTimeout(() => { window.scrollTo(0, dw > dh ? 0 : parseInt(fileDiv.style.top) - sw / 9 / 1.5 * 1.8); }, 1);
             }
             catch (err) {
                 //console.log("reLoad");
@@ -1802,14 +1810,16 @@
             if (chkLock.checked) {
                 bodyDiv.appendChild(ndiv);
                 viewport.resize();
+                //alert("resize")
             }
             else {
                 if (ndiv.parentNode) ndiv.parentNode.removeChild(ndiv);
                 viewport.userScalable();
+                //alert("resize us")
             }
 
             n.style.position = "absolute";
-            n.style.top = YB + parseInt(dw / 19 * 2 + dw / 19 * 17 / 9);
+            n.style.top = dw > dh ? parseInt(fileDiv.style.top) + cH*1.8 : YB + parseInt(dw / 19 * 2 + dw / 19 * 17 / 9);
 
         }
 
@@ -1823,9 +1833,12 @@
             let div = fileDiv;
             img.style.position = 'absolute';
             img.style.clip = 'auto';
-            img.style.top = div.offsetTop + dw / 19 * 2 + parseInt(div.style.height);
-            img.style.width = parseInt(dw / 19 * 17);
-            img.style.left = dw / 19;
+            //img.style.top = div.offsetTop + dw / 19 * 2 + parseInt(div.style.height);
+            img.style.width = dw > dh ? cWidth : parseInt(dw / 19 * 17);
+            //img.style.left = dw / 19;
+            img.style.left = `${dw > dh ? parseInt((dw - cWidth * 2) / 2) : dw / 19 }px`;
+            img.style.top = `${dw > dh ? parseInt((dh - cWidth) / 2) : div.offsetTop + dw / 19 * 2  + cH }px`;
+
         }
 
 
@@ -1842,13 +1855,13 @@
 
             if (XR == 0 || YB == 0)
             {
-                let w = parseInt(bkimg.width)/2;
-                let h = parseInt(bkimg.height)/2
+                let w = parseInt(bkimg.width) / 2;
+                let h = parseInt(bkimg.height) / 2
                 s.width = `${w}px`;
                 s.height = `${h || w}px`;
-                s.left = bkimg.offsetLeft + w/2 ;
+                s.left = bkimg.offsetLeft + w / 2;
                 //alert("div_left" + s.left);
-                s.top = bkimg.offsetTop + (h || w)/2;
+                s.top = bkimg.offsetTop + (h || w) / 2;
 
             }
 
@@ -1988,6 +2001,7 @@
                 save();
                 resetImg();
                 resetMDiv();
+                viewport.resize();
             }
         }
 
