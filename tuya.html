@@ -7,12 +7,12 @@
     <link rel="preload" href="./style/font/PingFangMediumsubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PingFangHeavysubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport0208.js" as = "script">
-    <link rel="preload" href="./script/button-0228.js" as = "script">
+    <link rel="preload" href="./script/viewport0208.js" as="script">
+    <link rel="preload" href="./script/button-0228.js" as="script">
     <title>五子棋涂鸦代替</title>
 </head>
 
-<body onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()" oncontextmenu="keepTouch()">
+<body oncontextmenu="keepTouch()" onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()">
     <script src="./script/button-0228.js"></script>
     <script src="./script/viewport0208.js"></script>
     <script>
@@ -155,17 +155,15 @@
 
 
 
-        function getHistoryIndex(x) // 返回一个历史记录的索引;
-        {
+        function getHistoryIndex(x) { // 返回一个历史记录的索引;
+
             let index = parseInt(tempHistoryIndex);
             //alert("getHistoryIndex index=" +index + "  x=" + x)
-            if (x < 0)
-            {
+            if (x < 0) {
                 index = (index - 1) < 1 ? maxHistory : index -= 1;
                 //alert("<0");
             }
-            else if (x > 0)
-            {
+            else if (x > 0) {
                 index = (index + 1) > maxHistory ? 1 : index += 1;
                 //alert(">0");
                 //alert((index + 1)>maxHistory);
@@ -177,8 +175,8 @@
 
 
 
-        function loadHistoryIndex() // 读取历史记录的索引
-        {
+        function loadHistoryIndex() { // 读取历史记录的索引
+
             let index = localStorage.getItem("HistoryIndex");
             if (index == null) { index = 1; }
             return index;
@@ -187,8 +185,8 @@
 
 
 
-        function saveMaxHistory()
-        {
+        function saveMaxHistory() {
+
             let max = localStorage.getItem("MaxHistory");
             if (max != maxHistory) {
                 localStorage.clear();
@@ -203,15 +201,14 @@
 
 
 
-        function saveHistoryIndex(index) // 保存历史记录的索引
-        {
+        function saveHistoryIndex(index) { // 保存历史记录的索引
+
             localStorage.setItem("HistoryIndex", index);
         }
 
 
 
-        function delHistory(index) // 把指定的历史记录清空
-        {
+        function delHistory(index) { // 把指定的历史记录清空
 
             localStorage.removeItem("pic" + index);
             localStorage.removeItem("sltx" + index);
@@ -223,8 +220,8 @@
 
 
 
-        function moveHistory(isConfirm)
-        {
+        function moveHistory(isConfirm) {
+
             if (Loading) return;
             loadStart();
             let r = isConfirm ? confirm("你确定删除当前记录吗？") : true;
@@ -243,8 +240,8 @@
             let str;
             let rNCid;
             let oldIndex = tempHistoryIndex;
-            for (i = 0; i < maxHistory; i++)
-            {
+            for (i = 0; i < maxHistory; i++) {
+
                 delHistory(tempHistoryIndex);
                 tempHistoryIndex = getHistoryIndex(1);
                 srcStr = localStorage.getItem("pic" + tempHistoryIndex);
@@ -274,11 +271,9 @@
 
                 rNCid = localStorage.getItem("rNCid" + tempHistoryIndex);
                 localStorage.setItem("rNCid" + getHistoryIndex(-1), rNCid);
-                for (j = 1; j <= length; j++)
-                {
+                for (j = 1; j <= length; j++) {
                     str = localStorage.getItem("p" + tempHistoryIndex + "_" + String(j));
                     localStorage.setItem("p" + getHistoryIndex(-1) + "_" + String(j), str);
-
                 }
 
             }
@@ -294,8 +289,8 @@
 
 
 
-        function loadHistory()
-        {
+        function loadHistory() {
+
             if (Loading) return;
             loadStart();
 
@@ -326,8 +321,7 @@
 
 
 
-        function* cutImg(img, imgCanvas, l, t, w, h)
-        {
+        function* cutImg(img, imgCanvas, l, t, w, h) {
 
             let imgContest = imgCanvas.getContext('2d');
             let imgContest2 = canvas2.getContext('2d');
@@ -366,13 +360,8 @@
 
 
 
-
-
-
-
-
-        function saveImg(img, imgCanvas, index)
-        { //存储
+        function saveImg(img, imgCanvas, index) {
+            //存储
             //当图片加载完成时触发回调函数 
             const maxFileleng = 200 * 1024; // 控制图片大小;
             let imgContest = imgCanvas.getContext('2d');
@@ -391,8 +380,7 @@
             let imgAsDataURL = imgCanvas.toDataURL("image/jpeg", 0.3);
             let Fileleng = imgAsDataURL.length;
             //alert("压缩前 =" + imgAsDataURL.length/1024/1024 + " - " + img.width + "×" + img.height) ;
-            if (Fileleng > maxFileleng) // 图片太大时候 启用压缩启用压缩
-            {
+            if (Fileleng > maxFileleng) { // 图片太大时候 启用压缩启用压缩
                 s = Math.sqrt(Fileleng / maxFileleng);
             }
 
@@ -418,34 +406,31 @@
 
 
 
-        function openImg(img, index, callback, callback2)
-        {
+        function openImg(img, index, callback, callback2) {
+
             //读取get(容器,图片) 
             callback = callback || function() {};
             callback2 = callback2 || function() {};
             let srcStr = localStorage.getItem("pic" + index);
             //alert("openimg" + index) 
-            if (srcStr != null)
-            {
+            if (srcStr != null) {
                 img.src = srcStr;
                 img.width = parseInt(dw / 19 * 17);
                 img.onload = function() {
                     img.onload = null;
                     setTimeout(function() { callback(); }, 50);
                 };
-
                 return true;
             }
-            else
-            {
+            else {
                 callback2();
                 return false;
             }
         }
 
 
-        function saveDiv(index)
-        { //存储); 
+        function saveDiv(index) { //存储); 
+
             let div = mdiv;
             let left = div.offsetLeft;
             let top = div.offsetTop;
@@ -466,8 +451,7 @@
 
 
 
-        function* openDiv(index)
-        {
+        function* openDiv(index) {
             let s = mdiv.style;
             let left = localStorage.getItem("left" + index);
             let top = localStorage.getItem("top" + index);
@@ -729,6 +713,7 @@
         bkimg.style.left = 0;
         bkimg.style.top = 0;
         bkimg.style.zIndex = -1;
+
         let mdiv = document.createElement("div");
         bodyDiv.appendChild(mdiv);
         mdiv.style.position = "absolute";
@@ -937,8 +922,12 @@
                 }
                 else
                 {
-                    //设置定时器,长按删除记录
-                    //if (timerMoveHistory == null) timerMoveHistory = setTimeout("moveHistory(true)", 1500);
+                    //ios safari 设置定时器,长按删除记录
+                    if (timerMoveHistory == null) {
+                        timerMoveHistory = setTimeout(function() {
+                            keepTouch();
+                        }, 500);
+                    }
                 }
             }
             //alert("touchstart");
@@ -1373,17 +1362,24 @@
         }
 
 
+        let cancelContextmenu = false;
         function keepTouch() {
-            event.preventDefault(); //阻止事件的默认行为
-            let x = event.pageX || event.touches[0].pageX;
-            let y = event.pageY || event.touches[0].pageY;
-            if (!isOut(x, y) && !sharing) {
-                
+
+            if (cancelContextmenu) return;
+            clearTimeout(timerMoveHistory); //删除定时器
+            timerMoveHistory = null;
+            cancelContextmenu = true;
+            setTimeout("cancelContextmenu=false", 1000);
+            let out = event ? isOut(event.pageX || event.touches[0].pageX, event.pageY || event.touches[0].pageY) : false;
+            if (out) return;
+            //console.log("keepTouch");
+            if (!sharing) {
+
                 if (chkLock.checked) {
                     moveHistory(true)
                 }
                 else {
-                    if (timerSetCheckerBoard == null && touchMoveX ) {
+                    if (timerSetCheckerBoard == null && touchMoveX) {
                         cleALb();
                         timerSetCheckerBoard = setTimeout("continueSetCheckerBoard()", 1);
                     }

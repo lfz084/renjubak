@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html >
+<html>
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -15,18 +15,17 @@
     <!--
     <link rel="preload" href="./style/font/PingFangLightsubfont.otf" as="font" type="font/otf" crossorigin="anonymous">
     -->
-    
     <link rel="preload" href="./style/font/PingFangMediumsubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PingFangHeavysubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport0208.js" as = "script">
-    <link rel="preload" href="./script/button-0228.js" as = "script">
-    <link rel="preload" href="./script/engine-1031.js" as = "script">
-    <link rel="preload" href="./script/appData-0109.js" as = "script">
-    <link rel="preload" href="./script/control-0228.js" as = "script">
-    <link rel="preload" href="./script/msgbox-0114.js" as = "script">
-    <link rel="preload" href="./script/checkerBoard-0228.js" as = "script">
-    <link rel="preload" href="./script/worker-1031.js" as = "script">
+    <link rel="preload" href="./script/viewport0208.js" as="script">
+    <link rel="preload" href="./script/button-0228.js" as="script">
+    <link rel="preload" href="./script/engine-1031.js" as="script">
+    <link rel="preload" href="./script/appData-0109.js" as="script">
+    <link rel="preload" href="./script/control-0228.js" as="script">
+    <link rel="preload" href="./script/msgbox-0114.js" as="script">
+    <link rel="preload" href="./script/checkerBoard-0228.js" as="script">
+    <link rel="preload" href="./script/worker-1031.js" as="script">
     <title> 摆棋小工具</title>
 </head>
 
@@ -110,7 +109,7 @@
                 if (String(window.location).indexOf("http://localhost") == 0) {
                     if (vConsole == null) vConsole = new VConsole();
                 }
-                
+
                 let bodyDiv = d.createElement("div");
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";
@@ -123,17 +122,17 @@
                 upDiv.style.position = "absolute";
                 upDiv.style.width = "10%";
                 upDiv.style.height = 50 + "px";
-                upDiv.style.left = dw > dh ? parseInt((dw-cWidth*2)/2) + "px" : (dw - cWidth) / 2 + "px";
+                upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
                 upDiv.style.top = dw > dh ? "0px" : cWidth + "px";
                 let downDiv = d.createElement("div");
                 d.body.appendChild(downDiv);
                 downDiv.style.position = "absolute";
                 downDiv.style.width = "10%";
                 downDiv.style.height = 50 + "px";
-                downDiv.style.left = dw > dh ? parseInt((dw-cWidth*2)/2)+cWidth  + "px" : "0px";
-                downDiv.style.top = dw > dh ? parseInt(cWidth/13)+"px" : cWidth * 2.06 + "px";
-                
-                if (dw <= dh) setTimeout(() =>{scrollTo(0, cWidth*9/10);}, 5);
+                downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
+                downDiv.style.top = dw > dh ? parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
+
+                if (dw <= dh) setTimeout(() => { scrollTo(0, cWidth * 9 / 10); }, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
                 setCheckerBoardEvent(cBoard.canvas);
@@ -201,8 +200,9 @@
 
             document.body.addEventListener("touchmove", bodyTouchMove, true);
 
-            document.body.addEventListener("click", canvasClick, true);
-            
+            document.body.addEventListener("click", canvasClick, false);
+
+
         }
 
 
@@ -210,6 +210,9 @@
         //处理触摸开始事件
         function handleStart(evt) {
             //evt.preventDefault();//阻止事件的默认行为
+            if (!timerBodyKeepTouch) {
+                //evt.preventDefault(); //阻止事件  body contextmenu 的默认行为
+            }
         }
 
 
@@ -256,7 +259,10 @@
                 }
 
                 //初始化长按事件
-                if (!timerBodyKeepTouch) timerBodyKeepTouch = setTimeout(bodyKeepTouch, 900);
+                if (!timerBodyKeepTouch) {
+                    event.preventDefault(); //阻止事件 contextmenu 的默认行为co
+                    timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
+                }
 
                 //保存当前触摸点
                 bodyStartTouches.push(copyTouch(touches[0], 1));
@@ -283,6 +289,7 @@
         //处理触摸移动事件
 
         function bodyTouchMove(evt) {
+            //evt.preventDefault();
             if (timerContinueSetCutDiv) evt.preventDefault();
             let touches = evt.changedTouches;
 
@@ -467,7 +474,7 @@
                 }
                 else {
                 */
-                    control.renjuKeepTouch(x, y);
+                control.renjuKeepTouch(x, y);
                 //}
             }
             else {
@@ -496,7 +503,7 @@
             else if (!control.cLockImgChecked()) {
                 if (cBoard.isOut(x, y, cBoard.canvas)) return;
                 let p = { x: x, y: y };
-                cBoard.setxy(p, event.type == "click" ? 2 :1);
+                cBoard.setxy(p, event.type == "click" ? 2 : 1);
                 cBoard.setCutDiv(p.x, p.y, true);
                 cBoard.resetP();
                 cBoard.printBorder();
@@ -536,10 +543,16 @@
 
         }
 
+        let cancelContextmenu = false;
 
         function bodyKeepTouch() {
+
+            if (cancelContextmenu) return;
             clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
             timerBodyKeepTouch = null;
+            cancelContextmenu = true;
+            setTimeout("cancelContextmenu = false", 1000);
+            //console.log(event)
             //console.log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
             let x = bodyStartTouches[0] ? bodyStartTouches[0].pageX : event.pageX;
             let y = bodyStartTouches[0] ? bodyStartTouches[0].pageY : event.pageY;
@@ -573,7 +586,7 @@
             let x = parseInt(continueSetCutDivX);
             let y = parseInt(continueSetCutDivY);
             let p = { x: x, y: y };
-            if (!cBoard.isOut(x, y, cBoard.canvas, parseInt(cBoard.width)/17))
+            if (!cBoard.isOut(x, y, cBoard.canvas, parseInt(cBoard.width) / 17))
             {
                 cBoard.setxy(p, 0.02);
                 cBoard.setCutDiv(p.x, p.y, true);
