@@ -3,8 +3,8 @@ function view(width) {
     let dh = document.documentElement.clientHeight;
     let sw = window.screen.width;
     let sh = window.screen.height;
-    let max = dw>dh ? sw : sh;
-    let min = dw<dh ? sw : sh;
+    let max = sw>sh ? sw : sh;
+    let min = sw<sh ? sw : sh;
     let localhost = (String(window.location).indexOf("http://localhost") == 0);
     this.width = width || 1000;
     this.scale = (dw>dh ? max : min) / this.width;
