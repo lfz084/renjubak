@@ -34,6 +34,7 @@
 
  function msg(text, type, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum) {
 
+     isMsgShow = true; // 屏蔽 bodytouch 事件;
      if (closeTimer) {
          clearTimeout(closeTimer);
          closeTimer = null;
@@ -50,7 +51,6 @@
 
      butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
-     isMsgShow = true; // 屏蔽 bodytouch 事件;
      let s = MsgBoxobj.style;
      document.body.appendChild(MsgBoxobj);
      s.position = "fixed";

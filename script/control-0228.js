@@ -178,6 +178,9 @@ let control = (() => {
         let w = sw / 9;
         let h = w / 1.5;
         let t = 0;
+        let menuLeft = parseInt(parentNode.style.left)+parseInt(renjuCmddiv.style.left)+sw*0.1;
+        let menuWidth = sw*0.8;
+        let menuFontSize = sw / 20;
 
 
         cStart = new button(renjuCmddiv, "button", w * 0, t, w, h);
@@ -298,12 +301,12 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 10;
-        let tMsg = "1月31日，五子茶馆解题大赛。比赛结束前，暂时关闭计算功能";
+        const calculate = 1;
+        let tMsg =[["1月31日，五子茶馆解题大赛"],["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
-        cFindPoint.addOption(0, calculate ? "<<" : tMsg);
         if (calculate) {
+            cFindPoint.addOption(0, " <<" );
             cFindPoint.addOption(1, "VCT选点");
             cFindPoint.addOption(2, "做V点");
             cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
@@ -318,14 +321,17 @@ let control = (() => {
             cFindPoint.addOption(12, "眠三");
         }
         else {
-
+            for (let i =0; i < tMsg.length; i++) {
+                cFindPoint.addOption(i, tMsg[i] );
+            }
         }
-
+        
+        cFindPoint.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
             but.setText("找点");
-            if (but.input.value < 1 || vcfFinding != -1) {
+            if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
                 but.input.value = 0;
                 return;
             }
@@ -382,12 +388,14 @@ let control = (() => {
 
             but.input.value = 0;
         });
-        cFindPoint.setontouchend(function() {});
+        
+        
+        //cFindPoint.setontouchend(function() {});
 
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        cFindVCF.addOption(0, calculate ? "<<" : tMsg);
         if (calculate) {
+            cFindVCF.addOption(0, "<<");
             cFindVCF.addOption(1, "快速找\b VCF");
             cFindVCF.addOption(2, "找全\b  VCF");
             cFindVCF.addOption(3, "找\b 双杀");
@@ -402,14 +410,16 @@ let control = (() => {
             //cFindVCF.addOption(12, "test two");
         }
         else {
-
+            for (let i = 0; i < tMsg.length; i++) {
+                cFindVCF.addOption(i, tMsg[i]);
+            }
         }
-
+        cFindVCF.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
             but.setText("解题");
-            if (but.input.value < 1 || vcfFinding != -1) {
+            if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
                 but.input.value = 0;
                 return;
             }
@@ -513,11 +523,12 @@ let control = (() => {
         cPrintVCF.addOption(6, "第6套VCF");
         cPrintVCF.addOption(7, "第7套VCF");
         cPrintVCF.addOption(8, "第8套VCF");
+        cPrintVCF.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cPrintVCF.show();
         cPrintVCF.setText("➩\b VCF \b");
         cPrintVCF.setonchange(function(but) {
             but.setText("➩\b VCF \b");
-            if (but.input.value) {
+            if (but.input.value*1) {
                 let color = getRenjuSelColor();
                 let arr = cBd.getPointArray([]);
                 if (color == cObjVCF.color && bArr(arr, cObjVCF.arr)) {
@@ -576,6 +587,7 @@ let control = (() => {
         cLABC.addOption(1, "abc...");
         cLABC.addOption(2, "123...");
         cLABC.addOption(3, "☆标记");
+        cLABC.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cLABC.show();
         cLABC.setontouchend(function() {
             nSetChecked(cLABC);
@@ -615,6 +627,7 @@ let control = (() => {
         cLbColor.addOption(0, lbColor[0].colName);
         cLbColor.addOption(1, lbColor[1].colName);
         cLbColor.addOption(2, lbColor[2].colName);
+        cLbColor.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cLbColor.show();
         cLbColor.setText("✎\b颜色");
         cLbColor.setonchange(function(but) {
@@ -784,6 +797,7 @@ let control = (() => {
         cCutImage.addOption(4, "SVG/(*.svg)__矢量,无损");
         cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
+        cCutImage.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cCutImage.show();
         cCutImage.setText("✄\b截图");
         cCutImage.setonchange(function(but) {
@@ -924,6 +938,9 @@ let control = (() => {
         let w = sw / 5;
         let h = sw / 9 / 1.5;
         let t = 0;
+        let menuLeft = parseInt(parentNode.style.left) + parseInt(imgCmdDiv.style.left) + sw * 0.1;
+        let menuWidth = sw * 0.8;
+        let menuFontSize = sw / 20;
 
         cLockImg = new button(imgCmdDiv, "checkbox", w * 0, t, w, h);
         cLockImg.show();
@@ -1086,6 +1103,7 @@ let control = (() => {
         for (let i = 15; i >= 5; i--) {
             cSLTY.addOption(i, i);
         }
+        cSLTY.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cSLTY.show();
         cSLTY.setText(cSLTY.input.value + "\b行");
         cSLTY.setonchange(function(but) {
@@ -1106,6 +1124,7 @@ let control = (() => {
         for (let i = 15; i >= 5; i--) {
             cSLTX.addOption(i, i);
         }
+        cSLTX.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cSLTX.show();
         cSLTX.setText(cSLTX.input.value + "\b列");
         cSLTX.setonchange(function(but) {

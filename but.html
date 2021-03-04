@@ -15,41 +15,72 @@
         let resetPage = () => {
             div1 = document.createElement("div");
             document.body.appendChild(div1);
+            div1.innerHTML = "hhh";
             let s = div1.style;
-            s.position = "absolute";
+            s.position = "fixed";
             s.left = "0px";
-            s.top = "0px";
+            s.top = "100px";
             s.width = "500px";
             s.height = "500px";
-            s.backgroundColor = "black";
+            s.backgroundColor = "#666666";
+            
             div2 = document.createElement("div");
-            document.body.appendChild(div2);
+            div1.appendChild(div2);
+            div2.setAttribute("class", "menu");
+            let nu = [["返回"],["前进"],["从新加载"],["另存为"],["打印"],["查看网页源代码"],["查看网页信息"],["审查元素"]];
+            console.log(nu)
+            for (let i=0; i<nu.length; i++) {
+                let hr = document.createElement("hr");
+                div2.appendChild(hr);
+                let li = document.createElement("li");
+                li.innerHTML = nu[i];
+                li.onclick = ()=>{click(i)};
+                div2.appendChild(li);
+            }
+            if (nu.length) {
+                let hr = document.createElement("hr");
+                div2.appendChild(hr);
+            }
             s = div2.style;
+            
+            /*
             s.position = "absolute";
+            s.fontSize = "100px"
             s.left = "100px";
             s.top = "100px";
             s.width = "300px";
-            s.height = "300px";
+            s.height = "100px";
             s.backgroundColor = "blue";
+            s.overflow = "scroll";
+            */
+            
             div3 = document.createElement("div");
-            document.body.appendChild(div3);
+            div1.appendChild(div3);
             div3.innerHTML = "hhh";
             s = div3.style;
             s.position = "absolute";
-            s.left = "200px";
-            s.top = "200px";
+            s.left = "100px";
+            s.top = "1000px";
             s.width = "100px";
             s.height = "100px";
             s.backgroundColor = "red";
 
 
-            div1.addEventListener("touchstart", touchstart1, true);
-            div2.addEventListener("touchstart", touchstart2, true);
-            div3.addEventListener("touchstart", touchstart3, true);
-            div3.addEventListener("touchend", touchstart3end, true);
+            //window.addEventListener("scroll", wScroll, true);
+            
+            /*
+            div1.addEventListener("touchstart", touchstart1, false);
+            div2.addEventListener("touchstart", touchstart2, false);
+            div3.addEventListener("touchstart", touchstart3, false);
+            div3.addEventListener("touchend", touchstart3end, false);
             document.body.addEventListener("touchstart", bodytouch, false);
             document.body.addEventListener("touchend", bodytouchend, false);
             document.body.addEventListener("contextmenu", bodyContextmenu, false);
+            */
+        }
+        
+        let click = (i)=> {
+            console.log(`li${i} click`);
         }
 
         let touchstart1 = () => {
@@ -60,11 +91,11 @@
         }
         let touchstart3 = (event) => {
             event.preventDefault();
-            div3.setAttribute("class", "show");
+            div3.setAttribute("class", "hide");
             console.log("div3");
         }
         let touchstart3end = () => {
-            div3.setAttribute("class", "hide");
+            div3.setAttribute("class", "show");
             console.log("div3end");
 
         }
@@ -79,6 +110,10 @@
         }
         let bodyContextmenu = () => {
             console.log("bodyContextmenu");
+        }
+        
+        let wScroll = ()=> {
+            console.log("scroll")
         }
     </script>
 </body>

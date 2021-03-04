@@ -1,7 +1,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local('SimHei'),
-        url('./font/PingFangMediumsubfont.woff') format('woff');
+        url('./font/PingFangMediumsubfont0301.woff') format('woff');
     font-weight: normal;
 }
 
@@ -9,7 +9,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local('SimHei'),
-        url('./font/PingFangHeavysubfont.woff') format('woff');
+        url('./font/PingFangHeavysubfont0301.woff') format('woff');
     font-weight: bolder;
 }
 
@@ -45,8 +45,6 @@ h1 {
 }
 
 
-
-
 body {
     height: 100%;
     width: 100%;
@@ -56,6 +54,36 @@ body {
     /* Chrome/Safari/Opera */
 }
 
+
+.menu {
+    /*
+    width: 300px;
+    left: 300px;
+    top: 100px;
+    height: 300px;
+    border-radius: 30px;
+    overflow: scroll;
+    background: #ccc;
+    */
+}
+
+.menu li {
+    /*font-size: 20px;*/
+    list-style: none;
+    /*line-height: 38px;
+    margin-left: -1px;
+    padding-left: 26px;*/
+}
+
+.menu li:hover {
+    background-color: #4281f4;
+    color: #fff;
+}
+
+hr {
+    height: 3px;
+    margin: 0 0 0 0;
+}
 
 @-webkit-keyframes show {
     0% {
@@ -124,11 +152,11 @@ body {
     }
 
     100% {
-         opacity: 0;
-         -webkit-transform: scale(0.5);
-         -moz-transform: scale(0.5);
-         -ms-transform: scale(0.5);
-         transform: scale(0.5);
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
     }
 }
 
@@ -142,11 +170,11 @@ body {
     }
 
     100% {
-         opacity: 0;
-         -webkit-transform: scale(0.5);
-         -moz-transform: scale(0.5);
-         -ms-transform: scale(0.5);
-         transform: scale(0.5);
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
     }
 }
 
@@ -160,11 +188,11 @@ body {
     }
 
     100% {
-         opacity: 0;
-         -webkit-transform: scale(0.5);
-         -moz-transform: scale(0.5);
-         -ms-transform: scale(0.5);
-         transform: scale(0.5);
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
     }
 }
 

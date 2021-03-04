@@ -12,6 +12,8 @@
           this.input = document.createElement("input"); //接受用户事件  
           this.input.setAttribute("type", type);
       }
+      this.menuWindow = null;
+      this.menu = null;
 
       this.option = [];
       this.type = type;
@@ -24,7 +26,7 @@
       this.selectColor = "black"; //按钮按下时字体颜色
       this.notChangeColor = false; // 不自动调整按钮字体颜色
       this.backgroundColor = "#f0f0f0"; //按钮颜色999999
-      this.selectBackgroundColor = "#d0d0d0";  //666666
+      this.selectBackgroundColor = "#d0d0d0"; //666666
       /*if (this.type=="button") {
         let col = this.backgroundColor;
         this.backgroundColor = this.selectBackgroundColor;
@@ -50,18 +52,18 @@
       };
 
       this.input.onmousedown = function() {
-          if (event.button==0) but.defaultontouchstart();
+          if (event.button == 0) but.defaultontouchstart();
       };
 
       this.input.ontouchcancel = function() {
-          console.log(`cancel t=${this.text}`);
-          but.isEventMove = true; 
+          //console.log(`cancel t=${this.text}`);
+          but.isEventMove = true;
           but.defaultontouchend();
       };
 
       this.input.ontouchleave = function() {
-          console.log(`leave t=${this.text}`);
-          but.isEventMove = true; 
+          //console.log(`leave t=${this.text}`);
+          but.isEventMove = true;
           but.defaultontouchend();
       };
 
@@ -74,7 +76,7 @@
       };
       */
       this.input.onmouseout = function() {
-          but.isEventMove = true; 
+          but.isEventMove = true;
           but.defaultontouchend();
       };
 
@@ -92,7 +94,7 @@
   // 对 select 添加 option
   button.prototype.addOption = function(value, text) {
 
-      console.log(`add t=${this.text}`);
+      //console.log(`add t=${this.text}`);
       if (this.type != "select") return;
       let op = document.createElement("option");
       op.setAttribute("value", value);
@@ -103,9 +105,71 @@
 
 
 
+  button.prototype.createMenu = function(left, top, width, height, fontSize) {
+      if (this.type != "select" || this.menuWindow) return;
+      let muWindow = document.createElement("div");
+      let menu = document.createElement("div");
+      muWindow.appendChild(menu);
+      muWindow.onclick = menu.onclick = function() {
+          if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
+          isMsgShow = false;
+      };
+      this.menuWindow = muWindow;
+      this.menu = menu;
+      menu.setAttribute("class", "menu");
+      let dh = document.documentElement.clientHeight;
+      let dw = document.documentElement.clientWidth;
+      height = (fontSize * 2 + 3) * this.input.length;
+      height = height > dh * 0.8 ? dh * 0.8 : height;
+      top = (dh - height) + dh * 0.1;
+      top = top > dh / 2 ? dh / 2 : top;
+      this.menu.menuLeft = left;
+      this.menu.menuTop = top;
+      this.menu.menuHeight = height;
+      this.menu.menuWidth = width;
+      this.menu.fontSize = fontSize;
+      //alert(`left=${left}, top=${top}, width=${width}, height=${height}`);
+
+
+      //alert(this.input.length)
+      for (let i = 0; i < this.input.length; i++) {
+          let hr = document.createElement("hr");
+          menu.appendChild(hr);
+          hr.style.height = "1px";
+          hr.style.marginLeft = "-1px";
+          hr.style.padding = "0";
+          let li = document.createElement("li");
+          li.innerHTML = this.input[i].innerHTML;
+          li.style.fontWeight = "normal";
+          li.style.fontFamily = "mHeiTi";
+          li.style.fontSize = parseInt(fontSize) + "px";
+          li.style.lineHeight = fontSize * 2 + "px";
+          li.style.paddingLeft = li.style.fontSize;
+          li.style.margin = "0";
+          menu.appendChild(li);
+          //alert(li.innerHTML)
+          let input = this.input;
+          li.onclick = function() {
+              input.value = i;
+              input.selectedIndex = i;
+              //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
+              menu.parentNode.parentNode.removeChild(menu.parentNode);
+              isMsgShow = false;
+              input.onchange();
+          };
+      }
+      if (this.input.length) {
+          let hr = document.createElement("hr");
+          menu.appendChild(hr);
+      }
+
+  }
+
+
+
   button.prototype.defaultontouchstart = function() {
 
-      console.log(`str t=${this.text}`);
+      //console.log(`str t=${this.text}`);
       this.isEventMove = false;
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
@@ -122,7 +186,7 @@
 
   button.prototype.defaultontouchmove = function() {
 
-      console.log(`mov t=${this.text}`);
+      //console.log(`mov t=${this.text}`);
       this.isEventMove = true; // 取消单击事件
       return true;
   };
@@ -133,9 +197,10 @@
   // 默认事件，
   button.prototype.defaultontouchend = function() {
 
-      console.log(`end t=${this.text}`);
+      //console.log(`end t=${this.text}`);
       // select 要弹出菜单不能屏蔽
-      if (this.type != "select") event.preventDefault();
+      //if (this.type != "select") {};
+      event.preventDefault();
       //   "✔  ○●",radio,checked,前面加上特殊字符。
       let s;
       let timer;
@@ -198,9 +263,9 @@
       }
 
       if (this.type == "file" && !cancel) this.input.click();
-      if(this.type == "select" && !cancel) {
-          console.log(`click t=${this.text}`);
-          this.input.size = "1";
+      if (this.type == "select" && !cancel) {
+          //console.log(`click t=${this.text}`);
+          this.showMenu();
       }
       return cancel ? false : true;
   };
@@ -210,7 +275,8 @@
 
   button.prototype.defaultonchange = function() {
 
-      console.log(`chg t=${this.text}`);
+      //console.log(`chg t=${this.text}`);
+      //alert(`defaultonchange  ,i=${this.input.selectedIndex}`);
       if (this.type != "select") return;
       let txt = this.input.options[this.input.selectedIndex].text;
       this.setText(txt);
@@ -222,7 +288,7 @@
 
   //移出节点
   button.prototype.hide = function() {
-      console.log(`hid t=${this.text}`);
+      //console.log(`hid t=${this.text}`);
       let f = this.div;
       /*
       var childs = f.childNodes; 
@@ -250,7 +316,7 @@
 
   //按钮背景色
   button.prototype.setBackgroundColor = function(color) {
-      console.log(`sbc t=${this.text}`);
+      //console.log(`sbc t=${this.text}`);
       this.backgroundColor = color;
       this.button.style.backgroundColor = color;
 
@@ -260,7 +326,7 @@
 
   //  设置按钮形状
   button.prototype.setBorderRadius = function(rs) {
-      console.log(`sbr t=${this.text}`);
+      //console.log(`sbr t=${this.text}`);
       this.borderRadius = rs;
       this.show();
   };
@@ -268,7 +334,7 @@
 
 
   button.prototype.setColor = function(color) {
-      console.log(`sclr t=${this.text}`);
+      //console.log(`sclr t=${this.text}`);
       this.color = color;
       this.selectColor = color;
       this.button.style.color = color;
@@ -308,6 +374,7 @@
   button.prototype.setonchange = function(callbak) {
       let but = this;
       this.input.onchange = function() {
+
           but.defaultonchange();
           callbak(but);
       };
@@ -341,7 +408,7 @@
 
   // 设置文本
   button.prototype.setText = function(txt, txt2) {
-      console.log(`stxt t=${this.text}`);
+      //console.log(`stxt t=${this.text}`);
       let s;
       this.text = txt == null ? "" : txt;
       this.text2 = txt2 == null ? "" : txt2;
@@ -447,3 +514,31 @@
       this.setText(this.text, this.text2); // 正确显示按钮文本
       if (this.type == "select") this.defaultonchange();
   };
+
+
+
+  button.prototype.showMenu = function() {
+      if (this.type != "select" || !this.menuWindow) return;
+      let muWindow = this.menuWindow;
+      let s = muWindow.style;
+      document.body.appendChild(muWindow);
+      s.position = "fixed";
+      s.zIndex = 9999;
+      s.width = d.documentElement.clientWidth + "px";
+      s.height = d.documentElement.clientHeight * 2 + "px";
+      s.top = "0px";
+      s.left = "0px";
+      //s.backgroundColor = "red";
+      s = this.menu.style;
+      s.position = "absolute";
+      s.left = this.menu.menuLeft + "px";
+      s.top = this.menu.menuTop + "px";
+      s.width = this.menu.menuWidth + "px";
+      s.height = this.menu.menuHeight + "px";
+      s.borderRadius = parseInt(this.fontSize) + "px";
+      s.overflow = "scroll";
+      s.background = this.backgroundColor;
+      //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
+
+      isMsgShow = true;
+  }
