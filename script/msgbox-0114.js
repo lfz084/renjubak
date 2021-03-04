@@ -7,7 +7,7 @@
 
  // 创建一个屏蔽层
  let MsgBoxobj = document.createElement("div");
- MsgBoxobj.ontouchend = function() { if (!msgTextarea.readOnly) msgTextarea.focus();} //event.preventDefault(); };
+ MsgBoxobj.ontouchend = function() { if (!msgTextarea.readOnly) msgTextarea.focus(); } //event.preventDefault(); };
 
  // msg 窗口
  let windowDiv = document.createElement("div");
@@ -92,13 +92,13 @@
      else {
          msgTextarea.readOnly = false;
          if (!text) {
-            setTimeout(function() { s.autofocus = true; }, 100);
-            setTimeout(function() { msgTextarea.focus(); }, 500);
+             setTimeout(function() { s.autofocus = true; }, 100);
+             setTimeout(function() { msgTextarea.focus(); }, 500);
          }
          s.textAlign = "left";
          s.backgroundColor = "white";
      }
-     msgTextarea.value =  text || "";
+     msgTextarea.value = text || "";
 
      let w = parseInt(s.fontSize) * 5;
      let h = w / 3.1;
@@ -107,7 +107,8 @@
      butEnter.setText(enterTXT ? enterTXT : "确定");
      butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
      butEnter.setontouchend(function() {
-         MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+         MsgBoxobj.setAttribute("class", "hide");
+         setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
          isMsgShow = false;
          if (callEnter) callEnter(String(msgTextarea.value));
          msgTextarea.value = "";
@@ -119,7 +120,8 @@
          butCancel.show(w * 2.32, t, w, h);
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
-             MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+             MsgBoxobj.setAttribute("class", "hide");
+             setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
              isMsgShow = false;
              if (callCancel) callCancel(String(msgTextarea.value));
          });
@@ -134,6 +136,7 @@
          butCancel.hide();
          butEnter.hide();
      }
+     MsgBoxobj.setAttribute("class", "show");
 
  }
 
@@ -145,13 +148,16 @@
          clearTimeout(closeTimer);
          closeTimer = null;
      }
-     timer = parseInt(timer) > 0 ? parseInt(timer) : 0;
+     timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
      closeTimer = setTimeout(function() {
          closeTimer = null;
-         if (MsgBoxobj.parentNode == null) return;
-         MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-         isMsgShow = false;
-         msgTextarea.value = "";
+         MsgBoxobj.setAttribute("class", "hide");
+         setTimeout(() => {
+             if (MsgBoxobj.parentNode == null) return;
+             MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+             isMsgShow = false;
+             msgTextarea.value = "";
+         }, 300);
      }, timer);
 
  }

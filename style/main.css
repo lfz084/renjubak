@@ -55,3 +55,133 @@ body {
     /*background-color: #303030*/
     /* Chrome/Safari/Opera */
 }
+
+
+@-webkit-keyframes show {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
+
+    }
+
+    100% {
+        opacity: 0.97;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@-moz-keyframes show {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
+
+    }
+
+    100% {
+        opacity: 0.97;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@keyframes show {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        transform: scale(0.5);
+
+    }
+
+    100% {
+        opacity: 0.97;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@-webkit-keyframes hide {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+
+    100% {
+         opacity: 0;
+         -webkit-transform: scale(0.5);
+         -moz-transform: scale(0.5);
+         -ms-transform: scale(0.5);
+         transform: scale(0.5);
+    }
+}
+
+@-moz-keyframes hide {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+
+    100% {
+         opacity: 0;
+         -webkit-transform: scale(0.5);
+         -moz-transform: scale(0.5);
+         -ms-transform: scale(0.5);
+         transform: scale(0.5);
+    }
+}
+
+@keyframes hide {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+
+    100% {
+         opacity: 0;
+         -webkit-transform: scale(0.5);
+         -moz-transform: scale(0.5);
+         -ms-transform: scale(0.5);
+         transform: scale(0.5);
+    }
+}
+
+.show {
+    -webkit-animation: show 250ms ease-in;
+    -moz-animation: show 250ms ease-in;
+    animation: show 250ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.hide {
+    -webkit-animation: hide 250ms ease-in;
+    -moz-animation: hide 250ms ease-in;
+    animation: hide 250ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}

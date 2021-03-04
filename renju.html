@@ -19,7 +19,7 @@
     <link rel="preload" href="./style/font/PingFangHeavysubfont.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
-    <link rel="preload" href="./script/button-0228.js" as="script">
+    <link rel="preload" href="./script/button-0229.js" as="script">
     <link rel="preload" href="./script/engine-1031.js" as="script">
     <link rel="preload" href="./script/appData-0109.js" as="script">
     <link rel="preload" href="./script/control-0228.js" as="script">
@@ -31,7 +31,7 @@
 
 <body>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/button-0228.js"></script>
+    <script src="./script/button-0229.js"></script>
     <script src="./script/engine-1031.js"></script>
     <script src="./script/appData-0109.js"></script>
     <script src="./script/control-0228.js"></script>
@@ -162,7 +162,7 @@
             }
             catch (err) {
                 //console.log ("reLoad");
-                location.reload();
+                setTimeout(()=>{location.reload()},1000);
             }
 
         }
@@ -185,7 +185,7 @@
 
             //canvas.addEventListener("click", canvasClick, false);
 
-            canvas.addEventListener("contextmenu", bodyKeepTouch, true);
+            document.body.addEventListener("contextmenu", bodyKeepTouch, true);
 
             canvas.addEventListener("dblclick", canvasDblClick, true);
 
@@ -200,7 +200,7 @@
 
             document.body.addEventListener("touchmove", bodyTouchMove, true);
 
-            document.body.addEventListener("click", canvasClick, false);
+            document.body.addEventListener("click", canvasClick, true);
 
 
         }
@@ -547,6 +547,7 @@
 
         function bodyKeepTouch() {
 
+            if (isMsgShow) return;
             if (cancelContextmenu) return;
             clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
             timerBodyKeepTouch = null;

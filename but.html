@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link href="./style/main.css" rel="stylesheet" type="text/css">
+    <script src="./script/button-0229.js"></script>
+</head>
+
+<body onload="resetPage()">
+    <script>
+        let div1, div2, div3;
+        let resetPage = () => {
+            div1 = document.createElement("div");
+            document.body.appendChild(div1);
+            let s = div1.style;
+            s.position = "absolute";
+            s.left = "0px";
+            s.top = "0px";
+            s.width = "500px";
+            s.height = "500px";
+            s.backgroundColor = "black";
+            div2 = document.createElement("div");
+            document.body.appendChild(div2);
+            s = div2.style;
+            s.position = "absolute";
+            s.left = "100px";
+            s.top = "100px";
+            s.width = "300px";
+            s.height = "300px";
+            s.backgroundColor = "blue";
+            div3 = document.createElement("div");
+            document.body.appendChild(div3);
+            div3.innerHTML = "hhh";
+            s = div3.style;
+            s.position = "absolute";
+            s.left = "200px";
+            s.top = "200px";
+            s.width = "100px";
+            s.height = "100px";
+            s.backgroundColor = "red";
+
+
+            div1.addEventListener("touchstart", touchstart1, true);
+            div2.addEventListener("touchstart", touchstart2, true);
+            div3.addEventListener("touchstart", touchstart3, true);
+            div3.addEventListener("touchend", touchstart3end, true);
+            document.body.addEventListener("touchstart", bodytouch, false);
+            document.body.addEventListener("touchend", bodytouchend, false);
+            document.body.addEventListener("contextmenu", bodyContextmenu, false);
+        }
+
+        let touchstart1 = () => {
+            console.log("div1");
+        }
+        let touchstart2 = () => {
+            console.log("div2");
+        }
+        let touchstart3 = (event) => {
+            event.preventDefault();
+            div3.setAttribute("class", "show");
+            console.log("div3");
+        }
+        let touchstart3end = () => {
+            div3.setAttribute("class", "hide");
+            console.log("div3end");
+
+        }
+        let bodytouch = () => {
+            //event.preventDefault();
+            //document.body.setAttribute("class", "hide");
+            console.log("body");
+        }
+        let bodytouchend = () => {
+            //document.body.setAttribute("class", "show");
+            console.log("bodyend");
+        }
+        let bodyContextmenu = () => {
+            console.log("bodyContextmenu");
+        }
+    </script>
+</body>
+
+</html>

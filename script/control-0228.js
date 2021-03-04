@@ -84,8 +84,8 @@ let control = (() => {
             this.div.style.position = "absolute";
             this.div.style.left = left;
             this.div.style.top = top;
-            this.div.style.height = height;
-            this.div.style.width = width;
+            this.div.style.height = parseInt(height) + "px";
+            this.div.style.width = parseInt(width) + "px";
             this.div.style.fontFamily = "mHeiTi";
             this.div.style.fontSize = fontSize;
             this.div.style.textAlign = "center";
@@ -577,7 +577,7 @@ let control = (() => {
         cLABC.addOption(2, "123...");
         cLABC.addOption(3, "☆标记");
         cLABC.show();
-        cLABC.setontouchstart(function() {
+        cLABC.setontouchend(function() {
             nSetChecked(cLABC);
         });
 
@@ -1448,6 +1448,7 @@ let control = (() => {
 
         sharing = true;
         document.body.appendChild(shareWindow);
+        shareWindow.setAttribute("class", "show");
         let s = shareWindow.style;
         s.position = "fixed";
         s.zIndex = 9998;
@@ -1475,6 +1476,8 @@ let control = (() => {
         s.top = parseInt((imgWidth - iWidth) / 2) + "px";
         s.left = parseInt((imgWidth - iWidth) / 2) + "px";
 
+        let oldBackgroundColor = cBd.backgroundColor;
+        let oldLbBackgroundColor = cBd.LbBackgroundColor;
         if (cBoardColor == "white") {
             /*
             let mimetype = "image/svg+xml";
@@ -1502,16 +1505,17 @@ let control = (() => {
                 //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
             }
             */
-            let oldBackgroundColor = cBd.backgroundColor;
-            let oldLbBackgroundColor = cBd.LbBackgroundColor;
+
             cBd.backgroundColor = "white";
             cBd.LbBackgroundColor = "white";
             cBd.refreshCheckerBoard();
             shareImg.src = cBd.canvas.toDataURL();
             shareImg.onload = function() {
+                /*
                 cBd.backgroundColor = oldBackgroundColor;
                 cBd.LbBackgroundColor = oldLbBackgroundColor;
                 cBd.refreshCheckerBoard();
+                */
             };
         }
         else {
@@ -1537,6 +1541,11 @@ let control = (() => {
         butShareCancel.setText("关闭分享");
         butShareCancel.setontouchend(function() {
             shareClose();
+            if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
+                cBd.backgroundColor = oldBackgroundColor;
+                cBd.LbBackgroundColor = oldLbBackgroundColor;
+                cBd.refreshCheckerBoard
+            }
         });
 
 
@@ -1545,7 +1554,8 @@ let control = (() => {
 
     function shareClose() {
 
-        shareWindow.parentNode.removeChild(shareWindow);
+        shareWindow.setAttribute("class", "hide");
+        setTimeout(() => { shareWindow.parentNode.removeChild(shareWindow) }, 300);
         sharing = false;
 
     }
