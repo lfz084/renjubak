@@ -2071,6 +2071,7 @@
                 if (timerShareClose) clearTimeout(timerShareClose);
                 sharing = true;
                 document.body.appendChild(shareWindow);
+                shareWindow.setAttribute("class", "show");
                 let s = shareWindow.style;
                 s.position = "fixed";
                 s.zIndex = 9998;
@@ -2226,7 +2227,8 @@
 
         function shareClose() {
 
-            shareWindow.parentNode.removeChild(shareWindow);
+            shareWindow.setAttribute("class", "hide");
+            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},300);
             timerShareClose = setTimeout("sharing = false", 1000);
 
         }
