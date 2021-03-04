@@ -1544,7 +1544,7 @@ let control = (() => {
             if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
                 cBd.backgroundColor = oldBackgroundColor;
                 cBd.LbBackgroundColor = oldLbBackgroundColor;
-                cBd.refreshCheckerBoard
+                cBd.refreshCheckerBoard();
             }
         });
 
