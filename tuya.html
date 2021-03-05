@@ -13,7 +13,7 @@
     <title>五子棋涂鸦代替</title>
 </head>
 
-<body oncontextmenu="keepTouch()" onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()">
+<body onload="resetPage()" >
     <script src="./script/button-0229.js"></script>
     <script src="./script/viewport0228.js"></script>
     <script src="./script/msgbox-0114.js"></script>
@@ -624,10 +624,7 @@
         let cW = sw / 5;
         let cH = sw / 9 / 1.5;
         let cT = 0;
-        let menuLeft = cW + sw * 0.1;
-        let menuWidth = sw * 0.8;
-        let menuFontSize = sw / 20;
-
+        
         let bodyDiv = document.createElement("div");
         document.body.appendChild(bodyDiv);
         bodyDiv.style.position = "absolute";
@@ -645,6 +642,9 @@
         fileDiv.style.left = `${dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + (cWidth-sw)/2 : (dw - sw) / 2}px`;
         fileDiv.style.top = `${dw > dh ? parseInt(cH * 1.8 + cWidth/19 + (dh-cWidth)/2) : cWidth}px`;
         //fileDiv.style.backgroundColor = "white";
+        let menuLeft = parseInt(fileDiv.style.left) + sw * 0.1;
+        let menuWidth = sw * 0.8;
+        let menuFontSize = sw / 20;
         let chkLock = new button(fileDiv, "checkbox", cW * 0, cT, cW, cH);
         chkLock.show();
         chkLock.setText("选定棋盘");
@@ -967,6 +967,7 @@
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
             if (timerSetCheckerBoard) event.preventDefault();
+            console.log(this)
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
             //clearTimeout(timerSetCheckerBoard);
@@ -1415,6 +1416,7 @@
                 else {
                     if (timerSetCheckerBoard == null && touchMoveX) {
                         cleALb();
+                        //event.preventDefault(); //阻止事件的默认行为
                         timerSetCheckerBoard = setTimeout("continueSetCheckerBoard()", 1);
                     }
                 }
@@ -1793,6 +1795,13 @@
                 //测试脚本是否加载成功;
                 if (!button || !view) { location.reload(); return; }
                 //alert('resetPage');
+                document.body.addEventListener("click",Click,true);
+                document.body.addEventListener("contextmenu",keepTouch,true);
+                document.body.addEventListener("touchstart",touchstart,true);
+                document.body.addEventListener("touchend",touchend,true);
+                document.body.addEventListener("touchmove",touchmove,true);
+                document.body.addEventListener("touchcancel",touchcancel,true);
+                bodyDiv.addEventListener("touchmove",touchmove,true);
                 let i;
                 for (i = 0; i < 225; i++)
                 {

@@ -129,6 +129,7 @@
       let muWindow = document.createElement("div");
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
+      muWindow.ontouchstart = function(){event.preventDefault};
       muWindow.onclick = menu.onclick = function() {
 
           muWindow.setAttribute("class", "hide");
@@ -193,10 +194,10 @@
                   muWindow.setAttribute("class", "hide");
                   setTimeout(function() {
                       muWindow.parentNode.removeChild(muWindow);
+                      isMsgShow = false;
+                      input.onchange();
                   }, 300);
               }
-              isMsgShow = false;
-              input.onchange();
           };
       }
       if (this.input.length) {
@@ -592,6 +593,7 @@
       s.border = `${parseInt(this.fontSize)/3}px solid ${this.selectBackgroundColor}`;
       s.overflow = "scroll";
       s.background = this.backgroundColor;
+      s.autofocus = "true";
       muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
 

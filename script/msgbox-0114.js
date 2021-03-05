@@ -85,14 +85,14 @@
      s.borderColor = "#666666";
      if (type == "msgbox") {
          msgTextarea.readOnly = true;
-         s.autofocus = false;
+         s.autofocus = "false";
          s.textAlign = "center";
          s.backgroundColor = "#777777";
      }
      else {
          msgTextarea.readOnly = false;
          if (!text) {
-             setTimeout(function() { s.autofocus = true; }, 100);
+             setTimeout(function() { s.autofocus = "true"; }, 100);
              setTimeout(function() { msgTextarea.focus(); }, 500);
          }
          s.textAlign = "left";
