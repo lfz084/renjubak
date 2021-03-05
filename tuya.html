@@ -6,7 +6,7 @@
     <link rel="shortI icon" sizes=32×32 href="./pic/favicon.ico" />
     <link rel="preload" href="./style/font/PingFangMediumsubfont0301.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PingFangHeavysubfont0301.woff" as="font" type="font/woff" crossorigin="anonymous">
-    <link href="./style/main02.css" rel="stylesheet" type="text/css">
+    <link href="./style/main03.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
     <link rel="preload" href="./script/button-0306.js" as="script">
     <link rel="preload" href="./script/msgbox-0306.js" as="script">
@@ -938,7 +938,7 @@
                 if ((!chkLock.checked) && isContinueSetCB)
 
                 {
-                    event.preventDefault(); //阻止事件的默认行为
+                    if (event) event.preventDefault(); //阻止事件的默认行为
                     if (timerSetCheckerBoard == null)
                     {
                         cleALb();
@@ -966,7 +966,7 @@
             if (isMsgShow) return;
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
-            if (timerSetCheckerBoard) event.preventDefault();
+            if (timerSetCheckerBoard && event) event.preventDefault();
             console.log(this)
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
@@ -1033,7 +1033,7 @@
             {
                 if (!isOut(x, y) && !sharing)
                 {
-                    event.preventDefault(); //阻止事件的默认行为
+                    if (event) event.preventDefault(); //阻止事件的默认行为
                     Click(parseInt(x), parseInt(y), 1);
                     isContinueSetCB = true;
                     setTimeout("isContinueSetCB = false", 600);
@@ -1055,13 +1055,13 @@
                 /*
                 if (m < -(dw / 3))
                 {
-                    event.preventDefault(); //阻止事件的默认行为
+                    if (event) event.preventDefault(); //阻止事件的默认行为
                     tempHistoryIndex = getHistoryIndex(1);
                     loadHistory();
                 }
                 else if (m > (dw / 3))
                 {
-                    event.preventDefault(); //阻止事件的默认行为
+                    if (event) event.preventDefault(); //阻止事件的默认行为
                     tempHistoryIndex = getHistoryIndex(-1);
                     loadHistory();
                 }
@@ -2050,10 +2050,10 @@
         let sharing = false;
 
         let shareWindow = document.createElement("div");
-        shareWindow.ontouch = function() { event.preventDefault(); };
+        shareWindow.ontouch = function() { if (event) event.preventDefault(); };
 
         let imgWindow = document.createElement("div");
-        imgWindow.ontouch = function() { event.preventDefault(); };
+        imgWindow.ontouch = function() { if (event) event.preventDefault(); };
         shareWindow.appendChild(imgWindow);
 
         let shareLabel = document.createElement("div");

@@ -44,7 +44,7 @@
          MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
              if (!msgTextarea.readOnly) {
                  msgTextarea.focus(); 
-                 event.preventDefault();
+                 if (event) event.preventDefault();
              }
          }; 
      },500);

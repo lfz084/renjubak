@@ -51,14 +51,14 @@
 
       let but = this;
       this.input.ontouchstart = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           but.defaultontouchstart();
       };
 
       this.input.onmousedown = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           if (but.type == "select") {
-              event.preventDefault();
+              if (event) event.preventDefault();
           }
           else {
               //console.log(but.type);
@@ -68,7 +68,7 @@
 
       this.input.ontouchcancel = function() {
           //console.log(`cancel t=${this.text}`);
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           but.isEventMove = true;
           but.defaultontouchend();
       };
@@ -81,13 +81,13 @@
             */
 
       this.input.ontouchend = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           but.defaultontouchend();
       };
 
       this.input.onmouseup = function() {
-          event.cancelBubble = true;
-          if (but.type == "select") event.preventDefault();
+          if (event) event.cancelBubble = true;
+          if (but.type == "select" && event) event.preventDefault();
           but.isEventMove = false;
           but.defaultontouchend();
       };
@@ -98,12 +98,12 @@
       };
 */
       this.input.onchange = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           but.defaultonchange();
       };
 
       this.input.ontouchmove = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           but.defaultontouchmove();
       };
 
@@ -140,7 +140,7 @@
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
-          event.cancelBubble = true;
+          if (event) event.cancelBubble = true;
           muWindow.setAttribute("class", "hide");
           setTimeout(function() {
               if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
@@ -178,7 +178,7 @@
           menu.appendChild(li);
           let input = this.input;
           li.onclick = function() {
-              event.cancelBubble = true;
+              if (event) event.cancelBubble = true;
               but.menuScroll(parseInt(li.style.lineHeight) * 5);
           };
       }
@@ -200,7 +200,7 @@
           //alert(li.innerHTML)
           let input = this.input;
           li.onclick = function() {
-              event.cancelBubble = true;
+              if (event) event.cancelBubble = true;
               input.value = i;
               input.selectedIndex = i;
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
@@ -228,7 +228,7 @@
           menu.appendChild(li);
           let input = this.input;
           li.onclick = function() {
-              event.cancelBubble = true;
+              if (event) event.cancelBubble = true;
               but.menuScroll(-parseInt(li.style.lineHeight) * 5);
           };
       }
@@ -282,7 +282,7 @@
   button.prototype.defaultontouchstart = function() {
 
       //console.log(`str t=${this.text}`);
-      if (this.tyle == "select") event.preventDefault();
+      if (this.tyle == "select" && event) event.preventDefault();
       this.isEventMove = false;
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
@@ -313,7 +313,7 @@
       //console.log(`end t=${this.text}`);
       // select 要弹出菜单不能屏蔽
       //if (this.type != "select") {};
-      event.preventDefault();
+      if (event) event.preventDefault();
       //   "✔  ○●",radio,checked,前面加上特殊字符。
       let s;
       let timer;
@@ -345,7 +345,7 @@
               timer = 0;
           }
           else {
-              timer = 500;
+              timer = 0;
           }
           s = this.type == "radio" ? "" : this.type == "checkbox" ? "" : "";
           s += this.text;
@@ -549,7 +549,7 @@
               timer = 0;
           }
           else {
-              timer = 100;
+              timer = 0;
           }
           s = this.type == "radio" ? "" : this.type == "checkbox" ? "" : "";
           s += this.text;

@@ -1459,10 +1459,10 @@ let control = (() => {
     let sharing = false;
 
     let shareWindow = document.createElement("div");
-    shareWindow.ontouch = function() { event.preventDefault(); };
+    shareWindow.ontouch = function() { if (event) event.preventDefault(); };
 
     let imgWindow = document.createElement("div");
-    imgWindow.ontouch = function() { event.preventDefault(); };
+    imgWindow.ontouch = function() { if (event) event.preventDefault(); };
     shareWindow.appendChild(imgWindow);
 
     let shareLabel = document.createElement("div");

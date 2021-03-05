@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
-    <link href="./style/main02.css" rel="stylesheet" type="text/css">
+    <link href="./style/main03.css" rel="stylesheet" type="text/css">
     <script src="./script/button-0306.js"></script>
 </head>
 
@@ -81,7 +81,7 @@
         }
         let liTouchstart = (i)=> {
             console.log(`li${i} touchstart`);
-            event.cancelBubble = true; //取消事件冒泡（否则点击按钮后，会冒泡到最后一层上即document）
+            if (event) event.cancelBubble = true; //取消事件冒泡（否则点击按钮后，会冒泡到最后一层上即document）
         }
         let click = (i)=> {
             console.log(`li${i} click`);
@@ -92,7 +92,7 @@
         }
         let touchstart2 = () => {
             console.log("div2");
-            //event.cancelBubble = true;
+            //if (event) event.cancelBubble = true;
         }
         let touchstart3 = (event) => {
             //event.preventDefault();

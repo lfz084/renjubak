@@ -238,15 +238,15 @@ function checkerBoard(parentNode, left, top, width, height) {
 
     this.cutDiv = document.createElement("div");
     this.parentNode.appendChild(this.cutDiv);
-    this.cutDiv.ontouchend = function() { event.preventDefault(); };
-    this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); };
+    this.cutDiv.ontouchend = function() { if (event) event.preventDefault(); };
+    this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
 
     for (var i = 0; i < 225; i++) {
         this.DIV[i] = document.createElement("div");
         this.DIV[i].style.borderRadius = "50%";
         this.parentNode.appendChild(this.DIV[i]);
-        this.DIV[i].ontouchend = function() { event.preventDefault(); };
-        this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv) event.preventDefault(); };
+        this.DIV[i].ontouchend = function() { if (event) event.preventDefault(); };
+        this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
         this.P[i] = new point(0, 0, this.DIV[i]);
     }
 
