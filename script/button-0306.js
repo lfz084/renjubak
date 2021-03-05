@@ -249,7 +249,7 @@
      console.log(`menu.scrollTop=${this.menu.scrollTop}, top=${top}`)
      this.tempScrollTop = this.menu.scrollTop;
      this.intervalScroll = setInterval(function(){
-         let scl = Math.abs(parseInt((but.targetScrollTop-but.tempScrollTop)/100))+1;
+         let scl = Math.abs(parseInt((but.targetScrollTop-but.tempScrollTop)/100))+5;
          console.log(`scl=${scl}`)
          if ((top < 0) && (but.tempScrollTop > but.targetScrollTop)) {
              but.tempScrollTop -= scl;
@@ -261,7 +261,7 @@
              but.tempScrollTop = top <0 ? but.targetScrollTop-1 : but.targetScrollTop + 1;
          }
          //console.log("inter")
-     },1);
+     },5);
      scrollTo();
      function scrollTo() {
          but.menu.scrollTop = but.tempScrollTop;
