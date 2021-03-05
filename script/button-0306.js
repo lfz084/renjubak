@@ -44,10 +44,9 @@
 
       this.isEventMove = false; // 记录 touchstart 到 touchend 中间 是否触发 touchmove;
       this.touchStart = [];
-      
+
       this.targetScrollTop = 0;
       this.tempScrollTop = 0;
-      this.intervalScroll = null;
       this.animationFrameScroll = null;
 
       let but = this;
@@ -58,7 +57,7 @@
 
       this.input.onmousedown = function() {
           event.cancelBubble = true;
-          if (but.type=="select") {
+          if (but.type == "select") {
               event.preventDefault();
           }
           else {
@@ -88,7 +87,7 @@
 
       this.input.onmouseup = function() {
           event.cancelBubble = true;
-          if (but.type=="select") event.preventDefault();
+          if (but.type == "select") event.preventDefault();
           but.isEventMove = false;
           but.defaultontouchend();
       };
@@ -230,64 +229,60 @@
           let input = this.input;
           li.onclick = function() {
               event.cancelBubble = true;
-              but.menuScroll(-parseInt(li.style.lineHeight)*5);
+              but.menuScroll(-parseInt(li.style.lineHeight) * 5);
           };
       }
-      
+
   };
 
- 
- 
- button.prototype.menuScroll = function(top) {
-     //console.log("menuScroll")
-     let optionsHeight = (parseInt(this.menu.fontSize) * 2.5 + 3) * (this.input.length + 2);
-     let maxScrollTop = optionsHeight - parseInt(this.menumenuHeight);
-     let targetScrollTop = this.menu.scrollTop + top;
-     let but = this;
-     if (this.animationFrameScroll) cancelAnima();
-     this.targetScrollTop = targetScrollTop;
-     console.log(`menu.scrollTop=${this.menu.scrollTop}, top=${top}`)
-     this.tempScrollTop = this.menu.scrollTop;
-     this.intervalScroll = setInterval(function(){
-         let scl = Math.abs(parseInt((but.targetScrollTop-but.tempScrollTop)/100))+5;
-         console.log(`scl=${scl}`)
-         if ((top < 0) && (but.tempScrollTop > but.targetScrollTop)) {
-             but.tempScrollTop -= scl;
-         }
-         else if ((top > 0) && (but.tempScrollTop < but.targetScrollTop)) {
-             but.tempScrollTop += scl;
-         }
-         else { //  to cancelAnimationFrame
-             but.tempScrollTop = top <0 ? but.targetScrollTop-1 : but.targetScrollTop + 1;
-         }
-         //console.log("inter")
-     },5);
-     scrollTo();
-     function scrollTo() {
-         but.menu.scrollTop = but.tempScrollTop;
-         //console.log(`animationFrameScroll  ${but.tempScrollTop},  targetScrollTop=${ but.targetScrollTop}`)
-         but.animationFrameScroll = requestAnimationFrame(scrollTo);
-         if (top<0 ? but.tempScrollTop <= but.targetScrollTop : but.tempScrollTop >= but.targetScrollTop) {
-             cancelAnima();
-         }
-     }
-     
-     function cancelAnima() {
-         console.log("exit animationFrameScroll")
-         clearInterval(but.intervalScroll);
-         but.intervalScroll = null;
-         cancelAnimationFrame(but.animationFrameScroll);
-         but.animationFrameScroll = null;
-         but.menu.scrollTop = but.menu.scrollTop < 0 ? 0 : but.menu.scrollTop > maxScrollTop ? maxScrollTop : but.menu.scrollTop;
-     }
- };
- 
- 
+
+
+  button.prototype.menuScroll = function(top) {
+      //console.log("menuScroll")
+      let optionsHeight = (parseInt(this.menu.fontSize) * 2.5 + 3) * (this.input.length + 2);
+      let maxScrollTop = optionsHeight - parseInt(this.menumenuHeight);
+      let targetScrollTop = this.menu.scrollTop + top;
+      let but = this;
+      if (this.animationFrameScroll) cancelAnima();
+      this.targetScrollTop = targetScrollTop;
+      //console.log(`menu.scrollTop=${this.menu.scrollTop}, top=${top}`)
+      this.tempScrollTop = this.menu.scrollTop;
+      scrollTo();
+
+      function scrollTo() {
+          let scl = Math.abs(parseInt((but.targetScrollTop - but.tempScrollTop) / 50)) + Math.abs(top) / 50;
+          //console.log(`scl=${scl}`)
+          if ((top < 0) && (but.tempScrollTop > but.targetScrollTop)) {
+              but.tempScrollTop -= scl;
+          }
+          else if ((top > 0) && (but.tempScrollTop < but.targetScrollTop)) {
+              but.tempScrollTop += scl;
+          }
+          else { //  to cancelAnimationFrame
+              but.tempScrollTop = top < 0 ? but.targetScrollTop - 1 : but.targetScrollTop + 1;
+          }
+          but.menu.scrollTop = but.tempScrollTop;
+          //console.log(`animationFrameScroll  ${but.tempScrollTop},  targetScrollTop=${ but.targetScrollTop}`)
+          but.animationFrameScroll = requestAnimationFrame(scrollTo);
+          if (top < 0 ? but.tempScrollTop <= but.targetScrollTop : but.tempScrollTop >= but.targetScrollTop) {
+              cancelAnima();
+          }
+      }
+
+      function cancelAnima() {
+          //console.log("exit animationFrameScroll")
+          cancelAnimationFrame(but.animationFrameScroll);
+          but.animationFrameScroll = null;
+          but.menu.scrollTop = but.menu.scrollTop < 0 ? 0 : but.menu.scrollTop > maxScrollTop ? maxScrollTop : but.menu.scrollTop;
+      }
+  };
+
+
 
   button.prototype.defaultontouchstart = function() {
 
       //console.log(`str t=${this.text}`);
-      if (this.tyle=="select") event.preventDefault();
+      if (this.tyle == "select") event.preventDefault();
       this.isEventMove = false;
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
@@ -385,7 +380,7 @@
           return false;
       }
       else if (this.type == "select" && !cancel) {
-         //console.log(`click t=${this.text}`);
+          //console.log(`click t=${this.text}`);
           this.showMenu();
           //this.click event continue set select label text;
           //return false;
@@ -402,7 +397,7 @@
   button.prototype.defaultonchange = function() {
 
       //console.log(`chg t=${this.text}`);
-     //console.log(`defaultonchange  ,i=${this.input.selectedIndex==-1 ? this.input[1].text : this.input.options[this.input.selectedIndex].text} `);
+      //console.log(`defaultonchange  ,i=${this.input.selectedIndex==-1 ? this.input[1].text : this.input.options[this.input.selectedIndex].text} `);
       if (this.type != "select" || this.input.selectedIndex < 0) return;
       let txt = this.input.options[this.input.selectedIndex].text;
       this.setText(txt);
@@ -473,7 +468,7 @@
       if (this.checked == (checked == true)) return;
       this.checked = checked ? true : false;
       this.setText(this.text, this.text2);
-      console.log(this.checked);
+      //console.log(this.checked);
   };
 
 
@@ -662,7 +657,7 @@
       s.top = this.menu.menuTop + "px";
       s.width = this.menu.menuWidth + "px";
       s.height = this.menu.menuHeight + "px";
-      s.borderRadius = parseInt(this.fontSize)*1.5 + "px";
+      s.borderRadius = parseInt(this.fontSize) * 1.5 + "px";
       s.border = `${parseInt(this.fontSize)/3}px solid ${this.selectBackgroundColor}`;
       s.overflow = "scroll";
       s.background = this.backgroundColor;
