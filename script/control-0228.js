@@ -178,8 +178,8 @@ let control = (() => {
         let w = sw / 9;
         let h = w / 1.5;
         let t = 0;
-        let menuLeft = parseInt(parentNode.style.left)+parseInt(renjuCmddiv.style.left)+sw*0.1;
-        let menuWidth = sw*0.8;
+        let menuLeft = parseInt(parentNode.style.left) + parseInt(renjuCmddiv.style.left) + sw * 0.1;
+        let menuWidth = sw * 0.8;
         let menuFontSize = sw / 20;
 
 
@@ -302,7 +302,7 @@ let control = (() => {
         });
 
         const calculate = 1;
-        let tMsg =[["1月31日，五子茶馆解题大赛"],["比赛结束前，暂时关闭计算功能"]];
+        let tMsg = [["1月31日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         if (calculate) {
@@ -322,12 +322,12 @@ let control = (() => {
             //cFindPoint.addOption(13, "︽");
         }
         else {
-            for (let i =0; i < tMsg.length; i++) {
-                cFindPoint.addOption(i, tMsg[i] );
+            for (let i = 0; i < tMsg.length; i++) {
+                cFindPoint.addOption(i, tMsg[i]);
             }
         }
-        
-        cFindPoint.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+
+        cFindPoint.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
@@ -389,8 +389,8 @@ let control = (() => {
 
             but.input.value = 0;
         });
-        
-        
+
+
         //cFindPoint.setontouchend(function() {});
 
 
@@ -416,7 +416,7 @@ let control = (() => {
                 cFindVCF.addOption(i, tMsg[i]);
             }
         }
-        cFindVCF.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cFindVCF.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
@@ -526,12 +526,12 @@ let control = (() => {
         cPrintVCF.addOption(7, "第7套VCF");
         cPrintVCF.addOption(8, "第8套VCF");
         //cPrintVCF.addOption(9, "︽");
-        cPrintVCF.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cPrintVCF.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cPrintVCF.show();
         cPrintVCF.setText("➩\b VCF \b");
         cPrintVCF.setonchange(function(but) {
             but.setText("➩\b VCF \b");
-            if (but.input.value*1) {
+            if (but.input.value * 1) {
                 let color = getRenjuSelColor();
                 let arr = cBd.getPointArray([]);
                 if (color == cObjVCF.color && bArr(arr, cObjVCF.arr)) {
@@ -591,8 +591,8 @@ let control = (() => {
         cLABC.addOption(1, "abc...");
         cLABC.addOption(2, "123...");
         cLABC.addOption(3, "☆标记");
-        //cLABC.addOption(4, "︽");
-        cLABC.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cLABC.addOption(4, "❌标记");
+        cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLABC.show();
         cLABC.setontouchend(function() {
             nSetChecked(cLABC);
@@ -634,7 +634,7 @@ let control = (() => {
         cLbColor.addOption(1, lbColor[1].colName);
         cLbColor.addOption(2, lbColor[2].colName);
         //cLbColor.addOption(3, "︽");
-        cLbColor.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLbColor.show();
         cLbColor.setText("✎\b颜色");
         cLbColor.setonchange(function(but) {
@@ -805,7 +805,7 @@ let control = (() => {
         cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
         //cCutImage.addOption(7, "︽");
-        cCutImage.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cCutImage.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cCutImage.show();
         cCutImage.setText("✄\b截图");
         cCutImage.setonchange(function(but) {
@@ -1113,7 +1113,7 @@ let control = (() => {
             cSLTY.addOption(i, i);
         }
         //cSLTY.addOption(4, "︽");
-        cSLTY.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cSLTY.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cSLTY.show();
         cSLTY.setText(cSLTY.input.value + "\b行");
         cSLTY.setonchange(function(but) {
@@ -1136,7 +1136,7 @@ let control = (() => {
             cSLTX.addOption(i, i);
         }
         //cSLTX.addOption(4, "︽");
-        cSLTX.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
+        cSLTX.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cSLTX.show();
         cSLTX.setText(cSLTX.input.value + "\b列");
         cSLTX.setonchange(function(but) {
@@ -1238,6 +1238,9 @@ let control = (() => {
                         return { type: tLb, cmd: txt, showNum: isShow };
                     case 3:
                         return { type: tLb, cmd: "☆", showNum: isShow };
+                    case 4:
+                        return { type: tLb, cmd: "❌", showNum: isShow };
+
                 }
         }
 

@@ -121,7 +121,7 @@
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
              MsgBoxobj.setAttribute("class", "hide");
-             setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
+             closeTimer=setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
              isMsgShow = false;
              if (callCancel) callCancel(String(msgTextarea.value));
          });
@@ -152,7 +152,7 @@
      closeTimer = setTimeout(function() {
          closeTimer = null;
          MsgBoxobj.setAttribute("class", "hide");
-         setTimeout(() => {
+         closeTimer=setTimeout(() => {
              if (MsgBoxobj.parentNode == null) return;
              MsgBoxobj.parentNode.removeChild(MsgBoxobj);
              isMsgShow = false;

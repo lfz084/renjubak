@@ -186,6 +186,7 @@
           //alert(li.innerHTML)
           let input = this.input;
           li.onclick = function() {
+              input.value = i;
               input.selectedIndex = i;
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
               if (muWindow.parentNode) {
@@ -587,7 +588,8 @@
       s.top = this.menu.menuTop + "px";
       s.width = this.menu.menuWidth + "px";
       s.height = this.menu.menuHeight + "px";
-      s.borderRadius = parseInt(this.fontSize) + "px";
+      s.borderRadius = parseInt(this.fontSize)*1.5 + "px";
+      s.border = `${parseInt(this.fontSize)/3}px solid ${this.selectBackgroundColor}`;
       s.overflow = "scroll";
       s.background = this.backgroundColor;
       muWindow.setAttribute("class", "show");

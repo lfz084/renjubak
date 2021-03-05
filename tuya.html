@@ -9,12 +9,14 @@
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
     <link rel="preload" href="./script/button-0229.js" as="script">
+    <link rel="preload" href="./script/msgbox-0114.js" as="script">
     <title>五子棋涂鸦代替</title>
 </head>
 
 <body oncontextmenu="keepTouch()" onload="resetPage()" ontouchstart="touchstart() " ontouchend="touchend()" ontouchmove="touchmove()" ontouchcancel="touchcancel()" onclick="Click()">
     <script src="./script/button-0229.js"></script>
     <script src="./script/viewport0228.js"></script>
+    <script src="./script/msgbox-0114.js"></script>
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
@@ -622,6 +624,9 @@
         let cW = sw / 5;
         let cH = sw / 9 / 1.5;
         let cT = 0;
+        let menuLeft = cW + sw * 0.1;
+        let menuWidth = sw * 0.8;
+        let menuFontSize = sw / 20;
 
         let bodyDiv = document.createElement("div");
         document.body.appendChild(bodyDiv);
@@ -658,6 +663,7 @@
         for (let i = 15; i > 5; i--) {
             slty.addOption(i, i + "\b行");
         }
+        slty.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         slty.show();
         slty.setText("15\b行");
         slty.setonchange(function(but) {
@@ -667,6 +673,7 @@
         for (let i = 15; i > 5; i--) {
             sltx.addOption(i, i + "\b列");
         }
+        sltx.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         sltx.show();
         sltx.setText("15\b列");
         sltx.setonchange(function(but) {
@@ -918,6 +925,7 @@
 
         function touchstart()
         {
+            if (isMsgShow) return;
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
             touchStartX = event.touches[0].pageX;
@@ -955,6 +963,7 @@
 
         function touchmove()
         {
+            if (isMsgShow) return;
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
             if (timerSetCheckerBoard) event.preventDefault();
@@ -971,6 +980,7 @@
 
         function touchcancel()
         {
+            if (isMsgShow) return;
             touchMoveX = 0;
             touchMoveY = 0;
             let x = event.changedTouches[0].pageX;
@@ -997,6 +1007,7 @@
 
         function touchend()
         {
+            if (isMsgShow) return;
             touchMoveX = 0;
             touchMoveY = 0;
             let x = event.pageX || event.changedTouches[0].pageX;
@@ -1387,6 +1398,7 @@
 
         function keepTouch() {
 
+            if (isMsgShow) return;
             if (cancelContextmenu) return;
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
@@ -1414,6 +1426,7 @@
         //屏幕单击触发
         function Click(x, y, speed)
         {
+            if (isMsgShow) return;
             if (sharing) return;
             if (x == 0 || x == null)
             {
