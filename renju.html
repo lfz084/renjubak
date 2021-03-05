@@ -132,7 +132,7 @@
                 downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
                 downDiv.style.top = dw > dh ? parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
 
-                if (dw <= dh) setTimeout(() => { scrollTo(0, cWidth * 9 / 10); }, 5);
+                setTimeout(() => { scrollTo(0, dw<dh?cWidth * 9 / 10:0); }, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
                 setCheckerBoardEvent(cBoard.canvas);

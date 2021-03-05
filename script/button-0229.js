@@ -52,6 +52,12 @@
       };
 
       this.input.onmousedown = function() {
+          if (but.type=="select") {
+              event.preventDefault();
+          }
+          else {
+              console.log(but.type);
+          }
           if (event.button == 0) but.defaultontouchstart();
       };
 
@@ -60,26 +66,29 @@
           but.isEventMove = true;
           but.defaultontouchend();
       };
-
-      this.input.ontouchleave = function() {
-          //console.log(`leave t=${this.text}`);
-          but.isEventMove = true;
-          but.defaultontouchend();
-      };
+      /*
+            this.input.ontouchleave = function() {
+                //console.log(`leave t=${this.text}`);
+                but.isEventMove = true;
+                but.defaultontouchend();
+            };
+            */
 
       this.input.ontouchend = function() {
           but.defaultontouchend();
       };
-      /*
+
       this.input.onmouseup = function() {
+          if (but.type=="select") event.preventDefault();
+          but.isEventMove = false;
           but.defaultontouchend();
       };
-      */
+      /*
       this.input.onmouseout = function() {
           but.isEventMove = true;
           but.defaultontouchend();
       };
-
+*/
       this.input.onchange = function() {
           but.defaultonchange();
       };
@@ -107,11 +116,26 @@
 
   button.prototype.createMenu = function(left, top, width, height, fontSize) {
       if (this.type != "select" || this.menuWindow) return;
+      let but = this;
+      /*
+      this.input.onmousedown = function() {
+          but.input.onmousedown();
+      };
+      this.input.onmouseup = function() {
+          but.isEventMove = false;
+          but.input.onmouseup();
+      };
+      */
       let muWindow = document.createElement("div");
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
-          if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
+
+          muWindow.setAttribute("class", "hide");
+          setTimeout(function() {
+              if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
+          }, 300);
+
           isMsgShow = false;
       };
       this.menuWindow = muWindow;
@@ -119,9 +143,10 @@
       menu.setAttribute("class", "menu");
       let dh = document.documentElement.clientHeight;
       let dw = document.documentElement.clientWidth;
-      height = (fontSize * 2 + 3) * this.input.length;
+      height = (fontSize * 2.5 + 3) * (this.input.length + 2);
       height = height > dh * 0.8 ? dh * 0.8 : height;
-      top = (dh - height) + dh * 0.1;
+      height = dw > dh ? height : height > dh * (0.5 - 0.05) ? dh * (0.5 - 0.05) : height;
+      top = (dh - height - dh * 0.05);
       top = top > dh / 2 ? dh / 2 : top;
       this.menu.menuLeft = left;
       this.menu.menuTop = top;
@@ -132,6 +157,17 @@
 
 
       //alert(this.input.length)
+      if (this.input.length) {
+          let li = document.createElement("li");
+          li.innerHTML = "︾";
+          li.style.fontWeight = "normal";
+          li.style.fontFamily = "mHeiTi";
+          li.style.fontSize = parseInt(fontSize) + "px";
+          li.style.lineHeight = fontSize * 2.5 + "px";
+          li.style.paddingLeft = fontSize * 7 + "px";
+          li.style.margin = "0";
+          menu.appendChild(li);
+      }
       for (let i = 0; i < this.input.length; i++) {
           let hr = document.createElement("hr");
           menu.appendChild(hr);
@@ -143,17 +179,21 @@
           li.style.fontWeight = "normal";
           li.style.fontFamily = "mHeiTi";
           li.style.fontSize = parseInt(fontSize) + "px";
-          li.style.lineHeight = fontSize * 2 + "px";
+          li.style.lineHeight = fontSize * 2.5 + "px";
           li.style.paddingLeft = li.style.fontSize;
           li.style.margin = "0";
           menu.appendChild(li);
           //alert(li.innerHTML)
           let input = this.input;
           li.onclick = function() {
-              input.value = i;
               input.selectedIndex = i;
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
-              menu.parentNode.parentNode.removeChild(menu.parentNode);
+              if (muWindow.parentNode) {
+                  muWindow.setAttribute("class", "hide");
+                  setTimeout(function() {
+                      muWindow.parentNode.removeChild(muWindow);
+                  }, 300);
+              }
               isMsgShow = false;
               input.onchange();
           };
@@ -161,6 +201,15 @@
       if (this.input.length) {
           let hr = document.createElement("hr");
           menu.appendChild(hr);
+          let li = document.createElement("li");
+          li.innerHTML = "︽";
+          li.style.fontWeight = "normal";
+          li.style.fontFamily = "mHeiTi";
+          li.style.fontSize = parseInt(fontSize) + "px";
+          li.style.lineHeight = fontSize * 2.5 + "px";
+          li.style.paddingLeft = fontSize * 7 + "px";
+          li.style.margin = "0";
+          menu.appendChild(li);
       }
 
   }
@@ -264,8 +313,11 @@
 
       if (this.type == "file" && !cancel) this.input.click();
       if (this.type == "select" && !cancel) {
-          //console.log(`click t=${this.text}`);
+         //console.log(`click t=${this.text}`);
           this.showMenu();
+      }
+      else {
+          //alert(`type=${this.type}, cancel=${cancel}`);
       }
       return cancel ? false : true;
   };
@@ -276,8 +328,8 @@
   button.prototype.defaultonchange = function() {
 
       //console.log(`chg t=${this.text}`);
-      //alert(`defaultonchange  ,i=${this.input.selectedIndex}`);
-      if (this.type != "select") return;
+     //console.log(`defaultonchange  ,i=${this.input.selectedIndex==-1 ? this.input[1].text : this.input.options[this.input.selectedIndex].text} `);
+      if (this.type != "select" || this.input.selectedIndex < 0) return;
       let txt = this.input.options[this.input.selectedIndex].text;
       this.setText(txt);
       return true;
@@ -298,7 +350,6 @@
        }
        */
       if (f.parentNode) f.parentNode.removeChild(f);
-
 
   };
 
@@ -403,6 +454,7 @@
           callbak(but);
       };
       this.input.onclick = this.input.ontouchend;
+
   };
 
 
@@ -538,6 +590,7 @@
       s.borderRadius = parseInt(this.fontSize) + "px";
       s.overflow = "scroll";
       s.background = this.backgroundColor;
+      muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
 
       isMsgShow = true;

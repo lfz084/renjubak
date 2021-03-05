@@ -306,7 +306,7 @@ let control = (() => {
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         if (calculate) {
-            cFindPoint.addOption(0, " <<" );
+            //cFindPoint.addOption(0, "︾" );
             cFindPoint.addOption(1, "VCT选点");
             cFindPoint.addOption(2, "做V点");
             cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
@@ -319,6 +319,7 @@ let control = (() => {
             cFindPoint.addOption(10, "活四");
             cFindPoint.addOption(11, "冲四");
             cFindPoint.addOption(12, "眠三");
+            //cFindPoint.addOption(13, "︽");
         }
         else {
             for (let i =0; i < tMsg.length; i++) {
@@ -395,7 +396,7 @@ let control = (() => {
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         if (calculate) {
-            cFindVCF.addOption(0, "<<");
+            //cFindVCF.addOption(0, "︾");
             cFindVCF.addOption(1, "快速找\b VCF");
             cFindVCF.addOption(2, "找全\b  VCF");
             cFindVCF.addOption(3, "找\b 双杀");
@@ -407,6 +408,7 @@ let control = (() => {
             cFindVCF.addOption(9, "找\b VCF防点(深度)");
             cFindVCF.addOption(10, "坂田三手胜(测试)");
             cFindVCF.addOption(11, "VCT(测试）");
+            //cFindVCF.addOption(12, "︽");
             //cFindVCF.addOption(12, "test two");
         }
         else {
@@ -466,7 +468,7 @@ let control = (() => {
                     //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, false]);
                     engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
                     break;
-                case 12:
+                case 112:
                     let cModel = ["x", "y", "d", "u"];
                     for (let i = 0; i < 4; i++) {
                         let two = isLineTwo(7, 7, cModel[i], getRenjuSelColor(), arr, false);
@@ -514,7 +516,7 @@ let control = (() => {
         });
 
         cPrintVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        cPrintVCF.addOption(0, "<<");
+        //cPrintVCF.addOption(0, "︾");
         cPrintVCF.addOption(1, "第1套VCF");
         cPrintVCF.addOption(2, "第2套VCF");
         cPrintVCF.addOption(3, "第3套VCF");
@@ -523,6 +525,7 @@ let control = (() => {
         cPrintVCF.addOption(6, "第6套VCF");
         cPrintVCF.addOption(7, "第7套VCF");
         cPrintVCF.addOption(8, "第8套VCF");
+        //cPrintVCF.addOption(9, "︽");
         cPrintVCF.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cPrintVCF.show();
         cPrintVCF.setText("➩\b VCF \b");
@@ -583,10 +586,12 @@ let control = (() => {
         });
 
         cLABC = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        //cLABC.addOption(-1, "︾");
         cLABC.addOption(0, "ABC...");
         cLABC.addOption(1, "abc...");
         cLABC.addOption(2, "123...");
         cLABC.addOption(3, "☆标记");
+        //cLABC.addOption(4, "︽");
         cLABC.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cLABC.show();
         cLABC.setontouchend(function() {
@@ -624,9 +629,11 @@ let control = (() => {
         });
 
         cLbColor = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        //cLbColor.addOption(-1, "︾");
         cLbColor.addOption(0, lbColor[0].colName);
         cLbColor.addOption(1, lbColor[1].colName);
         cLbColor.addOption(2, lbColor[2].colName);
+        //cLbColor.addOption(3, "︽");
         cLbColor.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cLbColor.show();
         cLbColor.setText("✎\b颜色");
@@ -790,13 +797,14 @@ let control = (() => {
         }
 
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        cCutImage.addOption(0, "<<");
+        //cCutImage.addOption(0, "︾");
         //cCutImage.addOption(1, "分享图片");
         cCutImage.addOption(2, "JPEG/(*.jpg)__压缩");
         cCutImage.addOption(3, "PNG(*.png)__清晰");
         cCutImage.addOption(4, "SVG/(*.svg)__矢量,无损");
         cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
+        //cCutImage.addOption(7, "︽");
         cCutImage.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cCutImage.show();
         cCutImage.setText("✄\b截图");
@@ -1100,9 +1108,11 @@ let control = (() => {
 
 
         cSLTY = new button(imgCmdDiv, "select", w * 2.66, t, w, h);
+        //cSLTY.addOption(16, "︾");
         for (let i = 15; i >= 5; i--) {
             cSLTY.addOption(i, i);
         }
+        //cSLTY.addOption(4, "︽");
         cSLTY.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cSLTY.show();
         cSLTY.setText(cSLTY.input.value + "\b行");
@@ -1121,9 +1131,11 @@ let control = (() => {
         });
 
         cSLTX = new button(imgCmdDiv, "select", w * 3.99, t, w, h);
+        //cSLTX.addOption(16, "︾");
         for (let i = 15; i >= 5; i--) {
             cSLTX.addOption(i, i);
         }
+        //cSLTX.addOption(4, "︽");
         cSLTX.createMenu(menuLeft,null,menuWidth,null,menuFontSize);
         cSLTX.show();
         cSLTX.setText(cSLTX.input.value + "\b列");
