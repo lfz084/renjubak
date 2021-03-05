@@ -9,14 +9,14 @@
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
     <link rel="preload" href="./script/button-0229.js" as="script">
-    <link rel="preload" href="./script/msgbox-0114.js" as="script">
+    <link rel="preload" href="./script/msgbox-0229.js" as="script">
     <title>五子棋涂鸦代替</title>
 </head>
 
 <body onload="resetPage()" >
     <script src="./script/button-0229.js"></script>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/msgbox-0114.js"></script>
+    <script src="./script/msgbox-0229.js"></script>
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
@@ -2093,7 +2093,6 @@
                 if (timerShareClose) clearTimeout(timerShareClose);
                 sharing = true;
                 document.body.appendChild(shareWindow);
-                shareWindow.setAttribute("class", "show");
                 let s = shareWindow.style;
                 s.position = "fixed";
                 s.zIndex = 9998;
@@ -2101,6 +2100,7 @@
                 s.height = dh * 2 + "px";
                 s.top = "0px";
                 s.left = "0px";
+                shareWindow.setAttribute("class", "show");
 
                 let imgWidth = dw < dh ? dw : dh;
                 imgWidth = parseInt(imgWidth * 3 / 4);

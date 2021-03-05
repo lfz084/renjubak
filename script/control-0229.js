@@ -1482,7 +1482,6 @@ let control = (() => {
 
         sharing = true;
         document.body.appendChild(shareWindow);
-        shareWindow.setAttribute("class", "show");
         let s = shareWindow.style;
         s.position = "fixed";
         s.zIndex = 9998;
@@ -1490,6 +1489,7 @@ let control = (() => {
         s.height = dh * 2 + "px";
         s.top = "0px";
         s.left = "0px";
+        shareWindow.setAttribute("class", "show");
 
         let imgWidth = dw < dh ? dw : dh;
         imgWidth = parseInt(imgWidth * 3 / 4);
@@ -1589,8 +1589,10 @@ let control = (() => {
     function shareClose() {
 
         shareWindow.setAttribute("class", "hide");
-        setTimeout(() => { shareWindow.parentNode.removeChild(shareWindow) }, 300);
-        sharing = false;
+        setTimeout(() => {
+            shareWindow.parentNode.removeChild(shareWindow);
+            sharing = false;
+        }, 300);
 
     }
 

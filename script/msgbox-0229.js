@@ -7,7 +7,7 @@
 
  // 创建一个屏蔽层
  let MsgBoxobj = document.createElement("div");
- MsgBoxobj.ontouchend = function() { if (!msgTextarea.readOnly) msgTextarea.focus(); } //event.preventDefault(); };
+ //MsgBoxobj.ontouchend = function() { if (!msgTextarea.readOnly) msgTextarea.focus(); } //event.preventDefault(); };
 
  // msg 窗口
  let windowDiv = document.createElement("div");
@@ -39,6 +39,15 @@
          clearTimeout(closeTimer);
          closeTimer = null;
      }
+     MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
+     setTimeout(function(){
+         MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
+             if (!msgTextarea.readOnly) {
+                 msgTextarea.focus(); 
+                 event.preventDefault();
+             }
+         }; 
+     },500);
      let p = { x: parseInt(cBoard.width) / 10, y: 0 };
      cBoard.xyObjToPage(p, cBoard.canvas);
      //console.log(`p.x=${p.x},p.y=${p.y}, left=${left},top=${top},width=${width}`);
@@ -91,10 +100,19 @@
      }
      else {
          msgTextarea.readOnly = false;
+         /*
          if (!text) {
+             setTimeout(function(){
+             let evt = document.createEvent("MouseEvents");
+             evt.initMouseEvent("click", false, false, window, 0, 0, 0, 300, 300, false, false, false, false, 0, null);
+             msgTextarea.dispatchEvent(evt);
+             },1000);
+             
              setTimeout(function() { s.autofocus = "true"; }, 100);
              setTimeout(function() { msgTextarea.focus(); }, 500);
+             
          }
+         */
          s.textAlign = "left";
          s.backgroundColor = "white";
      }
@@ -108,10 +126,16 @@
      butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
      butEnter.setontouchend(function() {
          MsgBoxobj.setAttribute("class", "hide");
-         setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
-         isMsgShow = false;
+         closeTimer = setTimeout(() => {
+             closeTimer = null;
+             MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+             isMsgShow = false;
+             
+         }, 300);
+         
          if (callEnter) callEnter(String(msgTextarea.value));
          msgTextarea.value = "";
+         if (navigator.userAgent.indexOf("iPhone") +1) viewport.resize();
      });
 
 
@@ -121,9 +145,14 @@
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
              MsgBoxobj.setAttribute("class", "hide");
-             closeTimer=setTimeout(() => { MsgBoxobj.parentNode.removeChild(MsgBoxobj) }, 300);
-             isMsgShow = false;
+             closeTimer = setTimeout(() => {
+                 closeTimer = null;
+                 MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+                 isMsgShow = false;
+             }, 300);
+             
              if (callCancel) callCancel(String(msgTextarea.value));
+             if (navigator.userAgent.indexOf("iPhone") +1) viewport.resize();
          });
 
      }
@@ -152,10 +181,11 @@
      closeTimer = setTimeout(function() {
          closeTimer = null;
          MsgBoxobj.setAttribute("class", "hide");
-         closeTimer=setTimeout(() => {
+         closeTimer = setTimeout(() => {
+             closeTimer = null;
+             isMsgShow = false;
              if (MsgBoxobj.parentNode == null) return;
              MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-             isMsgShow = false;
              msgTextarea.value = "";
          }, 300);
      }, timer);

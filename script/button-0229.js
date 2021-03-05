@@ -56,7 +56,7 @@
               event.preventDefault();
           }
           else {
-              console.log(but.type);
+              //console.log(but.type);
           }
           if (event.button == 0) but.defaultontouchstart();
       };
@@ -131,13 +131,12 @@
       muWindow.appendChild(menu);
       muWindow.ontouchstart = function(){event.preventDefault};
       muWindow.onclick = menu.onclick = function() {
-
           muWindow.setAttribute("class", "hide");
           setTimeout(function() {
               if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
+              isMsgShow = false;
           }, 300);
 
-          isMsgShow = false;
       };
       this.menuWindow = muWindow;
       this.menu = menu;
@@ -313,13 +312,18 @@
 
       }
 
-      if (this.type == "file" && !cancel) this.input.click();
-      if (this.type == "select" && !cancel) {
+      if (this.type == "file" && !cancel) {
+          this.input.click();
+          return false;
+      }
+      else if (this.type == "select" && !cancel) {
          //console.log(`click t=${this.text}`);
           this.showMenu();
+          //this.click event continue set select label text;
+          //return false;
       }
       else {
-          //alert(`type=${this.type}, cancel=${cancel}`);
+          //event.preventDefault();
       }
       return cancel ? false : true;
   };
@@ -401,6 +405,7 @@
       if (this.checked == (checked == true)) return;
       this.checked = checked ? true : false;
       this.setText(this.text, this.text2);
+      console.log(this.checked);
   };
 
 
@@ -596,6 +601,5 @@
       s.autofocus = "true";
       muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
-
       isMsgShow = true;
   }
