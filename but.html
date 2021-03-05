@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
     <link href="./style/main02.css" rel="stylesheet" type="text/css">
-    <script src="./script/button-0229.js"></script>
+    <script src="./script/button-0306.js"></script>
 </head>
 
 <body onload="resetPage()">
@@ -35,6 +35,7 @@
                 let li = document.createElement("li");
                 li.innerHTML = nu[i];
                 li.onclick = ()=>{click(i)};
+                li.ontouchstart = ()=>{liTouchstart(i)};
                 div2.appendChild(li);
             }
             if (nu.length) {
@@ -78,7 +79,10 @@
             document.body.addEventListener("contextmenu", bodyContextmenu, false);
             
         }
-        
+        let liTouchstart = (i)=> {
+            console.log(`li${i} touchstart`);
+            event.cancelBubble = true; //取消事件冒泡（否则点击按钮后，会冒泡到最后一层上即document）
+        }
         let click = (i)=> {
             console.log(`li${i} click`);
         }
@@ -88,9 +92,10 @@
         }
         let touchstart2 = () => {
             console.log("div2");
+            //event.cancelBubble = true;
         }
         let touchstart3 = (event) => {
-            event.preventDefault();
+            //event.preventDefault();
             div3.setAttribute("class", "hide");
             console.log("div3");
         }
@@ -100,6 +105,7 @@
 
         }
         let bodytouch = () => {
+            event.cancelable = true;
             //event.preventDefault();
             //document.body.setAttribute("class", "hide");
             console.log("body");

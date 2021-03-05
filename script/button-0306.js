@@ -44,14 +44,20 @@
 
       this.isEventMove = false; // 记录 touchstart 到 touchend 中间 是否触发 touchmove;
       this.touchStart = [];
+      
+      this.targetScrollTop = 0;
+      this.tempScrollTop = 0;
+      this.intervalScroll = null;
+      this.animationFrameScroll = null;
 
       let but = this;
-
       this.input.ontouchstart = function() {
+          event.cancelBubble = true;
           but.defaultontouchstart();
       };
 
       this.input.onmousedown = function() {
+          event.cancelBubble = true;
           if (but.type=="select") {
               event.preventDefault();
           }
@@ -63,6 +69,7 @@
 
       this.input.ontouchcancel = function() {
           //console.log(`cancel t=${this.text}`);
+          event.cancelBubble = true;
           but.isEventMove = true;
           but.defaultontouchend();
       };
@@ -75,10 +82,12 @@
             */
 
       this.input.ontouchend = function() {
+          event.cancelBubble = true;
           but.defaultontouchend();
       };
 
       this.input.onmouseup = function() {
+          event.cancelBubble = true;
           if (but.type=="select") event.preventDefault();
           but.isEventMove = false;
           but.defaultontouchend();
@@ -90,10 +99,12 @@
       };
 */
       this.input.onchange = function() {
+          event.cancelBubble = true;
           but.defaultonchange();
       };
 
       this.input.ontouchmove = function() {
+          event.cancelBubble = true;
           but.defaultontouchmove();
       };
 
@@ -129,14 +140,13 @@
       let muWindow = document.createElement("div");
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
-      muWindow.ontouchstart = function(){event.preventDefault};
       muWindow.onclick = menu.onclick = function() {
+          event.cancelBubble = true;
           muWindow.setAttribute("class", "hide");
           setTimeout(function() {
               if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
               isMsgShow = false;
           }, 300);
-
       };
       this.menuWindow = muWindow;
       this.menu = menu;
@@ -167,6 +177,11 @@
           li.style.paddingLeft = fontSize * 7 + "px";
           li.style.margin = "0";
           menu.appendChild(li);
+          let input = this.input;
+          li.onclick = function() {
+              event.cancelBubble = true;
+              but.menuScroll(parseInt(li.style.lineHeight) * 5);
+          };
       }
       for (let i = 0; i < this.input.length; i++) {
           let hr = document.createElement("hr");
@@ -186,6 +201,7 @@
           //alert(li.innerHTML)
           let input = this.input;
           li.onclick = function() {
+              event.cancelBubble = true;
               input.value = i;
               input.selectedIndex = i;
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
@@ -211,15 +227,67 @@
           li.style.paddingLeft = fontSize * 7 + "px";
           li.style.margin = "0";
           menu.appendChild(li);
+          let input = this.input;
+          li.onclick = function() {
+              event.cancelBubble = true;
+              but.menuScroll(-parseInt(li.style.lineHeight)*5);
+          };
       }
+      
+  };
 
-  }
-
-
+ 
+ 
+ button.prototype.menuScroll = function(top) {
+     //console.log("menuScroll")
+     let optionsHeight = (parseInt(this.menu.fontSize) * 2.5 + 3) * (this.input.length + 2);
+     let maxScrollTop = optionsHeight - parseInt(this.menumenuHeight);
+     let targetScrollTop = this.menu.scrollTop + top;
+     let but = this;
+     if (this.animationFrameScroll) cancelAnima();
+     this.targetScrollTop = targetScrollTop;
+     console.log(`menu.scrollTop=${this.menu.scrollTop}, top=${top}`)
+     this.tempScrollTop = this.menu.scrollTop;
+     this.intervalScroll = setInterval(function(){
+         let scl = Math.abs(parseInt((but.targetScrollTop-but.tempScrollTop)/100))+1;
+         console.log(`scl=${scl}`)
+         if ((top < 0) && (but.tempScrollTop > but.targetScrollTop)) {
+             but.tempScrollTop -= scl;
+         }
+         else if ((top > 0) && (but.tempScrollTop < but.targetScrollTop)) {
+             but.tempScrollTop += scl;
+         }
+         else { //  to cancelAnimationFrame
+             but.tempScrollTop = top <0 ? but.targetScrollTop-1 : but.targetScrollTop + 1;
+         }
+         //console.log("inter")
+     },1);
+     scrollTo();
+     function scrollTo() {
+         but.menu.scrollTop = but.tempScrollTop;
+         //console.log(`animationFrameScroll  ${but.tempScrollTop},  targetScrollTop=${ but.targetScrollTop}`)
+         but.animationFrameScroll = requestAnimationFrame(scrollTo);
+         if (top<0 ? but.tempScrollTop <= but.targetScrollTop : but.tempScrollTop >= but.targetScrollTop) {
+             cancelAnima();
+         }
+     }
+     
+     function cancelAnima() {
+         console.log("exit animationFrameScroll")
+         clearInterval(but.intervalScroll);
+         but.intervalScroll = null;
+         cancelAnimationFrame(but.animationFrameScroll);
+         but.animationFrameScroll = null;
+         but.menu.scrollTop = but.menu.scrollTop < 0 ? 0 : but.menu.scrollTop > maxScrollTop ? maxScrollTop : but.menu.scrollTop;
+     }
+ };
+ 
+ 
 
   button.prototype.defaultontouchstart = function() {
 
       //console.log(`str t=${this.text}`);
+      if (this.tyle=="select") event.preventDefault();
       this.isEventMove = false;
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
@@ -602,4 +670,4 @@
       muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
       isMsgShow = true;
-  }
+  };

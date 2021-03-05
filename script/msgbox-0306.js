@@ -125,6 +125,7 @@
      butEnter.setText(enterTXT ? enterTXT : "确定");
      butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
      butEnter.setontouchend(function() {
+         MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
          MsgBoxobj.setAttribute("class", "hide");
          closeTimer = setTimeout(() => {
              closeTimer = null;
@@ -144,6 +145,7 @@
          butCancel.show(w * 2.32, t, w, h);
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
+             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
              MsgBoxobj.setAttribute("class", "hide");
              closeTimer = setTimeout(() => {
                  closeTimer = null;
