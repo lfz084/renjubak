@@ -64,8 +64,8 @@
      document.body.appendChild(MsgBoxobj);
      s.position = "fixed";
      s.zIndex = 9999;
-     s.width = d.documentElement.clientWidth + "px";
-     s.height = d.documentElement.clientHeight * 2 + "px";
+     s.width = document.documentElement.clientWidth + "px";
+     s.height = document.documentElement.clientHeight * 2 + "px";
      s.top = "0px";
      s.left = "0px";
 

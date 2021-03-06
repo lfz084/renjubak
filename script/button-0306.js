@@ -124,7 +124,7 @@
 
 
 
-  button.prototype.createMenu = function(left, top, width, height, fontSize) {
+  button.prototype.createMenu = function(left, top, width, height, fontSize, closeAnimation) {
       if (this.type != "select" || this.menuWindow) return;
       let but = this;
       /*
@@ -141,17 +141,16 @@
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
           if (event) event.cancelBubble = true;
-          muWindow.setAttribute("class", "hide");
-          setTimeout(function() {
-              if (muWindow.parentNode) muWindow.parentNode.removeChild(muWindow);
-              isMsgShow = false;
-          }, 300);
+          muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
+          isMsgShow = false;
+          but.hideMenu(closeAnimation ? 300 : 300);
       };
       this.menuWindow = muWindow;
       this.menu = menu;
       menu.setAttribute("class", "menu");
       let dh = document.documentElement.clientHeight;
       let dw = document.documentElement.clientWidth;
+      let optionsHeight = (fontSize * 2.5 + 3) * this.input.length;
       height = (fontSize * 2.5 + 3) * (this.input.length + 2);
       height = height > dh * 0.8 ? dh * 0.8 : height;
       height = dw > dh ? height : height > dh * (0.5 - 0.05) ? dh * (0.5 - 0.05) : height;
@@ -162,11 +161,11 @@
       this.menu.menuHeight = height;
       this.menu.menuWidth = width;
       this.menu.fontSize = fontSize;
-      //alert(`left=${left}, top=${top}, width=${width}, height=${height}`);
+      //console.log(`left=${left}, top=${top}, width=${width}, height=${height}, fontSize${fontSize}`);
 
 
       //alert(this.input.length)
-      if (this.input.length) {
+      if (this.input.length && ((this.menu.menuHeight - (fontSize + 3) * 1) < optionsHeight)) {
           let li = document.createElement("li");
           li.innerHTML = "︾";
           li.style.fontWeight = "normal";
@@ -182,6 +181,8 @@
               but.menuScroll(parseInt(li.style.lineHeight) * 5);
           };
       }
+
+
       for (let i = 0; i < this.input.length; i++) {
           let hr = document.createElement("hr");
           menu.appendChild(hr);
@@ -205,18 +206,19 @@
               input.selectedIndex = i;
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
               if (muWindow.parentNode) {
-                  muWindow.setAttribute("class", "hide");
-                  setTimeout(function() {
-                      muWindow.parentNode.removeChild(muWindow);
-                      isMsgShow = false;
-                      input.onchange();
-                  }, 300);
+                  muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
+                  isMsgShow = false;
+                  if (closeAnimation) input.onchange();
+                  but.hideMenu(closeAnimation ? 300 : 300, !closeAnimation ? input.onchange : null);
               }
           };
       }
-      if (this.input.length) {
-          let hr = document.createElement("hr");
-          menu.appendChild(hr);
+      let hr = document.createElement("hr");
+      menu.appendChild(hr);
+      hr.style.height = "1px";
+      hr.style.marginLeft = "-1px";
+      hr.style.padding = "0";
+      if (this.input.length && ((this.menu.menuHeight - (fontSize + 3) * 1) < optionsHeight)) {
           let li = document.createElement("li");
           li.innerHTML = "︽";
           li.style.fontWeight = "normal";
@@ -231,6 +233,9 @@
               if (event) event.cancelBubble = true;
               but.menuScroll(-parseInt(li.style.lineHeight) * 5);
           };
+      }
+      else {
+          this.menu.menuHeight = optionsHeight + 3;
       }
 
   };
@@ -421,6 +426,34 @@
       if (f.parentNode) f.parentNode.removeChild(f);
 
   };
+
+
+
+  let timerHideMenu = null;
+  button.prototype.hideMenu = function(ms, callbak) {
+      let muWindow = this.menuWindow;
+      let input = this.input;
+      callbak = callbak || function() {};
+      if (timerHideMenu) {
+          clearTimeout(timerHideMenu);
+          timerHideMenu = null;
+      }
+      ms = parseInt(ms);
+      if (ms > 0) {
+          timerHideMenu = setTimeout(function() {
+              clearTimeout(timerHideMenu);
+              timerHideMenu = null;
+              muWindow.parentNode.removeChild(muWindow);
+              callbak();
+          }, ms);
+      }
+      else {
+          muWindow.parentNode.removeChild(muWindow);
+          callbak();
+      }
+
+  }
+
 
 
   //  移动和设置大小
@@ -639,26 +672,33 @@
 
 
 
-  button.prototype.showMenu = function() {
+  button.prototype.showMenu = function(x, y) {
       if (this.type != "select" || !this.menuWindow) return;
+      this.input.value = -1;
+      this.input.selectedIndex = -1;
       let muWindow = this.menuWindow;
       let s = muWindow.style;
       document.body.appendChild(muWindow);
       s.position = "fixed";
       s.zIndex = 9999;
-      s.width = d.documentElement.clientWidth + "px";
-      s.height = d.documentElement.clientHeight * 2 + "px";
+      s.width = document.documentElement.clientWidth + "px";
+      s.height = document.documentElement.clientHeight * 2 + "px";
       s.top = "0px";
       s.left = "0px";
       //s.backgroundColor = "red";
+      //console.log(`x=${x}, y=${y}`)
+      x = !x ? x : x < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (x + this.menu.menuWidth) > (document.documentElement.clientWidth - this.menu.fontSize * 2.5) ? document.documentElement.clientWidth - this.menu.menuWidth - this.menu.fontSize * 2.5 : x;
+      y = !y ? y : y < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (y + this.menu.menuHeight) > (document.documentElement.clientHeight - this.menu.fontSize * 2.5) ? document.documentElement.clientHeight - this.menu.menuHeight - this.menu.fontSize * 2.5 : y;
+
+      //console.log(`x=${x}, y=${y}`)
       s = this.menu.style;
       s.position = "absolute";
-      s.left = this.menu.menuLeft + "px";
-      s.top = this.menu.menuTop + "px";
+      s.left = `${x || this.menu.menuLeft}px`;
+      s.top = `${y || this.menu.menuTop}px`;
       s.width = this.menu.menuWidth + "px";
       s.height = this.menu.menuHeight + "px";
-      s.borderRadius = parseInt(this.fontSize) * 1.5 + "px";
-      s.border = `${parseInt(this.fontSize)/3}px solid ${this.selectBackgroundColor}`;
+      s.borderRadius = parseInt(this.menu.fontSize) * 1.5 + "px";
+      s.border = `${parseInt(this.menu.fontSize)/3}px solid ${this.selectBackgroundColor}`;
       s.overflow = "scroll";
       s.background = this.backgroundColor;
       s.autofocus = "true";

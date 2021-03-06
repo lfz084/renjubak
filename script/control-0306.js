@@ -162,6 +162,104 @@ let control = (() => {
         return nArr;
     }
 
+
+
+    let cMenu = null;
+
+    function createContextMenu(left, top, width, height, fontSize) {
+        cMenu = new button(cBd.parentNode, "select", 0, 0, 0, 0);
+        cMenu.index = -1; // save cBoard click index;
+
+
+        cMenu.addOption(1, "  找点");
+        cMenu.addOption(2, "  解题");
+        cMenu.addOption(3, "新棋局");
+        cMenu.addOption(4, "添加标记");
+        cMenu.addOption(5, "清空标记");
+        cMenu.addOption(6, "分享图片");
+        cMenu.addOption(7, "分享原图");
+        cMenu.addOption(8, "下手为❶");
+        cMenu.addOption(9, "重置手数");
+        cMenu.addOption(10, "显示手数");
+        cMenu.addOption(11, "隐藏手数");
+        cMenu.addOption(12, "输入代码");
+        cMenu.addOption(13, "输出代码");
+        cMenu.addOption(14, "输入图片");
+        cMenu.addOption(15, "✄\b截图");
+    
+        cMenu.setonchange(function(but) {
+            let idx = but.idx;
+            let x = but.menu.offsetLeft;
+            let y = but.menu.offsetTop;
+            switch (but.input.value * 1) {
+                case 1:
+                    cFindPoint.showMenu(x,y);
+                    break;
+                case 2:
+                    cFindVCF.showMenu(x,y);
+                    break;
+                case 3:
+                    cBd.cle();
+                    cBd.resetNum = 0;
+                    engine.postMsg("cancelFind");
+                    break;
+                case 4:
+                    if (cBd.P[idx].type == tLb || cBd.P[idx].type == tEmpty) {
+                        inputLabel(idx);
+                    }
+                    break;
+                case 5:
+                    cBd.cleLb("all");
+                    break;
+                case 6:
+                    share("white");
+                    break;
+                case 7:
+                    share();
+                    break;
+                case 8:
+                    cBd.setResetNum(cBd.MSindex + 1);
+                    cBd.isShowNum = cShownum.checked;
+                    break;
+                case 9:
+                    cBd.setResetNum(0);
+                    cShownum.setChecked(true);
+                    cBd.isShowNum = cShownum.checked;
+                    break;
+                case 10:
+                    cBd.showNum();
+                    cShownum.setChecked(true);
+                    cBd.isShowNum = cShownum.checked;
+                    break;
+                case 11:
+                    cBd.hideNum();
+                    cShownum.setChecked(false);
+                    cBd.isShowNum = cShownum.checked;
+                    break;
+                case 12:
+                    cInputcode.input.ontouchend();
+                    break;
+                case 13:
+                    cOutputcode.input.ontouchend();
+                    break;
+                case 14:
+                    cLoadImg.input.click();
+                    break;
+                case 15:
+                    cCutImage.showMenu(x,y);
+                    break;
+
+
+            }
+        });
+        let p = { x: 0, y: 0 };
+        cBd.xyObjToPage(p, cBd.canvas);
+        left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
+        cMenu.createMenu(left, null, width, null, fontSize, true);
+    }
+
+
+
     // renju 模式控制面板
     function createRenjuCmdDiv(parentNode, left, top, width, height) {
 
@@ -301,7 +399,7 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 0;
+        const calculate = 1;
         let tMsg = [["3月7日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
@@ -858,7 +956,7 @@ let control = (() => {
         cCleLb = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
         cCleLb.show();
         cCleLb.setColor("black");
-        cCleLb.setText(" 清除标记");
+        cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
             cBd.cleLb("all");
         });
@@ -874,6 +972,9 @@ let control = (() => {
 
 
         t = t + h * 1.5;
+
+        createContextMenu(null, null, menuWidth, null, menuFontSize);
+
 
         function cSelChecked(chk) {
             cSelBlack.setChecked(0);
@@ -1075,7 +1176,7 @@ let control = (() => {
                 putBoard();
             }
             else {
-                msg("小棋盘,长按 H8(天元) 定位到15路棋盘");
+                msg("小棋盘,长按屏幕(鼠标右键点击)定位H8");
             }
         });
 
@@ -1366,6 +1467,7 @@ let control = (() => {
         let l = (dw - w) / 2;
         let t = dh / 7;
 
+        /*
         switch (cBd.P[idx].type) {
             case tNum:
                 if (idx == cBd.MS[cBd.MSindex]) {
@@ -1392,6 +1494,26 @@ let control = (() => {
                 inputLabel(idx);
                 break;
 
+        }
+        */
+        if (idx == cBd.MS[cBd.MSindex]) {
+            let str = cBd.notShowLastNum ? "确认恢复 最后一手红色显示。" : "确认取消 最后一手红色显示。";
+            msg(str, null, null, null, null, null, null, null, function() {
+
+                if (cBd.setNotShowLastNum(idx)) {
+                    if (cShownum.checked) {
+                        cBd.showNum();
+                    }
+                    else {
+                        cBd.hideNum();
+                    }
+                }
+            }, null, 2);
+        }
+        else {
+            //console.log(`top=${window.scrollY}, left=${window.scrollX}`);
+            cMenu.idx = idx;
+            cMenu.showMenu(null, y - window.scrollY);
         }
 
     }
@@ -1619,5 +1741,6 @@ let control = (() => {
             createRenjuCmdDiv(param[0], param[1], param[2], param[3], param[4]);
             createImgCmdDiv(param[0], param[1], param[2], param[3], param[4]);
         },
+        //"showContextMenu": ()=>{cMenu.showMenu();},
     };
 })();
