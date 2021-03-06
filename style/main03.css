@@ -1,7 +1,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local('SimHei'),
-        url('./font/PingFangMediumsubfont0301.woff') format('woff');
+        url('./font/PingFang-Medium-subfont.woff') format('woff');
     font-weight: normal;
 }
 
@@ -9,7 +9,7 @@
 @font-face {
     font-family: mHeiTi;
     src: local('SimHei'),
-        url('./font/PingFangHeavysubfont0301.woff') format('woff');
+        url('./font/PingFang-Heavy-subfont.woff') format('woff');
     font-weight: bolder;
 }
 
