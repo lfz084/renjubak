@@ -399,7 +399,7 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 1;
+        const calculate = 0;
         let tMsg = [["3月7日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
