@@ -1691,7 +1691,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
 // 在PDF文档画棋盘
 checkerBoard.prototype.printPDF = function(doc, fontName) {
 
-    fontName = fontName || "arial";
+    fontName = fontName || "SimHei" || "arial";
     let showNum = this.isShowNum;
     let left = 594 * 0.0252525;
     let top = (840 - (594 - left * 2)) / 2;
@@ -2065,7 +2065,7 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
         }
     }
     if (this.MS.length) this.showLastNum(this.isShowNum);
-    
+
 }
 
 
@@ -2148,19 +2148,13 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
 checkerBoard.prototype.saveAsImage = function(type) {
 
     let canvas = this.canvas;
-    let downloadMime = "image/octet-stream"; // 强制下载
-
-    let d = new Date();
-    let filename = d.getFullYear() + "_" + (d.getMonth() + 1) + "_" + d.getDate() + " " + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
+    //let downloadMime = "image/octet-stream"; // 强制下载
+    let filename = this.autoFileName();
+    filename += "." + type;
+    let but = this;
     //保存
     canvas.toBlob(function(blob) {
-        let save_link = document.createElement("a");
-        document.body.appendChild(save_link);
-        save_link.href = URL.createObjectURL(blob);
-        save_link.download = filename;
-        save_link.click();
-        save_link.parentNode.removeChild(save_link);
-        //setTimeout(()=>{URL.revokeObjectURL(save_link.href);},10000);
+        but.saveAs(blob, filename);
         /*
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
@@ -2192,16 +2186,15 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
         msgTextarea.value = "添加中文字体......";
 
         setTimeout(function() {
-            //doc.addFont("msyh-bold.ttf", "msyh", "normal");
+            doc.addFont("../style/font/PingFang Medium-subfont.ttf", "msyh", "normal");
             //doc.addFont("msyh-bold.ttf", "msyh", "bold");
             msgTextarea.value = "写入PDF数据......";
 
             setTimeout(function() {
                 board.printPDF(doc, fontName); // 写入文档
-                let d = new Date();
-                let name = d.getFullYear() + "_" + (d.getMonth() + 1) + "_" + d.getDate() + " " + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
+                let filename = board.autoFileName();
                 closeMsg();
-                doc.save(name + ".pdf"); //保存文档
+                doc.save(filename + ".pdf"); //保存文档
             }, 50);
         }, 50);
     }, 50);
@@ -2212,20 +2205,55 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
 
 checkerBoard.prototype.saveAsSVG = function(type) {
 
-    let save_link = document.createElement("a");
-    let d = new Date();
-    let name = d.getFullYear() + "_" + (d.getMonth() + 1) + "_" + d.getDate() + " " + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
+    let filename = this.autoFileName();
+    filename += type == "html" ? ".html" : ".svg";
     let mimetype = type == "html" ? "text/html" : "image/svg+xml";
     let blob = new Blob([this.getSVG()], { type: mimetype });
-    save_link.href = URL.createObjectURL(blob);
-    save_link.download = name;
+    this.saveAs(blob, filename);
+    /*
     //console.log("checkerBoard.saveAsSVG Download" );
     let event = document.createEvent("MouseEvents");
     event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
     save_link.dispatchEvent(event);
     //URL.revokeObjectURL(save_link.href);
+    */
 
 };
+
+
+
+checkerBoard.prototype.saveAs = function(blob, filename) {
+
+    if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+
+        navigator.msSaveOrOpenBlob(blob, filename);
+    }
+    else {
+        
+        let save_link = document.createElement("a");
+        save_link.href = URL.createObjectURL(blob);
+        save_link.download = filename;
+        document.body.appendChild(save_link);
+        save_link.click();
+        save_link.parentNode.removeChild(save_link);
+        setTimeout(() => { URL.revokeObjectURL(save_link.href); }, 1000 * 60);
+    }
+
+}
+
+
+
+checkerBoard.prototype.autoFileName = function() {
+
+    let d = new Date();
+    let filename = `${d.getFullYear()}_${(f(d.getMonth() + 1))}${f(d.getDate())}_${f(d.getHours())}${f(d.getMinutes())}${f(d.getSeconds())}`;
+    return filename;
+
+    function f(s) {
+        s = s < 10 ? `0${s}` : s;
+        return s;
+    }
+}
 
 
 
@@ -2453,7 +2481,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
     }
     // 微调//////
     //alert("微调");
-    if (speed < 1) {  // speed < 1, touchMove
+    if (speed < 1) { // speed < 1, touchMove
         if (Math.abs(x - tempx) < w && Math.abs(y - tempy) < w)
         {
             var temps = Math.pow((x - tempx) / w, 2);
@@ -2469,7 +2497,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
             return;
         }
     }
-    else if(speed == 1){ // speed = 1 touchClick
+    else if (speed == 1) { // speed = 1 touchClick
         if (Math.abs(x - tempx) < parseInt(w / 3) && Math.abs(y - tempy) < parseInt(w / 3))
         {
             x = parseInt((x - tempx) / 10 * speed);
@@ -2491,7 +2519,7 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
             p.y = y;
             return;
         }
-        
+
         if (Math.abs(x - tempx) < w && Math.abs(y - tempy) < w)
         {
             x = parseInt((x - tempx) / 6 * speed);
@@ -2607,7 +2635,7 @@ checkerBoard.prototype.showNum = function() {
         this.printPoint(this.MS[i], txt, color, tNum, true, null, true);
     }
     this.showLastNum(true);
-    
+
 };
 
 
