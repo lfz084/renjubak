@@ -39,15 +39,15 @@
          clearTimeout(closeTimer);
          closeTimer = null;
      }
-     MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
-     setTimeout(function(){
+     MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
+     setTimeout(function() {
          MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
              if (!msgTextarea.readOnly) {
-                 msgTextarea.focus(); 
+                 msgTextarea.focus();
                  if (event) event.preventDefault();
              }
-         }; 
-     },500);
+         };
+     }, 500);
      let p = { x: parseInt(cBoard.width) / 10, y: 0 };
      cBoard.xyObjToPage(p, cBoard.canvas);
      //console.log(`p.x=${p.x},p.y=${p.y}, left=${left},top=${top},width=${width}`);
@@ -61,7 +61,7 @@
      butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
      let s = MsgBoxobj.style;
-     document.body.appendChild(MsgBoxobj);
+     
      s.position = "fixed";
      s.zIndex = 9999;
      s.width = document.documentElement.clientWidth + "px";
@@ -84,6 +84,11 @@
      s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3 + "px";
      s.backgroundColor = "#666666";
 
+     if (butNum != 0) {
+         s.left = (document.documentElement.clientWidth - width) / 2 + "px";
+         s.top = (document.documentElement.clientHeight - parseInt(s.height)) / 2 + "px";
+     }
+
 
      s = msgTextarea.style;
      s.left = "10px";
@@ -96,7 +101,8 @@
          msgTextarea.readOnly = true;
          s.autofocus = "false";
          s.textAlign = "center";
-         s.backgroundColor = "#777777";
+         s.color = "#eeeeee";
+         s.backgroundColor = "#666666";
      }
      else {
          msgTextarea.readOnly = false;
@@ -114,6 +120,7 @@
          }
          */
          s.textAlign = "left";
+         s.color = "black";
          s.backgroundColor = "white";
      }
      msgTextarea.value = text || "";
@@ -122,39 +129,40 @@
      let h = w / 3.1;
      let t = parseInt(s.height) + parseInt(s.top) + (parseInt(windowDiv.style.height) - parseInt(s.height) - h) / 2;
 
-     butEnter.setText(enterTXT ? enterTXT : "确定");
-     butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
-     butEnter.setontouchend(function() {
-         MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
-         MsgBoxobj.setAttribute("class", "hide");
-         closeTimer = setTimeout(() => {
-             closeTimer = null;
-             MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-             isMsgShow = false;
-             
-         }, 300);
-         
-         if (callEnter) callEnter(String(msgTextarea.value));
-         msgTextarea.value = "";
-         if (navigator.userAgent.indexOf("iPhone") +1) viewport.resize();
-     });
+     if (butNum != 0) {
+         butEnter.setText(enterTXT ? enterTXT : "确定");
+         butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
+         butEnter.setontouchend(function() {
+             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
+             MsgBoxobj.setAttribute("class", "hide");
+             closeTimer = setTimeout(() => {
+                 closeTimer = null;
+                 MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+                 isMsgShow = false;
 
+             }, 300);
 
+             if (callEnter) callEnter(String(msgTextarea.value));
+             msgTextarea.value = "";
+             if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
+         });
+     }
+     
      if (butNum == 2 || butNum == null) {
 
          butCancel.show(w * 2.32, t, w, h);
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
-             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {  }; 
+             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
              MsgBoxobj.setAttribute("class", "hide");
              closeTimer = setTimeout(() => {
                  closeTimer = null;
                  MsgBoxobj.parentNode.removeChild(MsgBoxobj);
                  isMsgShow = false;
              }, 300);
-             
+
              if (callCancel) callCancel(String(msgTextarea.value));
-             if (navigator.userAgent.indexOf("iPhone") +1) viewport.resize();
+             if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
          });
 
      }
@@ -167,7 +175,9 @@
          butCancel.hide();
          butEnter.hide();
      }
+     
      MsgBoxobj.setAttribute("class", "show");
+     setTimeout(()=>{document.body.appendChild(MsgBoxobj)},1);
 
  }
 

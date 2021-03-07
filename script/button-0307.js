@@ -5,6 +5,7 @@
       this.parentNode = parentNode; //保存父节点;
       this.div = document.createElement("div"); //定位
       this.button = document.createElement("button"); //显示
+      this.div.appendChild(this.button);
       if (type == "select") {
           this.input = document.createElement("select"); //接受用户事件  
       }
@@ -12,6 +13,7 @@
           this.input = document.createElement("input"); //接受用户事件  
           this.input.setAttribute("type", type);
       }
+      this.div.appendChild(this.input);
       this.menuWindow = null;
       this.menu = null;
 
@@ -618,9 +620,9 @@
   //显示，刷新
   button.prototype.show = function(left, top, width, height) {
 
-      this.parentNode.appendChild(this.div);
-      this.div.appendChild(this.button);
-      this.div.appendChild(this.input);
+      if (!this.div.parentNode) this.parentNode.appendChild(this.div);
+      //this.div.appendChild(this.button);
+      //this.div.appendChild(this.input);
 
       this.div.style.position = this.position;
       if (width) this.width = parseInt(width) + "px";
@@ -679,7 +681,7 @@
       this.input.selectedIndex = -1;
       let muWindow = this.menuWindow;
       let s = muWindow.style;
-      document.body.appendChild(muWindow);
+      
       s.position = "fixed";
       s.zIndex = 9999;
       s.width = document.documentElement.clientWidth + "px";
@@ -706,4 +708,5 @@
       muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
       isMsgShow = true;
+      setTimeout(()=>{document.body.appendChild(muWindow);},1);
   };

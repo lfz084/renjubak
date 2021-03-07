@@ -171,8 +171,8 @@ let control = (() => {
         cMenu.index = -1; // save cBoard click index;
 
 
-        cMenu.addOption(1, "  找点");
-        cMenu.addOption(2, "  解题");
+        cMenu.addOption(1, "🔍 找点");
+        cMenu.addOption(2, "❓ 解题");
         cMenu.addOption(3, "新棋局");
         cMenu.addOption(4, "添加标记");
         cMenu.addOption(5, "清空标记");
@@ -1554,7 +1554,8 @@ let control = (() => {
         else {
             //console.log(`top=${window.scrollY}, left=${window.scrollX}`);
             cMenu.idx = idx;
-            cMenu.showMenu(null, y - window.scrollY);
+            cMenu.showMenu(null, y - window.scrollY - cMenu.menu.fontSize*2.5*3);
+            
         }
 
     }
@@ -1650,8 +1651,8 @@ let control = (() => {
 
     function share(cBoardColor) {
 
+        if (sharing) return;
         sharing = true;
-        document.body.appendChild(shareWindow);
         let s = shareWindow.style;
         s.position = "fixed";
         s.zIndex = 9998;
@@ -1659,7 +1660,6 @@ let control = (() => {
         s.height = dh * 2 + "px";
         s.top = "0px";
         s.left = "0px";
-        shareWindow.setAttribute("class", "show");
 
         let imgWidth = dw < dh ? dw : dh;
         imgWidth = parseInt(imgWidth * 3 / 4);
@@ -1751,7 +1751,8 @@ let control = (() => {
                 cBd.refreshCheckerBoard();
             }
         });
-
+        shareWindow.setAttribute("class", "show");
+        setTimeout(()=>{document.body.appendChild(shareWindow);},1);
 
 
     }

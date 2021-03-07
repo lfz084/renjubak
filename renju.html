@@ -41,7 +41,7 @@
     <script src="./script/worker-1031.js"></script>
     <script src="./script/NoSleep.min.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
-    <script src="./script/jsPDF/jspdf.min.js"></script>
+    <script src="./script/jsPDF/jspdf.umd.js"></script>
     <script language="javascript">
         "use strict";
         let vConsole = null;
@@ -108,7 +108,7 @@
         let cBoard = null; //棋盘对象
 
 
-
+        var { jsPDF } = window.jspdf;
         document.body.onload = function() {
             try {
                 //测试脚本是否加载成功;
@@ -119,7 +119,10 @@
                 if (String(window.location).indexOf("http://localhost") == 0) {
                     if (vConsole == null) vConsole = new VConsole();
                 }
-
+                
+                
+                console.log(jspdf)
+                
                 let bodyDiv = d.createElement("div");
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";

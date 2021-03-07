@@ -1691,7 +1691,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
 // 在PDF文档画棋盘
 checkerBoard.prototype.printPDF = function(doc, fontName) {
 
-    fontName = fontName || "SimHei" || "arial";
+    fontName = fontName || "arial";
     let showNum = this.isShowNum;
     let left = 594 * 0.0252525;
     let top = (840 - (594 - left * 2)) / 2;
@@ -1757,10 +1757,9 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             x1 = left + this.P[i + j].x * size;
             y1 = top + (this.P[i + j].y + m) * size;
             y1 += (this.gW * 0.5 * 0.35) * size;
-            doc.setFont(fontName);
+            doc.setFont(fontName, "normal", 400);
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(parseInt(this.gW * 0.5 * size));
-            doc.setFontType("bold");
             doc.text(this.alpha.charAt(i), x1, y1, "center");
 
         }
@@ -1772,10 +1771,9 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             x1 = left + (this.P[i * this.SLTX + j].x + m) * size;
             y1 = top + this.P[i * this.SLTX + j].y * size;
             y1 += (this.gW * 0.5 * 0.35) * size;
-            doc.setFont(fontName);
+            doc.setFont(fontName, "normal", 400);
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(parseInt(this.gW * 0.5 * size));
-            doc.setFontType("bold");
             doc.text(String(this.SLTY - i), x1, y1, "center");
 
         }
@@ -1889,9 +1887,8 @@ checkerBoard.prototype.printPDF = function(doc, fontName) {
             txt = "×";
             doc.setTextColor(150, 0, 0);
         }
-        doc.setFont(fontName);
+        doc.setFont(fontName, "normal", 400);
         doc.setFontSize(parseInt(fontsize * size));
-        doc.setFontType("bold");
         x1 = left + x1 * size;
         y1 = top + y1 * size;
         y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
@@ -2173,31 +2170,27 @@ checkerBoard.prototype.saveAsImage = function(type) {
 // 棋盘保存PDF文件
 checkerBoard.prototype.saveAsPDF = function(fontName) {
 
-    if (typeof(jsPDF) != "function") {
+
+    if (typeof jsPDF != "function") {
         msg("❌❌❌ 缺少 jsPDF 插件");
         return;
     }
-    msg("创建PDF文档......", null, null, null, null, null, null, null, null, null, 0);
-    let board = this;
-    setTimeout(function() {
 
-        //新建文档
-        let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
-        msgTextarea.value = "添加中文字体......";
+    //msg("创建PDF文档......", null, null, null, null, null, null, null, null, null, 0);
 
-        setTimeout(function() {
-            doc.addFont("../style/font/PingFang Medium-subfont.ttf", "msyh", "normal");
-            //doc.addFont("msyh-bold.ttf", "msyh", "bold");
-            msgTextarea.value = "写入PDF数据......";
+    //新建文档
+    let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
+    msgTextarea.value = "添加中文字体......";
 
-            setTimeout(function() {
-                board.printPDF(doc, fontName); // 写入文档
-                let filename = board.autoFileName();
-                closeMsg();
-                doc.save(filename + ".pdf"); //保存文档
-            }, 50);
-        }, 50);
-    }, 50);
+    //doc.addFont("../style/font/PingFang Medium-subfont.ttf", "msyh", "normal");
+    //doc.addFont("msyh-bold.ttf", "msyh", "bold");
+    msgTextarea.value = "写入PDF数据......";
+
+    this.printPDF(doc, fontName); // 写入文档
+    let filename = this.autoFileName();
+    closeMsg();
+    //console.log(doc.save)
+    doc.save(filename + ".pdf"); //保存文档
 
 };
 
@@ -2229,7 +2222,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
         navigator.msSaveOrOpenBlob(blob, filename);
     }
     else {
-        
+
         let save_link = document.createElement("a");
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
