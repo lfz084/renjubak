@@ -17,26 +17,27 @@
     -->
     <link rel="preload" href="./style/font/PFSCMedium.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PFSCHeavy.woff" as="font" type="font/woff" crossorigin="anonymous">
-    <link href="./style/main03.css" rel="stylesheet" type="text/css">
+    <link href="./style/main05.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
-    <link rel="preload" href="./script/button-0306.js" as="script">
+    <link rel="preload" href="./script/button-0307.js" as="script">
     <link rel="preload" href="./script/engine-1031.js" as="script">
     <link rel="preload" href="./script/appData-0109.js" as="script">
-    <link rel="preload" href="./script/control-0306.js" as="script">
-    <link rel="preload" href="./script/msgbox-0306.js" as="script">
-    <link rel="preload" href="./script/checkerBoard-0306.js" as="script">
+    <link rel="preload" href="./script/control-0307.js" as="script">
+    <link rel="preload" href="./script/msgbox-0307.js" as="script">
+    <link rel="preload" href="./script/checkerBoard-0307.js" as="script">
     <link rel="preload" href="./script/worker-1031.js" as="script">
-    <title> 摆棋小工具</title>
+    
+    <title> 摆棋小工具</title>  
 </head>
 
 <body>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/button-0306.js"></script>
+    <script src="./script/button-0307.js"></script>
     <script src="./script/engine-1031.js"></script>
     <script src="./script/appData-0109.js"></script>
-    <script src="./script/control-0306.js"></script>
-    <script src="./script/msgbox-0306.js"></script>
-    <script src="./script/checkerBoard-0306.js"></script>
+    <script src="./script/control-0307.js"></script>
+    <script src="./script/msgbox-0307.js"></script>
+    <script src="./script/checkerBoard-0307.js"></script>
     <script src="./script/worker-1031.js"></script>
     <script src="./script/NoSleep.min.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
@@ -139,6 +140,7 @@
 
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth]);
                 appData.renjuLoad(cBoard);
+
                 /*
                 navigator.serviceWorker.register('./sw.js',{scope: './'})
                     .then(function(registration) {

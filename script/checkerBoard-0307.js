@@ -2154,14 +2154,21 @@ checkerBoard.prototype.saveAsImage = function(type) {
     let filename = d.getFullYear() + "_" + (d.getMonth() + 1) + "_" + d.getDate() + " " + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
     //保存
     canvas.toBlob(function(blob) {
-
         let save_link = document.createElement("a");
+        document.body.appendChild(save_link);
+        save_link.href = URL.createObjectURL(blob);
+        save_link.download = filename;
+        save_link.click();
+        save_link.parentNode.removeChild(save_link);
+        //setTimeout(()=>{URL.revokeObjectURL(save_link.href);},10000);
+        /*
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
         let event = document.createEvent("MouseEvents");
         event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         save_link.dispatchEvent(event);
         URL.revokeObjectURL(save_link.href);
+        */
     }, "image/" + type, 0.1);
 
 
@@ -2216,7 +2223,7 @@ checkerBoard.prototype.saveAsSVG = function(type) {
     let event = document.createEvent("MouseEvents");
     event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
     save_link.dispatchEvent(event);
-    URL.revokeObjectURL(save_link.href);
+    //URL.revokeObjectURL(save_link.href);
 
 };
 
