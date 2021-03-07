@@ -188,6 +188,7 @@ let control = (() => {
         cMenu.addOption(15, "✄\b截图");
     
         cMenu.setonchange(function(but) {
+            if (busy()) return;
             let idx = but.idx;
             let x = but.menu.offsetLeft;
             let y = but.menu.offsetTop;
@@ -285,6 +286,7 @@ let control = (() => {
         cStart.show();
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
+            if (busy()) return;
             cBd.toStart(cShownum.checked);
         });
 
@@ -292,6 +294,7 @@ let control = (() => {
         cPrevious.show();
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
+            if (busy()) return;
             cBd.toPrevious(cShownum.checked);
         });
 
@@ -299,6 +302,7 @@ let control = (() => {
         cNext.show();
         cNext.setText(">>");
         cNext.setontouchend(function() {
+            if (busy()) return;
             cBd.toNext(cShownum.checked);
         });
 
@@ -306,6 +310,7 @@ let control = (() => {
         cEnd.show();
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
+            if (busy()) return;
             cBd.toEnd(cShownum.checked);
         });
 
@@ -314,6 +319,7 @@ let control = (() => {
         cShownum.setText("●", "❶");
         cShownum.setChecked(1);
         cShownum.setontouchend(function() {
+            if (busy()) { cShownum.setChecked(!cShownum.checked); return;};
             renjucShownumClick();
             cBd.isShowNum = cShownum.checked;
             //cShownum.setText(cShownum.checked?"❶" :"●");
@@ -323,6 +329,7 @@ let control = (() => {
         cNewGame.show();
         cNewGame.setText("新棋局");
         cNewGame.setontouchend(function() {
+            if (busy()) return;
             cBd.cle();
             cBd.resetNum = 0;
             engine.postMsg("cancelFind");
@@ -338,6 +345,7 @@ let control = (() => {
         cFlipY.show();
         cFlipY.setText("↔180°");
         cFlipY.setontouchend(function() {
+            if (busy()) return;
             cBd.boardFlipY(cShownum.checked);
         });
 
@@ -345,6 +353,7 @@ let control = (() => {
         cCW.show();
         cCW.setText(" ↗90°");
         cCW.setontouchend(function() {
+            if (busy()) return;
             cBd.boardCW(cShownum.checked);
         });
 
@@ -353,6 +362,7 @@ let control = (() => {
         cMoveL.setColor("black");
         cMoveL.setText("←");
         cMoveL.setontouchend(function() {
+            if (busy()) return;
             cBd.moveCheckerBoard("left");
         });
 
@@ -361,6 +371,7 @@ let control = (() => {
         cMoveR.setColor("black");
         cMoveR.setText("→ ");
         cMoveR.setontouchend(function() {
+            if (busy()) return;
             cBd.moveCheckerBoard("right");
         });
 
@@ -369,6 +380,7 @@ let control = (() => {
         cMoveT.setColor("black");
         cMoveT.setText(" ↑");
         cMoveT.setontouchend(function() {
+            if (busy()) return;
             cBd.moveCheckerBoard("top");
         });
 
@@ -377,6 +389,7 @@ let control = (() => {
         cMoveB.setColor("black");
         cMoveB.setText("↓");
         cMoveB.setontouchend(function() {
+            if (busy()) return;
             cBd.moveCheckerBoard("bottom");
         });
 
@@ -389,13 +402,15 @@ let control = (() => {
         cSelBlack.setText("黑先");
         cSelBlack.setChecked(1);
         cSelBlack.setontouchend(function() {
+            //if (busy()) return;
             cSelChecked(cSelBlack);
         });
 
         cSelWhite = new button(renjuCmddiv, "checkbox", w * 1.33, t, w, h);
         cSelWhite.show();
         cSelWhite.setText("白先");
-        cSelWhite.setontouchend(function() {
+        cSelWhite.setontouchend(function() {    
+            //if (busy()) return;
             cSelChecked(cSelWhite);
         });
 
@@ -430,6 +445,7 @@ let control = (() => {
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
             but.setText("找点");
+            if (busy()) return;
             if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
                 but.input.value = 0;
                 return;
@@ -519,6 +535,7 @@ let control = (() => {
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
             but.setText("解题");
+            if (busy()) return;
             if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
                 but.input.value = 0;
                 return;
@@ -582,7 +599,8 @@ let control = (() => {
 
         cCancelFind = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
         //cCancelFind.show();
-        cCancelFind.setText("停止");
+        cCancelFind.setText("🚫 停止");
+        //cCancelFind.setColor("red");
         cCancelFind.setontouchend(function(but) {
             engine.postMsg("cancelFind");
         });
@@ -596,6 +614,7 @@ let control = (() => {
         cAutoadd.setText("\b◐\b棋");
         cAutoadd.setChecked(1);
         cAutoadd.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cAutoadd);
         });
 
@@ -603,6 +622,7 @@ let control = (() => {
         cAddblack.show();
         cAddblack.setText("\b●\b棋");
         cAddblack.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cAddblack);
         });
 
@@ -610,6 +630,7 @@ let control = (() => {
         cAddwhite.show();
         cAddwhite.setText("\b○\b棋");
         cAddwhite.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cAddwhite);
         });
 
@@ -629,6 +650,7 @@ let control = (() => {
         cPrintVCF.setText("➩\b VCF \b");
         cPrintVCF.setonchange(function(but) {
             but.setText("➩\b VCF \b");
+            if (busy()) return;
             if (but.input.value * 1) {
                 let color = getRenjuSelColor();
                 let arr = cBd.getPointArray([]);
@@ -673,6 +695,7 @@ let control = (() => {
         cLba.show();
         cLba.setText("\b ■ \b");
         cLba.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cLba);
         });
 
@@ -680,6 +703,7 @@ let control = (() => {
         cLbb.show();
         cLbb.setText("\b◎\b");
         cLbb.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cLbb);
         });
 
@@ -693,6 +717,7 @@ let control = (() => {
         cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLABC.show();
         cLABC.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cLABC);
         });
 
@@ -702,6 +727,7 @@ let control = (() => {
         cNextone.setColor("black");
         cNextone.setText(" 下手为❶");
         cNextone.setontouchend(function() {
+            if (busy()) return;
             cBd.setResetNum(cBd.MSindex + 1);
             cBd.isShowNum = cShownum.checked;
         });
@@ -715,6 +741,7 @@ let control = (() => {
         cLbc.show();
         cLbc.setText("\b ▲\b");
         cLbc.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cLbc);
         });
 
@@ -723,6 +750,7 @@ let control = (() => {
         cLbd.show();
         cLbd.setText("\b ✖ \b");
         cLbd.setontouchend(function() {
+            //if (busy()) return;
             nSetChecked(cLbd);
         });
 
@@ -736,6 +764,7 @@ let control = (() => {
         cLbColor.show();
         cLbColor.setText("✎\b颜色");
         cLbColor.setonchange(function(but) {
+            //if (busy()) return;
             but.setColor(lbColor[but.input.value].color);
             but.setText("✎\b颜色");
             cLba.setColor(lbColor[but.input.value].color);
@@ -750,6 +779,7 @@ let control = (() => {
         cResetnum.setColor("black");
         cResetnum.setText(" 重置手数");
         cResetnum.setontouchend(function() {
+            if (busy()) return;
             cBd.setResetNum(0);
             cShownum.setChecked(true);
             cBd.isShowNum = cShownum.checked;
@@ -816,6 +846,7 @@ let control = (() => {
 
         }
         cInputcode.setontouchend(function() {
+            if (busy()) return;
             let w = cBd.width * 0.8;
             let h = w;
             let l = (dw - w) / 2;
@@ -830,6 +861,7 @@ let control = (() => {
         cOutputcode.setColor("black");
         cOutputcode.setText("输出代码");
         cOutputcode.setontouchend(function() {
+            if (busy()) return;
             let w = cBd.width * 0.8;
             let h = w;
             let l = (dw - w) / 2;
@@ -846,6 +878,7 @@ let control = (() => {
         cLoadImg.input.accept = "image/*";
         cLoadImg.setText("输入图片");
         cLoadImg.setonchange(function() {
+            if (busy()) return;
             let reader = new FileReader();
             let file = cLoadImg.input.files[0];
             cLoadImg.input.value = "";
@@ -908,6 +941,7 @@ let control = (() => {
         cCutImage.setText("✄\b截图");
         cCutImage.setonchange(function(but) {
             but.setText("✄\b截图");
+            if (busy()) return;
             switch (but.input.value * 1) {
                 case 1:
                     share();
@@ -942,6 +976,7 @@ let control = (() => {
         cShareWhite.setColor("black");
         cShareWhite.setText(" 分享图片");
         cShareWhite.setontouchend(function() {
+            if (busy()) return;
             share("white");
         });
 
@@ -950,6 +985,7 @@ let control = (() => {
         cShare.setColor("black");
         cShare.setText(" 分享原图");
         cShare.setontouchend(function() {
+            if (busy()) return;
             share();
         });
 
@@ -958,6 +994,7 @@ let control = (() => {
         cCleLb.setColor("black");
         cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
+            if (busy()) return;
             cBd.cleLb("all");
         });
 
@@ -966,6 +1003,7 @@ let control = (() => {
         cHelp.setColor("black");
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
+            if (busy()) return;
             window.open("./help/renjuhelp/renjuhelp.html", "_self");
         });
 
@@ -1373,6 +1411,7 @@ let control = (() => {
 
     function renjuClick(x, y) {
 
+        if (busy()) return;
         if (sharing) return;
         let idx = cBd.getPIndex(x, y);
 
@@ -1435,6 +1474,7 @@ let control = (() => {
 
     function renjuDblClick(x, y) {
 
+        if (busy()) return;
         if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
@@ -1459,6 +1499,7 @@ let control = (() => {
 
     function renjuKeepTouch(x, y) {
 
+        if (busy()) return;
         if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx < 0) return;
@@ -1574,6 +1615,13 @@ let control = (() => {
         else {
             cBd.hideNum();
         }
+    }
+    
+    
+    function busy() {
+        let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
+        //if (busy) console.log(`请先停止计算，再操作`);
+        return busy;
     }
 
 

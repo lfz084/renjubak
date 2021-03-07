@@ -140,11 +140,12 @@
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
-          if (event) event.cancelBubble = true;
+          if (event) {event.cancelBubble = true;event.preventDefault()};
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
           but.hideMenu(closeAnimation ? 300 : 300);
       };
+      
       this.menuWindow = muWindow;
       this.menu = menu;
       menu.setAttribute("class", "menu");
