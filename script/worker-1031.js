@@ -129,7 +129,7 @@ Node.prototype.appenChild = function(child) {
 
 
 Node.prototype.removeChild = function(child) {
-    let type = typeof(child);
+    let type = typeof child;
     switch (type) {
         case "object":
             for (let i = this.childNode.length - 1; i >= 0; i--) {
@@ -254,7 +254,7 @@ onmessage = function(e) {
 
     };
     //console.log("engine.onmessage parameter =" + p);
-    if (typeof(cmd[e.data.cmd]) == "function") cmd[e.data.cmd]();
+    if (typeof cmd[e.data.cmd] == "function") cmd[e.data.cmd]();
 }
 
 
@@ -3444,7 +3444,7 @@ function findThreePoint(arr, color, newarr, ftype, setnum) {
 
 //找出可能的，活3级别攻击点(不验证做V后是否也给对手做了V)
 function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, depth) {
-    num = typeof(num) == "number" ? parseInt(num) : 9999;
+    num = typeof num == "number" ? parseInt(num) : 9999;
     backstage = backstage == null ? true : backstage;
     let threeP = []; // 保存活3点，包括复活3
     let simpleP = []; // 保存坐杀点
@@ -4124,7 +4124,7 @@ function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
 
 // 返回进攻级别,完成后newarr保存有五连点的信息
 function getLevel(arr, color, num) {
-    num = typeof(num) == "number" ? parseInt(num) : 9999;
+    num = typeof num == "number" ? parseInt(num) : 9999;
     if (isWin(color == 1 ? 2 : 1, arr)) return { level: -1, p: null };
     if (isWin(color, arr)) return { level: 5, p: null };
     if (num < 1) return { level: 0, p: null };
@@ -4159,7 +4159,7 @@ function getLevel(arr, color, num) {
 // level.level==4 ,level =={level:level,p:{x:x,y:y} ,p保存冲4防点
 // level.level==3,level =={level:level,moves:moves} moves保存一套成立的VCF手顺
 function getLevelB(arr, color, newarr, timeout, depth, backstage, num) {
-    num = typeof(num) == "number" ? parseInt(num) : 9999;
+    num = typeof num == "number" ? parseInt(num) : 9999;
     timeout = timeout || 10000;
     depth = depth || 100;
     backstage = backstage !== false ? true : false;
@@ -4409,7 +4409,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
 
 // 确定选点范围
 function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allColor, num, selFour) {
-    num = typeof(num) == "number" ? parseInt(num) : 9999;
+    num = typeof num == "number" ? parseInt(num) : 9999;
     timeout = timeout || 30000;
     depth = depth || 1000;
     backstage = backstage == null ? true : backstage;
