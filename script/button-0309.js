@@ -60,10 +60,11 @@
 
       this.input.onmousedown = function() {
           if (event) event.cancelBubble = true;
-          if (but.type == "select") {
+          if (but.type == "select" || but.type == "file") {
               if (event) event.preventDefault();
           }
           else {
+              if (event) event.preventDefault();
               //console.log(but.type);
           }
           if (event.button == 0) but.defaultontouchstart();
@@ -88,12 +89,27 @@
           but.defaultontouchend();
       };
 
+      
       this.input.onmouseup = function() {
           if (event) event.cancelBubble = true;
-          if (but.type == "select" && event) event.preventDefault();
-          but.isEventMove = false;
-          but.defaultontouchend();
+          if (event) event.preventDefault();
+          but.isEventMove = false; 
+          if (but.type=="file") {
+              but.isEventMove = true;   //cancel defaultontouchend to click();
+              but.defaultontouchend();  // defaultontouchend() to onchange();
+          }  // if "input file" cancel this click; 
+          else {
+              but.input.ontouchend();
+          }
+          
+          console.log(`but ,onmouseup`);
+          
+          console.log(`but ,onmouseup---`);
       };
+      this.input.onclick = function(){
+          //event.preventDefault()
+          console.log("click");
+      }
       /*
       this.input.onmouseout = function() {
           but.isEventMove = true;
@@ -319,7 +335,7 @@
   // 默认事件，
   button.prototype.defaultontouchend = function() {
 
-      //console.log(`end t=${this.text}`);
+      console.log(`typeof event=${typeof event}`);
       // select 要弹出菜单不能屏蔽
       //if (this.type != "select") {};
       if (event) event.preventDefault();
@@ -557,10 +573,13 @@
   button.prototype.setontouchend = function(callbak) {
       let but = this;
       this.input.ontouchend = function() {
+          console.log(`but ,ontouchend = ${event}`);
+          if (this.isEventMove) return; //cancel Mouseclick();
           if (!but.defaultontouchend(but)) return;
           callbak(but);
       };
-      this.input.onclick = this.input.ontouchend;
+      // movesUp == click();
+      //this.input.onclick = this.input.ontouchend;
 
   };
 
@@ -677,7 +696,7 @@
 
 
   button.prototype.showMenu = function(x, y) {
-      if (this.type != "select" || !this.menuWindow) return;
+      if (this.type != "select" || !this.menuWindow || this.menuWindow.parentNode) return;
       //this.input.value = -1;
       //this.input.selectedIndex = -1;
       let muWindow = this.menuWindow;

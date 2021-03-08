@@ -61,7 +61,7 @@
      butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
      let s = MsgBoxobj.style;
-     
+
      s.position = "fixed";
      s.zIndex = 9999;
      s.width = document.documentElement.clientWidth + "px";
@@ -147,7 +147,7 @@
              if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
          });
      }
-     
+
      if (butNum == 2 || butNum == null) {
 
          butCancel.show(w * 2.32, t, w, h);
@@ -175,9 +175,9 @@
          butCancel.hide();
          butEnter.hide();
      }
-     
+
      MsgBoxobj.setAttribute("class", "show");
-     setTimeout(()=>{document.body.appendChild(MsgBoxobj)},1);
+     setTimeout(() => { document.body.appendChild(MsgBoxobj) }, 1);
 
  }
 
@@ -189,16 +189,18 @@
          clearTimeout(closeTimer);
          closeTimer = null;
      }
-     timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
-     closeTimer = setTimeout(function() {
-         closeTimer = null;
-         MsgBoxobj.setAttribute("class", "hide");
-         closeTimer = setTimeout(() => {
+     if (MsgBoxobj.parentNode) {
+         timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
+         closeTimer = setTimeout(function() {
              closeTimer = null;
-             isMsgShow = false;
-             if (MsgBoxobj.parentNode) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-             msgTextarea.value = "";
-         }, AnimationTimeout);
-     }, timer);
+             MsgBoxobj.setAttribute("class", "hide");
+             closeTimer = setTimeout(() => {
+                 closeTimer = null;
+                 isMsgShow = false;
+                 MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+                 msgTextarea.value = "";
+             }, AnimationTimeout);
+         }, timer);
+     }
 
  }

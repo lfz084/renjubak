@@ -17,6 +17,7 @@
     <script src="./script/button-0309.js"></script>
     <script src="./script/viewport0228.js"></script>
     <script src="./script/msgbox-0309.js"></script>
+    <script src="./script/vConsole/vconsole.min.js"></script>
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
@@ -977,7 +978,7 @@
             let x = event.touches[0].pageX;
             let y = event.touches[0].pageY;
             if (timerSetCheckerBoard && event) event.preventDefault();
-            console.log(this)
+            //console.log(this)
             clearTimeout(timerMoveHistory); //删除定时器
             timerMoveHistory = null;
             //clearTimeout(timerSetCheckerBoard);
@@ -1044,6 +1045,7 @@
                 if (!isOut(x, y) && !sharing)
                 {
                     if (event) event.preventDefault(); //阻止事件的默认行为
+                    //console.log(`x=${x}, y=${y}`)
                     Click(parseInt(x), parseInt(y), 1);
                     isContinueSetCB = true;
                     setTimeout("isContinueSetCB = false", 600);
@@ -1440,7 +1442,7 @@
         {
             if (isMsgShow) return;
             if (sharing) return;
-            if (x == 0 || x == null)
+            if (typeof x == "object")
             {
                 x = event.pageX;
                 y = event.pageY;
@@ -1452,6 +1454,7 @@
             {
                 let p;
                 p = getP(x, y);
+                //console.log(`x=${x}, y=${y}, p=${p}`);
 
                 if (p.type == null || p.type == 0)
                 {
@@ -1804,6 +1807,10 @@
             try {
                 //测试脚本是否加载成功;
                 if (!button || !view) { location.reload(); return; }
+                if (String(window.location).indexOf("http://localhost") == 0) {
+                let vConsole;
+                if (vConsole == null) vConsole = new VConsole();
+                }
                 //alert('resetPage');
                 document.body.addEventListener("click",Click,true);
                 document.body.addEventListener("contextmenu",keepTouch,true);
