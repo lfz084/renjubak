@@ -309,18 +309,18 @@ hr {
 
 
 .show {
-    -webkit-animation: show 300ms ease-in;
-    -moz-animation: show 300ms ease-in;
-    animation: show 300ms ease-in;
+    -webkit-animation: show 150ms ease-in;
+    -moz-animation: show 150ms ease-in;
+    animation: show 150ms ease-in;
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;
 }
 
 .hide {
-    -webkit-animation: hide 500ms ease-in;
-    -moz-animation: hide 500ms ease-in;
-    animation: hide 500ms ease-in;
+    -webkit-animation: hide 380ms ease-in;
+    -moz-animation: hide 380ms ease-in;
+    animation: hide 380ms ease-in;
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;

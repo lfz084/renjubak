@@ -8,15 +8,15 @@
     <link rel="preload" href="./style/font/PFSCHeavy.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main06.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
-    <link rel="preload" href="./script/button-0308.js" as="script">
-    <link rel="preload" href="./script/msgbox-0308.js" as="script">
+    <link rel="preload" href="./script/button-0309.js" as="script">
+    <link rel="preload" href="./script/msgbox-0309.js" as="script">
     <title>五子棋涂鸦代替</title>
 </head>
 
 <body onload="resetPage()" >
-    <script src="./script/button-0308.js"></script>
+    <script src="./script/button-0309.js"></script>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/msgbox-0308.js"></script>
+    <script src="./script/msgbox-0309.js"></script>
     <script>
         const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
         const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
@@ -2260,7 +2260,7 @@
         function shareClose() {
 
             shareWindow.setAttribute("class", "hide");
-            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},300);
+            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},AnimationTimeout);
             timerShareClose = setTimeout("sharing = false", 1000);
 
         }

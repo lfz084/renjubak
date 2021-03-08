@@ -1,4 +1,5 @@
   "use strict";
+  const AnimationTimeout = 300;
   // 定制按钮，button，file，Radio，select。
   function button(parentNode, type, left, top, width, height) {
 
@@ -145,7 +146,7 @@
           if (event) {event.cancelBubble = true;event.preventDefault()};
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
-          but.hideMenu(closeAnimation ? AnimationTimeout : AnimationTimeout);
+          but.hideMenu(closeAnimation ? 350 : AnimationTimeout);
       };
       
       this.menuWindow = muWindow;
@@ -677,8 +678,8 @@
 
   button.prototype.showMenu = function(x, y) {
       if (this.type != "select" || !this.menuWindow) return;
-      this.input.value = -1;
-      this.input.selectedIndex = -1;
+      //this.input.value = -1;
+      //this.input.selectedIndex = -1;
       let muWindow = this.menuWindow;
       let s = muWindow.style;
       

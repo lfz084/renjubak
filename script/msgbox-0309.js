@@ -196,7 +196,7 @@
          closeTimer = setTimeout(() => {
              closeTimer = null;
              isMsgShow = false;
-             if (MsgBoxobj.parentNode == null) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+             if (MsgBoxobj.parentNode) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
              msgTextarea.value = "";
          }, AnimationTimeout);
      }, timer);

@@ -2181,15 +2181,15 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
 
     //新建文档
     let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
-    msgTextarea.value = "添加中文字体......";
+    //msgTextarea.value = "添加中文字体......";
 
     //doc.addFont("PFSCMedium-normal.ttf", "PFSCMedium", "normal");
     //doc.addFont('PFSCHeavy-normal.ttf', 'PFSCHeavy', 'normal');
-    msgTextarea.value = "写入PDF数据......";
+    //msgTextarea.value = "写入PDF数据......";
 
     this.printPDF(doc, "PFSCMedium", "PFSCHeavy"); // 写入文档
     let filename = this.autoFileName();
-    closeMsg();
+    //closeMsg();
     //console.log(doc.save)
     doc.save(filename + ".pdf"); //保存文档
 
