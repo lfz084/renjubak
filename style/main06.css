@@ -159,10 +159,10 @@ hr {
 @-webkit-keyframes show {
     0% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
 
     }
 
@@ -178,10 +178,10 @@ hr {
 @-moz-keyframes show {
     0% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
 
     }
 
@@ -197,10 +197,10 @@ hr {
 @keyframes show {
     0% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
 
     }
 
@@ -221,14 +221,16 @@ hr {
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
+        display:block;
     }
 
     100% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        -ms-transform: scale(0);
+        transform: scale(0);
+        display:none;
     }
 }
 
@@ -239,14 +241,16 @@ hr {
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
+        display:block;
     }
 
     100% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        -ms-transform: scale(0);
+        transform: scale(0);
+        display:none;
     }
 }
 
@@ -257,14 +261,16 @@ hr {
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
+        display:block;
     }
 
     100% {
         opacity: 0;
-        -webkit-transform: scale(0.5);
-        -moz-transform: scale(0.5);
-        -ms-transform: scale(0.5);
-        transform: scale(0.5);
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        -ms-transform: scale(0);
+        transform: scale(0);
+        display:none;
     }
 }
 
@@ -303,18 +309,18 @@ hr {
 
 
 .show {
-    -webkit-animation: show 250ms ease-in;
-    -moz-animation: show 250ms ease-in;
-    animation: show 250ms ease-in;
+    -webkit-animation: show 300ms ease-in;
+    -moz-animation: show 300ms ease-in;
+    animation: show 300ms ease-in;
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;
 }
 
 .hide {
-    -webkit-animation: hide 250ms ease-in;
-    -moz-animation: hide 250ms ease-in;
-    animation: hide 250ms ease-in;
+    -webkit-animation: hide 500ms ease-in;
+    -moz-animation: hide 500ms ease-in;
+    animation: hide 500ms ease-in;
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;

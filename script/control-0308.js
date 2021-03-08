@@ -1763,7 +1763,7 @@ let control = (() => {
         setTimeout(() => {
             shareWindow.parentNode.removeChild(shareWindow);
             sharing = false;
-        }, 300);
+        }, AnimationTimeout);
 
     }
 

@@ -145,7 +145,7 @@
           if (event) {event.cancelBubble = true;event.preventDefault()};
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
-          but.hideMenu(closeAnimation ? 300 : 300);
+          but.hideMenu(closeAnimation ? AnimationTimeout : AnimationTimeout);
       };
       
       this.menuWindow = muWindow;
@@ -212,7 +212,7 @@
                   muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
                   isMsgShow = false;
                   if (closeAnimation) input.onchange();
-                  but.hideMenu(closeAnimation ? 300 : 300, !closeAnimation ? input.onchange : null);
+                  but.hideMenu(closeAnimation ? AnimationTimeout : AnimationTimeout, !closeAnimation ? input.onchange : null);
               }
           };
       }
