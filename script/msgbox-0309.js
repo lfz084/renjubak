@@ -82,7 +82,10 @@
      s.top = parseInt(top) + "px";
      s.width = parseInt(width) + "px";
      s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3 + "px";
-     s.backgroundColor = "#666666";
+     s.backgroundColor = butEnter.backgroundColor ||  "#666666";
+     s.border = `5px solid ${butEnter.selectBackgroundColor}`;
+     //s.margin = "0px";
+     //s.padding = "0px";
 
      if (butNum != 0) {
          s.left = (document.documentElement.clientWidth - width) / 2 + "px";
@@ -91,35 +94,25 @@
 
 
      s = msgTextarea.style;
-     s.left = "10px";
-     s.top = "10px";
-     s.width = parseInt(windowDiv.style.width) - 20 + "px";
+     s.left = `10px`;
+     s.top = `10px`;
+     s.width = `${parseInt(windowDiv.style.width) - 20}px`;
      s.fontSize = parseInt(s.width) * 0.05 + "px";
      s.height = parseInt(parseInt(s.fontSize) * 1.3 * lineNum) + "px";
-     s.borderColor = "#666666";
+     s.margin = "0px";
+     s.padding = "0px";
      if (type == "msgbox") {
          msgTextarea.readOnly = true;
          s.autofocus = "false";
          s.textAlign = "center";
-         s.color = "#eeeeee";
-         s.backgroundColor = "#666666";
+         s.border = `0px`;
+         s.color = "black" || "#eeeeee";
+         s.backgroundColor = butEnter.backgroundColor || "#666666";
      }
      else {
          msgTextarea.readOnly = false;
-         /*
-         if (!text) {
-             setTimeout(function(){
-             let evt = document.createEvent("MouseEvents");
-             evt.initMouseEvent("click", false, false, window, 0, 0, 0, 300, 300, false, false, false, false, 0, null);
-             msgTextarea.dispatchEvent(evt);
-             },1000);
-             
-             setTimeout(function() { s.autofocus = "true"; }, 100);
-             setTimeout(function() { msgTextarea.focus(); }, 500);
-             
-         }
-         */
          s.textAlign = "left";
+         s.border = `0px solid black`;
          s.color = "black";
          s.backgroundColor = "white";
      }
@@ -132,6 +125,7 @@
      if (butNum != 0) {
          butEnter.setText(enterTXT ? enterTXT : "确定");
          butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
+         butEnter.div.style.border = `1px solid black`;
          butEnter.setontouchend(function() {
              MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
              MsgBoxobj.setAttribute("class", "hide");
@@ -151,6 +145,7 @@
      if (butNum == 2 || butNum == null) {
 
          butCancel.show(w * 2.32, t, w, h);
+         butCancel.div.style.border = `1px solid black`;
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
              MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};

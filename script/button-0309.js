@@ -89,24 +89,24 @@
           but.defaultontouchend();
       };
 
-      
+
       this.input.onmouseup = function() {
           if (event) event.cancelBubble = true;
           if (event) event.preventDefault();
-          but.isEventMove = false; 
-          if (but.type=="file") {
-              but.isEventMove = true;   //cancel defaultontouchend to click();
-              but.defaultontouchend();  // defaultontouchend() to onchange();
-          }  // if "input file" cancel this click; 
+          but.isEventMove = false;
+          if (but.type == "file") {
+              but.isEventMove = true; //cancel defaultontouchend to click();
+              but.defaultontouchend(); // defaultontouchend() to onchange();
+          } // if "input file" cancel this click; 
           else {
               but.input.ontouchend();
           }
-          
+
           console.log(`but ,onmouseup`);
-          
+
           console.log(`but ,onmouseup---`);
       };
-      this.input.onclick = function(){
+      this.input.onclick = function() {
           //event.preventDefault()
           console.log("click");
       }
@@ -159,12 +159,13 @@
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
-          if (event) {event.cancelBubble = true;event.preventDefault()};
+          if (event) { event.cancelBubble = true;
+              event.preventDefault() };
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
           but.hideMenu(closeAnimation ? 350 : AnimationTimeout);
       };
-      
+
       this.menuWindow = muWindow;
       this.menu = menu;
       menu.setAttribute("class", "menu");
@@ -406,7 +407,9 @@
       }
       else if (this.type == "select" && !cancel) {
           //console.log(`click t=${this.text}`);
-          this.showMenu();
+          let top =window.scrollY + this.menu.fontSize * 2.5 * 2;
+          let y = event && event.pageY ? event.pageY - top : event && event.changedTouches[0] ? event.changedTouches[0].pageY - top : undefined;
+          this.showMenu(null, y);
           //this.click event continue set select label text;
           //return false;
       }
@@ -701,7 +704,7 @@
       //this.input.selectedIndex = -1;
       let muWindow = this.menuWindow;
       let s = muWindow.style;
-      
+
       s.position = "fixed";
       s.zIndex = 9999;
       s.width = document.documentElement.clientWidth + "px";
@@ -728,5 +731,5 @@
       muWindow.setAttribute("class", "show");
       //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
       isMsgShow = true;
-      setTimeout(()=>{document.body.appendChild(muWindow);},1);
+      setTimeout(() => { document.body.appendChild(muWindow); }, 1);
   };

@@ -1669,7 +1669,8 @@ let control = (() => {
         s.height = imgWidth + "px";
         s.top = parseInt((dh - imgWidth) / 2) + "px";
         s.left = parseInt((dw - imgWidth) / 2) + "px";
-        s.backgroundColor = "#666666";
+        s.backgroundColor = butShareCancel.backgroundColor ||  "#666666";
+        s.border = `5px solid ${butShareCancel.selectBackgroundColor}`;
 
         let iWidth = parseInt(imgWidth * 3 / 5);
         shareImg.src = cBd.canvas.toDataURL();
@@ -1679,36 +1680,11 @@ let control = (() => {
         s.height = iWidth + "px";
         s.top = parseInt((imgWidth - iWidth) / 2) + "px";
         s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+        s.border = `1px solid black`;
 
         let oldBackgroundColor = cBd.backgroundColor;
         let oldLbBackgroundColor = cBd.LbBackgroundColor;
         if (cBoardColor == "white") {
-            /*
-            let mimetype = "image/svg+xml";
-            let blob = new Blob([cBd.getSVG()], { type: mimetype });
-            bkShareImg.width = 1000;
-            bkShareImg.height = 1000;
-            s = bkShareImg.style;
-            s.width = 1000 + "px";
-            s.height = 1000 + "px";
-            //bkShareImg.src = "./help/renjuhelp/499accad-b0e5-46c4-a199-af7c826d45df.002.jpeg"; //URL.createObjectURL(blob);
-            bkShareImg.src = URL.createObjectURL(blob);
-            bkShareImg.onload = function() {
-                let ctx = bkCanvas.getContext("2d");
-                bkCanvas.width = 1000;
-                bkCanvas.height = 1000;
-                s = bkCanvas.style;
-                s.position = "absolute";
-                s.width = 1000 + "px";
-                s.height = 1000 + "px";
-                s.top = "1000px";
-                s.left = "0px";
-                ctx.drawImage(bkShareImg, 0, 0, 1000, 1000);
-                shareImg.src = bkCanvas.toDataURL();
-                //console.log("data:application/png" + bkCanvas.toDataURL().substr(14))
-                //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + bkCanvas.toDataURL().substr(14);
-            }
-            */
 
             cBd.backgroundColor = "white";
             cBd.LbBackgroundColor = "white";
@@ -1732,16 +1708,17 @@ let control = (() => {
         let l = (imgWidth - w) / 2;
         let t = imgWidth - h - (imgWidth - iWidth) / 8;
 
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:white">长按图片(保存)分享</h1>`;
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:black">长按图片(保存)分享</h1>`;
         s = shareLabel.style;
         s.position = "absolute";
         s.width = w + "px";
         s.height = h + "px";
         s.top = (imgWidth - iWidth) / 8 + "px";
         s.left = l + "px";
-        s.backgroundColor = "#666666";
+        s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
 
         butShareCancel.show(l, t, w, h);
+        butShareCancel.div.style.border = `1px solid black`;
         butShareCancel.setText("关闭分享");
         butShareCancel.setontouchend(function() {
             shareClose();
