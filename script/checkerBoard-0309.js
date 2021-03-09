@@ -2227,6 +2227,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
         let save_link = document.createElement("a");
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
+        save_link.target = "_blank";
         document.body.appendChild(save_link);
         save_link.click();
         save_link.parentNode.removeChild(save_link);
