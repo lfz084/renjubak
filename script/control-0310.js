@@ -185,7 +185,7 @@ let control = (() => {
         cMenu.addOption(12, "输入代码");
         cMenu.addOption(13, "输出代码");
         cMenu.addOption(14, "输入图片");
-        cMenu.addOption(15, "✄\b截图");
+        cMenu.addOption(15, "✄ 截图");
     
         cMenu.setonchange(function(but) {
             if (busy()) return;
@@ -425,9 +425,9 @@ let control = (() => {
             cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
             cFindPoint.addOption(4, "活三级别");
             cFindPoint.addOption(5, "活三");
-            cFindPoint.addOption(6, "❌\b三三");
-            cFindPoint.addOption(7, "❌\b四四");
-            cFindPoint.addOption(8, "❌\b长连");
+            cFindPoint.addOption(6, "❌ 三三");
+            cFindPoint.addOption(7, "❌ 四四");
+            cFindPoint.addOption(8, "❌ 长连");
             cFindPoint.addOption(9, "五连");
             cFindPoint.addOption(10, "活四");
             cFindPoint.addOption(11, "冲四");
@@ -511,15 +511,15 @@ let control = (() => {
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         if (calculate) {
             //cFindVCF.addOption(0, "︾");
-            cFindVCF.addOption(1, "快速找\b VCF");
-            cFindVCF.addOption(2, "找全\b  VCF");
-            cFindVCF.addOption(3, "找\b 双杀");
+            cFindVCF.addOption(1, "快速找  VCF");
+            cFindVCF.addOption(2, "找全   VCF");
+            cFindVCF.addOption(3, "找  双杀");
             cFindVCF.addOption(4, "大道五目");
             cFindVCF.addOption(5, "三手五连");
             cFindVCF.addOption(6, "四手五连");
-            cFindVCF.addOption(7, "防\b冲四抓禁");
-            cFindVCF.addOption(8, "找\b VCF防点");
-            cFindVCF.addOption(9, "找\b VCF防点(深度)");
+            cFindVCF.addOption(7, "防 冲四抓禁");
+            cFindVCF.addOption(8, "找  VCF防点");
+            cFindVCF.addOption(9, "找  VCF防点(深度)");
             cFindVCF.addOption(10, "坂田三手胜(测试)");
             cFindVCF.addOption(11, "VCT(测试）");
             //cFindVCF.addOption(12, "︽");
@@ -611,7 +611,7 @@ let control = (() => {
 
         cAutoadd = new button(renjuCmddiv, "radio", 0, t, w, h);
         cAutoadd.show();
-        cAutoadd.setText("\b◐\b棋");
+        cAutoadd.setText(" ◐ 棋");
         cAutoadd.setChecked(1);
         cAutoadd.setontouchend(function() {
             //if (busy()) return;
@@ -620,7 +620,7 @@ let control = (() => {
 
         cAddblack = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
         cAddblack.show();
-        cAddblack.setText("\b●\b棋");
+        cAddblack.setText(" ● 棋");
         cAddblack.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cAddblack);
@@ -628,7 +628,7 @@ let control = (() => {
 
         cAddwhite = new button(renjuCmddiv, "radio", w * 2.66, t, w, h);
         cAddwhite.show();
-        cAddwhite.setText("\b○\b棋");
+        cAddwhite.setText(" ○ 棋");
         cAddwhite.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cAddwhite);
@@ -647,9 +647,9 @@ let control = (() => {
         //cPrintVCF.addOption(9, "︽");
         cPrintVCF.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cPrintVCF.show();
-        cPrintVCF.setText("➩\b VCF \b");
+        cPrintVCF.setText("➩ VCF ");
         cPrintVCF.setonchange(function(but) {
-            but.setText("➩\b VCF \b");
+            but.setText("➩ VCF ");
             if (busy()) return;
             if (but.input.value * 1) {
                 let color = getRenjuSelColor();
@@ -660,12 +660,12 @@ let control = (() => {
                         cBd.printMoves(moves, cObjVCF.color);
                     }
                     else {
-                        let str = `\b${color==1?"黑棋":"白棋"}\b只找到\b${cObjVCF.winMoves.length} 套\bVCF\b记录`;
+                        let str = ` ${color==1?"黑棋":"白棋"} 只找到 ${cObjVCF.winMoves.length} 套 VCF 记录`;
                         msg(str);
                     }
                 }
                 else {
-                    let str = `请先\b找全\b${color==1?"黑棋":"白棋"}\bVCF`;
+                    let str = `请先 找全 ${color==1?"黑棋":"白棋"} VCF`;
                     msg(str);
                 }
                 but.input.value = 0;
@@ -693,7 +693,7 @@ let control = (() => {
 
         cLba = new button(renjuCmddiv, "radio", w * 0, t, w, h);
         cLba.show();
-        cLba.setText("\b ■ \b");
+        cLba.setText(" ■ ");
         cLba.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLba);
@@ -701,7 +701,7 @@ let control = (() => {
 
         cLbb = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
         cLbb.show();
-        cLbb.setText("\b◎\b");
+        cLbb.setText(" ◎ ");
         cLbb.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLbb);
@@ -739,7 +739,7 @@ let control = (() => {
 
         cLbc = new button(renjuCmddiv, "radio", w * 0, t, w, h);
         cLbc.show();
-        cLbc.setText("\b ▲\b");
+        cLbc.setText(" ▲ ");
         cLbc.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLbc);
@@ -748,7 +748,7 @@ let control = (() => {
 
         cLbd = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
         cLbd.show();
-        cLbd.setText("\b ✖ \b");
+        cLbd.setText(" ✖ ");
         cLbd.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLbd);
@@ -762,11 +762,11 @@ let control = (() => {
         //cLbColor.addOption(3, "︽");
         cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLbColor.show();
-        cLbColor.setText("✎\b颜色");
+        cLbColor.setText("✎ 颜色");
         cLbColor.setonchange(function(but) {
             //if (busy()) return;
             but.setColor(lbColor[but.input.value].color);
-            but.setText("✎\b颜色");
+            but.setText("✎ 颜色");
             cLba.setColor(lbColor[but.input.value].color);
             cLbb.setColor(lbColor[but.input.value].color);
             cLbc.setColor(lbColor[but.input.value].color);
@@ -920,9 +920,9 @@ let control = (() => {
             cAddblack2.setChecked(1);
             cAddwhite2.setChecked(0);
             cSLTX.input.value = cBd.SLTX;
-            cSLTX.setText(cSLTX.input.value + "\b列");
+            cSLTX.setText(cSLTX.input.value + " 列");
             cSLTY.input.value = cBd.SLTY;
-            cSLTY.setText(cSLTY.input.value + "\b行");
+            cSLTY.setText(cSLTY.input.value + " 行");
             ctx = null;
             viewport.userScalable();
         }
@@ -938,9 +938,9 @@ let control = (() => {
         //cCutImage.addOption(7, "︽");
         cCutImage.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cCutImage.show();
-        cCutImage.setText("✄\b截图");
+        cCutImage.setText("✄ 截图");
         cCutImage.setonchange(function(but) {
-            but.setText("✄\b截图");
+            but.setText("✄ 截图");
             if (busy()) return;
             switch (but.input.value * 1) {
                 case 1:
@@ -1233,14 +1233,14 @@ let control = (() => {
 
         cAddblack2 = new button(imgCmdDiv, "radio", w * 0, t, w, h);
         cAddblack2.show();
-        cAddblack2.setText("\b●\b棋");
+        cAddblack2.setText(" ● 棋");
         cAddblack2.setontouchend(function() {
             nSetChecked(cAddblack2);
         });
 
         cAddwhite2 = new button(imgCmdDiv, "radio", w * 1.33, t, w, h);
         cAddwhite2.show();
-        cAddwhite2.setText("\b○\b棋");
+        cAddwhite2.setText(" ○ 棋");
         cAddwhite2.setontouchend(function() {
             nSetChecked(cAddwhite2);
         });
@@ -1254,9 +1254,9 @@ let control = (() => {
         //cSLTY.addOption(4, "︽");
         cSLTY.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cSLTY.show();
-        cSLTY.setText(cSLTY.input.value + "\b行");
+        cSLTY.setText(cSLTY.input.value + " 行");
         cSLTY.setonchange(function(but) {
-            but.setText(but.input.value + "\b行");
+            but.setText(but.input.value + " 行");
             cBd.SLTY = but.input.value;
             cBd.resetP(cBd.XL, cBd.XR, cBd.YT, cBd.YB);
             if (!cLockImg.checked) {
@@ -1277,9 +1277,9 @@ let control = (() => {
         //cSLTX.addOption(4, "︽");
         cSLTX.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cSLTX.show();
-        cSLTX.setText(cSLTX.input.value + "\b列");
+        cSLTX.setText(cSLTX.input.value + " 列");
         cSLTX.setonchange(function(but) {
-            but.setText(but.input.value + "\b列");
+            but.setText(but.input.value + " 列");
             cBd.SLTX = but.input.value;
             cBd.resetP(cBd.XL, cBd.XR, cBd.YT, cBd.YB);
             if (!cLockImg.checked) {
