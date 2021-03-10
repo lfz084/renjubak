@@ -2176,7 +2176,7 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
         msg("❌❌❌ 缺少 jsPDF 插件");
         return;
     }
-    
+
     //msg("创建PDF文档......", null, null, null, null, null, null, null, null, null, 0);
 
     //新建文档
@@ -2218,6 +2218,55 @@ checkerBoard.prototype.saveAsSVG = function(type) {
 
 checkerBoard.prototype.saveAs = function(blob, filename) {
 
+    /*
+    saveAs(blob, filename);
+    
+    // Fallback to using FileReader and a popup
+            function saveAs(blob, name, opts, popup) {
+                // Open a popup immediately do go around popup blocker
+                // Mostly only available on user interaction and the fileReader is async so...
+                popup = popup || open("", "_blank");
+                if (popup) {
+                    popup.document.title = popup.document.body.innerText =
+                        "downloading...";
+                }
+
+                var force = blob.type === "application/octet-stream";
+                var isSafari =
+                    /constructor/i.test(globalObject.HTMLElement) || globalObject.safari;
+                var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
+
+                if (
+                    (isChromeIOS || (force && isSafari)) &&
+                    typeof FileReader === "object"
+                ) {
+                    // Safari doesn't allow downloading of blob URLs
+                    var reader = new FileReader();
+                    reader.onloadend = function() {
+                        var url = reader.result;
+                        url = isChromeIOS ?
+                            url :
+                            url.replace(/^data:[^;]*;/, "data:attachment/file;");
+                        if (popup) popup.location.href = url;
+                        else location = url;
+                        popup = null; // reverse-tabnabbing #460
+                    };
+                    reader.readAsDataURL(blob);
+                } else {
+                    var URL = globalObject.URL || globalObject.webkitURL;
+                    var url = URL.createObjectURL(blob);
+                    if (popup) popup.location = url;
+                    else location.href = url;
+                    popup = null; // reverse-tabnabbing #460
+                    setTimeout(function() {
+                        URL.revokeObjectURL(url);
+                    }, 4e4); // 40s
+                }
+            };
+            
+            */
+            
+    
     if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 
         navigator.msSaveOrOpenBlob(blob, filename);
@@ -2227,12 +2276,13 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
         let save_link = document.createElement("a");
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
-        save_link.target = "_blank";
+        //save_link.target = "_blank";
         document.body.appendChild(save_link);
         save_link.click();
         save_link.parentNode.removeChild(save_link);
         setTimeout(() => { URL.revokeObjectURL(save_link.href); }, 1000 * 60);
     }
+    
 
 }
 

@@ -1669,8 +1669,8 @@ let control = (() => {
         s.height = imgWidth + "px";
         s.top = parseInt((dh - imgWidth) / 2) + "px";
         s.left = parseInt((dw - imgWidth) / 2) + "px";
-        s.backgroundColor = butShareCancel.backgroundColor ||  "#666666";
-        s.border = `5px solid ${butShareCancel.selectBackgroundColor}`;
+        s.backgroundColor = "#666666";
+        s.border = `0px solid ${butShareCancel.selectBackgroundColor}`;
 
         let iWidth = parseInt(imgWidth * 3 / 5);
         shareImg.src = cBd.canvas.toDataURL();
@@ -1680,7 +1680,7 @@ let control = (() => {
         s.height = iWidth + "px";
         s.top = parseInt((imgWidth - iWidth) / 2) + "px";
         s.left = parseInt((imgWidth - iWidth) / 2) + "px";
-        s.border = `1px solid black`;
+        s.border = `0px solid black`;
 
         let oldBackgroundColor = cBd.backgroundColor;
         let oldLbBackgroundColor = cBd.LbBackgroundColor;
@@ -1708,7 +1708,7 @@ let control = (() => {
         let l = (imgWidth - w) / 2;
         let t = imgWidth - h - (imgWidth - iWidth) / 8;
 
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:black">长按图片(保存)分享</h1>`;
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:#f0f0f0">长按图片(保存)分享</h1>`;
         s = shareLabel.style;
         s.position = "absolute";
         s.width = w + "px";

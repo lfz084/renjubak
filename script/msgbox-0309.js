@@ -82,10 +82,10 @@
      s.top = parseInt(top) + "px";
      s.width = parseInt(width) + "px";
      s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3 + "px";
-     s.backgroundColor = butEnter.backgroundColor ||  "#666666";
-     s.border = `5px solid ${butEnter.selectBackgroundColor}`;
-     //s.margin = "0px";
-     //s.padding = "0px";
+     s.backgroundColor = "#666666";
+     s.border = `0px solid ${butEnter.selectBackgroundColor}`;
+     s.margin = "0px";
+     s.padding = "0px";
 
      if (butNum != 0) {
          s.left = (document.documentElement.clientWidth - width) / 2 + "px";
@@ -106,13 +106,14 @@
          s.autofocus = "false";
          s.textAlign = "center";
          s.border = `0px`;
-         s.color = "black" || "#eeeeee";
-         s.backgroundColor = butEnter.backgroundColor || "#666666";
+         s.color = "#f0f0f0";
+         s.backgroundColor = "#666666";
      }
      else {
          msgTextarea.readOnly = false;
          s.textAlign = "left";
-         s.border = `0px solid black`;
+         s.border = `${parseInt(s.fontSize)/20}px solid black`;
+         s.left = parseInt(s.left) - parseInt(s.fontSize)/20 + "px";
          s.color = "black";
          s.backgroundColor = "white";
      }
