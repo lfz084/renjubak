@@ -182,10 +182,12 @@
     (typeof window !== "object" || window !== globalObject
       ? function saveAs() {
           /* noop */
+          console.log(`noop`)
         }
       : // Use download attribute first if possible (#193 Lumia mobile)
       "download" in HTMLAnchorElement.prototype
       ? function saveAs(blob, name, opts) {
+          console.log(` "download" in HTMLAnchorElement.prototype`)
           var URL = globalObject.URL || globalObject.webkitURL;
           var a = document.createElement("a");
           name = name || blob.name || "download";
@@ -221,7 +223,7 @@
       "msSaveOrOpenBlob" in navigator
       ? function saveAs(blob, name, opts) {
           name = name || blob.name || "download";
-
+        console.log(`"msSaveOrOpenBlob" in navigator`)
           if (typeof blob === "string") {
             if (corsEnabled(blob)) {
               download(blob, name, opts);
@@ -270,6 +272,7 @@
               popup = null; // reverse-tabnabbing #460
             };
             reader.readAsDataURL(blob);
+            console.log(`readAsDataURL`)
           } else {
             var URL = globalObject.URL || globalObject.webkitURL;
             var url = URL.createObjectURL(blob);
@@ -279,6 +282,7 @@
             setTimeout(function() {
               URL.revokeObjectURL(url);
             }, 4e4); // 40s
+            console.log(`popup`)
           }
         });
 
