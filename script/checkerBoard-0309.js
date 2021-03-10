@@ -2265,24 +2265,37 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
             };
             
             */
-            
-    
+
+
     if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 
         navigator.msSaveOrOpenBlob(blob, filename);
     }
     else {
-
-        let save_link = document.createElement("a");
-        save_link.href = URL.createObjectURL(blob);
-        save_link.download = filename;
-        //save_link.target = "_blank";
-        document.body.appendChild(save_link);
-        save_link.click();
-        save_link.parentNode.removeChild(save_link);
-        setTimeout(() => { URL.revokeObjectURL(save_link.href); }, 1000 * 60);
+        // if iphone open file;
+        if (navigator.userAgent.indexOf("iPhone") + 1) {
+            let popup = open("", "_blank");
+            if (popup) {
+                popup.document.title = popup.document.body.innerText =
+                    "downloading...";
+            }
+            let url = URL.createObjectURL(blob);
+            if (popup) popup.location = url;
+            else location.href = url;
+            setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
+        }
+        else {  // download file;
+            let save_link = document.createElement("a");
+            save_link.href = URL.createObjectURL(blob);
+            save_link.download = filename;
+            save_link.target = "_blank";
+            document.body.appendChild(save_link);
+            save_link.click();
+            save_link.parentNode.removeChild(save_link);
+            setTimeout(() => { URL.revokeObjectURL(save_link.href); }, 1000 * 60);
+        }
     }
-    
+
 
 }
 
