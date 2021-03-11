@@ -355,7 +355,7 @@
           s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
           s += this.text2 == "" ? this.text : this.text2;
           if (this.type == "select") {
-              for (let i = 5 - s.length; i > 0; i--) {
+              for (let i = 4 - s.length; i > 0; i--) {
                   s = "&nbsp" + s + "&nbsp;";
               }
               s = "&nbsp;" + s + "▼";
@@ -376,7 +376,7 @@
           s = this.type == "radio" ? "" : this.type == "checkbox" ? "" : "";
           s += this.text;
           if (this.type == "select") {
-              for (let i = 5 - s.length; i > 0; i--) {
+              for (let i = 4 - s.length; i > 0; i--) {
                   s = "&nbsp" + s + "&nbsp;";
               }
               s = "&nbsp;" + s + "▼";
@@ -630,7 +630,7 @@
           }
       }
       if (this.type == "select") {
-          for (let i = 5 - s.length; i > 0; i--) {
+          for (let i = 4 - s.length; i > 0; i--) {
               s = "&nbsp" + s + "&nbsp;";
           }
           s = "&nbsp;" + s + "▼";
