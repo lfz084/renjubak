@@ -1,15 +1,15 @@
 @font-face {
     font-family: mHeiTi;
-    src: url('./font/PFSCMedium.woff') format('woff'),
-        url('./font/PFSCMedium.ttf') format('truetype');
+    src: url('./font/PFSCMedium1.woff') format('woff'),
+        url('./font/PFSCMedium1.ttf') format('truetype');
     font-weight: normal;
 }
 
 
 @font-face {
     font-family: mHeiTi;
-    src: url('./font/PFSCHeavy.woff') format('woff'),
-        url('./font/PFSCHeavy.ttf') format('truetype');
+    src: url('./font/PFSCHeavy1.woff') format('woff'),
+        url('./font/PFSCHeavy1.ttf') format('truetype');
     font-weight: bolder;
 }
 
