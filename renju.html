@@ -19,7 +19,7 @@
     <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main09.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
-    <link rel="preload" href="./script/button-0311.js" as="script">
+    <link rel="preload" href="./script/button-0313.js" as="script">
     <link rel="preload" href="./script/engine-1031.js" as="script">
     <link rel="preload" href="./script/appData-0109.js" as="script">
     <link rel="preload" href="./script/control-0310.js" as="script">
@@ -35,7 +35,7 @@
 
 <body>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/button-0311.js"></script>
+    <script src="./script/button-0313.js"></script>
     <script src="./script/engine-1031.js"></script>
     <script src="./script/appData-0109.js"></script>
     <script src="./script/control-0310.js"></script>
@@ -133,23 +133,23 @@
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";
                 bodyDiv.style.width = "100%";
-                bodyDiv.style.height = cWidth * 4 + "px";
-                bodyDiv.style.left = 0;
-                bodyDiv.style.top = 0;
+                bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
+                bodyDiv.style.left = "0px";
+                bodyDiv.style.top = "0px";
                 let upDiv = d.createElement("div");
                 d.body.appendChild(upDiv);
                 upDiv.style.position = "absolute";
                 upDiv.style.width = "10%";
                 upDiv.style.height = 50 + "px";
                 upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
-                upDiv.style.top = dw > dh ? "0px" : cWidth + "px";
+                upDiv.style.top = dw > dh ? (dh-cWidth)/2 + "px" : cWidth + "px";
                 let downDiv = d.createElement("div");
                 d.body.appendChild(downDiv);
                 downDiv.style.position = "absolute";
                 downDiv.style.width = "10%";
                 downDiv.style.height = 50 + "px";
                 downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
-                downDiv.style.top = dw > dh ? parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
+                downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
 
                 setTimeout(() => { scrollTo(0, dw<dh?cWidth * 9 / 10:0); }, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);

@@ -6,8 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
     <link href="./style/main09.css" rel="stylesheet" type="text/css">
-    <script src="./script/button-0311.js"></script>
+    <script src="./script/button-0313.js"></script>
     <script src="./script/jsPDF/jspdf.umd.min.js"></script>
+    <script src="./script/jsPDF/PFSCMedium.js"></script>
+    <script src="./script/jsPDF/PFSCHeavy.js"></script>
+
+<script src="./script/jsPDF/特殊符号-normal.js"></script>
+
+<
 </head>
 
 <body onload="resetPage()">
@@ -88,9 +94,11 @@
 
             var doc = new jsPDF();
 
-            doc.setFontSize(40);
-            doc.text("Octocat loves jsPDF", 40, 30, 4);
-            doc.addImage(imgData, 10, 40, 180, 180);
+            doc.setFontSize(20);
+            doc.setFont("PFSCHeavy", "normal", "normal");
+            doc.text("F●❶❌◐○■◎☆▲ ✖✎✄★", 0,50);
+            doc.text("︽︾❶❓🔍🚫✔→←↑↓↖↗↙↘↔↕<>",0,80);
+            //doc.addImage(imgData, 10, 40, 180, 180);
             doc.save("filename" + ".pdf"); 
 
             console.log(`li${i} touchstart`);

@@ -7,8 +7,12 @@
       this.div = document.createElement("div"); //定位
       this.button = document.createElement("button"); //显示
       this.div.appendChild(this.button);
+      this.label = null;
       if (type == "select") {
           this.input = document.createElement("select"); //接受用户事件  
+          this.label = document.createElement("div");
+          this.label.innerHTML = "▼";
+          this.div.appendChild(this.label);
       }
       else {
           this.input = document.createElement("input"); //接受用户事件  
@@ -159,8 +163,10 @@
       let menu = document.createElement("div");
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
-          if (event) { event.cancelBubble = true;
-              event.preventDefault() };
+          if (event) {
+              event.cancelBubble = true;
+              event.preventDefault()
+          };
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
           but.hideMenu(closeAnimation ? 350 : AnimationTimeout);
@@ -354,12 +360,17 @@
           // 选中的时，按钮外观
           s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
           s += this.text2 == "" ? this.text : this.text2;
+          
           if (this.type == "select") {
+              /*
               for (let i = 4 - s.length; i > 0; i--) {
                   s = "&nbsp" + s + "&nbsp;";
               }
               s = "&nbsp;" + s + "▼";
+              */
+              s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
           }
+          
           this.button.innerHTML = s;
           this.button.style.fontSize = this.fontSize;
           this.button.style.color = this.notChangeColor ? this.color : this.selectColor;
@@ -375,12 +386,17 @@
           }
           s = this.type == "radio" ? "" : this.type == "checkbox" ? "" : "";
           s += this.text;
+          
           if (this.type == "select") {
+              /*
               for (let i = 4 - s.length; i > 0; i--) {
                   s = "&nbsp" + s + "&nbsp;";
               }
               s = "&nbsp;" + s + "▼";
+              */
+              s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
           }
+          
           this.button.innerHTML = s;
 
           let but = this;
@@ -407,7 +423,7 @@
       }
       else if (this.type == "select" && !cancel) {
           //console.log(`click t=${this.text}`);
-          let top =window.scrollY + this.menu.fontSize * 2.5 * 2;
+          let top = window.scrollY + this.menu.fontSize * 2.5 * 2;
           let y = event && event.pageY ? event.pageY - top : event && event.changedTouches[0] ? event.changedTouches[0].pageY - top : undefined;
           this.showMenu(null, y);
           //this.click event continue set select label text;
@@ -629,12 +645,17 @@
               but.button.style.backgroundColor = but.backgroundColor;
           }
       }
+      
       if (this.type == "select") {
+          /*
           for (let i = 4 - s.length; i > 0; i--) {
               s = "&nbsp" + s + "&nbsp;";
           }
           s = "&nbsp;" + s + "▼";
+          */
+          s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
       }
+      
       this.button.innerHTML = s;
   };
 
@@ -665,7 +686,7 @@
 
       this.fontSize = parseInt(this.div.style.height) / 2.2 + "px";
 
-      this.button.style.position = "relative";
+      this.button.style.position = "absolute";
       this.button.style.padding = "0px 0px 0px 0px";
       this.button.style.zIndex = this.div.style.zIndex;
       this.button.style.width = this.width;
@@ -673,7 +694,7 @@
       this.button.style.top = "0px";
       this.button.style.left = "0px";
       this.button.style.borderWidth = "0px";
-      this.button.style.margin = 0;
+      this.button.style.margin = "0px";
       this.button.style.borderRadius = this.div.style.borderRadius
       this.button.style.outline = "none";
       this.button.style.textAlign = "center";
@@ -682,12 +703,25 @@
       this.button.style.fontSize = this.fontSize;
       this.button.style.color = this.color;
       this.button.style.opacity = 0.9;
+      if (this.type == "select") {
+          this.label.style.position = "absolute";
+          this.label.style.padding = "0px 0px 0px 0px";
+          this.label.style.fontSize = this.fontSize;
+          this.label.style.left = `${parseInt(this.width)-parseInt(this.fontSize)*1.5}px`;
+          this.label.style.top = "0px";
+          this.label.style.margin = "0px";
+          this.label.style.textAlign = this.button.style.textAlign;
+          this.label.style.height = this.button.style.height;
+          this.label.style.lineHeight = this.button.style.lineHeight;
+          this.label.style.opacity = 0.9;
 
-      this.input.style.position = "relative";
+      }
+
+      this.input.style.position = "absolute";
       this.input.style.zIndex = this.button.style.zIndex + 1;
       this.input.style.width = this.width;
       this.input.style.height = this.height;
-      this.input.style.top = -parseInt(this.height) + "px";
+      this.input.style.top = "0px";
       this.input.style.left = "0px";
       this.input.style.borderRadius = this.div.style.borderRadius
       this.input.style.opacity = 0;
