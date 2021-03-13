@@ -11,7 +11,7 @@
     <script src="./script/jsPDF/PFSCMedium.js"></script>
     <script src="./script/jsPDF/PFSCHeavy.js"></script>
 
-<script src="./script/jsPDF/特殊符号-normal.js"></script>
+<script src="./script/jsPDF/Alibaba-PuHuiTi-Regular-normal.js"></script>
 
 <
 </head>
@@ -95,8 +95,8 @@
             var doc = new jsPDF();
 
             doc.setFontSize(20);
-            doc.setFont("PFSCHeavy", "normal", "normal");
-            doc.text("F●❶❌◐○■◎☆▲ ✖✎✄★", 0,50);
+            doc.setFont("Alibaba-PuHuiTi-Regular", "normal", "normal");
+            doc.text("●❶❌◐○■◎☆▲✖✎✄★",0,20);
             doc.text("︽︾❶❓🔍🚫✔→←↑↓↖↗↙↘↔↕<>",0,80);
             //doc.addImage(imgData, 10, 40, 180, 180);
             doc.save("filename" + ".pdf"); 
