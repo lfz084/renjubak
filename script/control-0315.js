@@ -19,7 +19,14 @@ let control = (() => {
     let playModel = renjuModel;
     let oldPlayModel = playModel;
     //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
-    let lbColor = [{ "colName": "黑色标记", "color": "black" }, { "colName": "红色标记", "color": "red" }, { "colName": "蓝色标记", "color": "#3333ff" }, { "colName": "绿色标记", "color": "#008000" }, { "colName": "卡其标记", "color": "#ff8c00" }];
+    let lbColor = [
+        { "colName": "黑色标记", "color": "black" },
+        { "colName": "红色标记", "color": "red" },
+        { "colName": "蓝色标记", "color": "#3333ff" },
+        { "colName": "绿色标记", "color": "#008000" },
+        { "colName": "卡其标记", "color": "#ff8c00" },
+        { "colName": "紫色标记", "color": "#ff00ff" },
+        ];
     let parentNode;
     let renjuCmddiv = null;
     let imgCmdDiv = null;
@@ -144,6 +151,7 @@ let control = (() => {
         parentNode.removeChild(imgCmdDiv);
         parentNode.appendChild(renjuCmddiv);
         playModel = oldPlayModel;
+        cBd.drawLineEnd();
         cBd.unpackArray(changeCoordinate(arr, idx));
         viewport.resize();
     }
@@ -736,9 +744,16 @@ let control = (() => {
             }
             else {
                 playModel = renjuModel;
+                cBd.drawLineEnd();
                 //console.log("renjuModel")
             }
         });
+        let hm = cLABC.hideMenu;
+        cLABC.hideMenu = function(ms, callbak) {
+            hm.call(this, ms, callbak);
+            //console.log(this.input.value)
+            this.input.onchange();
+        }
 
         cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
 
@@ -792,6 +807,7 @@ let control = (() => {
             cLbd.setColor(lbColor[but.input.value].color);
             cLABC.setColor(lbColor[but.input.value].color);
         });
+
 
         cResetnum = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
         cResetnum.show();
@@ -1057,6 +1073,7 @@ let control = (() => {
             chk.setChecked(1);
             if (chk != cLABC) {
                 playModel = renjuModel;
+                cBd.drawLineEnd();
             }
         }
 
@@ -1362,7 +1379,7 @@ let control = (() => {
                         // 搜索棋盘上最大的字母;
                         code = "A".charCodeAt(); // 65→90
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == tLb && cBd.P[idx].text.length == 1) {
+                            if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) && cBd.P[idx].text.length == 1) {
                                 let tcode = cBd.P[idx].text.charCodeAt(0);
                                 if (tcode >= code && tcode <= 90) {
                                     code = tcode < 90 ? tcode + 1 : tcode;
@@ -1377,7 +1394,7 @@ let control = (() => {
                         // 搜索棋盘上最大的字母;
                         code = "a".charCodeAt(); // 65→90
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == tLb && cBd.P[idx].text.length == 1) {
+                            if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) && cBd.P[idx].text.length == 1) {
                                 tcode = cBd.P[idx].text.charCodeAt(0);
                                 if (tcode >= code && tcode <= 122) {
                                     code = tcode < 122 ? tcode + 1 : tcode;
@@ -1391,7 +1408,7 @@ let control = (() => {
                         // 搜索棋盘上最大的数字
                         code = 1 // 1-225;
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == tLb) {
+                            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) {
                                 tcode = cBd.P[idx].text * 1;
                                 if (tcode >= code && tcode <= 225) {
                                     code = tcode < 225 ? tcode + 1 : tcode;
@@ -1490,12 +1507,22 @@ let control = (() => {
                             // 添加标记 wLb(idx,text,color, showNum:isShow) 
                             cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
                         }
+                        else if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                            if (cBd.P[idx].text) {
+                                cBd.P[idx].text = "";
+                                cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
+                            }
+                            else {
+                                cBd.P[idx].text = cmds.cmd;
+                                cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
+                            }
+                        }
                         break;
                 }
             }
 
         }
-        else if (playModel == lineModel ){
+        else if (playModel == lineModel) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "line");
         }
         else if (playModel == arrowModel) {

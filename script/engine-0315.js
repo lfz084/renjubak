@@ -47,7 +47,7 @@ let engine = (() => {
         }
     };
     let createWork = () => {
-        let wk = new Worker("./script/worker-1031.js");
+        let wk = new Worker("./script/worker-0315.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -225,7 +225,7 @@ let engine = (() => {
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
-                    work = new Worker("./script/worker-1031.js");
+                    work = new Worker("./script/worker-0315.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
@@ -256,7 +256,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-1031.js");
+                                works[i] = new Worker("./script/worker-0315.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());
@@ -311,7 +311,7 @@ let engine = (() => {
                 },
                 "getBlockVCF": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-1031.js");
+                    work = new Worker("./script/worker-0315.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -359,7 +359,7 @@ let engine = (() => {
                 },
                 "getBlockVCFb": () => {
                     let sPoint = [];
-                    work = new Worker("./script/worker-1031.js");
+                    work = new Worker("./script/worker-0315.js");
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         let command = e.data.cmd;
@@ -412,7 +412,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
-                                works[i] = new Worker("./script/worker-1031.js");
+                                works[i] = new Worker("./script/worker-0315.js");
                                 workCount++;
                                 works[i].onmessage = (e) => {
                                     labelTime.setPrePostTimer(new Date().getTime());

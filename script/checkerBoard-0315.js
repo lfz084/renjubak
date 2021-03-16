@@ -770,12 +770,35 @@ checkerBoard.prototype.cleMoves = function() {
 
 checkerBoard.prototype.cleMarkLine = function(markLine) {
 
+    let oldIdx = -1;
     for (let i = markLine.P.length - 1; i >= 0; i--) {
         let idx = markLine.P[i];
         this.clePointB(idx);
-        this.refreshMarkLine(idx);
-        this.printPointB(idx, this.P[idx].text, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
-        this.refreshMarkArrow(idx);
+        if (oldIdx + 1) {
+            this.refreshMarkLine(oldIdx);
+            this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+            this.refreshMarkArrow(oldIdx);
+        }
+        oldIdx = idx;
+        if (markLine.direction % 2) {
+            let nIdx = idx + (markLine.direction < 5 ? 0 - this.SLTX : this.SLTX);
+            let nIdx1 = idx + (nIdx < idx ? (markLine.direction==1?-1:1) : (markLine.direction==5?1: -1));
+            if (nIdx >= 0 && nIdx < this.P.length) {
+                this.refreshMarkLine(nIdx);
+                this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
+                this.refreshMarkArrow(nIdx);
+            }
+            if (nIdx1 >= 0 && nIdx1 < this.P.length) {
+                this.refreshMarkLine(nIdx1);
+                this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
+                this.refreshMarkArrow(nIdx1);
+            }
+        }
+    }
+    if (oldIdx + 1) {
+        this.refreshMarkLine(oldIdx);
+        this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+        this.refreshMarkArrow(oldIdx);
     }
 
 }
@@ -784,12 +807,36 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
 
 checkerBoard.prototype.cleMarkArrow = function(markArrow) {
 
+    let oldIdx = -1;
     for (let i = markArrow.P.length - 1; i >= 0; i--) {
         let idx = markArrow.P[i];
         this.clePointB(idx);
-        this.refreshMarkLine(idx);
-        this.printPointB(idx, this.P[idx].text, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
-        this.refreshMarkArrow(idx);
+        if (oldIdx + 1) {
+            this.refreshMarkLine(oldIdx);
+            this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+            this.refreshMarkArrow(oldIdx);
+        }
+        oldIdx = idx;
+        if (markArrow.direction % 2) {
+            let nIdx = idx + (markArrow.direction < 5 ? 0 - this.SLTX : this.SLTX);
+            let nIdx1 = idx + (nIdx < idx ? (markArrow.direction==1?-1:1) : (markArrow.direction==5?1: -1));
+            if (nIdx >= 0 && nIdx < this.P.length) {
+                this.refreshMarkLine(nIdx);
+                this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
+                this.refreshMarkArrow(nIdx);
+            }
+            if (nIdx1 >= 0 && nIdx1 < this.P.length) {
+                this.refreshMarkLine(nIdx1);
+                this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
+                this.refreshMarkArrow(nIdx1);
+            }
+        }
+        
+    }
+    if (oldIdx + 1) {
+        this.refreshMarkLine(oldIdx);
+        this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+        this.refreshMarkArrow(oldIdx);
     }
 
 }
@@ -911,10 +958,13 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
     const sin45 = 0.707105;
     let s = this.drawLine.startPoint.style;
     if (this.startIdx < 0) {
+        if (idx <0 || idx >= this.P.length) return;
         s.width = this.gW / 3 + "px";
         s.height = this.gH / 3 + "px";
-        s.left = this.P[idx].x - parseInt(s.width) / 2 + this.canvas.offsetLeft + "px";
-        s.top = this.P[idx].y - parseInt(s.height) / 2 + this.canvas.offsetTop + "px";
+        s.borderWidth = this.gW/6 + "px";
+        s.borderColor = "white";
+        s.left = this.P[idx].x - parseInt(s.width) / 2 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+        s.top = this.P[idx].y - parseInt(s.height) / 2 -parseInt(s.borderWidth) + this.canvas.offsetTop + "px";
         s.backgroundColor = color;
         s.zIndex = 0;
         this.startIdx = idx;
@@ -938,6 +988,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             let y = this.P[mk.P[mk.P.length - 1]].y;
             s = this.drawLine.selectDiv.style;
             s.borderWidth = this.gW / 15 + "px";
+            s.borderColor = mk.color;
             s.width = mk.direction % 2 ? this.gW * (mk.P.length - 1) / sin45 + "px" : this.gW * (mk.P.length - 1) + "px";
             s.height = this.gH / 2 + "px";
             s.left = x - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
@@ -983,6 +1034,20 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         }
         return -1;
     }
+}
+
+
+
+checkerBoard.prototype.drawLineEnd = function () {
+    
+    this.drawLine.startPoint.style.zIndex = -100;
+    this.drawLine.selectDiv.style.zIndex = -100;
+    this.startIdx = -1;
+    this.selectIdx = -1;
+    this.selectArrow = false;
+    this.selectLine = false;
+    this.drawLine.startPoint.setAttribute("class", "none");
+    this.drawLine.selectDiv.setAttribute("class", "none");
 }
 
 
@@ -1697,6 +1762,8 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
     }
 
     this.MSToMoves();
+    this.removeMarkArrow("all");
+    this.removeMarkLine("all");
 
     // 复制一个点，同时打印出来
     function copyP(board, idx, idx1) {
@@ -1750,7 +1817,7 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
     const sin45 = 0.707105;
     let ctx = this.canvas.getContext("2d");
     ctx.strokeStyle = markArrow.color;
-    ctx.lineWidth = this.gW / 20;
+    ctx.lineWidth = this.gW * 3.5 / 50 ;
     ctx.beginPath();
     let x = this.P[markArrow.P[0]].x;
     let y = this.P[markArrow.P[0]].y;
@@ -1765,8 +1832,8 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
         pArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
     }
     else {
-        let w = this.gW / 2 * 1.07;
-        let h = this.gH / 2 * 1.07;
+        let w = this.gW / 2 + this.gW*0.035;
+        let h = this.gH / 2 + this.gH*0.035;
         let x1, x2, y1, y2;
         if (idx == markArrow.P[0]) {
             x1 = this.P[idx].x;
@@ -1777,32 +1844,32 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
                     y2 = y1;
                     break;
                 case 1:
-                    x2 = x1 - w;
-                    y2 = y1 - h;
+                    x2 = x1 - w -1;
+                    y2 = y1 - h -1;
                     break;
                 case 2:
                     x2 = x1;
                     y2 = y1 - h;
                     break;
                 case 3:
-                    x2 = x1 + w;
-                    y2 = y1 - h;
+                    x2 = x1 + w +1;
+                    y2 = y1 - h -1;
                     break;
                 case 4:
                     x2 = x1 + w;
                     y2 = y1;
                     break;
                 case 5:
-                    x2 = x1 + w;
-                    y2 = y1 + h;
+                    x2 = x1 + w +1;
+                    y2 = y1 + h +1;
                     break;
                 case 6:
                     x2 = x1;
                     y2 = y1 + h;
                     break;
                 case 7:
-                    x2 = x1 - w;
-                    y2 = y1 + h;
+                    x2 = x1 - w -1;
+                    y2 = y1 + h +1;
                     break;
             }
         }
@@ -1815,32 +1882,32 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
                     y2 = y1;
                     break;
                 case 5:
-                    x2 = x1 - w;
-                    y2 = y1 - h;
+                    x2 = x1 - w -1;
+                    y2 = y1 - h -1;
                     break;
                 case 6:
                     x2 = x1;
                     y2 = y1 - h;
                     break;
                 case 7:
-                    x2 = x1 + w;
-                    y2 = y1 - h;
+                    x2 = x1 + w +1;
+                    y2 = y1 - h -1;
                     break;
                 case 0:
                     x2 = x1 + w;
                     y2 = y1;
                     break;
                 case 1:
-                    x2 = x1 + w;
-                    y2 = y1 + h;
+                    x2 = x1 + w +1;
+                    y2 = y1 + h +1;
                     break;
                 case 2:
                     x2 = x1;
                     y2 = y1 + h;
                     break;
                 case 3:
-                    x2 = x1 - w;
-                    y2 = y1 + h;
+                    x2 = x1 - w -1;
+                    y2 = y1 + h +1;
                     break;
             }
         }
@@ -1854,10 +1921,10 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
                 y2 = y;
             }
             else if (markArrow.direction == 1 || markArrow.direction == 5) {
-                x1 = x - w;
-                y1 = y - h;
-                x2 = x + w;
-                y2 = y + h;
+                x1 = x - w -1;
+                y1 = y - h -1;
+                x2 = x + w +1;
+                y2 = y + h +1;
             }
             else if (markArrow.direction == 2 || markArrow.direction == 6) {
                 x1 = x;
@@ -1866,10 +1933,10 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx) {
                 y2 = y + h;
             }
             else {
-                x1 = x - w;
-                y1 = y + h;
-                x2 = x + w;
-                y2 = y - h;
+                x1 = x - w -1;
+                y1 = y + h +1;
+                x2 = x + w +1;
+                y2 = y - h -1;
             }
         }
         ctx.moveTo(x1, y1);
@@ -1970,7 +2037,7 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx) {
     */
     let ctx = this.canvas.getContext("2d");
     ctx.strokeStyle = markLine.color;
-    ctx.lineWidth = this.gW / 20;
+    ctx.lineWidth = this.gW * 3.5 / 50;
     ctx.beginPath();
     let x = this.P[markLine.P[0]].x;
     let y = this.P[markLine.P[0]].y;
@@ -1994,32 +2061,32 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx) {
                     y2 = y1;
                     break;
                 case 1:
-                    x2 = x1 - w;
-                    y2 = y1 - h;
+                    x2 = x1 - w -1;
+                    y2 = y1 - h -1;
                     break;
                 case 2:
                     x2 = x1;
                     y2 = y1 - h;
                     break;
                 case 3:
-                    x2 = x1 + w;
-                    y2 = y1 - h;
+                    x2 = x1 + w +1;
+                    y2 = y1 - h -1;
                     break;
                 case 4:
                     x2 = x1 + w;
                     y2 = y1;
                     break;
                 case 5:
-                    x2 = x1 + w;
-                    y2 = y1 + h;
+                    x2 = x1 + w +1;
+                    y2 = y1 + h +1;
                     break;
                 case 6:
                     x2 = x1;
                     y2 = y1 + h;
                     break;
                 case 7:
-                    x2 = x1 - w;
-                    y2 = y1 + h;
+                    x2 = x1 - w -1;
+                    y2 = y1 + h +1;
                     break;
             }
         }
@@ -2032,32 +2099,32 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx) {
                     y2 = y1;
                     break;
                 case 5:
-                    x2 = x1 - w;
-                    y2 = y1 - h;
+                    x2 = x1 - w -1;
+                    y2 = y1 - h -1;
                     break;
                 case 6:
                     x2 = x1;
                     y2 = y1 - h;
                     break;
                 case 7:
-                    x2 = x1 + w;
-                    y2 = y1 - h;
+                    x2 = x1 + w +1;
+                    y2 = y1 - h -1;
                     break;
                 case 0:
                     x2 = x1 + w;
                     y2 = y1;
                     break;
                 case 1:
-                    x2 = x1 + w;
-                    y2 = y1 + h;
+                    x2 = x1 + w +1;
+                    y2 = y1 + h +1;
                     break;
                 case 2:
                     x2 = x1;
                     y2 = y1 + h;
                     break;
                 case 3:
-                    x2 = x1 - w;
-                    y2 = y1 + h;
+                    x2 = x1 - w -1;
+                    y2 = y1 + h +1;
                     break;
             }
         }
@@ -2071,10 +2138,10 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx) {
                 y2 = y;
             }
             else if (markLine.direction == 1 || markLine.direction == 5) {
-                x1 = x - w;
-                y1 = y - h;
-                x2 = x + w;
-                y2 = y + h;
+                x1 = x - w -1;
+                y1 = y - h -1;
+                x2 = x + w +1;
+                y2 = y + h +1;
             }
             else if (markLine.direction == 2 || markLine.direction == 6) {
                 x1 = x;
@@ -2083,10 +2150,10 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx) {
                 y2 = y + h;
             }
             else {
-                x1 = x - w;
-                y1 = y + h;
-                x2 = x + w;
-                y2 = y - h;
+                x1 = x - w -1;
+                y1 = y + h +1;
+                x2 = x + w +1;
+                y2 = y - h -1;
             }
         }
         ctx.moveTo(x1, y1);
@@ -2578,7 +2645,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
 
 checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum) {
 
-    if (this.P[idx].type == tEmpty) return;
+    if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == tEmpty) return;
     let txt = text;
     if (this.P[idx].type == tNum || this.P[idx].type == tWhite || this.P[idx].type == tBlack) { //控制从第几手显示❶
         if (this.P[idx].type == tNum) {
