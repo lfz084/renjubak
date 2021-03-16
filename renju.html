@@ -182,7 +182,7 @@
             }
             catch (err) {
                 //console.log ("reLoad");
-                setTimeout(()=>{location.reload()},1000);
+                //setTimeout(()=>{location.reload()},1000);
             }
 
         }
@@ -487,7 +487,7 @@
 
         function canvasKeepTouch(x, y) {
 
-            if (control.getPlayModel() == control.renjuModel) {
+            if (control.getPlayModel() != control.imgModel) {
                 /*
                 if (event && event.type == "contextmenu") {
                     control.renjuKeepTouch(event.pageX, event.pageY);
@@ -517,7 +517,8 @@
             //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
-            if (control.getPlayModel() == control.renjuModel) {
+            //console.log(`get=${control.getPlayModel() },ren=${control.renjuModel}`)
+            if (control.getPlayModel() != control.imgModel) {
                 control.renjuClick(x, y);
             }
             else if (!control.cLockImgChecked()) {
@@ -593,7 +594,8 @@
 
 
         function continueSetCutDivStart() {
-            if (control.getPlayModel() == control.renjuModel || control.cLockImgChecked()) return;
+            if (control.getPlayModel() != control.imgModel || control.cLockImgChecked()) return;
+            //console.log("continueSetCutDivStart")
             setTimeout(cBoard.cleAllPointBorder(), 10);
             exitContinueSetCutDivMove = false;
             continueSetCutDivMove();
@@ -603,7 +605,7 @@
 
 
         function continueSetCutDivMove() {
-            //log("continueSetCutDiv start");
+            //log("continueSetCutDivMove ");
             let x = parseInt(continueSetCutDivX);
             let y = parseInt(continueSetCutDivY);
             let p = { x: x, y: y };
@@ -625,7 +627,8 @@
 
 
         function continueSetCutDivEnd() {
-            if (control.getPlayModel() == control.renjuModel || control.cLockImgChecked()) return;
+            //console.log("continueSetCutDivEnd")
+            if (control.getPlayModel() != control.imgModel || control.cLockImgChecked()) return;
             exitContinueSetCutDivMove = true;
             cBoard.resetP();
             cBoard.printBorder();

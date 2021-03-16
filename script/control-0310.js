@@ -6,6 +6,8 @@ let control = (() => {
     }, 3000);
     const renjuModel = 0;
     const imgModel = 1;
+    const lineModel = 2;
+    const arrowModel = 3;
     let cBd;
     let engine;
     let msg;
@@ -15,8 +17,9 @@ let control = (() => {
     let dh;
 
     let playModel = renjuModel;
+    let oldPlayModel = playModel;
     //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
-    let lbColor = [{ "colName": "黑色标记", "color": "black" }, { "colName": "红色标记", "color": "red" }, { "colName": "蓝色标记", "color": "#3333ff" }];
+    let lbColor = [{ "colName": "黑色标记", "color": "black" }, { "colName": "红色标记", "color": "red" }, { "colName": "蓝色标记", "color": "#3333ff" }, { "colName": "绿色标记", "color": "#008000" }, { "colName": "卡其标记", "color": "#ff8c00" }];
     let parentNode;
     let renjuCmddiv = null;
     let imgCmdDiv = null;
@@ -140,7 +143,7 @@ let control = (() => {
         parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         parentNode.removeChild(imgCmdDiv);
         parentNode.appendChild(renjuCmddiv);
-        playModel = renjuModel;
+        playModel = oldPlayModel;
         cBd.unpackArray(changeCoordinate(arr, idx));
         viewport.resize();
     }
@@ -186,7 +189,7 @@ let control = (() => {
         cMenu.addOption(13, "输出代码");
         cMenu.addOption(14, "输入图片");
         cMenu.addOption(15, "✄ 截图");
-    
+
         cMenu.setonchange(function(but) {
             if (busy()) return;
             let idx = but.idx;
@@ -194,10 +197,10 @@ let control = (() => {
             let y = but.menu.offsetTop;
             switch (but.input.value * 1) {
                 case 1:
-                    cFindPoint.showMenu(x,y);
+                    cFindPoint.showMenu(x, y);
                     break;
                 case 2:
-                    cFindVCF.showMenu(x,y);
+                    cFindVCF.showMenu(x, y);
                     break;
                 case 3:
                     cBd.cle();
@@ -205,7 +208,7 @@ let control = (() => {
                     engine.postMsg("cancelFind");
                     break;
                 case 4:
-                    if (cBd.P[idx].type == tLb || cBd.P[idx].type == tEmpty) {
+                    if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves || cBd.P[idx].type == tEmpty) {
                         inputLabel(idx);
                     }
                     break;
@@ -247,7 +250,7 @@ let control = (() => {
                     cLoadImg.input.click();
                     break;
                 case 15:
-                    cCutImage.showMenu(x,y);
+                    cCutImage.showMenu(x, y);
                     break;
 
 
@@ -319,7 +322,7 @@ let control = (() => {
         cShownum.setText("●", "❶");
         cShownum.setChecked(1);
         cShownum.setontouchend(function() {
-            if (busy()) { cShownum.setChecked(!cShownum.checked); return;};
+            if (busy()) { cShownum.setChecked(!cShownum.checked); return; };
             renjucShownumClick();
             cBd.isShowNum = cShownum.checked;
             //cShownum.setText(cShownum.checked?"❶" :"●");
@@ -409,7 +412,7 @@ let control = (() => {
         cSelWhite = new button(renjuCmddiv, "checkbox", w * 1.33, t, w, h);
         cSelWhite.show();
         cSelWhite.setText("白先");
-        cSelWhite.setontouchend(function() {    
+        cSelWhite.setontouchend(function() {
             //if (busy()) return;
             cSelChecked(cSelWhite);
         });
@@ -714,11 +717,27 @@ let control = (() => {
         cLABC.addOption(2, "123...");
         cLABC.addOption(3, "☆标记");
         cLABC.addOption(4, "❌标记");
+        cLABC.addOption(5, "__ 线条");
+        cLABC.addOption(6, "←  箭头");
         cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLABC.show();
         cLABC.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLABC);
+        });
+        cLABC.setonchange(function() {
+            if (cLABC.input.value == cLABC.input.length - 1) {
+                playModel = arrowModel;
+                //console.log("arrowModel")
+            }
+            else if (cLABC.input.value == cLABC.input.length - 2) {
+                playModel = lineModel;
+                //console.log("lineModel")
+            }
+            else {
+                playModel = renjuModel;
+                //console.log("renjuModel")
+            }
         });
 
         cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
@@ -756,9 +775,9 @@ let control = (() => {
 
         cLbColor = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         //cLbColor.addOption(-1, "︾");
-        cLbColor.addOption(0, lbColor[0].colName);
-        cLbColor.addOption(1, lbColor[1].colName);
-        cLbColor.addOption(2, lbColor[2].colName);
+        for (let i = 0; i < lbColor.length; i++) {
+            cLbColor.addOption(i, lbColor[i].colName);
+        }
         //cLbColor.addOption(3, "︽");
         cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLbColor.show();
@@ -915,6 +934,7 @@ let control = (() => {
             cBd.resetCutDiv();
             parentNode.removeChild(renjuCmddiv);
             parentNode.appendChild(imgCmdDiv);
+            oldPlayModel = playModel;
             playModel = imgModel;
             cLockImg.setChecked(0);
             cAddblack2.setChecked(1);
@@ -995,6 +1015,8 @@ let control = (() => {
         cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
             if (busy()) return;
+            cBd.removeMarkLine("all");
+            cBd.removeMarkArrow("all");
             cBd.cleLb("all");
         });
 
@@ -1033,6 +1055,9 @@ let control = (() => {
             cAddwhite.setChecked(0);
             cLABC.setChecked(0);
             chk.setChecked(1);
+            if (chk != cLABC) {
+                playModel = renjuModel;
+            }
         }
 
 
@@ -1415,58 +1440,66 @@ let control = (() => {
         if (sharing) return;
         let idx = cBd.getPIndex(x, y);
 
-        if (idx > -1) {
-            let cmds = getRenjuCmd();
-            if (cBd.oldCode) cmds.type = tNum;
-            switch (cmds.type) {
-                case tNum:
-                    cancelKeepTouck();
-                    if (cBd.P[idx].type == tNum) {
-                        //点击棋子，触发悔棋
-                        cBd.cleNb(idx, cmds.showNum);
-                    }
-                    else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
-                        // 添加棋子  wNb(idx,color,showNum)
-                        let arr = cBd.getPointArray([]);
-                        let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
-                        cBd.wNb(idx, "auto", cmds.showNum, null, isF);
-                    }
-                    break;
+        if (playModel == renjuModel) {
+            if (idx > -1) {
+                let cmds = getRenjuCmd();
+                if (cBd.oldCode) cmds.type = tNum;
+                switch (cmds.type) {
+                    case tNum:
+                        cancelKeepTouck();
+                        if (cBd.P[idx].type == tNum) {
+                            //点击棋子，触发悔棋
+                            cBd.cleNb(idx, cmds.showNum);
+                        }
+                        else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
+                            // 添加棋子  wNb(idx,color,showNum)
+                            let arr = cBd.getPointArray([]);
+                            let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
+                            cBd.wNb(idx, "auto", cmds.showNum, null, isF);
+                        }
+                        break;
 
-                case tBlack:
-                    if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
-                        //点击棋子，触发悔棋
-                        cBd.cleNb(idx);
-                    }
-                    else if (cBd.P[idx].type == tEmpty) {
-                        // 添加棋子  wNb(idx,color,showNum)
-                        cBd.wNb(idx, "black", cmds.showNum);
-                    }
-                    break;
+                    case tBlack:
+                        if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                            //点击棋子，触发悔棋
+                            cBd.cleNb(idx);
+                        }
+                        else if (cBd.P[idx].type == tEmpty) {
+                            // 添加棋子  wNb(idx,color,showNum)
+                            cBd.wNb(idx, "black", cmds.showNum);
+                        }
+                        break;
 
-                case tWhite:
-                    if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
-                        //点击棋子，触发悔棋
-                        cBd.cleNb(idx);
-                    }
-                    else if (cBd.P[idx].type == tEmpty) {
-                        // 添加棋子  wNb(idx,color,showNum)
-                        cBd.wNb(idx, "white", cmds.showNum);
-                    }
-                    break;
+                    case tWhite:
+                        if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                            //点击棋子，触发悔棋
+                            cBd.cleNb(idx);
+                        }
+                        else if (cBd.P[idx].type == tEmpty) {
+                            // 添加棋子  wNb(idx,color,showNum)
+                            cBd.wNb(idx, "white", cmds.showNum);
+                        }
+                        break;
 
-                case tLb:
-                    if (cBd.P[idx].type == tLb) {
-                        // 点击标记，删除标记
-                        cBd.cleLb(idx);
-                    }
-                    else if (cBd.P[idx].type == tEmpty) {
-                        // 添加标记 wLb(idx,text,color, showNum:isShow) 
-                        cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
-                    }
-                    break;
+                    case tLb:
+                        if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves) {
+                            // 点击标记，删除标记
+                            cBd.cleLb(idx);
+                        }
+                        else if (cBd.P[idx].type == tEmpty) {
+                            // 添加标记 wLb(idx,text,color, showNum:isShow) 
+                            cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
+                        }
+                        break;
+                }
             }
 
+        }
+        else if (playModel == lineModel ){
+            cBd.drawLineStart(idx, getRenjuLbColor(), "line");
+        }
+        else if (playModel == arrowModel) {
+            cBd.drawLineStart(idx, getRenjuLbColor(), "arrow");
         }
 
     }
@@ -1489,7 +1522,7 @@ let control = (() => {
                     if (!cancelKeepTouck()) renjuKeepTouch(x, y);
                 }
             } // 触发，手动输入标记
-            else if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tEmpty) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
+            else if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves || cBd.P[idx].type == tEmpty) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
                 inputLabel(idx);
             }
 
@@ -1554,8 +1587,8 @@ let control = (() => {
         else {
             //console.log(`top=${window.scrollY}, left=${window.scrollX}`);
             cMenu.idx = idx;
-            cMenu.showMenu(null, y - window.scrollY - cMenu.menu.fontSize*2.5*3);
-            
+            cMenu.showMenu(null, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
+
         }
 
     }
@@ -1617,8 +1650,8 @@ let control = (() => {
             cBd.hideNum();
         }
     }
-    
-    
+
+
     function busy() {
         let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
         //if (busy) console.log(`请先停止计算，再操作`);
@@ -1729,7 +1762,7 @@ let control = (() => {
             }
         });
         shareWindow.setAttribute("class", "show");
-        setTimeout(()=>{document.body.appendChild(shareWindow);},1);
+        setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
 
 
     }
@@ -1747,6 +1780,9 @@ let control = (() => {
     return {
         "getPlayModel": () => { return playModel },
         "renjuModel": renjuModel,
+        "imgModel": imgModel,
+        "lineModel": lineModel,
+        "arrowModel": arrowModel,
         "cLockImgChecked": () => { return cLockImg.checked; },
         "cAddwhite2Checked": () => { return cAddwhite2.checked; },
         "putCheckerBoard": putCheckerBoard,

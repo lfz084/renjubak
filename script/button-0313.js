@@ -106,13 +106,13 @@
               but.input.ontouchend();
           }
 
-          console.log(`but ,onmouseup`);
+          //console.log(`but ,onmouseup`);
 
-          console.log(`but ,onmouseup---`);
+          //console.log(`but ,onmouseup---`);
       };
       this.input.onclick = function() {
           //event.preventDefault()
-          console.log("click");
+          //console.log("click");
       }
       /*
       this.input.onmouseout = function() {
@@ -342,7 +342,7 @@
   // 默认事件，
   button.prototype.defaultontouchend = function() {
 
-      console.log(`typeof event=${typeof event}`);
+      //console.log(`typeof event=${typeof event}`);
       // select 要弹出菜单不能屏蔽
       //if (this.type != "select") {};
       if (event) event.preventDefault();
@@ -592,7 +592,7 @@
   button.prototype.setontouchend = function(callbak) {
       let but = this;
       this.input.ontouchend = function() {
-          console.log(`but ,ontouchend = ${event}`);
+          //console.log(`but ,ontouchend = ${event}`);
           if (this.isEventMove) return; //cancel Mouseclick();
           if (!but.defaultontouchend(but)) return;
           callbak(but);

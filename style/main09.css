@@ -115,53 +115,96 @@ hr {
 }
 
 
-@-webkit-keyframes appear {
+@-webkit-keyframes startPoint {
     0% {
-        -webkit-transform: scale(0);
-        -moz-transform: scale(0);
-        -ms-transform: scale(0);
-        transform: scale(0);
-    }
-
-    100% {
+        opacity: 1;
         -webkit-transform: scale(1);
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
     }
-}
-
-@-moz-keyframes appear {
-    0% {
-        -webkit-transform: scale(0);
-        -moz-transform: scale(0);
-        -ms-transform: scale(0);
-        transform: scale(0);
-    }
 
     100% {
+        opacity: 0.2;
+        -webkit-transform: scale(1.5);
+        -moz-transform: scale(1.5);
+        -ms-transform: scale(1.5);
+        transform: scale(1.5);
+    }
+}
+
+@-moz-keyframes startPoint {
+    0% {
+        opacity: 1;
         -webkit-transform: scale(1);
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
     }
-}
-
-@keyframes appear {
-    0% {
-        -webkit-transform: scale(0);
-        -moz-transform: scale(0);
-        -ms-transform: scale(0);
-        transform: scale(0);
-    }
 
     100% {
+        opacity: 0.2;
+        -webkit-transform: scale(1.5);
+        -moz-transform: scale(1.5);
+        -ms-transform: scale(1.5);
+        transform: scale(1.5);
+    }
+}
+
+@keyframes startPoint {
+    0% {
+        opacity: 1;
         -webkit-transform: scale(1);
         -moz-transform: scale(1);
         -ms-transform: scale(1);
         transform: scale(1);
     }
+
+    100% {
+        opacity: 0.2;
+        -webkit-transform: scale(1.5);
+        -moz-transform: scale(1.5);
+        -ms-transform: scale(1.5);
+        transform: scale(1.5);
+    }
 }
+
+@-webkit-keyframes selectLine {
+    0% {
+        opacity: 1;
+        border-color: red;
+    }
+
+    100% {
+        opacity: 0.5;
+        border-color: black;
+    }
+}
+
+@-moz-keyframes selectLine {
+    0% {
+        opacity: 1;
+        border-color: red;
+    }
+
+    100% {
+        opacity: 0.5;
+        border-color: black;
+    }
+}
+
+@keyframes selectLine {
+    0% {
+        opacity: 1;
+        border-color: red;
+    }
+
+    100% {
+        opacity: 0.5;
+        border-color: black;
+    }
+}
+
 
 @-webkit-keyframes show {
     0% {
@@ -340,4 +383,18 @@ hr {
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;
+}
+
+.startPoint {
+    -webkit-animation: startPoint 1s linear 0.5s infinite alternate;
+    -moz-animation: startPoint 1s linear 0.5s infinite alternate;
+    animation: startPoint 1s linear 0.5s infinite alternate;
+
+}
+
+.selectLine {
+    -webkit-animation: selectLine 1s linear 0.5s infinite alternate;
+    -moz-animation: selectLine 1s linear 0.5s infinite alternate;
+    animation: selectLine 1s linear 0.5s infinite alternate;
+
 }
