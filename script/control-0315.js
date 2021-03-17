@@ -27,6 +27,7 @@ let control = (() => {
         { "colName": "卡其标记", "color": "#ff8c00" },
         { "colName": "紫色标记", "color": "#ff00ff" },
         ];
+    let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"];
     let parentNode;
     let renjuCmddiv = null;
     let imgCmdDiv = null;
@@ -718,27 +719,72 @@ let control = (() => {
             nSetChecked(cLbb);
         });
 
+
         cLABC = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         //cLABC.addOption(-1, "︾");
-        cLABC.addOption(0, "ABC...");
-        cLABC.addOption(1, "abc...");
-        cLABC.addOption(2, "123...");
-        cLABC.addOption(3, "☆标记");
-        cLABC.addOption(4, "❌标记");
-        cLABC.addOption(5, "__ 线条");
-        cLABC.addOption(6, "←  箭头");
+        cLABC.addOption(0, "←  箭头");
+        cLABC.addOption(1, "__ 线条");
+        cLABC.addOption(2, "ABC...");
+        cLABC.addOption(3, "abc...");
+        cLABC.addOption(4, "123...");
+        cLABC.addOption(5, "自定义...");
+        cLABC.addOption(6, "☆标记");
+        cLABC.addOption(7, "❌标记");
+
         cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLABC.show();
+        
         cLABC.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLABC);
         });
+        
         cLABC.setonchange(function() {
-            if (cLABC.input.value == cLABC.input.length - 1) {
+            changePlayModel();
+            if (cLABC.input.value == 5) {
+                let w = cBd.width * 0.8;
+                let h = w;
+                let l = (dw - w) / 2;
+                let t = (dh - dw) / 4;
+                t = t < 0 ? 1 : t;
+                let lbStr = "";
+                for (let i = 0; i < continueLabel.length; i++) {
+                    lbStr += (continueLabel[i] + ",");
+                }
+                msg(`${lbStr}......\n\n\n,-------------\n类似(ABC...),(abc...),(123...)\n可在上面编辑 连续输入标记。每个标记 用英文 "," 号隔开，每个标记最多3个字符`, "input", l, t, w, h, "输入代码", null,
+                    newContinueLabel, null, null, 10);
+            }
+        });
+        
+        let hm = cLABC.hideMenu;
+        cLABC.hideMenu = function(ms, callbak) {
+            hm.call(this, ms, callbak);
+            //console.log(this.input.value)
+            changePlayModel();
+        };
+        
+        let newContinueLabel = function(msgStr) {
+            let labels = [];
+            let st = 0;
+            let s;
+            let end = msgStr.indexOf(",",st);
+            while (end > st) {
+                s = msgStr.slice(st, end);
+                if (s.length>0 && s.length<4) {
+                    labels.push(s);
+                }
+                st = end + 1;
+                end = msgStr.indexOf(",",st);
+            }
+            if (labels.length) continueLabel = labels;
+        };
+        
+        let changePlayModel = function() {
+            if (cLABC.input.value == 0) {
                 playModel = arrowModel;
                 //console.log("arrowModel")
             }
-            else if (cLABC.input.value == cLABC.input.length - 2) {
+            else if (cLABC.input.value == 1) {
                 playModel = lineModel;
                 //console.log("lineModel")
             }
@@ -747,13 +793,7 @@ let control = (() => {
                 cBd.drawLineEnd();
                 //console.log("renjuModel")
             }
-        });
-        let hm = cLABC.hideMenu;
-        cLABC.hideMenu = function(ms, callbak) {
-            hm.call(this, ms, callbak);
-            //console.log(this.input.value)
-            this.input.onchange();
-        }
+        };
 
         cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
 
@@ -795,6 +835,9 @@ let control = (() => {
         }
         //cLbColor.addOption(3, "︽");
         cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        for (let i = cLbColor.menu.lis.length-1; i>=0; i--) {
+            cLbColor.menu.lis[i].style.color = lbColor[i].color;
+        }
         cLbColor.show();
         cLbColor.setText("✎ 颜色");
         cLbColor.setonchange(function(but) {
@@ -1353,6 +1396,7 @@ let control = (() => {
 
         let isShow = cShownum.checked ? true : false;
         let idx;
+        let lbIdx;
         let code;
         let tcode;
         let txt;
@@ -1375,7 +1419,7 @@ let control = (() => {
             case cLABC.checked:
 
                 switch (cLABC.input.value * 1) {
-                    case 0:
+                    case 2:
                         // 搜索棋盘上最大的字母;
                         code = "A".charCodeAt(); // 65→90
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
@@ -1389,7 +1433,7 @@ let control = (() => {
                         txt = String.fromCharCode(code);
                         return { type: tLb, cmd: txt, showNum: isShow };
 
-                    case 1:
+                    case 3:
 
                         // 搜索棋盘上最大的字母;
                         code = "a".charCodeAt(); // 65→90
@@ -1404,7 +1448,7 @@ let control = (() => {
                         txt = String.fromCharCode(code);
                         return { type: tLb, cmd: txt, showNum: isShow };
 
-                    case 2:
+                    case 4:
                         // 搜索棋盘上最大的数字
                         code = 1 // 1-225;
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
@@ -1417,9 +1461,22 @@ let control = (() => {
                         }
                         txt = code;
                         return { type: tLb, cmd: txt, showNum: isShow };
-                    case 3:
+                    case 5:
+                        lbIdx = 0;
+                        for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
+                            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) {
+                                tcode = cBd.P[idx].text;
+                                let i = continueLabel.indexOf(tcode);
+                                if (i >= lbIdx) {
+                                    lbIdx = i < continueLabel.length - 1 ? i + 1 : i;
+                                }
+                            }
+                        }
+                        txt = continueLabel[lbIdx];
+                        return { type: tLb, cmd: txt, showNum: isShow };
+                    case 6:
                         return { type: tLb, cmd: "☆", showNum: isShow };
-                    case 4:
+                    case 7:
                         return { type: tLb, cmd: "❌", showNum: isShow };
 
                 }

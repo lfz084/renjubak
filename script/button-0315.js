@@ -161,6 +161,7 @@
       */
       let muWindow = document.createElement("div");
       let menu = document.createElement("div");
+      menu.lis = [];
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
           if (event) {
@@ -217,6 +218,7 @@
           hr.style.marginLeft = "-1px";
           hr.style.padding = "0";
           let li = document.createElement("li");
+          menu.lis.push(li);
           li.innerHTML = this.input[i].innerHTML;
           li.style.fontWeight = "normal";
           li.style.fontFamily = "mHeiTi";
