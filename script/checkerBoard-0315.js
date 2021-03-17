@@ -270,7 +270,7 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.selectLine = null;
     this.selectArrow = null;
     this.selectIdx = -1;
-    this.drawLine = { startPoint: null, selectDiv: null };
+    this.drawLine = { startPoint: null, selectDiv: null, dashedLine: [] };
     this.drawLine.startPoint = document.createElement("div");
     let s = this.drawLine.startPoint.style;
     s.position = "absolute";
@@ -282,6 +282,16 @@ function checkerBoard(parentNode, left, top, width, height) {
     s.height = this.gH / 3 + "px";
     s.backgroundColor = "red";
     s.zIndex = -100;
+    for (let i = 0; i < 4; i++) {
+        this.drawLine.dashedLine.push(document.createElement("div"));
+        s = this.drawLine.dashedLine[i].style;
+        s.position = "absolute";
+        s.borderStyle = "dashed";
+        s.borderWidth = "1px";
+        s.borderColor = "red";
+        s.zIndex = -100;
+        this.parentNode.appendChild(this.drawLine.dashedLine[i]);
+    }
     this.parentNode.appendChild(this.drawLine.startPoint);
     this.drawLine.selectDiv = document.createElement("div");
     s = this.drawLine.selectDiv.style;
@@ -828,11 +838,11 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
         this.refreshMarkArrow(oldIdx);
     }
     if ((markLine.direction + 1) % 2) {
-        let idx1,idx2;
+        let idx1, idx2;
         switch (markLine.direction) {
             case 0:
                 idx1 = markLine.P[0] + 1;
-                idx2 = markLine.P[markLine.P.length-1] -1;
+                idx2 = markLine.P[markLine.P.length - 1] - 1;
                 break;
             case 4:
                 idx1 = markLine.P[0] - 1;
@@ -1002,8 +1012,8 @@ checkerBoard.prototype.clePoint = function(idx, refresh, width, height) {
     let p = tempp;
     p.setxy(this.P[idx].x, this.P[idx].y);
     let ctx = this.canvas.getContext("2d");
-    width = width || this.gW+1;
-    height = height || this.gH+1;
+    width = width || this.gW + 1;
+    height = height || this.gH + 1;
     //console.log(`wid=${width}, hei=${height}`)
     ctx.drawImage(this.bakCanvas, p.x - (width / 2), p.y - (height / 2), width, height, p.x - (width / 2), p.y - (height / 2), width, height);
     ctx = null;
@@ -1054,6 +1064,55 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         s.zIndex = 0;
         this.startIdx = idx;
         this.drawLine.startPoint.setAttribute("class", "startPoint");
+        let x = idx % this.SLTX;
+        let y = parseInt(idx / this.SLTX);
+        let lw = x;
+        let rw = this.SLTX - 1 - x;
+        let uh = y;
+        let bh = this.SLTY - 1 - y;
+        for (let i = 0; i < 4; i++) {
+            
+            let lWidth,rWidth;
+            s = this.drawLine.dashedLine[i].style;
+            s.borderWidth = this.gW/20 + "px";
+            s.height = this.gW/20 + "px";
+            s.top = this.P[idx].y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + "px";
+            s.borderColor = color;
+            s.backgroundColor = "white";
+            switch (i) {
+                case 0:
+                    s.width = this.gW * (this.SLTX-1) + "px";
+                    s.left = this.P[idx].x - this.gW * lw + "px";
+                    break;
+                case 1:
+                    s.width = this.gH * (this.SLTY - 1) + "px";
+                    s.left = this.P[idx].x - this.gH * uh + "px";
+                    s.transformOrigin = `${parseInt(this.gH * uh)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.transform = `rotate(${90}deg)`;
+                    break;
+                case 2:
+                    lWidth = min(lw,uh);
+                    rWidth = min(rw,bh);
+                    s.width = this.gW * (lWidth+rWidth)/sin45 + "px";
+                    s.left = this.P[idx].x - this.gW * lWidth/sin45 + "px";
+                    s.transformOrigin = `${parseInt(this.gW * lWidth/sin45)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.transform = `rotate(${45}deg)`;
+                    break;
+                case 3:
+                    lWidth = min(lw, bh);
+                    rWidth = min(rw, uh);
+                    s.width = this.gH * (lWidth + rWidth) / sin45 + "px";
+                    s.left = this.P[idx].x - this.gH * lWidth / sin45 + "px";
+                    s.transformOrigin = `${parseInt(this.gH * lWidth / sin45)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.transform = `rotate(${-45}deg)`;
+                    break;
+            }
+            s.opacity = 0.5;
+            s.zIndex = 0;
+            
+            //console.log(`left=${s.left}, top=${s.top}, width=${s.width}, height=${s.height}`)
+            
+        } 
         this.selectIdx = findIdx(this.ARROWS, idx);
         let mk = null;
         if (this.selectIdx + 1) {
@@ -1101,14 +1160,8 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         else if (!cancel && cmd == "line") {
             this.createMarkLine(this.startIdx, idx, color);
         }
-        this.drawLine.startPoint.style.zIndex = -100;
-        this.drawLine.selectDiv.style.zIndex = -100;
-        this.startIdx = -1;
-        this.selectIdx = -1;
-        this.selectArrow = false;
-        this.selectLine = false;
-        this.drawLine.startPoint.setAttribute("class", "none");
-        this.drawLine.selectDiv.setAttribute("class", "none");
+        
+        this.drawLineEnd();
     }
 
     function findIdx(lineOrArrow, idx) {
@@ -1119,6 +1172,10 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         }
         return -1;
     }
+
+    function min(num1, num2) {
+        return num1 < num2 ? num1 : num2;
+    }
 }
 
 
@@ -1127,6 +1184,9 @@ checkerBoard.prototype.drawLineEnd = function() {
 
     this.drawLine.startPoint.style.zIndex = -100;
     this.drawLine.selectDiv.style.zIndex = -100;
+    for (let i = 0; i < 4; i++) {
+        this.drawLine.dashedLine[i].style.zIndex = -100;
+    }
     this.startIdx = -1;
     this.selectIdx = -1;
     this.selectArrow = false;
@@ -1950,7 +2010,7 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
         pArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
     }
     else {
-        if (markArrow.P.indexOf(idx)==-1) return;
+        if (markArrow.P.indexOf(idx) == -1) return;
         let x1, x2, y1, y2;
         if (idx == markArrow.P[0]) {
             x1 = this.P[idx].x;
@@ -2181,7 +2241,7 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
         ctx.stroke();
     }
     else {
-        if (markLine.P.indexOf(idx)==-1) return;
+        if (markLine.P.indexOf(idx) == -1) return;
         let w = this.gW / 2 * 1.07;
         let h = this.gH / 2 * 1.07;
         let x1, x2, y1, y2;
@@ -2761,10 +2821,10 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
             }
         }
     }
-    else if (text.length==3) {
+    else if (text.length == 3) {
         ctx.font = "bolder " + parseInt(w * 0.9) + "px  mHeiTi";
     }
-    
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, p.x, p.y);
