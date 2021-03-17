@@ -30,6 +30,8 @@ let engine = (() => {
         cFP.setText("找点");
         cVCF.show();
         cVCF.setText("解题");
+        cBd.refreshMarkLine("all");
+        cBd.refreshMarkArrow("all");
         cCancel.hide();
         labelTime.close();
         closeMsg();

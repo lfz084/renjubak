@@ -751,7 +751,7 @@ let control = (() => {
                 for (let i = 0; i < continueLabel.length; i++) {
                     lbStr += (continueLabel[i] + ",");
                 }
-                msg(`${lbStr}......\n\n\n,-------------\n类似(ABC...),(abc...),(123...)\n可在上面编辑 连续输入标记。每个标记 用英文 "," 号隔开，每个标记最多3个字符`, "input", l, t, w, h, "输入代码", null,
+                msg(`${lbStr}......\n\n\n,-------------\n类似(ABC...),(abc...),(123...)\n可在上面编辑 连续输入的 标记。每个标记 用英文 [,] 逗号隔开，每个标记最多3个字符`, "input", l, t, w, h, "输入代码", null,
                     newContinueLabel, null, null, 10);
             }
         });
@@ -1568,10 +1568,12 @@ let control = (() => {
                             if (cBd.P[idx].text) {
                                 cBd.P[idx].text = "";
                                 cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
+                                cBd.refreshMarkArrow(idx);
                             }
                             else {
                                 cBd.P[idx].text = cmds.cmd;
                                 cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
+                                cBd.refreshMarkArrow(idx);
                             }
                         }
                         break;

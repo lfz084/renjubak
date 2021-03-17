@@ -1130,8 +1130,11 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         if (mk) {
             let x = this.P[mk.P[mk.P.length - 1]].x;
             let y = this.P[mk.P[mk.P.length - 1]].y;
+            this.drawLine.selectDiv.onmousedown = function() {
+                console.log(1);
+            }
             s = this.drawLine.selectDiv.style;
-            s.borderWidth = this.gW / 15 + "px";
+            s.borderWidth = this.gW / 8 + "px";
             s.borderColor = mk.color;
             s.width = mk.direction % 2 ? this.gW * (mk.P.length - 1) / sin45 + "px" : this.gW * (mk.P.length - 1) + "px";
             s.height = this.gH / 2 + "px";
@@ -1773,6 +1776,7 @@ checkerBoard.prototype.hideNum = function() {
     {
         color = (i % 2) ? this.wNumColor : this.bNumColor;
         this.printPoint(this.MS[i], "", color, tNum);
+        this.refreshMarkArrow(this.MS[i]);
     }
 
 };
@@ -3665,6 +3669,7 @@ checkerBoard.prototype.showNum = function() {
         txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
         txt = parseInt(txt) < 1 ? "" : txt;
         this.printPoint(this.MS[i], txt, color, tNum, true, null, true);
+        this.refreshMarkArrow(this.MS[i]);
     }
     this.showLastNum(true);
 
