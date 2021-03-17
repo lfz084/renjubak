@@ -195,6 +195,7 @@
       //alert(this.input.length)
       if (this.input.length && ((this.menu.menuHeight - (fontSize + 3) * 1) < optionsHeight)) {
           let li = document.createElement("li");
+          menu.lis["down"] = li;
           li.innerHTML = "︾";
           li.style.fontWeight = "normal";
           li.style.fontFamily = "mHeiTi";
@@ -224,6 +225,7 @@
           li.style.fontFamily = "mHeiTi";
           li.style.fontSize = parseInt(fontSize) + "px";
           li.style.lineHeight = fontSize * 2.5 + "px";
+          li.style.height = li.style.lineHeight;
           li.style.paddingLeft = li.style.fontSize;
           li.style.margin = "0";
           menu.appendChild(li);
@@ -249,6 +251,7 @@
       hr.style.padding = "0";
       if (this.input.length && ((this.menu.menuHeight - (fontSize + 3) * 1) < optionsHeight)) {
           let li = document.createElement("li");
+          menu.lis["up"] = li;
           li.innerHTML = "︽";
           li.style.fontWeight = "normal";
           li.style.fontFamily = "mHeiTi";

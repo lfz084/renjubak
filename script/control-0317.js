@@ -26,6 +26,8 @@ let control = (() => {
         { "colName": "绿色标记", "color": "#008000" },
         { "colName": "卡其标记", "color": "#ff8c00" },
         { "colName": "紫色标记", "color": "#ff00ff" },
+        //{ "colName": "黄色标记", "color": "#fff000" },
+        //{ "colName": "浅蓝标记", "color": "#00ffff" },
         ];
     let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"];
     let parentNode;
@@ -733,12 +735,12 @@ let control = (() => {
 
         cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
         cLABC.show();
-        
+
         cLABC.setontouchend(function() {
             //if (busy()) return;
             nSetChecked(cLABC);
         });
-        
+
         cLABC.setonchange(function() {
             changePlayModel();
             if (cLABC.input.value == 5) {
@@ -755,30 +757,30 @@ let control = (() => {
                     newContinueLabel, null, null, 10);
             }
         });
-        
+
         let hm = cLABC.hideMenu;
         cLABC.hideMenu = function(ms, callbak) {
             hm.call(this, ms, callbak);
             //console.log(this.input.value)
             changePlayModel();
         };
-        
+
         let newContinueLabel = function(msgStr) {
             let labels = [];
             let st = 0;
             let s;
-            let end = msgStr.indexOf(",",st);
+            let end = msgStr.indexOf(",", st);
             while (end > st) {
                 s = msgStr.slice(st, end);
-                if (s.length>0 && s.length<4) {
+                if (s.length > 0 && s.length < 4) {
                     labels.push(s);
                 }
                 st = end + 1;
-                end = msgStr.indexOf(",",st);
+                end = msgStr.indexOf(",", st);
             }
             if (labels.length) continueLabel = labels;
         };
-        
+
         let changePlayModel = function() {
             if (cLABC.input.value == 0) {
                 playModel = arrowModel;
@@ -835,8 +837,20 @@ let control = (() => {
         }
         //cLbColor.addOption(3, "︽");
         cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
-        for (let i = cLbColor.menu.lis.length-1; i>=0; i--) {
+        for (let i = cLbColor.menu.lis.length - 1; i >= 0; i--) {
             cLbColor.menu.lis[i].style.color = lbColor[i].color;
+            let div = document.createElement("div");
+            cLbColor.menu.appendChild(div);
+            div.onclick = cLbColor.menu.lis[i].onclick;
+            let s = div.style;
+            s.position = "absolute";
+            s.width = `${(cLbColor.menu.menuWidth)/2}px`;
+            s.height = `${cLbColor.menu.lis[i].style.lineHeight}`;
+            s.left = `${parseInt(cLbColor.menu.lis[i].style.fontSize)*7}px`;
+            s.top = `${(parseInt(cLbColor.menu.fontSize) * 2.5 + 3)*(cLbColor.menu.lis["down"] ? i +1 : i)+i}px`;
+            console.log(`s.height= ${s.height}, s.width=${s.width}, left=${s.left}, top=${s.top}`)
+            console.log(cLbColor.menu.lis["down"])
+            s.backgroundColor = lbColor[i].color;
         }
         cLbColor.show();
         cLbColor.setText("✎ 颜色");
