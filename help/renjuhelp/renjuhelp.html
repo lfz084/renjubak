@@ -19,12 +19,34 @@
 
 <body>
     <script>
-        let scale = window.screen.width / 550;
+    document.body.onload = ()=> {
+        
+        let d = document;
+        d.body.style.backgroundColor = "#333333";
+        let s = d.body.innerHTML;
+        d.body.innerHTML = "";
+        let dw = d.documentElement.clientWidth;
+        let dh = d.documentElement.clientHeight;
+        dw = dw>dh ? 1000 : 650;
+        let div = d.createElement("div");
+        div.style.position = "absolute";
+        div.style.margin = "0px 0px 0px 0px";
+        div.style.padding = "25px 25px 25px 25px";
+        div.style.width = "600px";
+        div.style.left = (dw-parseInt(div.style.width)-50)/2 + "px";
+        div.style.top = "0px";
+        div.style.backgroundColor = "#cceeee";
+        div.innerHTML = s;
+        d.body.appendChild(div);
+        
+        let scale = window.screen.width / dw;
         //console.log("scale="+scale);
         let viewport = document.createElement("meta");
         viewport.setAttribute("name", "viewport");
         document.head.appendChild(viewport);
-        viewport.setAttribute("content", `width=550, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=no`);
+        viewport.setAttribute("content", `initial-scale=${scale+0.01} `);
+        viewport.setAttribute("content", `width=${dw}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=no`);
+    }
     </script>
     <div>
         <a href = "../../renju.html" target="_self" style="font-family:等线; font-size:20pt;color:red">返回</a>

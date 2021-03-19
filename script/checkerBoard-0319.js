@@ -1728,18 +1728,19 @@ checkerBoard.prototype.getSVG = function() {
 
         let txt = this.P[i].text;
         let color = this.P[i].color;
-        if (this.P[i].type == tNum) { //控制从第几手显示❶
+        color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
+        if (this.P[i].type == tNum ) { //控制从第几手显示❶
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
-            color = this.P[i].color == this.wNumColor ? "black" : "white";
+            //color = this.P[i].color == this.wNumColor ? "black" : "white";
             if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
                 color = this.notShowLastNum ? color : "#ff6666";
                 txt = !showNum && !this.notShowLastNum ? "◤" : txt;
 
             }
         }
-
+        
         let fontsize = parseInt(w * 1.08);
         x1 = this.P[i].x;
         y1 = this.P[i].y;
@@ -1758,6 +1759,9 @@ checkerBoard.prototype.getSVG = function() {
                     fontsize = parseInt(w * 1.5);
                 }
             }
+        }
+        else if (txt.length == 3) {
+            fontsize = parseInt(w * 0.9);
         }
         svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
     }
@@ -2690,11 +2694,12 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
 
         let txt = this.P[i].text;
         let color = this.P[i].color;
+        color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
         if (this.P[i].type == tNum) { //控制从第几手显示❶
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
-            color = this.P[i].color == this.wNumColor ? "black" : "white";
+            //color = this.P[i].color == this.wNumColor ? "black" : "white";
             if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
                 color = this.notShowLastNum ? color : "#ff6666";
                 txt = !showNum && !this.notShowLastNum ? "◤" : txt;
@@ -2720,6 +2725,9 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
                     fontsize = w * 1.5;
                 }
             }
+        }
+        else if (txt.length == 3) {
+            fontsize = parseInt(w * 0.9);
         }
 
         switch (String(color)) {

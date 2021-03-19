@@ -18,7 +18,7 @@
           this.input = document.createElement("input"); //接受用户事件  
           this.input.setAttribute("type", type);
       }
-      this.div.appendChild(this.input);
+      if (type != "select" && type != "file") this.div.appendChild(this.input);
       this.menuWindow = null;
       this.menu = null;
 
@@ -99,7 +99,7 @@
           if (event) event.preventDefault();
           but.isEventMove = false;
           if (but.type == "file") {
-              but.isEventMove = true; //cancel defaultontouchend to click();
+              //but.isEventMove = true; //cancel defaultontouchend to click();
               but.defaultontouchend(); // defaultontouchend() to onchange();
           } // if "input file" cancel this click; 
           else {
@@ -129,6 +129,29 @@
           if (event) event.cancelBubble = true;
           but.defaultontouchmove();
       };
+      
+      if (type == "select" || type == "file") {
+      
+          this.button.ontouchstart = this.input.ontouchstart;
+          this.button.onmousedown = this.input.onmousedown;
+          this.button.ontouchcancel = this.input.ontouchcancel;
+          this.button.ontouchend = this.input.ontouchend;
+          this.button.onmouseup = this.input.onmouseup; 
+          this.button.onclick = this.input.onclick;
+          this.button.onchange =this.input.onchange;
+          this.button.ontouchmove = this.input.ontouchmove;
+          if (this.label) {
+              this.label.ontouchstart = this.input.ontouchstart;
+              this.label.onmousedown = this.input.onmousedown;
+              this.label.ontouchcancel = this.input.ontouchcancel;
+              this.label.ontouchend = this.input.ontouchend;
+              this.label.onmouseup = this.input.onmouseup;
+              this.label.onclick = this.input.onclick;
+              this.label.onchange = this.input.onchange;
+              this.label.ontouchmove = this.input.ontouchmove;
+          }
+      
+      }
 
   }
 
@@ -231,10 +254,11 @@
           menu.appendChild(li);
           //alert(li.innerHTML)
           let input = this.input;
+          
           li.onclick = function() {
               if (event) event.cancelBubble = true;
               input.value = i;
-              input.selectedIndex = i;
+              input.selectedIndex = i;  // input.onchange();
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
               if (muWindow.parentNode) {
                   muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
@@ -243,6 +267,7 @@
                   but.hideMenu(closeAnimation ? AnimationTimeout : AnimationTimeout, !closeAnimation ? input.onchange : null);
               }
           };
+          
       }
       let hr = document.createElement("hr");
       menu.appendChild(hr);
@@ -318,9 +343,11 @@
 
   button.prototype.defaultontouchstart = function() {
 
-      //console.log(`str t=${this.text}`);
+     //console.log(`str t=${this.text}`);
       if (this.tyle == "select" && event) event.preventDefault();
       this.isEventMove = false;
+     //console.log(`isEventMove=${this.isEventMove}`)
+     //console.log(this)
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
       if (this.backgroundColor != "black") {
@@ -336,7 +363,7 @@
 
   button.prototype.defaultontouchmove = function() {
 
-      //console.log(`mov t=${this.text}`);
+     //console.log(`mov t=${this.text}`);
       this.isEventMove = true; // 取消单击事件
       return true;
   };
@@ -347,7 +374,8 @@
   // 默认事件，
   button.prototype.defaultontouchend = function() {
 
-      //console.log(`typeof event=${typeof event}`);
+     //console.log(`typeof event=${typeof event}, isEventMove=${this.isEventMove}`);
+     //console.log(this)
       // select 要弹出菜单不能屏蔽
       //if (this.type != "select") {};
       if (event) event.preventDefault();
@@ -422,7 +450,9 @@
 
       }
 
+     //console.log(`cancel=${cancel}`);
       if (this.type == "file" && !cancel) {
+         //console.log(`cancel=${"click"}`);
           this.input.click();
           return false;
       }
@@ -445,7 +475,7 @@
 
   button.prototype.defaultonchange = function() {
 
-      //console.log(`chg t=${this.text}`);
+     //console.log(`chg t=${this.text}`);
       //console.log(`defaultonchange  ,i=${this.input.selectedIndex==-1 ? this.input[1].text : this.input.options[this.input.selectedIndex].text} `);
       if (this.type != "select" || this.input.selectedIndex < 0) return;
       let txt = this.input.options[this.input.selectedIndex].text;
@@ -572,7 +602,6 @@
   button.prototype.setonchange = function(callbak) {
       let but = this;
       this.input.onchange = function() {
-
           but.defaultonchange();
           callbak(but);
       };
@@ -587,6 +616,12 @@
           if (!but.defaultontouchstart(but)) return;
           callbak(but);
       };
+      if (this.type == "select" || this.type == "file") {
+          this.button.ontouchstart = this.input.ontouchstart;
+          if (this.label) {
+              this.label.ontouchstart = this.input.ontouchstart;
+          }
+      }
   };
 
 
@@ -597,11 +632,17 @@
   button.prototype.setontouchend = function(callbak) {
       let but = this;
       this.input.ontouchend = function() {
-          //console.log(`but ,ontouchend = ${event}`);
+         //console.log(`but ,ontouchend = ${event}`);
           if (this.isEventMove) return; //cancel Mouseclick();
           if (!but.defaultontouchend(but)) return;
           callbak(but);
       };
+      if (this.type == "select" || this.type == "file") {
+          this.button.ontouchend = this.input.ontouchend;
+          if (this.label) {
+              this.label.ontouchend = this.input.ontouchend;
+          }
+      }
       // movesUp == click();
       //this.input.onclick = this.input.ontouchend;
 

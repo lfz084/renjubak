@@ -26,8 +26,8 @@ let control = (() => {
         { "colName": "绿色标记", "color": "#008000" },
         { "colName": "卡其标记", "color": "#ff8c00" },
         { "colName": "紫色标记", "color": "#ff00ff" },
-        //{ "colName": "黄色标记", "color": "#fff000" },
-        //{ "colName": "浅蓝标记", "color": "#00ffff" },
+        { "colName": "暗灰标记", "color": "#483D8B" },
+        { "colName": "暗绿标记", "color": "#556B2F" },
         ];
     let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"];
     let parentNode;
@@ -428,8 +428,8 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 1;
-        let tMsg = [["3月7日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
+        const calculate = 0;
+        let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         if (calculate) {
@@ -464,8 +464,6 @@ let control = (() => {
                 but.input.value = 0;
                 return;
             }
-
-
             let arr = [];
             cBd.getPointArray(arr);
             let newarr = getArr([]);
@@ -848,8 +846,8 @@ let control = (() => {
             s.height = `${cLbColor.menu.lis[i].style.lineHeight}`;
             s.left = `${parseInt(cLbColor.menu.lis[i].style.fontSize)*7}px`;
             s.top = `${(parseInt(cLbColor.menu.fontSize) * 2.5 + 3)*(cLbColor.menu.lis["down"] ? i +1 : i)+i}px`;
-            console.log(`s.height= ${s.height}, s.width=${s.width}, left=${s.left}, top=${s.top}`)
-            console.log(cLbColor.menu.lis["down"])
+            //console.log(`s.height= ${s.height}, s.width=${s.width}, left=${s.left}, top=${s.top}`)
+            //console.log(cLbColor.menu.lis["down"])
             s.backgroundColor = lbColor[i].color;
         }
         cLbColor.show();

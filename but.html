@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
     <link href="./style/main10.css" rel="stylesheet" type="text/css">
-    <script src="./script/button-0317.js"></script>
+    <script src="./script/button-0319.js"></script>
     <script src="./script/jsPDF/jspdf.umd.min.js"></script>
     <script src="./script/jsPDF/PFSCMedium.js"></script>
     <script src="./script/jsPDF/PFSCHeavy.js"></script>
@@ -142,6 +142,17 @@
         let wScroll = () => {
             console.log("scroll")
         }
+        let obj = {"col":"red","width":"6px","height":"18px"}
+        let obj2 = {"left":"0","width":"555px"};
+        
+        for (let ob in obj) {
+            console.log(obj[ob])
+            obj2[ob] = obj[ob];
+        }
+        for (let ob in obj2) {
+        console.log(obj2[ob])
+        
+        } 
     </script>
 </body>
 
