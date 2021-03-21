@@ -39,6 +39,8 @@ let control = (() => {
     let cAutoPut = null;
     let cCleAll = null;
     let cShownum = null;
+    let setShowNum = function(){};
+    let getShowNum = function(){};
     let cNewGame = null;
     let cLocknum = null;
     let cAutoadd = null;
@@ -234,22 +236,22 @@ let control = (() => {
                     break;
                 case 8:
                     cBd.setResetNum(cBd.MSindex + 1);
-                    cBd.isShowNum = cShownum.checked;
+                    cBd.isShowNum = getShowNum();
                     break;
                 case 9:
                     cBd.setResetNum(0);
-                    cShownum.setChecked(true);
-                    cBd.isShowNum = cShownum.checked;
+                    setShowNum(true);
+                    cBd.isShowNum = getShowNum();
                     break;
                 case 10:
                     cBd.showNum();
-                    cShownum.setChecked(true);
-                    cBd.isShowNum = cShownum.checked;
+                    setShowNum(true);
+                    cBd.isShowNum = getShowNum();
                     break;
                 case 11:
                     cBd.hideNum();
-                    cShownum.setChecked(false);
-                    cBd.isShowNum = cShownum.checked;
+                    setShowNum(false);
+                    cBd.isShowNum = getShowNum();
                     break;
                 case 12:
                     cInputcode.input.ontouchend();
@@ -301,7 +303,7 @@ let control = (() => {
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
             if (busy()) return;
-            cBd.toStart(cShownum.checked);
+            cBd.toStart(getShowNum());
         });
 
         cPrevious = new button(renjuCmddiv, "button", w * 1.6, t, w, h);
@@ -309,7 +311,7 @@ let control = (() => {
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
             if (busy()) return;
-            cBd.toPrevious(cShownum.checked);
+            cBd.toPrevious(getShowNum());
         });
 
         cNext = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
@@ -317,7 +319,7 @@ let control = (() => {
         cNext.setText(">>");
         cNext.setontouchend(function() {
             if (busy()) return;
-            cBd.toNext(cShownum.checked);
+            cBd.toNext(getShowNum());
         });
 
         cEnd = new button(renjuCmddiv, "button", w * 4.8, t, w, h);
@@ -325,19 +327,62 @@ let control = (() => {
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
             if (busy()) return;
-            cBd.toEnd(cShownum.checked);
+            cBd.toEnd(getShowNum());
         });
 
-        cShownum = new button(renjuCmddiv, "checkbox", w * 6.4, t, w, h);
+        cShownum = new button(renjuCmddiv, "select", w * 6.4, t, w, h);
+        cShownum.addOption(0, "显示手数");
+        cShownum.addOption(1, "显示禁手");
         cShownum.show();
-        cShownum.setText("●", "❶");
-        cShownum.setChecked(1);
-        cShownum.setontouchend(function() {
-            if (busy()) { cShownum.setChecked(!cShownum.checked); return; };
-            renjucShownumClick();
-            cBd.isShowNum = cShownum.checked;
-            //cShownum.setText(cShownum.checked?"❶" :"●");
+        cShownum.setText("❶");
+        //setShowNum(1);
+        cShownum.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cShownum.menu.lis[0].checked = true;
+        cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
+        cShownum.setonchange(function() {
+            cShownum.setText("❶");
+            if (busy()) return; 
+            switch (cShownum.input.value * 1) {
+                case 0:
+                    cShownum.menu.lis[0].checked = !cShownum.menu.lis[0].checked;
+                    if (cShownum.menu.lis[0].checked) {
+                        cBd.showNum();
+                        cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
+                    }
+                    else {
+                        cBd.hideNum();
+                        cShownum.menu.lis[0].innerHTML = cShownum.input[0].text;
+                    }
+                    cBd.isShowNum = cShownum.menu.lis[0].checked;
+                    break;
+                case 1:
+                    cShownum.menu.lis[1].checked = !cShownum.menu.lis[1].checked;
+                    if (cShownum.menu.lis[1].checked) {
+                        cShownum.menu.lis[1].innerHTML = cShownum.input[1].text + "  ✔";
+                    }
+                    else {
+                        cShownum.menu.lis[1].innerHTML = cShownum.input[1].text;
+                    }
+                    cBd.showFoul(cShownum.menu.lis[1].checked);
+                    break;
+                case 2:
+                    break;
+            }
+
+            //cShownum.setText(getShowNum()?"❶" :"●");
         });
+        setShowNum = function (shownum) {
+            cShownum.menu.lis[0].checked = !!shownum;
+            if (cShownum.menu.lis[0].checked) {
+                cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
+            }
+            else {
+                cShownum.menu.lis[0].innerHTML = cShownum.input[0].text;
+            }
+        }
+        getShowNum = function() {
+            return cShownum.menu.lis[0].checked;
+        }
 
         cNewGame = new button(renjuCmddiv, "button", w * 8, t, w, h);
         cNewGame.show();
@@ -360,7 +405,7 @@ let control = (() => {
         cFlipY.setText("↔180°");
         cFlipY.setontouchend(function() {
             if (busy()) return;
-            cBd.boardFlipY(cShownum.checked);
+            cBd.boardFlipY(getShowNum());
         });
 
         cCW = new button(renjuCmddiv, "button", w * 1.6, t, w, h);
@@ -368,7 +413,7 @@ let control = (() => {
         cCW.setText(" ↗90°");
         cCW.setontouchend(function() {
             if (busy()) return;
-            cBd.boardCW(cShownum.checked);
+            cBd.boardCW(getShowNum());
         });
 
         cMoveL = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
@@ -428,7 +473,7 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 0;
+        const calculate = 1;
         let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
@@ -803,7 +848,7 @@ let control = (() => {
         cNextone.setontouchend(function() {
             if (busy()) return;
             cBd.setResetNum(cBd.MSindex + 1);
-            cBd.isShowNum = cShownum.checked;
+            cBd.isShowNum = getShowNum();
         });
 
 
@@ -871,8 +916,8 @@ let control = (() => {
         cResetnum.setontouchend(function() {
             if (busy()) return;
             cBd.setResetNum(0);
-            cShownum.setChecked(true);
-            cBd.isShowNum = cShownum.checked;
+            setShowNum(true);
+            cBd.isShowNum = getShowNum();
         });
 
 
@@ -932,7 +977,7 @@ let control = (() => {
                 return;
             }
 
-            cBd.unpackCode(cShownum.checked, msgStr);
+            cBd.unpackCode(getShowNum(), msgStr);
 
         }
         cInputcode.setontouchend(function() {
@@ -1406,7 +1451,7 @@ let control = (() => {
     //返回参数确认 添加棋子 还是标签
     function getRenjuCmd() {
 
-        let isShow = cShownum.checked ? true : false;
+        let isShow = getShowNum() ? true : false;
         let idx;
         let lbIdx;
         let code;
@@ -1537,7 +1582,7 @@ let control = (() => {
                             //点击棋子，触发悔棋
                             cBd.cleNb(idx, cmds.showNum);
                         }
-                        else if (cBd.P[idx].type == tEmpty || (cBd.oldCode && cBd.P[idx].type == tLb)) {
+                        else if (cBd.P[idx].type == tEmpty || ((cBd.oldCode || cBd.P[idx].text == "❌") && cBd.P[idx].type == tLb)) {
                             // 添加棋子  wNb(idx,color,showNum)
                             let arr = cBd.getPointArray([]);
                             let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
@@ -1613,7 +1658,7 @@ let control = (() => {
             if (cBd.P[idx].type == tNum) {
                 if (idx != cBd.MS[cBd.MSindex]) {
                     for (let i = cBd.MSindex + 1; i > parseInt(cBd.P[idx].text); i--) {
-                        cBd.cleNb(idx, cShownum.checked);
+                        cBd.cleNb(idx, getShowNum());
                     }
                 }
                 else { // 
@@ -1647,7 +1692,7 @@ let control = (() => {
                     msg(str, null, null, null, null, null, null, null, function() {
 
                         if (cBd.setNotShowLastNum(idx)) {
-                            if (cShownum.checked) {
+                            if (getShowNum()) {
                                 cBd.showNum();
                             }
                             else {
@@ -1673,7 +1718,7 @@ let control = (() => {
             msg(str, null, null, null, null, null, null, null, function() {
 
                 if (cBd.setNotShowLastNum(idx)) {
-                    if (cShownum.checked) {
+                    if (getShowNum()) {
                         cBd.showNum();
                     }
                     else {
@@ -1738,16 +1783,6 @@ let control = (() => {
             });
     }
 
-
-    function renjucShownumClick() {
-
-        if (cShownum.checked) {
-            cBd.showNum();
-        }
-        else {
-            cBd.hideNum();
-        }
-    }
 
 
     function busy() {

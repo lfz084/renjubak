@@ -163,6 +163,8 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.height = parseInt(height);
 
     this.isShowNum = true; // 是否显示手顺
+    this.isShowFoul = false;
+    this.timerShowFoul = null;
 
     this.P = new Array(225); //用来保存225个点
     this.DIV = new Array(225); //原来保存225 DIV 标签的引用
@@ -775,6 +777,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
         refreshLine.call(this, idx);
 
     }
+    this.showFoul(this.isShowFoul);
 
     function refreshLine(idx) {
         let mv = [0, -this.SLTX, this.SLTX, -1, 1];
@@ -1071,17 +1074,17 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         let uh = y;
         let bh = this.SLTY - 1 - y;
         for (let i = 0; i < 4; i++) {
-            
-            let lWidth,rWidth;
+
+            let lWidth, rWidth;
             s = this.drawLine.dashedLine[i].style;
-            s.borderWidth = this.gW/20 + "px";
-            s.height = this.gW/20 + "px";
+            s.borderWidth = this.gW / 20 + "px";
+            s.height = this.gW / 20 + "px";
             s.top = this.P[idx].y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + "px";
             s.borderColor = color;
             s.backgroundColor = "white";
             switch (i) {
                 case 0:
-                    s.width = this.gW * (this.SLTX-1) + "px";
+                    s.width = this.gW * (this.SLTX - 1) + "px";
                     s.left = this.P[idx].x - this.gW * lw + "px";
                     break;
                 case 1:
@@ -1091,10 +1094,10 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
                     s.transform = `rotate(${90}deg)`;
                     break;
                 case 2:
-                    lWidth = min(lw,uh);
-                    rWidth = min(rw,bh);
-                    s.width = this.gW * (lWidth+rWidth)/sin45 + "px";
-                    s.left = this.P[idx].x - this.gW * lWidth/sin45 + "px";
+                    lWidth = min(lw, uh);
+                    rWidth = min(rw, bh);
+                    s.width = this.gW * (lWidth + rWidth) / sin45 + "px";
+                    s.left = this.P[idx].x - this.gW * lWidth / sin45 + "px";
                     s.transformOrigin = `${parseInt(this.gW * lWidth/sin45)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
                     s.transform = `rotate(${45}deg)`;
                     break;
@@ -1109,10 +1112,10 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             }
             s.opacity = 0.5;
             s.zIndex = 0;
-            
+
             //console.log(`left=${s.left}, top=${s.top}, width=${s.width}, height=${s.height}`)
-            
-        } 
+
+        }
         this.selectIdx = findIdx(this.ARROWS, idx);
         let mk = null;
         if (this.selectIdx + 1) {
@@ -1163,7 +1166,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         else if (!cancel && cmd == "line") {
             this.createMarkLine(this.startIdx, idx, color);
         }
-        
+
         this.drawLineEnd();
     }
 
@@ -1729,7 +1732,7 @@ checkerBoard.prototype.getSVG = function() {
         let txt = this.P[i].text;
         let color = this.P[i].color;
         color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-        if (this.P[i].type == tNum ) { //控制从第几手显示❶
+        if (this.P[i].type == tNum) { //控制从第几手显示❶
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
@@ -1740,7 +1743,7 @@ checkerBoard.prototype.getSVG = function() {
 
             }
         }
-        
+
         let fontsize = parseInt(w * 1.08);
         x1 = this.P[i].x;
         y1 = this.P[i].y;
@@ -3579,6 +3582,29 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
 
 
 
+checkerBoard.prototype.showFoul = function(display) {
+    
+    if (this.timerShowFoul) {
+        clearTimeout(this.timerShowFoul);
+        this.timerShowFoul = null;
+    }
+    let cBoard = this;
+    this.timerShowFoul = setTimeout(function() {
+        for (let i=cBoard.P.length-1; i>=0; i--) {
+            if (cBoard.P[i].type==tLb && cBoard.P[i].text=="❌") cBoard.cleLb(i);
+        }
+        if (display) {
+            let arr = cBoard.getPointArray(getArr([]));
+            let newarr = getArr([]);
+            findFoulPoint(arr, newarr);
+            cBoard.printArray(newarr, "❌", "red");
+        }
+        cBoard.isShowFoul = display;
+    }, 100);
+};
+
+
+
 // 根据用户设置 决定是否高亮显示 最后一手棋
 checkerBoard.prototype.showLastNum = function(showNum) {
 
@@ -3908,9 +3934,9 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     let i = this.MSindex + 1;
     if (this.oldCode) {
         if (color != "auto") return;
-        let c = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
-        if (isFoulPoint && c == "black") return;
     }
+    let c = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
+    if (isFoulPoint && c == "black") return;
     if (color == "auto" || type == tNum) { // 顺序添加棋子
 
         this.MSindex++;
@@ -3936,6 +3962,7 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
     this.refreshMarkArrow(idx);
     //console.log("wNb")
+    this.showFoul(this.isShowFoul);
     this.unpackTree();
 };
 

@@ -1797,10 +1797,10 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
             if (isWin) { //add node
                 nd.childNode[0] = new Node(idx, nd);
                 nd = nd.childNode[0];
-                nd.childNode[0] = new Node(ty*15+tx, nd);
+                nd.childNode[0] = new Node(ty * 15 + tx, nd);
                 nd = nd.childNode[0];
                 nd.childNode[0] = new Node(fPoint[0] * 1, nd);
-               }
+            }
         }
 
     }
@@ -2141,6 +2141,34 @@ function isFour(x, y, color, arr, free) {
     else {
         return count == 1 ? true : false;
     }
+}
+
+
+
+function isLineFive(x, y, model, color, arr) {
+
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let count = 0;
+
+    for (let j = 0; j > -5; j--) {
+        let pw = getPower(x, y, arr, model, color, j);
+        if (color == 2) { // 白棋
+            if (pw >= 5) {
+                count = 1;
+                break;
+            }
+        }
+        else { //黑棋
+            if (pw == 5 && getArrValue(x, y, j - 1, model, arr) != color) {
+                count = 1;
+                break;
+            }
+        }
+    }
+
+    arr[y][x] = ov;
+    return count > 0 ? true : false;
 }
 
 
