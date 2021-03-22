@@ -8,6 +8,7 @@ const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
 const tBlack = 3; // 无序号 添加的黑棋
 const tWhite = 4; // 无序号 添加的黑棋
 const tLbMoves = 5; //VCF手顺
+const tLbFoul = 6;
 
 
 //定义棋盘上的一个点
@@ -3704,8 +3705,7 @@ checkerBoard.prototype.showFoul = function(display) {
     let cBoard = this;
     //this.timerShowFoul = setTimeout(function() {
     for (let i = cBoard.P.length - 1; i >= 0; i--) {
-        if (!display) break;
-        if (cBoard.P[i].type == tLb && cBoard.P[i].text == "❌") {
+        if (cBoard.P[i].type == tLbFoul)  {
             cBoard.P[i].cle();
             cBoard.clePointB(i);
             cBoard.refreshMarkLine(i);
@@ -3722,7 +3722,7 @@ checkerBoard.prototype.showFoul = function(display) {
                     let idx = x + this.SLTX * y;
                     this.P[idx].color = "red";
                     this.P[idx].bkColor = null;
-                    this.P[idx].type = tLb;
+                    this.P[idx].type = tLbFoul;
                     this.P[idx].text = "❌";
                     this.refreshMarkLine(idx);
                     this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);

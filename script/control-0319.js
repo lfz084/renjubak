@@ -345,37 +345,34 @@ let control = (() => {
             if (busy()) return; 
             switch (cShownum.input.value * 1) {
                 case 0:
-                    cShownum.menu.lis[0].checked = !cShownum.menu.lis[0].checked;
+                    setLis(0, !cShownum.menu.lis[0].checked);
                     if (cShownum.menu.lis[0].checked) {
                         cBd.showNum();
-                        cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
                     }
                     else {
                         cBd.hideNum();
-                        cShownum.menu.lis[0].innerHTML = cShownum.input[0].text;
                     }
                     cBd.isShowNum = cShownum.menu.lis[0].checked;
                     break;
                 case 1:
-                    cShownum.menu.lis[1].checked = !cShownum.menu.lis[1].checked;
-                    if (cShownum.menu.lis[1].checked) {
-                        cShownum.menu.lis[1].innerHTML = cShownum.input[1].text + "  ✔";
-                    }
-                    else {
-                        cShownum.menu.lis[1].innerHTML = cShownum.input[1].text;
-                    }
-                    cBd.showFoul(cShownum.menu.lis[1].checked);
+                    setLis(1, !cShownum.menu.lis[1].checked);
+                    cBd.isShowFoul=cShownum.menu.lis[1].checked;
                     break;
                 case 2:
-                    cShownum.menu.lis[2].checked = !cShownum.menu.lis[2].checked;
-                    if (cShownum.menu.lis[2].checked) {
-                        cShownum.menu.lis[2].innerHTML = cShownum.input[2].text + "  ✔";
-                    }
-                    else {
-                        cShownum.menu.lis[2].innerHTML = cShownum.input[2].text;
-                    }
-                    cBd.showAutoLine(cShownum.menu.lis[2].checked);
+                    setLis(2, !cShownum.menu.lis[2].checked);
+                    cBd.isShowAutoLine=cShownum.menu.lis[2].checked;
                     break;
+            }
+            cBd.autoShow("now");
+            
+            function setLis(idx, checked) {
+                cShownum.menu.lis[idx].checked = checked;
+                if (cShownum.menu.lis[idx].checked) {
+                    cShownum.menu.lis[idx].innerHTML = cShownum.input[idx].text + "  ✔";
+                }
+                else {
+                    cShownum.menu.lis[idx].innerHTML = cShownum.input[idx].text;
+                }
             }
 
             //cShownum.setText(getShowNum()?"❶" :"●");
