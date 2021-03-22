@@ -19,6 +19,7 @@ let engine = (() => {
         //  cancelFind,null,null,"auto");
         cFP.hide();
         cVCF.hide();
+        cBd.removeMarkLine(cBd.autoLines);
         let but = cVCF;
         cCancel.move(but.left, but.top, but.width, but.height);
         let lb = cFP;
@@ -32,6 +33,7 @@ let engine = (() => {
         cVCF.setText("解题");
         cBd.refreshMarkLine("all");
         cBd.refreshMarkArrow("all");
+        cBd.autoShow();
         cCancel.hide();
         labelTime.close();
         closeMsg();
@@ -48,12 +50,56 @@ let engine = (() => {
             msg("❌❌❌ " + fclr + " 查找VCF失败了❌❌❌");
         }
     };
+    let cleLb = (idx) => {
+        cBd.cleLb(idx, false);
+        /*
+        if (typeof(idx) == "string" && idx == "all") {
+            for (let i = 0; i < cBd.SLTX * cBd.SLTY; i++) {
+                if (cBd.P[i].type == tLb || cBd.P[i].type == tLbMoves) {
+                    cBd.P[idx].cle();
+                    cBd.clePointB(idx);
+                    //refreshLine.call(cBd, i);
+                }
+            }
+        }
+        else {
+            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves) {
+                cBd.P[idx].cle();
+                cBd.clePointB(idx);
+                //refreshLine.call(cBd, idx);
+            }
+        }
+        */
+    }
+    let wLb = (idx, text, color) => {
+        cBd.wLb(idx, text, color, null, false);
+        /*
+        if (idx < 0) return;
+        if (cBd.P[idx].type != tEmpty) {
+            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves) {
+                cBd.P[idx].cle();
+                cBd.clePointB(idx);
+            }
+            else {
+                cBd.P[idx].cle();
+                cBd.clePointB(idx);
+            }
+        }
+        cBd.P[idx].color = color;
+        cBd.P[idx].bkColor = null;
+        cBd.P[idx].type = tLb;
+        cBd.P[idx].text = text;
+        //cBd.refreshMarkLine(idx);
+        cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, null, null, cBd.P[idx].bkColor);
+        cBd.refreshMarkArrow(idx);
+        */
+    }
     let createWork = (commands) => {
 
         let defaultCmd = {
             "vConsole": (p) => { console.log(p) },
-            "cleLb": (p) => { cBd.cleLb(p[0]); },
-            "wLb": (p) => { cBd.wLb(p[0], p[1], p[2]); },
+            "cleLb": (p) => { cleLb(p[0]); },
+            "wLb": (p) => { wLb(p[0], p[1], p[2]); },
             "printMoves": (p) => { cBd.printMoves(p[0], p[1]); },
         }
         for (let cmd in commands) { // add commands
@@ -97,7 +143,7 @@ let engine = (() => {
                     for (let i = 0; i < works.length; i++) works[i].terminate();
                     for (let i = cBd.SLTX * cBd.SLTY - 1; i >= 0; i--) {
                         if (typeof(cBd.P[i].text) == "number" || cBd.P[i].text == "●" || cBd.P[i].text == "⊙") {
-                            cBd.cleLb(i);
+                            cleLb(i);
                         }
                     }
                     if (tree) {
@@ -210,7 +256,7 @@ let engine = (() => {
                             for (let i = 0; i < p[0].length; i++) {
                                 cObjVCF.winMoves.push(p[0][i].slice(0));
                             }
-                            cBd.cleLb("all");
+                            cleLb("all");
                             if (cObjVCF.winMoves.length) setTimeout(() => { cBd.printMoves(cObjVCF.winMoves[0], cObjVCF.color); }, 1100);
                             callback();
                             printMsg();
@@ -247,10 +293,10 @@ let engine = (() => {
                             let y = pnt.point[i].y;
                             if (newarr[y][x] == 0) {
                                 sPoint.push(y * 15 + x);
-                                cBd.wLb(y * 15 + x, "●", "#888888");
+                                wLb(y * 15 + x, "●", "#888888");
                             }
                             else {
-                                cBd.cleLb(y * 15 + x);
+                                cleLb(y * 15 + x);
                             }
                         }
                         //console.log(sPoint.length);
@@ -262,7 +308,7 @@ let engine = (() => {
                                 works[i] = createWork({
                                     "wLb": (p) => {
                                         cBd.printSearchPoint(i);
-                                        cBd.wLb(p[0], p[1], p[2]);
+                                        wLb(p[0], p[1], p[2]);
                                     },
                                     "addTree": (p) => {
                                         if (tree) {
@@ -306,7 +352,7 @@ let engine = (() => {
                     let sPoint = [];
                     work = createWork({
                         "findVCF_End": (p) => {
-                            cBd.cleLb("all");
+                            cleLb("all");
                             if (p[0].length) {
                                 msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
                                 closeMsg(2000);
@@ -340,7 +386,7 @@ let engine = (() => {
                     work = createWork({
                         "findVCF_End": (p) => {
                             let fclr = p[1] == 1 ? "黑棋" : "白棋";
-                            cBd.cleLb("all");
+                            cleLb("all");
                             if (p[0].length) {
                                 msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
                                 closeMsg(2000);
@@ -359,7 +405,7 @@ let engine = (() => {
                             if (sPoint.length) {
                                 //console.log("sPoint = " + sPoint);
                                 for (let i = 0; i < sPoint.length; i++) {
-                                    cBd.wLb(sPoint[i], "●", "#888888");
+                                    wLb(sPoint[i], "●", "#888888");
                                 }
                                 msg(fclr + "开始验证防点...... ", null, null, null, null, null, null, null, null, null, 0);
                                 closeMsg(2000);
@@ -381,7 +427,7 @@ let engine = (() => {
                                 works[i] = createWork({
                                     "wLb": (p) => {
                                         cBd.printSearchPoint(i);
-                                        cBd.wLb(p[0], p[1], p[2]);
+                                        wLb(p[0], p[1], p[2]);
                                     },
                                     "printSearchPoint": (p) => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                     "end": (p) => {

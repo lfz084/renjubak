@@ -333,6 +333,7 @@ let control = (() => {
         cShownum = new button(renjuCmddiv, "select", w * 6.4, t, w, h);
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
+        cShownum.addOption(2, "显示线路");
         cShownum.show();
         cShownum.setText("❶");
         //setShowNum(1);
@@ -366,6 +367,14 @@ let control = (() => {
                     cBd.showFoul(cShownum.menu.lis[1].checked);
                     break;
                 case 2:
+                    cShownum.menu.lis[2].checked = !cShownum.menu.lis[2].checked;
+                    if (cShownum.menu.lis[2].checked) {
+                        cShownum.menu.lis[2].innerHTML = cShownum.input[2].text + "  ✔";
+                    }
+                    else {
+                        cShownum.menu.lis[2].innerHTML = cShownum.input[2].text;
+                    }
+                    cBd.showAutoLine(cShownum.menu.lis[2].checked);
                     break;
             }
 
@@ -514,6 +523,13 @@ let control = (() => {
             let newarr = getArr([]);
             switch (but.input.value * 1) {
                 case 1:
+                    /*
+                    let ls = getLines(122,getRenjuSelColor(),arr,4);
+                    cBd.wLb(122,"0","black" );
+                    for (let i=ls.length-1; i>=0; i--) {
+                        cBd.createMarkLine(ls[i].start, ls[i].end, "red")
+                    }
+                    */
                     engine.postMsg("vctSelectPoint", [getRenjuSelColor(), arr, newarr]);
                     break;
                 case 2:

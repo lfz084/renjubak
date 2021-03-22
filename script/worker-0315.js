@@ -2167,6 +2167,9 @@ function isLineFive(x, y, model, color, arr) {
         }
     }
 
+    //console.log(arr)
+    //console.log(count)
+
     arr[y][x] = ov;
     return count > 0 ? true : false;
 }
@@ -2824,6 +2827,209 @@ function isLineFF(x, y, model, color, arr) {
     }
 
     return false;
+}
+
+
+
+function getLines(idx, color, arr, level) {
+    let lines = [];
+    let x = idx % 15;
+    let y = parseInt(idx / 15);
+    //console.log(`idx=${idx}, x=${x}, y=${y}`)
+    for (let i = 0; i < 4; i++) {
+        let line = getLine(Cmodel[i]);
+        //console.log(line)
+        if (line) lines.push(line);
+    }
+    return lines;
+
+    function getLine(model) {
+        let p;
+        let isf;
+        let count = 0;
+        let start, end;
+        let five = [];
+        arr[y][x] = color;
+        //console.log(model)
+        switch (level) {
+            case 3:
+                for (let i = -3; i < 0; i++) {
+                    p = getArrPoint(x, y, i, model);
+                    if (p.x != -1 && arr[p.y][p.x]==0) {
+                        //console.log(`idx=${idx}, x=${x}, y=${y}, p.x=${p.x}, p.y=${p.y}, model=${model}`)
+                        isf = isLineFour(p.x, p.y, model, color, arr, true);
+                        start = undefined;
+                        if (isf) {
+                            //console.log(`f=${getArrIndex(x, y, i, model)}`)
+                            start = getArrIndex(x, y, i, model);
+                            for (let j = -1; j > -4; j--) {
+                                //console.log(`j=${i+j}`)
+                                let c = getArrValue(x, y, i + j, model, arr);
+                                if (c == color) {
+                                    if (Math.abs(i + j) > 3) {
+                                        start = undefined;
+                                        break;
+                                    }
+                                    start = getArrIndex(x, y, i + j, model);
+                                }
+                                else {
+                                    //console.log(`i=1`)
+                                    i = 1;
+                                    count++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (let i = 3; i > 0; i--) {
+                    p = getArrPoint(x, y, i, model);
+                    if (p.x != -1 && arr[p.y][p.x]==0) {
+                        isf = isLineFour(p.x, p.y, model, color, arr, true);
+                        end = undefined;
+                        if (isf) {
+                            //console.log(`f=${getArrIndex(x, y, i, model)}`)
+                            end = getArrIndex(x, y, i, model);
+                            for (let j = 1; j < 4; j++) {
+                                //console.log(`j=${i+j}`)
+                                let c = getArrValue(x, y, i + j, model, arr);
+                                if (c == color) {
+                                    if (Math.abs(i + j) > 3) {
+                                        end = undefined;
+                                        break;
+                                    }
+                                    end = getArrIndex(x, y, i + j, model);
+                                }
+                                else {
+                                    //console.log(`i=-1`)
+                                    i = -1;
+                                    count++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (count) {
+                    if (start == undefined) {
+                        start = getArrIndex(x, y, 0, model);
+                        for (let j = -1; j > -4; j--) {
+                            let c = getArrValue(x, y, j, model, arr);
+                            if (c == color) {
+                                start = getArrIndex(x, y, j, model);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                    }
+                    if (end == undefined) {
+                        end = getArrIndex(x, y, 0, model);
+                        for (let j = 1; j < 4; j++) {
+                            let c = getArrValue(x, y, j, model, arr);
+                            if (c == color) {
+                                end = getArrIndex(x, y, j, model);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 4:
+                for (let i = -4; i < 0; i++) {
+                    p = getArrPoint(x, y, i, model);
+                    if (p.x != -1 && arr[p.y][p.x]==0) {
+                        isf = isLineFive(p.x, p.y, model, color, arr);
+                        if (isf) {
+                            five.push(p);
+                            break;
+                        }
+                    }
+                }
+
+                for (let i = 4; i > 0; i--) {
+                    p = getArrPoint(x, y, i, model);
+                    if (p.x != -1 && arr[p.y][p.x]==0) {
+                        isf = isLineFive(p.x, p.y, model, color, arr);
+                        if (isf) {
+                            five.push(p);
+                            break;
+                        }
+                    }
+                }
+                /*
+for (let p in five) {
+    console.log(`p.x=${p.x}, p.y=${p.y}`)
+}
+*/
+                if (five.length) {
+                    start = getArrIndex(five[0].x, five[0].y, 0, model);
+                    let j = 0;
+                    while (true) {
+                        j--;
+                        let c = getArrValue(five[0].x, five[0].y, j, model, arr);
+                        if (c == color) {
+                            start = getArrIndex(five[0].x, five[0].y, j, model);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    end = getArrIndex(five[five.length - 1].x, five[five.length - 1].y, 0, model);
+                    j = 0;
+                    while (true) {
+                        j++;
+                        let c = getArrValue(five[five.length - 1].x, five[five.length - 1].y, j, model, arr);
+                        if (c == color) {
+                            end = getArrIndex(five[five.length - 1].x, five[five.length - 1].y, j, model);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+
+                }
+                break;
+                case 5:
+                    if (isLineFive(x,y,model,color,arr)) {
+                        start = getArrIndex(x, y, 0, model);
+                        let j = 0;
+                        while (true) {
+                            j--;
+                            let c = getArrValue(x, y, j, model, arr);
+                            if (c == color) {
+                                start = getArrIndex(x, y, j, model);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                        end = getArrIndex(x, y, 0, model);
+                        j = 0;
+                        while (true) {
+                            j++;
+                            let c = getArrValue(x, y, j, model, arr);
+                            if (c == color) {
+                                end = getArrIndex(x, y, j, model);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                    
+                    }
+                    break;
+        }
+        arr[y][x] = 0;
+
+        if (start != end) {
+            //console.log(`start=${start}, end=${end}, model=${model}`)
+            return { "start": start, "end": end };
+        }
+    }
 }
 
 

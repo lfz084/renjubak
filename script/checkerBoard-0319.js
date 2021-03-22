@@ -164,13 +164,16 @@ function checkerBoard(parentNode, left, top, width, height) {
 
     this.isShowNum = true; // 是否显示手顺
     this.isShowFoul = false;
+    this.isShowAutoLine = false;
     this.timerShowFoul = null;
+    this.timerAutoShow = null;
 
     this.P = new Array(225); //用来保存225个点
     this.DIV = new Array(225); //原来保存225 DIV 标签的引用
     this.MS = []; //保存落子顺序,index
     this.MS.length = 0;
     this.MSindex = -1; //  指针，指向当前棋盘最后一手在MS索引   
+    this.autoLines = [];
     this.LINES = [];
     this.ARROWS = [];
     this.Moves = ""; // 保存棋谱代码;
@@ -351,6 +354,37 @@ checkerBoard.prototype.addTree = function(tree) {
 
 
 
+checkerBoard.prototype.autoShow = function(timer) {
+    let playmodel = control.getPlayModel();
+    console.log(`playmofel=${control.getPlayModel()}`)
+    if ( playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel ) return;
+
+    if (this.timerAutoShow) {
+        clearTimeout(this.timerAutoShow);
+        this.timerAutoShow = null;
+    }
+    let cBoard = this;
+    if (timer=="now") {
+        show();
+    }
+    else {
+    this.timerAutoShow = setTimeout(show, 100);
+    }
+
+    function show() {
+        if (cBoard.oldCode) {
+            cBoard.unpackTree();
+        }
+        else {
+            console.log("autoShow")
+            cBoard.showFoul(cBoard.isShowFoul);
+            cBoard.showAutoLine(cBoard.isShowAutoLine);
+        }
+    }
+}
+
+
+
 // 将传入的二维数组顺时针90°
 checkerBoard.prototype.CW = function(arrobj, count) {
 
@@ -477,7 +511,7 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
     for (let i = 0; i < bMS.length; i++) {
         this.wNb(bMS[i], this.bNumColor);
     }
-
+    this.autoShow("now");
 
 };
 
@@ -690,7 +724,7 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
     for (let i = 0; i < bMS.length; i++) {
         this.wNb(bMS[i], this.bNumColor);
     }
-
+    this.autoShow("now");
 
 };
 
@@ -727,7 +761,7 @@ checkerBoard.prototype.cleAllPointBorder = function() {
 
 
 // 删除一个标记
-checkerBoard.prototype.cleLb = function(idx) {
+checkerBoard.prototype.cleLb = function(idx, autoShow) {
 
     if (typeof(idx) == "string" && idx == "all") {
         for (let i = 0; i < this.SLTX * this.SLTY; i++) {
@@ -743,6 +777,8 @@ checkerBoard.prototype.cleLb = function(idx) {
             refreshLine.call(this, idx);
         }
     }
+    autoShow = autoShow==undefined?true:autoShow;
+    if (autoShow) this.showAutoLine(this.isShowAutoLine);
 
     function refreshLine(idx) {
         let mv = [0, -this.SLTX, this.SLTX, -1, 1];
@@ -769,7 +805,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
         this.MSindex--;
         this.showLastNum(showNum);
         //console.log("cleNb")
-        this.unpackTree();
+        //this.unpackTree();
     }
     else if (this.P[idx].type == tBlack || this.P[idx].type == tWhite) {
         if (this.oldCode) return;
@@ -777,7 +813,8 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
         refreshLine.call(this, idx);
 
     }
-    this.showFoul(this.isShowFoul);
+    this.autoShow();
+    //this.showFoul(this.isShowFoul);
 
     function refreshLine(idx) {
         let mv = [0, -this.SLTX, this.SLTX, -1, 1];
@@ -816,6 +853,7 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
         this.clePointB(idx, w + 1, h + 1);
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx);
+            this.refreshMarkLine(oldIdx, this.autoLines);
             this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
             this.refreshMarkArrow(oldIdx);
         }
@@ -825,11 +863,13 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
             let nIdx1 = idx + (nIdx < idx ? (markLine.direction == 1 ? -1 : 1) : (markLine.direction == 5 ? 1 : -1));
             if (nIdx >= 0 && nIdx < this.P.length) {
                 this.refreshMarkLine(nIdx);
+                this.refreshMarkLine(nIdx, this.autoLines);
                 this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
                 this.refreshMarkArrow(nIdx);
             }
             if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                 this.refreshMarkLine(nIdx1);
+                this.refreshMarkLine(nIdx1, this.autoLines);
                 this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
                 this.refreshMarkArrow(nIdx1);
             }
@@ -837,6 +877,7 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
     }
     if (oldIdx + 1) {
         this.refreshMarkLine(oldIdx);
+        this.refreshMarkLine(oldIdx, this.autoLines);
         this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
         this.refreshMarkArrow(oldIdx);
     }
@@ -883,6 +924,7 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
         this.clePointB(idx, w + 1, h + 1);
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx);
+            this.refreshMarkLine(oldIdx, this.autoLines);
             this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
             this.refreshMarkArrow(oldIdx);
         }
@@ -892,11 +934,13 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
             let nIdx1 = idx + (nIdx < idx ? (markArrow.direction == 1 ? -1 : 1) : (markArrow.direction == 5 ? 1 : -1));
             if (nIdx >= 0 && nIdx < this.P.length) {
                 this.refreshMarkLine(nIdx);
+                this.refreshMarkLine(nIdx, this.autoLines);
                 this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
                 this.refreshMarkArrow(nIdx);
             }
             if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                 this.refreshMarkLine(nIdx1);
+                this.refreshMarkLine(nIdx1, this.autoLines);
                 this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
                 this.refreshMarkArrow(nIdx1);
             }
@@ -905,6 +949,7 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
     }
     if (oldIdx + 1) {
         this.refreshMarkLine(oldIdx);
+        this.refreshMarkLine(oldIdx, this.autoLines);
         this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
         this.refreshMarkArrow(oldIdx);
     }
@@ -972,7 +1017,7 @@ checkerBoard.prototype.createMarkArrow = function(start, end, color) {
 
 
 
-checkerBoard.prototype.createMarkLine = function(start, end, color) {
+checkerBoard.prototype.createMarkLine = function(start, end, color, lines) {
     let x1 = start % this.SLTX;
     let y1 = parseInt(start / this.SLTX);
     let x2 = end % this.SLTX;
@@ -980,6 +1025,7 @@ checkerBoard.prototype.createMarkLine = function(start, end, color) {
     let direction;
     let P = [];
     let n;
+    lines = lines || this.LINES;
     if (x1 == x2 && y1 != y2) {
         direction = start > end ? 2 : 6;
         n = direction == 2 ? 0 - this.SLTX : this.SLTX;
@@ -1000,7 +1046,7 @@ checkerBoard.prototype.createMarkLine = function(start, end, color) {
     }
     P.push(end);
     let mkLine = new markLine(P, color, direction);
-    this.LINES.push(mkLine);
+    lines.push(mkLine);
     this.printMarkLine(mkLine);
     return mkLine;
 }
@@ -1134,7 +1180,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             let x = this.P[mk.P[mk.P.length - 1]].x;
             let y = this.P[mk.P[mk.P.length - 1]].y;
             this.drawLine.selectDiv.onmousedown = function() {
-                console.log(1);
+                //console.log(1);
             }
             s = this.drawLine.selectDiv.style;
             s.borderWidth = this.gW / 8 + "px";
@@ -1916,10 +1962,11 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
             }
             break;
     }
-
-    this.MSToMoves();
+    
     this.removeMarkArrow("all");
     this.removeMarkLine("all");
+    this.MSToMoves();
+    this.autoShow("now");
 
     // 复制一个点，同时打印出来
     function copyP(board, idx, idx1) {
@@ -2382,6 +2429,7 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
         this.printPointB(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
         */
     }
+
 }
 
 
@@ -2881,14 +2929,27 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
     num = num ? parseInt(num) : 0;
     //清除旧标记
     if (this.searchIdx[num] > -1 && this.searchIdx[num] != idx) {
-        this.cleLb(this.searchIdx[num]);
+        //this.cleLb(this.searchIdx[num]);
+        this.P[this.searchIdx[num]].cle();
+        this.clePointB(this.searchIdx[num]);
+        this.refreshMarkLine(this.searchIdx[num]);
+        this.refreshMarkArrow(this.searchIdx[num]);
         this.searchIdx[num] = -1;
     }
     //写入新标记
     if (idx > -1) {
         this.searchIdx[num] = idx;
-        this.wLb(idx, text, color);
+        //this.wLb(idx, text, color);
+        this.P[idx].color = color;
+        this.P[idx].bkColor = null;
+        this.P[idx].type = tLb;
+        this.P[idx].text = text;
+        this.refreshMarkLine(idx);
+        this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+        this.refreshMarkArrow(idx);
     }
+    
+    
 };
 
 
@@ -2974,21 +3035,25 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
     if (this.MS.length) this.showLastNum(this.isShowNum);
     this.refreshMarkLine("all");
     this.refreshMarkArrow("all");
+    this.autoShow("now");
 
 }
 
 
 
-checkerBoard.prototype.refreshMarkLine = function(idx) {
+checkerBoard.prototype.refreshMarkLine = function(idx, lines) {
+
+    lines = lines || this.LINES;
+    lines = idx == this.autoLines ? this.autoLines : lines;
     if (idx == "all" || idx == "All") {
-        for (let i = 0; i < this.LINES.length; i++) {
-            this.printMarkLine(this.LINES[i]);
+        for (let i = 0; i < lines.length; i++) {
+            this.printMarkLine(lines[i]);
         }
     }
     else {
-        for (let i = 0; i < this.LINES.length; i++) {
-            if (this.LINES[i].P.indexOf(idx) + 1) {
-                this.printMarkLine(this.LINES[i], idx);
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].P.indexOf(idx) + 1) {
+                this.printMarkLine(lines[i], idx);
             }
         }
     }
@@ -3108,18 +3173,20 @@ checkerBoard.prototype.removeMarkArrow = function(idx) {
 
 
 
-checkerBoard.prototype.removeMarkLine = function(idx) {
-    if (idx == "all" || idx == "All") {
-        for (let i = this.LINES.length - 1; i >= 0; i--) {
-            let mkLine = this.LINES[i];
-            this.LINES.length--;
+checkerBoard.prototype.removeMarkLine = function(idx, lines) {
+    lines = lines || this.LINES;
+    lines = idx == this.autoLines ? this.autoLines : lines;
+    if (idx == "all" || idx == "All" || idx == this.autoLines) {
+        for (let i = lines.length - 1; i >= 0; i--) {
+            let mkLine = lines[i];
+            lines.length--;
             this.cleMarkLine(mkLine);
         }
 
     }
     else {
-        if (idx < 0 || idx >= this.LINES.length) return;
-        let mkLine = this.LINES.splice(idx, 1);
+        if (idx < 0 || idx >= lines.length) return;
+        let mkLine = lines.splice(idx, 1);
         this.cleMarkLine(mkLine[0]);
         mkLine = null;
     }
@@ -3582,25 +3649,91 @@ checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用
 
 
 
+checkerBoard.prototype.showAutoLine = function(display) {
+
+    for (let i = this.autoLines.length - 1; i >= 0; i--) {
+        this.removeMarkLine(i, this.autoLines);
+    }
+    if (display) {
+        let arr = this.getPointArray([]);
+        let newarr = getArr([]);
+        findThreePoint(arr, 1, newarr, onlyFree);
+        addLines.call(this, 1, arr, newarr, 3);
+        newarr = getArr([]);
+        findThreePoint(arr, 2, newarr, onlyFree);
+        addLines.call(this, 2, arr, newarr, 3);
+        newarr = getArr([]);
+        findFourPoint(arr, 1, newarr);
+        addLines.call(this, 1, arr, newarr, 4);
+        newarr = getArr([]);
+        findFourPoint(arr, 2, newarr);
+        addLines.call(this, 2, arr, newarr, 4);
+        newarr = getArr([]);
+        findFivePoint(arr, 1, newarr);
+        addLines.call(this, 1, arr, newarr, 5);
+        newarr = getArr([]);
+        findFivePoint(arr, 2, newarr);
+        addLines.call(this, 2, arr, newarr, 5);
+    }
+
+    this.isShowAutoLine = display;
+
+    function addLines(color, arr, newarr, level) {
+        for (let y = this.SLTY - 1; y >= 0; y--) {
+            for (let x = this.SLTX - 1; x >= 0; x--) {
+                if (newarr[y][x]) {
+                    let lines = getLines(x + this.SLTX * y, color, arr, level);
+                    for (let i = lines.length - 1; i >= 0; i--) {
+                        this.createMarkLine(lines[i].start, lines[i].end, level >= 4 ? "#330077" : "#777700", this.autoLines);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 checkerBoard.prototype.showFoul = function(display) {
-    
+    /*
     if (this.timerShowFoul) {
         clearTimeout(this.timerShowFoul);
         this.timerShowFoul = null;
     }
+    */
     let cBoard = this;
-    this.timerShowFoul = setTimeout(function() {
-        for (let i=cBoard.P.length-1; i>=0; i--) {
-            if (cBoard.P[i].type==tLb && cBoard.P[i].text=="❌") cBoard.cleLb(i);
+    //this.timerShowFoul = setTimeout(function() {
+    for (let i = cBoard.P.length - 1; i >= 0; i--) {
+        if (!display) break;
+        if (cBoard.P[i].type == tLb && cBoard.P[i].text == "❌") {
+            cBoard.P[i].cle();
+            cBoard.clePointB(i);
+            cBoard.refreshMarkLine(i);
+            cBoard.refreshMarkArrow(i);
         }
-        if (display) {
-            let arr = cBoard.getPointArray(getArr([]));
-            let newarr = getArr([]);
-            findFoulPoint(arr, newarr);
-            cBoard.printArray(newarr, "❌", "red");
+    }
+    if (display) {
+        let arr = cBoard.getPointArray(getArr([]));
+        let newarr = getArr([]);
+        findFoulPoint(arr, newarr);
+        for (let y = 0; y < this.SLTY; y++) {
+            for (let x = 0; x < this.SLTX; x++) {
+                if (newarr[y][x] > 0) {
+                    let idx = x + this.SLTX * y;
+                    this.P[idx].color = "red";
+                    this.P[idx].bkColor = null;
+                    this.P[idx].type = tLb;
+                    this.P[idx].text = "❌";
+                    this.refreshMarkLine(idx);
+                    this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+                    this.refreshMarkArrow(idx);
+                }
+            }
         }
-        cBoard.isShowFoul = display;
-    }, 100);
+        //cBoard.printArray(newarr, "❌", "red");
+    }
+    cBoard.isShowFoul = display;
+    //}, 100);
 };
 
 
@@ -3816,45 +3949,47 @@ checkerBoard.prototype.unpackTree = function() {
 
     if (this.oldCode == "") return;
     if (this.oldCode) {
+        /*
         if (this.timerUnpackTree) {
             clearTimeout(this.timerUnpackTree);
             this.timerUnpackTree = null;
         }
+        */
         let MS = this.MS;
         let MSindex = this.MSindex;
         let cBoard = this;
-        this.timerUnpackTree = setTimeout(function() {
-            cBoard.cleLb("all");
-            let arr = cBoard.getPointArray(getArr([]));
-            let newarr = getArr([]);
-            findFoulPoint(arr, newarr);
-            cBoard.printArray(newarr, "❌", "red");
-            let nd = cBoard.tree;
-            let txt = MSindex % 2 ? "W" : "L";
-            let i = 0; //unpackTree
-            for (i = 0; i <= MSindex; i++) {
-                let j = 0; //find idx
-                for (j = nd.childNode.length - 1; j >= 0; j--) {
-                    if (nd.childNode[j].idx == MS[i]) {
-                        nd = nd.childNode[j];
-                        break;
-                    }
-                }
-                if (j == -1) {
-                    if (nd.defaultChildNode) {
-                        nd = nd.defaultChildNode;
-                    }
-                    else {
-                        break; // not find idx
-                    }
+        //this.timerUnpackTree = setTimeout(function() {
+        cBoard.cleLb("all");
+        let arr = cBoard.getPointArray(getArr([]));
+        let newarr = getArr([]);
+        findFoulPoint(arr, newarr);
+        cBoard.printArray(newarr, "❌", "red");
+        let nd = cBoard.tree;
+        let txt = MSindex % 2 ? "W" : "L";
+        let i = 0; //unpackTree
+        for (i = 0; i <= MSindex; i++) {
+            let j = 0; //find idx
+            for (j = nd.childNode.length - 1; j >= 0; j--) {
+                if (nd.childNode[j].idx == MS[i]) {
+                    nd = nd.childNode[j];
+                    break;
                 }
             }
-            if (i > MSindex) { // print points
-                for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                    cBoard.wLb(nd.childNode[i].idx, txt, "black");
+            if (j == -1) {
+                if (nd.defaultChildNode) {
+                    nd = nd.defaultChildNode;
+                }
+                else {
+                    break; // not find idx
                 }
             }
-        }, 100);
+        }
+        if (i > MSindex) { // print points
+            for (let i = nd.childNode.length - 1; i >= 0; i--) {
+                cBoard.wLb(nd.childNode[i].idx, txt, "black");
+            }
+        }
+        //}, 100);
     }
 }
 
@@ -3906,7 +4041,7 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
 
 
 //  在棋盘的一个点上面，打印一个标记
-checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
+checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor, autoShow) {
     if (idx < 0) return;
     if (this.P[idx].type != tEmpty) {
         if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
@@ -3924,6 +4059,8 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
     //this.refreshMarkLine(idx);
     this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
     this.refreshMarkArrow(idx);
+    autoShow = autoShow==undefined?true:autoShow;
+    if (autoShow) this.showAutoLine(this.isShowAutoLine);
 };
 
 
@@ -3961,9 +4098,11 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     //this.refreshMarkLine(idx);
     this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
     this.refreshMarkArrow(idx);
-    //console.log("wNb")
+    this.autoShow();
+    /*
     this.showFoul(this.isShowFoul);
     this.unpackTree();
+    */
 };
 
 
