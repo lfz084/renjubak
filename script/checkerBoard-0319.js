@@ -357,7 +357,7 @@ checkerBoard.prototype.addTree = function(tree) {
 
 checkerBoard.prototype.autoShow = function(timer) {
     let playmodel = control.getPlayModel();
-    console.log(`playmofel=${control.getPlayModel()}`)
+    //console.log(`playmofel=${control.getPlayModel()}`)
     if ( playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel ) return;
 
     if (this.timerAutoShow) {
@@ -377,7 +377,7 @@ checkerBoard.prototype.autoShow = function(timer) {
             cBoard.unpackTree();
         }
         else {
-            console.log("autoShow")
+            //console.log("autoShow")
             cBoard.showFoul(cBoard.isShowFoul);
             cBoard.showAutoLine(cBoard.isShowAutoLine);
         }
@@ -2865,7 +2865,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
             //ctx.stroke();
         }
         //ctx.beginPath();
-        ctx.arc(p.x, p.y, text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
+        ctx.arc(p.x, p.y, this.P[idx].type==tLbFoul?w:text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillStyle = color;
         //ctx.font = "bolder " + parseInt(w * 1.1) + "px  mHeiTi";
