@@ -2587,7 +2587,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
         for (let x = 0; x < this.SLTX; x++) {
             idx = y * this.SLTX + x;
             if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
-                this.cleLb(idx);
+                this.cleLb(idx, false);
             }
         }
     }
@@ -2612,7 +2612,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
             fontColor = i % 2 ? this.moveBlackFontColor : this.moveWhiteFontColor;
         }
 
-        this.wLb(moves[i], i + 1, fontColor, color);
+        this.wLb(moves[i], i + 1, fontColor, color, false);
     }
 };
 

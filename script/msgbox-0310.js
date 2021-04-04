@@ -113,7 +113,7 @@
          msgTextarea.readOnly = false;
          s.textAlign = "left";
          s.border = `${parseInt(s.fontSize)/20}px solid black`;
-         s.left = parseInt(s.left) - parseInt(s.fontSize)/20 + "px";
+         s.left = parseInt(s.left) - parseInt(s.fontSize) / 20 + "px";
          s.color = "black";
          s.backgroundColor = "white";
      }
@@ -185,18 +185,15 @@
          clearTimeout(closeTimer);
          closeTimer = null;
      }
-     if (MsgBoxobj.parentNode) {
-         timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
-         closeTimer = setTimeout(function() {
+     timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
+     closeTimer = setTimeout(function() {
+         closeTimer = null;
+         MsgBoxobj.setAttribute("class", "hide");
+         closeTimer = setTimeout(() => {
              closeTimer = null;
-             MsgBoxobj.setAttribute("class", "hide");
-             closeTimer = setTimeout(() => {
-                 closeTimer = null;
-                 isMsgShow = false;
-                 MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-                 msgTextarea.value = "";
-             }, AnimationTimeout);
-         }, timer);
-     }
-
+             isMsgShow = false;
+             if (MsgBoxobj.parentNode) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
+             msgTextarea.value = "";
+         }, AnimationTimeout);
+     }, timer);
  }
