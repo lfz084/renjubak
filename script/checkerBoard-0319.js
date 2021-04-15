@@ -358,18 +358,18 @@ checkerBoard.prototype.addTree = function(tree) {
 checkerBoard.prototype.autoShow = function(timer) {
     let playmodel = control.getPlayModel();
     //console.log(`playmofel=${control.getPlayModel()}`)
-    if ( playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel ) return;
+    if (playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
 
     if (this.timerAutoShow) {
         clearTimeout(this.timerAutoShow);
         this.timerAutoShow = null;
     }
     let cBoard = this;
-    if (timer=="now") {
+    if (timer == "now") {
         show();
     }
     else {
-    this.timerAutoShow = setTimeout(show, 100);
+        this.timerAutoShow = setTimeout(show, 100);
     }
 
     function show() {
@@ -778,7 +778,7 @@ checkerBoard.prototype.cleLb = function(idx, autoShow) {
             refreshLine.call(this, idx);
         }
     }
-    autoShow = autoShow==undefined?true:autoShow;
+    autoShow = autoShow == undefined ? true : autoShow;
     if (autoShow) this.showAutoLine(this.isShowAutoLine);
 
     function refreshLine(idx) {
@@ -1103,13 +1103,14 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
     const sin45 = 0.707105;
     let s = this.drawLine.startPoint.style;
     if (this.startIdx < 0) {
+        //console.log(`offsetLeft=${this.canvas.offsetLeft}, offsetTop=${this.canvas.offsetTop}`)
         if (idx < 0 || idx >= this.P.length) return;
         s.width = this.gW / 3 + "px";
-        s.height = this.gH / 3 + "px";
+        s.height = this.gW / 3 + "px";
         s.borderWidth = this.gW / 6 + "px";
         s.borderColor = "white";
-        s.left = this.P[idx].x - parseInt(s.width) / 2 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
-        s.top = this.P[idx].y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + this.canvas.offsetTop + "px";
+        s.left = this.P[idx].x - this.gW / 3 + this.canvas.offsetLeft + "px";
+        s.top = this.P[idx].y - this.gW / 3 + this.canvas.offsetTop + "px";
         s.backgroundColor = color;
         s.zIndex = 0;
         this.startIdx = idx;
@@ -1126,34 +1127,34 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             s = this.drawLine.dashedLine[i].style;
             s.borderWidth = this.gW / 20 + "px";
             s.height = this.gW / 20 + "px";
-            s.top = this.P[idx].y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + "px";
+            s.top = this.P[idx].y - this.gW * 3 / 40 + this.canvas.offsetTop + "px";
             s.borderColor = color;
             s.backgroundColor = "white";
             switch (i) {
                 case 0:
                     s.width = this.gW * (this.SLTX - 1) + "px";
-                    s.left = this.P[idx].x - this.gW * lw + "px";
+                    s.left = this.P[idx].x - this.gW * lw - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
                     break;
                 case 1:
                     s.width = this.gH * (this.SLTY - 1) + "px";
-                    s.left = this.P[idx].x - this.gH * uh + "px";
-                    s.transformOrigin = `${parseInt(this.gH * uh)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.left = this.P[idx].x - this.gH * uh - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+                    s.transformOrigin = `${parseInt(this.gH * uh+parseInt(s.borderWidth))}px ${this.gW*3/40}px`;
                     s.transform = `rotate(${90}deg)`;
                     break;
                 case 2:
                     lWidth = min(lw, uh);
                     rWidth = min(rw, bh);
                     s.width = this.gW * (lWidth + rWidth) / sin45 + "px";
-                    s.left = this.P[idx].x - this.gW * lWidth / sin45 + "px";
-                    s.transformOrigin = `${parseInt(this.gW * lWidth/sin45)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.left = this.P[idx].x - this.gW * lWidth / sin45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+                    s.transformOrigin = `${parseInt(this.gW * lWidth/sin45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
                     s.transform = `rotate(${45}deg)`;
                     break;
                 case 3:
-                    lWidth = min(lw, bh);
+                    lWidth = min(lw, bh); 
                     rWidth = min(rw, uh);
                     s.width = this.gH * (lWidth + rWidth) / sin45 + "px";
-                    s.left = this.P[idx].x - this.gH * lWidth / sin45 + "px";
-                    s.transformOrigin = `${parseInt(this.gH * lWidth / sin45)}px ${parseInt(s.height)/2+parseInt(s.borderWidth)}px`;
+                    s.left = this.P[idx].x - this.gH * lWidth / sin45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+                    s.transformOrigin = `${parseInt(this.gH * lWidth / sin45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
                     s.transform = `rotate(${-45}deg)`;
                     break;
             }
@@ -1963,7 +1964,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
             }
             break;
     }
-    
+
     this.removeMarkArrow("all");
     this.removeMarkLine("all");
     this.MSToMoves();
@@ -2865,7 +2866,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
             //ctx.stroke();
         }
         //ctx.beginPath();
-        ctx.arc(p.x, p.y, this.P[idx].type==tLbFoul?w:text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
+        ctx.arc(p.x, p.y, this.P[idx].type == tLbFoul ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillStyle = color;
         //ctx.font = "bolder " + parseInt(w * 1.1) + "px  mHeiTi";
@@ -2949,8 +2950,8 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
         this.refreshMarkArrow(idx);
     }
-    
-    
+
+
 };
 
 
@@ -3705,7 +3706,7 @@ checkerBoard.prototype.showFoul = function(display) {
     let cBoard = this;
     //this.timerShowFoul = setTimeout(function() {
     for (let i = cBoard.P.length - 1; i >= 0; i--) {
-        if (cBoard.P[i].type == tLbFoul)  {
+        if (cBoard.P[i].type == tLbFoul) {
             cBoard.P[i].cle();
             cBoard.clePointB(i);
             cBoard.refreshMarkLine(i);
@@ -4059,7 +4060,7 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor, autoSho
     //this.refreshMarkLine(idx);
     this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
     this.refreshMarkArrow(idx);
-    autoShow = autoShow==undefined?true:autoShow;
+    autoShow = autoShow == undefined ? true : autoShow;
     if (autoShow) this.showAutoLine(this.isShowAutoLine);
 };
 
