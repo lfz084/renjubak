@@ -39,8 +39,8 @@ let control = (() => {
     let cAutoPut = null;
     let cCleAll = null;
     let cShownum = null;
-    let setShowNum = function(){};
-    let getShowNum = function(){};
+    let setShowNum = function() {};
+    let getShowNum = function() {};
     let cNewGame = null;
     let cLocknum = null;
     let cAutoadd = null;
@@ -141,6 +141,18 @@ let control = (() => {
         };
     };
 
+    function bArr(arr, arr2) { //判断两个arr是否相等
+        if (arr2.length) {
+            for (let y = 0; y < 15; y++) {
+                for (let x = 0; x < 15; x++) {
+                    if (arr[y][x] != arr2[y][x]) return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
 
     let putCheckerBoard = putBoard;
 
@@ -216,9 +228,7 @@ let control = (() => {
                     cFindVCF.showMenu(x, y);
                     break;
                 case 3:
-                    cBd.cle();
-                    cBd.resetNum = 0;
-                    engine.postMsg("cancelFind");
+                    cNewGame.input.ontouchend();
                     break;
                 case 4:
                     if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves || cBd.P[idx].type == tEmpty) {
@@ -226,22 +236,19 @@ let control = (() => {
                     }
                     break;
                 case 5:
-                    cBd.cleLb("all");
+                    cCleLb.input.ontouchend();
                     break;
                 case 6:
-                    share("white");
+                    cShareWhite.input.ontouchend();
                     break;
                 case 7:
-                    share();
+                    cShare.input.ontouchend();
                     break;
                 case 8:
-                    cBd.setResetNum(cBd.MSindex + 1);
-                    cBd.isShowNum = getShowNum();
+                    cNextone.input.ontouchend();
                     break;
                 case 9:
-                    cBd.setResetNum(0);
-                    setShowNum(true);
-                    cBd.isShowNum = getShowNum();
+                    cResetnum.input.ontouchend();
                     break;
                 case 10:
                     cBd.showNum();
@@ -342,7 +349,7 @@ let control = (() => {
         cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
         cShownum.setonchange(function() {
             cShownum.setText("❶");
-            if (busy()) return; 
+            if (busy()) return;
             switch (cShownum.input.value * 1) {
                 case 0:
                     setLis(0, !cShownum.menu.lis[0].checked);
@@ -356,15 +363,15 @@ let control = (() => {
                     break;
                 case 1:
                     setLis(1, !cShownum.menu.lis[1].checked);
-                    cBd.isShowFoul=cShownum.menu.lis[1].checked;
+                    cBd.isShowFoul = cShownum.menu.lis[1].checked;
                     break;
                 case 2:
                     setLis(2, !cShownum.menu.lis[2].checked);
-                    cBd.isShowAutoLine=cShownum.menu.lis[2].checked;
+                    cBd.isShowAutoLine = cShownum.menu.lis[2].checked;
                     break;
             }
             cBd.autoShow("now");
-            
+
             function setLis(idx, checked) {
                 cShownum.menu.lis[idx].checked = checked;
                 if (cShownum.menu.lis[idx].checked) {
@@ -377,7 +384,7 @@ let control = (() => {
 
             //cShownum.setText(getShowNum()?"❶" :"●");
         });
-        setShowNum = function (shownum) {
+        setShowNum = function(shownum) {
             cShownum.menu.lis[0].checked = !!shownum;
             if (cShownum.menu.lis[0].checked) {
                 cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
@@ -740,20 +747,7 @@ let control = (() => {
                 }
                 but.input.value = 0;
             }
-
-            function bArr(arr, arr2) { //判断两个arr是否相等
-                if (arr2.length) {
-                    for (let y = 0; y < 15; y++) {
-                        for (let x = 0; x < 15; x++) {
-                            if (arr[y][x] != arr2[y][x]) return false;
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            }
         });
-
 
 
 
@@ -1147,6 +1141,7 @@ let control = (() => {
             cBd.removeMarkLine("all");
             cBd.removeMarkArrow("all");
             cBd.cleLb("all");
+            cBd.threePoints = {};
         });
 
         cHelp = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
@@ -1587,7 +1582,18 @@ let control = (() => {
         if (playModel == renjuModel) {
             if (idx > -1) {
                 let cmds = getRenjuCmd();
+                let arr = cBd.getPointArray([]);
                 if (cBd.oldCode) cmds.type = tNum;
+                if (cBd.threePoints && cBd.threePoints.arr && bArr(arr, cBd.threePoints.arr)) {
+                    if (cBd.threePoints.index > -1) {
+                        cBd.printThreePoints();
+                        return;
+                    }
+                    else {
+                        cBd.printThreePointMoves(idx, getRenjuSelColor());
+                        return;
+                    }
+                }
                 switch (cmds.type) {
                     case tNum:
                         cancelKeepTouck();
@@ -1597,7 +1603,6 @@ let control = (() => {
                         }
                         else if (cBd.P[idx].type == tEmpty || ((cBd.oldCode || cBd.P[idx].text == "❌") && cBd.P[idx].type == tLb)) {
                             // 添加棋子  wNb(idx,color,showNum)
-                            let arr = cBd.getPointArray([]);
                             let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
                             cBd.wNb(idx, "auto", cmds.showNum, null, isF);
                         }
@@ -1648,6 +1653,7 @@ let control = (() => {
                         }
                         break;
                 }
+    
             }
 
         }
@@ -1657,6 +1663,7 @@ let control = (() => {
         else if (playModel == arrowModel) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "arrow");
         }
+
 
     }
 

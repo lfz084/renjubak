@@ -3704,9 +3704,14 @@ function isLevelThreePoint(idx, color, arr, fType) {
     let nColor = color == 1 ? 2 : 1;
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
+        let txt="";
+        let txtColor;
         if (isThree(x, y, color, arr, true) || l == 1) {
             if (fType == null) {
-                post("wLb", [idx, "③", !isThree(x, y, color, arr, true) ? "black" : "red"]);
+                txt = "③";
+                txtColor = !isThree(x, y, color, arr, true) ? "black" : "red";
+                post("wLb", [idx, txt, txtColor]);
+                post("addThreePoint", [idx, { txt:txt, txtColor:txtColor, moves:level.moves}]);
             }
         }
         else {
@@ -3715,14 +3720,21 @@ function isLevelThreePoint(idx, color, arr, fType) {
                 l = vcfWinMoves.length ? 3 : 5;
             }
             if (fType == null) {
-                post("wLb", [idx, "V", l > 3 ? "black" : "red"]);
+                txt = "V";
+                txtColor = l > 3 ? "black" : "red";
+                post("wLb", [idx, txt, txtColor]);
+                post("addThreePoint", [idx, { txt:txt, txtColor:txtColor, moves:level.moves}]);
             }
             else { // 进一步判断是否做V
                 if ((fType == onlyVCF && l > 3) || (fType == onlySimpleWin && l == 3)) {
-                    post("wLb", [idx, "V", l > 3 ? "black" : "red"]);
+                    txt = "V";
+                    txtColor = l > 3 ? "black" : "red";
+                    post("wLb", [idx, txt, txtColor]);
+                    post("addThreePoint", [idx, { txt:txt, txtColor:txtColor, moves:level.moves}]);
                 }
             }
         }
+        
     }
     arr[y][x] = 0;
 }

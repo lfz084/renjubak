@@ -3,7 +3,7 @@ let engine = (() => {
     let maxThread = 4;
     let work = [];
     let works = [];
-    let cObjVCF = { arr: [], winMoves: [], color: 0, time: false }; // 保存VCF分支
+    let cObjVCF = {}; //{ arr: [], winMoves: [], color: 0, time: false }; // 保存VCF分支
     let cBd;
     let cVCF;
     let cFP;
@@ -14,6 +14,7 @@ let engine = (() => {
     let saveContinueData;
     let save = {};
     let tree = null;
+    let threePoints = null;
     let setCmd = () => { //calculate start
         //msg ("","msgbox",0,cBd.height,dw+8,dh-cBd.height,"停止计算",null,
         //  cancelFind,null,null,"auto");
@@ -150,6 +151,10 @@ let engine = (() => {
                         cBd.addTree(tree);
                         tree = null;
                     }
+                    if (threePoints) {
+                        cBd.threePoints = threePoints;
+                        threePoints = null;
+                    }
                     callback();
                 },
                 "findThreePoint": () => {
@@ -271,6 +276,7 @@ let engine = (() => {
                 },
                 "isTwoVCF": () => {
                     tree = null;
+                    threePoints = null;
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
@@ -299,7 +305,7 @@ let engine = (() => {
                                 cleLb(y * 15 + x);
                             }
                         }
-                        //console.log(sPoint.length);
+                        //console.log(sPoint);
                         if (sPoint.length == 0) { callback(); return; };
 
                         let workCount = 0;
@@ -318,9 +324,18 @@ let engine = (() => {
                                             tree = p[0];
                                         }
                                     },
+                                    "addThreePoint": (p) => {
+                                        if (!threePoints) {
+                                            threePoints = {};
+                                            threePoints.arr = arr;
+                                            threePoints.points = [];
+                                            threePoints.index = -1;
+                                        }
+                                        threePoints.points[p[0]] = p[1];
+                                    },
                                     "printSearchPoint": (p) => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                     "end": (p) => {
-                                        let idx = sPoint.length ? sPoint.splice(0, 1) * 1 : -1;
+                                        let idx = sPoint.length ? sPoint.splice(0, 1)[0] : -1;
                                         if (idx > -1) {
                                             cBd.printSearchPoint(i, idx, "⊙", "green");
                                             works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
@@ -334,6 +349,11 @@ let engine = (() => {
                                                     cBd.addTree(tree);
                                                     tree = null;
                                                 }
+                                                if (threePoints) {
+                                                    console.log(threePoints)
+                                                    cBd.threePoints = threePoints;
+                                                    threePoints = null;
+                                                }
                                                 callback();
                                             }
                                         }
@@ -341,7 +361,7 @@ let engine = (() => {
                                 });
                                 workCount++;
 
-                                let idx = sPoint.splice(0, 1);
+                                let idx = sPoint.splice(0, 1)[0];
                                 cBd.printSearchPoint(i, idx, "⊙", "green");;
                                 works[i].postMessage({ "cmd": cmd, parameter: [idx, param[0], param[1], param[3], param[4], param[5], param[6]] });
                             }
@@ -352,6 +372,7 @@ let engine = (() => {
                     let sPoint = [];
                     work = createWork({
                         "findVCF_End": (p) => {
+                            let fclr = p[1] == 1 ? "黑棋" : "白棋";
                             cleLb("all");
                             if (p[0].length) {
                                 msg(fclr + "找到VCF，开始分析防点...... ", null, null, null, null, null, null, null, null, null, 0);
@@ -431,7 +452,7 @@ let engine = (() => {
                                     },
                                     "printSearchPoint": (p) => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                     "end": (p) => {
-                                        let idx = sPoint.length ? sPoint.splice(0, 1) : -1;
+                                        let idx = sPoint.length ? sPoint.splice(0, 1)[0] : -1;
                                         if (idx > -1) {
                                             cBd.printSearchPoint(i, idx, "⊙", "green");
                                             works[i].postMessage({ "cmd": cmd, parameter: [idx, param[1], param[0], param[3], param[4], param[5], param[6]] });
@@ -447,8 +468,7 @@ let engine = (() => {
                                     },
                                 });
                                 workCount++;
-
-                                let idx = sPoint.splice(0, 1);
+                                let idx = sPoint.splice(0, 1)[0];
                                 cBd.printSearchPoint(i, idx, "⊙", "green");
                                 works[i].postMessage({ "cmd": cmd, parameter: [idx, param[1], param[0], param[3], param[4], param[5], param[6]] });
                             }
