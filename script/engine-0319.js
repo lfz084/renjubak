@@ -20,6 +20,9 @@ let engine = (() => {
         //  cancelFind,null,null,"auto");
         cFP.hide();
         cVCF.hide();
+        cBd.showFoul(false, true);
+        cBd.removeMarkArrow("all");
+        cBd.removeMarkLine("all");
         cBd.removeMarkLine(cBd.autoLines);
         let but = cVCF;
         cCancel.move(but.left, but.top, but.width, but.height);
@@ -32,9 +35,11 @@ let engine = (() => {
         cFP.setText("找点");
         cVCF.show();
         cVCF.setText("解题");
+        /*
         cBd.refreshMarkLine("all");
         cBd.refreshMarkArrow("all");
         cBd.autoShow();
+        */
         cCancel.hide();
         labelTime.close();
         closeMsg();

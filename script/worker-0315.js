@@ -3100,7 +3100,7 @@ function blockCatchFoul(arr) {
                     s = "A";
                 }
                 else if (sixFrameP.indexOf(bPoint[i]) > -1) {
-                    s = "×";
+                    s = "✖";
                 }
                 else {
                     x = bPoint[i] % 15;
