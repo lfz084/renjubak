@@ -62,32 +62,6 @@ point.prototype.printBorder = function(gW, gH) {
 
 
 
-checkerBoard.prototype.printThreePoints = function() {
-    this.cleLb("all");
-    this.removeMarkArrow("all");
-    this.removeMarkLine("all");
-    this.removeMarkLine(this.autoLines);
-    for (let i = this.threePoints.points.length - 1; i >= 0; i--) {
-        if (this.threePoints.points[i]) {
-            this.wLb(i, this.threePoints.points[i].txt, this.threePoints.points[i].txtColor,undefined,false);
-        }
-    }
-    this.threePoints.index = -1;
-};
-
-
-
-checkerBoard.prototype.printThreePointMoves = function(idx, firstColor) {
-    if (!this.threePoints.points[idx]) return;
-    let color = firstColor == 1 ? this.moveBlackColor : this.moveWhiteColor;
-    let fontColor = firstColor == 1 ? this.moveBlackFontColor : this.moveWhiteFontColor;
-    this.printMoves(this.threePoints.points[idx].moves, firstColor);
-    this.wLb(idx, this.threePoints.points[idx].txt, fontColor, color, false);
-    this.threePoints.index = idx;
-}
-
-
-
 //在这个点上记一个标记
 point.prototype.printLb = function(s, color, gW, gH) {
     //alert("printLb")
@@ -1469,7 +1443,7 @@ checkerBoard.prototype.autoPut = function() {
     let rgb;
     let idx;
     let wBoard = true; // 默认白色棋盘
-    let ctx = cBoard.canvas.getContext("2d");
+    let ctx = this.canvas.getContext("2d");
     let imgData = ctx.getImageData(0, 0, parseInt(this.width), parseInt(this.height)).data;
 
     for (let i = this.SLTY - 1; i >= 0; i--) {
@@ -2075,6 +2049,32 @@ checkerBoard.prototype.printArray = function(arr, txt, color) {
             }
         }
     }
+};
+
+
+
+checkerBoard.prototype.printThreePoints = function() {
+    this.cleLb("all");
+    this.removeMarkArrow("all");
+    this.removeMarkLine("all");
+    this.removeMarkLine(this.autoLines);
+    for (let i = this.threePoints.points.length - 1; i >= 0; i--) {
+        if (this.threePoints.points[i]) {
+            this.wLb(i, this.threePoints.points[i].txt, this.threePoints.points[i].txtColor,undefined,false);
+        }
+    }
+    this.threePoints.index = -1;
+};
+
+
+
+checkerBoard.prototype.printThreePointMoves = function(idx, firstColor) {
+    if (!this.threePoints.points[idx]) return;
+    let color = firstColor == 1 ? this.moveBlackColor : this.moveWhiteColor;
+    let fontColor = firstColor == 1 ? this.moveBlackFontColor : this.moveWhiteFontColor;
+    this.printMoves(this.threePoints.points[idx].moves, firstColor);
+    this.wLb(idx, this.threePoints.points[idx].txt, fontColor, color, false);
+    this.threePoints.index = idx;
 };
 
 
@@ -2891,7 +2891,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
         }
         if (txt == "❌") { // 不支持的字符
             txt = "×";
-            doc.setTextColor(150, 0, 0);
+            doc.setTextColor(255, 0, 0);
         }
         doc.setFont(fontName_bold, "normal", "normal");
         doc.setFontSize(parseInt(fontsize * size));
@@ -3004,8 +3004,8 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         //this.cleLb(this.searchIdx[num]);
         this.P[this.searchIdx[num]].cle();
         this.clePointB(this.searchIdx[num]);
-        this.refreshMarkLine(this.searchIdx[num]);
-        this.refreshMarkArrow(this.searchIdx[num]);
+        //this.refreshMarkLine(this.searchIdx[num]);
+        //this.refreshMarkArrow(this.searchIdx[num]);
         this.searchIdx[num] = -1;
     }
     //写入新标记
@@ -3016,11 +3016,10 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         this.P[idx].bkColor = null;
         this.P[idx].type = tLb;
         this.P[idx].text = text;
-        this.refreshMarkLine(idx);
+        //this.refreshMarkLine(idx);
         this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
-        this.refreshMarkArrow(idx);
+        //this.refreshMarkArrow(idx);
     }
-
 
 };
 
@@ -3116,7 +3115,7 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
 checkerBoard.prototype.refreshMarkLine = function(idx, lines) {
 
     lines = lines || this.LINES;
-    lines = idx == this.autoLines ? this.autoLines : lines;
+    lines = idx === this.autoLines ? this.autoLines : lines;
     if (idx == "all" || idx == "All") {
         for (let i = 0; i < lines.length; i++) {
             this.printMarkLine(lines[i]);
@@ -3247,8 +3246,8 @@ checkerBoard.prototype.removeMarkArrow = function(idx) {
 
 checkerBoard.prototype.removeMarkLine = function(idx, lines) {
     lines = lines || this.LINES;
-    lines = idx == this.autoLines ? this.autoLines : lines;
-    if (idx == "all" || idx == "All" || idx == this.autoLines) {
+    lines = idx === this.autoLines ? this.autoLines : lines;
+    if (idx == "all" || idx == "All" || idx === this.autoLines) {
         for (let i = lines.length - 1; i >= 0; i--) {
             let mkLine = lines[i];
             lines.length--;
@@ -3820,7 +3819,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
     else { // 不存在倒数第1手，退出
         return;
     }
-    this.refreshMarkLine(idx);
+    //this.refreshMarkLine(idx);
     // 取得棋子颜色
     let color = this.P[idx].color;
     let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
@@ -3865,7 +3864,7 @@ checkerBoard.prototype.showLastNum = function(showNum) {
     else { // 不存在倒数第二手，退出
         return;
     }
-    this.refreshMarkLine(idx);
+    //this.refreshMarkLine(idx);
     //画倒数第二棋子
     color = this.P[idx].color;
     p.setxy(this.P[idx].x, this.P[idx].y);
@@ -4032,14 +4031,13 @@ checkerBoard.prototype.unpackTree = function() {
         */
         let MS = this.MS;
         let MSindex = this.MSindex;
-        let cBoard = this;
         //this.timerUnpackTree = setTimeout(function() {
-        cBoard.cleLb("all");
-        let arr = cBoard.getPointArray(getArr([]));
+        this.cleLb("all");
+        let arr = this.getPointArray(getArr([]));
         let newarr = getArr([]);
         findFoulPoint(arr, newarr);
-        cBoard.printArray(newarr, "❌", "red");
-        let nd = cBoard.tree;
+        this.printArray(newarr, "❌", "red");
+        let nd = this.tree;
         let txt = MSindex % 2 ? "W" : "L";
         let i = 0; //unpackTree
         for (i = 0; i <= MSindex; i++) {
@@ -4061,7 +4059,7 @@ checkerBoard.prototype.unpackTree = function() {
         }
         if (i > MSindex) { // print points
             for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                cBoard.wLb(nd.childNode[i].idx, txt, "black");
+                this.wLb(nd.childNode[i].idx, txt, "black");
             }
         }
         //}, 100);

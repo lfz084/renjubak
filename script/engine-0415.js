@@ -20,6 +20,8 @@ let engine = (() => {
         //  cancelFind,null,null,"auto");
         cFP.hide();
         cVCF.hide();
+        cBd.threePoints = {};
+        cBd.tree = new cBd.node();
         cBd.showFoul(false, true);
         cBd.removeMarkArrow("all");
         cBd.removeMarkLine("all");
@@ -111,7 +113,7 @@ let engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0315.js");
+        let wk = new Worker("./script/worker-0415.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -205,14 +207,30 @@ let engine = (() => {
                     callback();
                 },
                 "vctSelectPoint": () => {
-                    work = createWork({
-                        "printSearchPoint": (p) => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
-                        "vctSelectPointEnd": (p) => {
-                            callback();
-                            work.terminate();
-                        },
-                    });
-                    work.postMessage({ "cmd": cmd, parameter: param });
+                    cBd.cleLb("all");
+                    let lvl = getLevelB(param[1], param[0], getArr([]));
+                    if (lvl.level >= 4) {
+                        let newarr = getArr([]);
+                        findFivePoint(param[1], param[0], newarr, param[3]);
+                        cBd.printArray(newarr, "⑤", "red");
+                        callback();
+                        msg(`${param[0]==1?"黑棋" : "白棋"} 有五连点`);
+                    }
+                    else if (lvl.level >= 3) {
+                        cBd.printMoves(lvl.moves, param[0]);
+                        callback();
+                        msg(`${param[0]==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param[0]==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param[0]==1?"活四":"活四(44,冲4抓)"}`}`);
+                    }
+                    else {
+                        work = createWork({
+                            "printSearchPoint": (p) => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
+                            "vctSelectPointEnd": (p) => {
+                                callback();
+                                work.terminate();
+                            },
+                        });
+                        work.postMessage({ "cmd": cmd, parameter: param });
+                    }
                 },
                 "findVCT": () => {
                     tree = null;
@@ -290,10 +308,43 @@ let engine = (() => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
                         continuefun();
+                        work.terminate();
                     };
                     let lvl = (cmd == "isLevelThreePoint") ? { level: 2 } : null;
                     let selFour = (cmd != "isLevelThreePoint" && cmd != "isTwoVCF");
-                    work.postMessage({ "cmd": "selectPoint", parameter: [arr, color, newarr, null, null, true, lvl, null, null, selFour] });
+                    let opMsg = (str) => {
+                        msg(str, "msgbox", null, null, null, null, "继续", null,
+                            function(msgStr) {
+                                postMsg();
+                            },
+                            function() {
+                                work.terminate();
+                                callback();
+                            }, 2, 2);
+                    }
+                    let postMsg = () => {
+                        work.postMessage({ "cmd": "selectPoint", parameter: [arr, color, newarr, null, null, true, lvl, null, null, selFour] });
+                    };
+                    if (getLevelB(arr, color, getArr([])).level >= 3) {
+                        let str = `${color == 1 ? "黑棋" : "白棋"} ${`${param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
+                        if (cmd == "isLevelThreePoint") {
+                            if (param[3] == onlySimpleWin && (getLevelB(arr, color, getArr([]), null, 1).level < 3)) {
+                                postMsg();
+                            }
+                            else {
+                                opMsg(str);
+                            }
+                        }
+                        else if (cmd == "isTwoVCF") {
+                            opMsg(str);
+                        }
+                        else {
+                            postMsg();
+                        }
+                    }
+                    else {
+                        postMsg();
+                    }
                     //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
                     let continuefun = () => {
                         if (cmd == "isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
