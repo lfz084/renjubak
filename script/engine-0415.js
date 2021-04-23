@@ -14,6 +14,7 @@ let engine = (() => {
     let saveContinueData;
     let save = {};
     let tree = null;
+    let treeKeyMap = new Map();
     let threePoints = null;
     let setCmd = () => { //calculate start
         //msg ("","msgbox",0,cBd.height,dw+8,dh-cBd.height,"停止计算",null,
@@ -155,8 +156,10 @@ let engine = (() => {
                         }
                     }
                     if (tree) {
+                        tree.keyMap = treeKeyMap;
                         cBd.addTree(tree);
                         tree = null;
+                        treeKeyMap = new Map();
                     }
                     if (threePoints) {
                         cBd.threePoints = threePoints;
@@ -234,6 +237,7 @@ let engine = (() => {
                 },
                 "findVCT": () => {
                     tree = null;
+                    treeKeyMap = new Map();
                     let arr = param[0];
                     let color = param[1];
                     work = createWork({
@@ -241,8 +245,10 @@ let engine = (() => {
                             tree = p[0];
                             if (tree) {
                                 //console.log(tree);
+                                tree.keyMap = treeKeyMap;
                                 cBd.addTree(tree);
                                 tree = null;
+                                treeKeyMap = new Map();
                             }
                             callback();
                             work.terminate();
@@ -299,6 +305,7 @@ let engine = (() => {
                 },
                 "isTwoVCF": () => {
                     tree = null;
+                    treeKeyMap = new Map();
                     threePoints = null;
                     let color = param[0];
                     let arr = param[1];
@@ -307,8 +314,13 @@ let engine = (() => {
                     work.onmessage = (e) => {
                         labelTime.setPrePostTimer(new Date().getTime());
                         newarr = e.data.parameter[0];
+                        if (typeof newarr=="object") {
                         continuefun();
                         work.terminate();
+                        }
+                        else {
+                            console.log(newarr)
+                        }
                     };
                     let lvl = (cmd == "isLevelThreePoint") ? { level: 2 } : null;
                     let selFour = (cmd != "isLevelThreePoint" && cmd != "isTwoVCF");
@@ -380,6 +392,10 @@ let engine = (() => {
                                             tree = p[0];
                                         }
                                     },
+                                    "addTreeKeyMap": (p) => {
+                                        treeKeyMap.set(p[0],p[1]);
+                                        //console.log(p[1]);
+                                    },
                                     "addThreePoint": (p) => {
                                         if (!threePoints) {
                                             threePoints = {};
@@ -402,8 +418,10 @@ let engine = (() => {
                                             workCount--;
                                             if (workCount == 0) {
                                                 if (tree) {
+                                                    tree.keyMap = treeKeyMap;
                                                     cBd.addTree(tree);
                                                     tree = null;
+                                                    treeKeyMap = new Map();
                                                 }
                                                 if (threePoints) {
                                                     console.log(threePoints)

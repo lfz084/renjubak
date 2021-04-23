@@ -98,7 +98,7 @@
      s.top = `10px`;
      s.width = `${parseInt(windowDiv.style.width) - 20}px`;
      s.fontSize = parseInt(s.width) * 0.05 + "px";
-     s.height = parseInt(parseInt(s.fontSize) * 1.3 * lineNum) + "px";
+     s.height = parseInt(parseInt(s.fontSize) * 1.35 * lineNum) + "px";
      s.margin = "0px";
      s.padding = "0px";
      if (type == "msgbox") {

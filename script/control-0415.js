@@ -494,7 +494,7 @@ let control = (() => {
             //cFindPoint.addOption(0, "︾" );
             cFindPoint.addOption(1, "VCT选点");
             cFindPoint.addOption(2, "做V点");
-            cFindPoint.addOption(3, "做43杀(冲4再44,冲4冲4抓)");
+            cFindPoint.addOption(3, "做43杀(白单冲4杀)");
             cFindPoint.addOption(4, "活三级别");
             cFindPoint.addOption(5, "活三");
             cFindPoint.addOption(6, "❌ 三三");

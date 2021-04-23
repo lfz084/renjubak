@@ -338,8 +338,10 @@ checkerBoard.prototype.addTree = function(tree) {
     this.oldResetNum = this.resetNum;
     this.resetNum = 0;
     this.oldCode = code; //要放在循环之后，不要改变顺序
-    ////console.log(tree);
+    console.log(tree);
     this.tree = tree || new this.node();
+    this.tree.moveNodes = [];
+    this.tree.moveNodesIndex = -1;
     /*
       this.tree.childNode.push({ idx: 1, node: new node() });
       let nd = this.tree.childNode[0].node;
@@ -351,13 +353,14 @@ checkerBoard.prototype.addTree = function(tree) {
     */
     //console.log(this.tree);
     //console.log("addTree")
-    this.unpackTree();
+    //this.unpackTree();
 
 };
 
 
 
 checkerBoard.prototype.autoShow = function(timer) {
+    
     let playmodel = control.getPlayModel();
     //console.log(`playmofel=${control.getPlayModel()}`)
     if (playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
@@ -380,8 +383,8 @@ checkerBoard.prototype.autoShow = function(timer) {
         }
         else {
             //console.log(`isShowAutoLine=${findMoves()+1 ? false : cBoard.isShowAutoLine}`)
-            cBoard.showFoul((findMoves() + 1)||cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
-            cBoard.showAutoLine((findMoves() + 1)||cBoard.threePoints.arr ? false : cBoard.isShowAutoLine, true);
+            cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
+            cBoard.showAutoLine((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowAutoLine, true);
         }
     }
 
@@ -836,7 +839,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
         refreshLine.call(this, idx);
 
     }
-    if(this.threePoints.arr) this.cleThreePoints();
+    if (this.threePoints.arr) this.cleThreePoints();
     this.autoShow();
     //this.showFoul(this.isShowFoul);
 
@@ -2060,7 +2063,7 @@ checkerBoard.prototype.printThreePoints = function() {
     this.removeMarkLine(this.autoLines);
     for (let i = this.threePoints.points.length - 1; i >= 0; i--) {
         if (this.threePoints.points[i]) {
-            this.wLb(i, this.threePoints.points[i].txt, this.threePoints.points[i].txtColor,undefined,false);
+            this.wLb(i, this.threePoints.points[i].txt, this.threePoints.points[i].txtColor, undefined, false);
         }
     }
     this.threePoints.index = -1;
@@ -2480,18 +2483,19 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
         if (cleLine) return;
         for (let i = markLine.P.length - 1; i >= 0; i--) {
             idx = markLine.P[i];
-            refreshIdx.call(this,idx);
+            refreshIdx.call(this, idx);
         }
     }
     else {
         if (cleLine) return;
-        refreshIdx.call(this,idx);
+        refreshIdx.call(this, idx);
         /*
         let txt = "";
         if (this.P[idx].text) txt = this.P[idx].text;
         this.printPointB(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
         */
     }
+
     function refreshIdx(idx) {
         let txt = "";
         if (this.P[idx].text) txt = this.P[idx].text;
@@ -3947,7 +3951,7 @@ checkerBoard.prototype.toPrevious = function(isShowNum) {
     else if (this.oldCode) {
         this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
     }
-    else if(this.threePoints.arr) {
+    else if (this.threePoints.arr) {
         this.cleThreePoints();
         this.autoShow();
     }
@@ -4031,36 +4035,92 @@ checkerBoard.prototype.unpackTree = function() {
         */
         let MS = this.MS;
         let MSindex = this.MSindex;
+        let moveNodes = this.tree.moveNodes;
+        let moveNodesIndex = this.tree.moveNodesIndex;
         //this.timerUnpackTree = setTimeout(function() {
         this.cleLb("all");
         let arr = this.getPointArray(getArr([]));
         let newarr = getArr([]);
         findFoulPoint(arr, newarr);
         this.printArray(newarr, "❌", "red");
-        let nd = this.tree;
+        let nd;
         let txt = MSindex % 2 ? "W" : "L";
-        let i = 0; //unpackTree
-        for (i = 0; i <= MSindex; i++) {
-            let j = 0; //find idx
-            for (j = nd.childNode.length - 1; j >= 0; j--) {
-                if (nd.childNode[j].idx == MS[i]) {
-                    nd = nd.childNode[j];
-                    break;
+        let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
+        if (MSindex == moveNodesIndex) {
+            nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
+            printChildNode.call(this, nd, txt);
+        }
+        else if(MSindex > moveNodesIndex) {
+            //let i = 0; //unpackTree
+            //for (i = 0; i <= MSindex; i++) {
+            nd = MSindex==0 ? this.tree : moveNodes[MSindex-1];
+            console.log(nd)
+                let j = 0; //find idx
+                for (j = nd.childNode.length - 1; j >= 0; j--) {
+                    if (nd.childNode[j].idx == MS[MSindex]) {
+                        nd = nd.childNode[j];
+                        break;
+                    }
                 }
+                if (j == -1) {
+                    if (nd.defaultChildNode && lvl.level < 4) {
+                        nd = nd.defaultChildNode;
+                    }
+                    else {
+                        nd = null;
+                        //break; // not find idx
+                    }
+                }
+            //}
+            
+            if (nd) { // print points
+                printChildNode.call(this, nd, txt);
             }
-            if (j == -1) {
-                if (nd.defaultChildNode) {
-                    nd = nd.defaultChildNode;
+            else {
+                if (MSindex % 2) {
+                    if (lvl.level >= 4 && lvl.p) {
+                        nd = new Node (-1, moveNodes[moveNodes.length-1],[{idx:lvl.p.y * this.SLTX + lvl.p.x}]);
+                        printChildNode.call(this, nd, txt);
+                        nd.childNode = [];
+                    }
+                    else {
+                        //alert("else 1")
+                        nd = new Node();
+                    }
                 }
                 else {
-                    break; // not find idx
+                    if (this.tree.keyMap.has(getKey(arr))) {
+                        nd = this.tree.keyMap.get(getKey(arr));
+                        printChildNode.call(this, nd, txt);
+                    }
+                    else {
+                        //alert("else 2")
+                        nd = new Node();
+                    }
                 }
             }
+            
+                moveNodes.length = this.MS.length;
+                moveNodes[MSindex] = nd;
         }
-        if (i > MSindex) { // print points
-            for (let i = nd.childNode.length - 1; i >= 0; i--) {
-                this.wLb(nd.childNode[i].idx, txt, "black");
+        else if (MSindex < moveNodesIndex) {
+            moveNodes.length = this.MS.length;
+            nd = MSindex==-1 ? this.tree : moveNodes[MSindex];
+            printChildNode.call(this, nd, txt);
+        }
+        moveNodesIndex = MSindex;
+        function printChildNode(node, txt) {
+            //alert("p")
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                this.wLb(node.childNode[i].idx, txt, "black");
             }
+            /*
+            if (!(MSindex % 2) && lvl.level < 4) {
+                newarr = getArr([]);
+                findFour(arr, this.tree.firstColor == "black" ? 2 : 1, newarr);
+                this.printArray(newarr, txt, "black");
+            }
+            */
         }
         //}, 100);
     }
@@ -4171,7 +4231,7 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     }
     //this.refreshMarkLine(idx);
     this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
-    if(this.threePoints.arr) this.cleThreePoints();
+    if (this.threePoints.arr) this.cleThreePoints();
     this.refreshMarkArrow(idx);
     this.autoShow();
     /*
