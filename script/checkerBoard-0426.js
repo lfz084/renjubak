@@ -760,6 +760,7 @@ checkerBoard.prototype.cle = function() {
     this.firstColor = "black";
     this.oldCode = "";
     this.tree = new this.node();
+    this.threePoints = {};
 
 };
 
