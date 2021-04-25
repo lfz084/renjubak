@@ -465,68 +465,81 @@ checkerBoard.prototype.CCW = function(arrobj, count) {
 // 顺时针 翻转棋盘90°
 checkerBoard.prototype.boardCW = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-    let tMS = [];
-    let tMS1 = [];
-    let wMS = [];
-    let bMS = [];
-    let tMSindex = this.MSindex;
-    let idx;
-    let x;
-    let y;
-    let nx;
-    let ny;
-
-    for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-        if (this.P[idx].type == tWhite) {
-            wMS.push(idx);
-        }
-        else if (this.P[idx].type == tBlack) {
-            bMS.push(idx);
-        }
+    if (this.oldCode || this.threePoints.arr) {
+        msgbox(`确定删除计算结果吗`, "确定",
+            () => {
+                boardCW.call(this);
+            }, "取消"
+        );
+    }
+    else {
+        boardCW.call(this);
     }
 
-    for (let j = 0; j < 3; j++) {
-        tMS = [];
-        tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
-        for (let i = 0; i < tMS1.length; i++) {
+    function boardCW() {
+        if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
+        let tMS = [];
+        let tMS1 = [];
+        let wMS = [];
+        let bMS = [];
+        let tMSindex = this.MSindex;
+        let idx;
+        let x;
+        let y;
+        let nx;
+        let ny;
 
-            idx = tMS1[i];
+        for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-            y = parseInt(idx / this.SLTX);
-            nx = this.SLTY - 1 - y; // 新的 x坐标是原来 y坐标的翻转;
-            ny = idx % this.SLTX; // 旋转后新的 y坐标是原来的 x坐标
-
-            idx = ny * this.SLTX + nx;
-            tMS[i] = idx;
-
+            if (this.P[idx].type == tWhite) {
+                wMS.push(idx);
+            }
+            else if (this.P[idx].type == tBlack) {
+                bMS.push(idx);
+            }
         }
-        if (j == 0) {
-            wMS = tMS.slice();
-        }
-        else if (j == 1) {
-            bMS = tMS.slice();
-        }
-    }
-    let resetNum = this.resetNum;
-    let firstColor = this.firstColor;
-    this.cle(); // 清空棋盘
-    this.resetNum = resetNum;
-    this.firstColor = firstColor;
-    this.MS = tMS;
 
-    //  打印棋盘
-    for (let i = 0; i <= tMSindex; i++) {
-        this.toNext(isShowNum);
+        for (let j = 0; j < 3; j++) {
+            tMS = [];
+            tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
+            for (let i = 0; i < tMS1.length; i++) {
+
+                idx = tMS1[i];
+
+                y = parseInt(idx / this.SLTX);
+                nx = this.SLTY - 1 - y; // 新的 x坐标是原来 y坐标的翻转;
+                ny = idx % this.SLTX; // 旋转后新的 y坐标是原来的 x坐标
+
+                idx = ny * this.SLTX + nx;
+                tMS[i] = idx;
+
+            }
+            if (j == 0) {
+                wMS = tMS.slice();
+            }
+            else if (j == 1) {
+                bMS = tMS.slice();
+            }
+        }
+        let resetNum = this.resetNum;
+        let firstColor = this.firstColor;
+        this.cle(); // 清空棋盘
+        this.resetNum = resetNum;
+        this.firstColor = firstColor;
+        this.MS = tMS;
+
+        //  打印棋盘
+        for (let i = 0; i <= tMSindex; i++) {
+            this.toNext(isShowNum);
+        }
+        for (let i = 0; i < wMS.length; i++) {
+            this.wNb(wMS[i], this.wNumColor);
+        }
+        for (let i = 0; i < bMS.length; i++) {
+            this.wNb(bMS[i], this.bNumColor);
+        }
+        this.autoShow("now");
     }
-    for (let i = 0; i < wMS.length; i++) {
-        this.wNb(wMS[i], this.wNumColor);
-    }
-    for (let i = 0; i < bMS.length; i++) {
-        this.wNb(bMS[i], this.bNumColor);
-    }
-    this.autoShow("now");
 
 };
 
@@ -598,7 +611,6 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
     for (let i = 0; i < bMS.length; i++) {
         this.wNb(bMS[i], this.bNumColor);
     }
-
 
 };
 
@@ -677,69 +689,82 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
 // 左右 翻转棋盘90°
 checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
-    if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-    let tMS = [];
-    let tMS1 = [];
-    let wMS = [];
-    let bMS = [];
-    let tMSindex = this.MSindex;
-    let idx;
-    let x;
-    let y;
-    let nx;
-    let ny;
-
-    for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-        if (this.P[idx].type == tWhite) {
-            wMS.push(idx);
-        }
-        else if (this.P[idx].type == tBlack) {
-            bMS.push(idx);
-        }
+    if (this.oldCode || this.threePoints.arr) {
+        msgbox(`确定删除计算结果吗`, "确定",
+            () => {
+                boardFlipY.call(this);
+            }, "取消"
+        );
+    }
+    else {
+        boardFlipY.call(this);
     }
 
-    for (let j = 0; j < 3; j++) {
-        tMS = [];
-        tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
-        for (let i = 0; i < tMS1.length; i++) {
+    function boardFlipY() {
+        if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
+        let tMS = [];
+        let tMS1 = [];
+        let wMS = [];
+        let bMS = [];
+        let tMSindex = this.MSindex;
+        let idx;
+        let x;
+        let y;
+        let nx;
+        let ny;
 
-            idx = tMS1[i]; // 取得旧的index              
+        for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-            x = idx % this.SLTX;
-            nx = this.SLTX - 1 - x; // 新的 x坐标是原来 x坐标的翻转;
-            ny = parseInt(idx / this.SLTX); // 新的 y坐标是原来的 y坐标不变;
-
-            idx = ny * this.SLTX + nx;
-            tMS[i] = idx;
-
+            if (this.P[idx].type == tWhite) {
+                wMS.push(idx);
+            }
+            else if (this.P[idx].type == tBlack) {
+                bMS.push(idx);
+            }
         }
-        if (j == 0) {
-            wMS = tMS.slice();
-        }
-        else if (j == 1) {
-            bMS = tMS.slice();
-        }
-    }
 
-    let resetNum = this.resetNum;
-    let firstColor = this.firstColor;
-    this.cle(); // 清空棋盘
-    this.resetNum = resetNum;
-    this.firstColor = firstColor;
-    this.MS = tMS;
+        for (let j = 0; j < 3; j++) {
+            tMS = [];
+            tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
+            for (let i = 0; i < tMS1.length; i++) {
 
-    //  打印棋盘
-    for (let i = 0; i <= tMSindex; i++) {
-        this.toNext(isShowNum);
+                idx = tMS1[i]; // 取得旧的index              
+
+                x = idx % this.SLTX;
+                nx = this.SLTX - 1 - x; // 新的 x坐标是原来 x坐标的翻转;
+                ny = parseInt(idx / this.SLTX); // 新的 y坐标是原来的 y坐标不变;
+
+                idx = ny * this.SLTX + nx;
+                tMS[i] = idx;
+
+            }
+            if (j == 0) {
+                wMS = tMS.slice();
+            }
+            else if (j == 1) {
+                bMS = tMS.slice();
+            }
+        }
+
+        let resetNum = this.resetNum;
+        let firstColor = this.firstColor;
+        this.cle(); // 清空棋盘
+        this.resetNum = resetNum;
+        this.firstColor = firstColor;
+        this.MS = tMS;
+
+        //  打印棋盘
+        for (let i = 0; i <= tMSindex; i++) {
+            this.toNext(isShowNum);
+        }
+        for (let i = 0; i < wMS.length; i++) {
+            this.wNb(wMS[i], this.wNumColor);
+        }
+        for (let i = 0; i < bMS.length; i++) {
+            this.wNb(bMS[i], this.bNumColor);
+        }
+        this.autoShow("now");
     }
-    for (let i = 0; i < wMS.length; i++) {
-        this.wNb(wMS[i], this.wNumColor);
-    }
-    for (let i = 0; i < bMS.length; i++) {
-        this.wNb(bMS[i], this.bNumColor);
-    }
-    this.autoShow("now");
 
 };
 
@@ -757,18 +782,22 @@ checkerBoard.prototype.cle = function() {
     this.removeMarkLine("all");
     this.removeMarkLine(this.autoLines);
     this.drawLineEnd();
-    this.firstColor = "black";
-    this.oldCode = "";
-    this.tree = new this.node();
-    this.threePoints = {};
+    this.removeTree();
+    this.cleThreePoints();
 
 };
 
 
 
 checkerBoard.prototype.cleThreePoints = function() {
-    this.threePoints = {};
-    this.cleLb("all");
+    if (this.threePoints.arr) {
+        cleTPS.call(this);
+    }
+
+    function cleTPS() {
+        this.threePoints = {};
+        this.cleLb("all");
+    }
 }
 
 
@@ -1931,82 +1960,97 @@ checkerBoard.prototype.nameToIndex = function(name) {
 // 平移棋盘
 checkerBoard.prototype.moveCheckerBoard = function(move) {
 
-    let i;
-    let j;
-    let idx;
-    switch (move) {
-        case "left":
-            for (i = 0; i < this.SLTX * this.SLTY; i += this.SLTX) {
-                if (this.P[i].type != tEmpty) break;
-            }
-            if (i < this.SLTX * this.SLTY) return;
-            // 转换MS数组
-            for (i = 0; i < this.MS.length; i++) {
-                this.MS.length = this.MSindex + 1;
-                this.MS[i] = this.MS[i] - 1;
-            }
-            // 复制棋盘每个落子点
-            for (i = 1; i < this.SLTX; i++) {
-                for (j = 0; j < this.SLTY; j++) {
-                    idx = i + j * this.SLTX;
-                    copyP(this, idx - 1, idx);
-                }
-            }
-            break;
-        case "right":
-            for (i = this.SLTX - 1; i < this.SLTX * this.SLTY; i += this.SLTX) {
-                if (this.P[i].type != tEmpty) break;
-            }
-            if (i < this.SLTX * this.SLTY) return;
-            for (i = 0; i < this.MS.length; i++) {
-                this.MS.length = this.MSindex + 1;
-                this.MS[i] = this.MS[i] + 1;
-            }
-            for (i = this.SLTX - 2; i >= 0; i--) {
-                for (j = 0; j < this.SLTY; j++) {
-                    idx = i + j * this.SLTX;
-                    copyP(this, idx + 1, idx);
-                }
-            }
-            break;
-        case "top":
-            for (i = 0; i < this.SLTX; i++) {
-                if (this.P[i].type != tEmpty) break;
-            }
-            if (i < this.SLTX) return;
-            for (i = 0; i < this.MS.length; i++) {
-                this.MS.length = this.MSindex + 1;
-                this.MS[i] = this.MS[i] - this.SLTX;
-            }
-            for (i = 1; i < this.SLTY; i++) {
-                for (j = 0; j < this.SLTX; j++) {
-                    idx = i * this.SLTY + j;
-                    copyP(this, idx - this.SLTX, idx);
-                }
-            }
-            break;
-        case "bottom":
-            for (i = this.SLTX * (this.SLTY - 1); i < this.SLTX * this.SLTY; i++) {
-                if (this.P[i].type != tEmpty) break;
-            }
-            if (i < this.SLTX * this.SLTY) return;
-            for (i = 0; i < this.MS.length; i++) {
-                this.MS.length = this.MSindex + 1;
-                this.MS[i] = this.MS[i] + this.SLTX;
-            }
-            for (i = this.SLTY - 2; i >= 0; i--) {
-                for (j = 0; j < this.SLTX; j++) {
-                    idx = i * this.SLTY + j;
-                    copyP(this, idx + this.SLTX, idx);
-                }
-            }
-            break;
+    if (this.oldCode || this.threePoints.arr) {
+        msgbox(`确定删除计算结果吗`, "确定",
+            () => {
+                moveCBD.call(this);
+            }, "取消"
+        );
+    }
+    else {
+        moveCBD.call(this);
     }
 
-    this.removeMarkArrow("all");
-    this.removeMarkLine("all");
-    this.MSToMoves();
-    this.autoShow("now");
+    function moveCBD() {
+        let i;
+        let j;
+        let idx;
+        switch (move) {
+            case "left":
+                for (i = 0; i < this.SLTX * this.SLTY; i += this.SLTX) {
+                    if (this.P[i].type != tEmpty) break;
+                }
+                if (i < this.SLTX * this.SLTY) return;
+                // 转换MS数组
+                for (i = 0; i < this.MS.length; i++) {
+                    this.MS.length = this.MSindex + 1;
+                    this.MS[i] = this.MS[i] - 1;
+                }
+                // 复制棋盘每个落子点
+                for (i = 1; i < this.SLTX; i++) {
+                    for (j = 0; j < this.SLTY; j++) {
+                        idx = i + j * this.SLTX;
+                        copyP(this, idx - 1, idx);
+                    }
+                }
+                break;
+            case "right":
+                for (i = this.SLTX - 1; i < this.SLTX * this.SLTY; i += this.SLTX) {
+                    if (this.P[i].type != tEmpty) break;
+                }
+                if (i < this.SLTX * this.SLTY) return;
+                for (i = 0; i < this.MS.length; i++) {
+                    this.MS.length = this.MSindex + 1;
+                    this.MS[i] = this.MS[i] + 1;
+                }
+                for (i = this.SLTX - 2; i >= 0; i--) {
+                    for (j = 0; j < this.SLTY; j++) {
+                        idx = i + j * this.SLTX;
+                        copyP(this, idx + 1, idx);
+                    }
+                }
+                break;
+            case "top":
+                for (i = 0; i < this.SLTX; i++) {
+                    if (this.P[i].type != tEmpty) break;
+                }
+                if (i < this.SLTX) return;
+                for (i = 0; i < this.MS.length; i++) {
+                    this.MS.length = this.MSindex + 1;
+                    this.MS[i] = this.MS[i] - this.SLTX;
+                }
+                for (i = 1; i < this.SLTY; i++) {
+                    for (j = 0; j < this.SLTX; j++) {
+                        idx = i * this.SLTY + j;
+                        copyP(this, idx - this.SLTX, idx);
+                    }
+                }
+                break;
+            case "bottom":
+                for (i = this.SLTX * (this.SLTY - 1); i < this.SLTX * this.SLTY; i++) {
+                    if (this.P[i].type != tEmpty) break;
+                }
+                if (i < this.SLTX * this.SLTY) return;
+                for (i = 0; i < this.MS.length; i++) {
+                    this.MS.length = this.MSindex + 1;
+                    this.MS[i] = this.MS[i] + this.SLTX;
+                }
+                for (i = this.SLTY - 2; i >= 0; i--) {
+                    for (j = 0; j < this.SLTX; j++) {
+                        idx = i * this.SLTY + j;
+                        copyP(this, idx + this.SLTX, idx);
+                    }
+                }
+                break;
+        }
+
+        this.removeMarkArrow("all");
+        this.removeMarkLine("all");
+        this.MSToMoves();
+        this.removeTree();
+        this.cleThreePoints();
+        this.autoShow("now");
+    }
 
     // 复制一个点，同时打印出来
     function copyP(board, idx, idx1) {
@@ -3227,6 +3271,21 @@ checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
     }
 
 };
+
+
+
+checkerBoard.prototype.removeTree = function() {
+    if (this.oldCode) {
+        removeT.call(this);
+    }
+
+    function removeT() {
+        this.firstColor = "black";
+        this.oldCode = "";
+        this.tree = new this.node();
+        this.cleLb("all");
+    }
+}
 
 
 
