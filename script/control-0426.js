@@ -1584,13 +1584,13 @@ let control = (() => {
                 let cmds = getRenjuCmd();
                 let arr = cBd.getPointArray([]);
                 if (cBd.oldCode) cmds.type = tNum;
-                if (cBd.threePoints && cBd.threePoints.arr && bArr(arr, cBd.threePoints.arr)) {
+                if (cBd.threePoints && cBd.threePoints.arr) {
                     if (cBd.threePoints.index > -1) {
                         cBd.printThreePoints();
                         return;
                     }
                     else {
-                        cBd.printThreePointMoves(idx, getRenjuSelColor());
+                        cBd.printThreePointMoves(idx);
                         return;
                     }
                 }

@@ -360,7 +360,7 @@ checkerBoard.prototype.addTree = function(tree) {
 
 
 checkerBoard.prototype.autoShow = function(timer) {
-    
+
     let playmodel = control.getPlayModel();
     //console.log(`playmofel=${control.getPlayModel()}`)
     if (playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
@@ -820,7 +820,7 @@ checkerBoard.prototype.cleLb = function(idx) {
 
 // 删除一颗棋子,不删除MS的记录
 checkerBoard.prototype.cleNb = function(idx, showNum) {
-
+    if (idx < 0) return;
     if (this.P[idx].type == tNum) {
         this.cletLbMoves();
         let i = this.MSindex;
@@ -2071,8 +2071,9 @@ checkerBoard.prototype.printThreePoints = function() {
 
 
 
-checkerBoard.prototype.printThreePointMoves = function(idx, firstColor) {
+checkerBoard.prototype.printThreePointMoves = function(idx) {
     if (!this.threePoints.points[idx]) return;
+    let firstColor = this.threePoints.color;
     let color = firstColor == 1 ? this.moveBlackColor : this.moveWhiteColor;
     let fontColor = firstColor == 1 ? this.moveBlackFontColor : this.moveWhiteFontColor;
     this.printMoves(this.threePoints.points[idx].moves, firstColor);
@@ -3921,8 +3922,19 @@ checkerBoard.prototype.showNum = function() {
 //跳到最后一手
 checkerBoard.prototype.toEnd = function(isShowNum) {
 
-    while (this.MSindex < this.MS.length - 1) {
-        this.toNext(isShowNum);
+    if (this.MSindex < this.MS.length - 1) {
+        while (this.MSindex < this.MS.length - 1) {
+            this.toNext(isShowNum);
+        }
+    }
+    else {
+        if (this.oldCode) { // auto move
+            let moveNodes = this.tree.moveNodes;
+            let moveNodesIndex = this.tree.moveNodesIndex;
+            let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
+            let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
+            this.wNb(idx, "auto", isShowNum);
+        }
     }
 };
 
@@ -3931,12 +3943,31 @@ checkerBoard.prototype.toEnd = function(isShowNum) {
 // 跳到下一手
 checkerBoard.prototype.toNext = function(isShowNum) {
 
-    if (this.MS.length - 1 > this.MSindex) {
-        this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum);
+    if (this.threePoints.arr) {
+        if (this.threePoints.index == -1) {
+            for (let i = 0; i < this.SLTX * this.SLTY; i++) {
+                if (this.threePoints.points[i]) {
+                    this.printThreePointMoves(i);
+                    break;
+                }
+            }
+        }
     }
     else {
-        //console.log("toNext")
-        //if (this.oldCode == "") this.addTree();
+        if (this.MS.length - 1 > this.MSindex) {
+            this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum);
+        }
+        else {
+            if (this.oldCode) { // auto move
+                let moveNodes = this.tree.moveNodes;
+                let moveNodesIndex = this.tree.moveNodesIndex;
+                let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
+                let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
+                //console.log(`index=${moveNodesIndex}, idx=${idx}`)
+                this.wNb(idx, "auto", isShowNum);
+            }
+            //if (this.oldCode == "") this.addTree();
+        }
     }
 };
 
@@ -3945,15 +3976,30 @@ checkerBoard.prototype.toNext = function(isShowNum) {
 // 返回上一手
 checkerBoard.prototype.toPrevious = function(isShowNum) {
 
-    if (this.MSindex >= 0) {
-        this.cleNb(this.MS[this.MSindex], isShowNum);
-    }
-    else if (this.oldCode) {
-        this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-    }
-    else if (this.threePoints.arr) {
-        this.cleThreePoints();
+    if (this.threePoints.arr) {
+        if (this.threePoints.index > -1) {
+            this.printThreePoints();
+        }
+        else {
+            msgbox(`确定删除计算结果吗`, "确定",
+                () => {
+                    this.cleThreePoints();
+                }, "取消"
+            );
+        }
         this.autoShow();
+    }
+    else {
+        if (this.MSindex >= 0) {
+            this.cleNb(this.MS[this.MSindex], isShowNum);
+        }
+        else if (this.oldCode) {
+            msgbox(`确定删除计算结果吗`, "确定",
+                () => {
+                    this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
+                }, "取消"
+            );
+        }
     }
 
 };
@@ -3966,6 +4012,7 @@ checkerBoard.prototype.toStart = function(isShowNum) {
     while (this.MSindex > 0) {
         this.toPrevious(isShowNum);
     }
+    if (this.oldCode) this.toPrevious(isShowNum);
 };
 
 
@@ -4050,36 +4097,36 @@ checkerBoard.prototype.unpackTree = function() {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
             printChildNode.call(this, nd, txt);
         }
-        else if(MSindex > moveNodesIndex) {
+        else if (MSindex > moveNodesIndex) {
             //let i = 0; //unpackTree
             //for (i = 0; i <= MSindex; i++) {
-            nd = MSindex==0 ? this.tree : moveNodes[MSindex-1];
-            console.log(nd)
-                let j = 0; //find idx
-                for (j = nd.childNode.length - 1; j >= 0; j--) {
-                    if (nd.childNode[j].idx == MS[MSindex]) {
-                        nd = nd.childNode[j];
-                        break;
-                    }
+            nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
+            //console.log(nd)
+            let j = 0; //find idx
+            for (j = nd.childNode.length - 1; j >= 0; j--) {
+                if (nd.childNode[j].idx == MS[MSindex]) {
+                    nd = nd.childNode[j];
+                    break;
                 }
-                if (j == -1) {
-                    if (nd.defaultChildNode && lvl.level < 4) {
-                        nd = nd.defaultChildNode;
-                    }
-                    else {
-                        nd = null;
-                        //break; // not find idx
-                    }
+            }
+            if (j == -1) {
+                if (nd.defaultChildNode && lvl.level < 4) {
+                    nd = nd.defaultChildNode;
                 }
+                else {
+                    nd = null;
+                    //break; // not find idx
+                }
+            }
             //}
-            
+
             if (nd) { // print points
                 printChildNode.call(this, nd, txt);
             }
             else {
                 if (MSindex % 2) {
                     if (lvl.level >= 4 && lvl.p) {
-                        nd = new Node (-1, moveNodes[moveNodes.length-1],[{idx:lvl.p.y * this.SLTX + lvl.p.x}]);
+                        nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
                         printChildNode.call(this, nd, txt);
                         nd.childNode = [];
                     }
@@ -4099,16 +4146,17 @@ checkerBoard.prototype.unpackTree = function() {
                     }
                 }
             }
-            
-                moveNodes.length = this.MS.length;
-                moveNodes[MSindex] = nd;
+
+            moveNodes.length = this.MS.length;
+            moveNodes[MSindex] = nd;
         }
         else if (MSindex < moveNodesIndex) {
             moveNodes.length = this.MS.length;
-            nd = MSindex==-1 ? this.tree : moveNodes[MSindex];
+            nd = MSindex == -1 ? this.tree : moveNodes[MSindex];
             printChildNode.call(this, nd, txt);
         }
-        moveNodesIndex = MSindex;
+        this.tree.moveNodesIndex = MSindex;
+
         function printChildNode(node, txt) {
             //alert("p")
             for (let i = node.childNode.length - 1; i >= 0; i--) {
@@ -4200,7 +4248,7 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
 
 // 在棋盘的一个点上面，摆一颗棋子
 checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
-
+    if (idx < 0) return;
     let i = this.MSindex + 1;
     if (this.oldCode) {
         if (color != "auto") return;

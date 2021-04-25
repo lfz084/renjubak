@@ -34,6 +34,8 @@ let engine = (() => {
         openNoSleep();
     };
     let callback = () => { // calculate end
+        if (work && typeof(work.terminate) == "function") work.terminate();
+        for (let i = 0; i < works.length; i++) works[i].terminate();
         cFP.show();
         cFP.setText("找点");
         cVCF.show();
@@ -114,18 +116,20 @@ let engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0415.js");
+        let wk = new Worker("./script/worker-0426.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
             let p = e.data.parameter;
             let f = defaultCmd;
+            //console.log(cmd);
             wk.onerror = () => {
                 alert(`${cmd} worker error`);
+                wk.terminate();
             };
-            //console.log(cmd);
             if (typeof(f[cmd]) == "function") f[cmd](p);
         };
+
         return wk;
     };
 
@@ -148,8 +152,8 @@ let engine = (() => {
             //console.log(cmd);
             let cmdList = {
                 "cancelFind": () => {
-                    if (work && typeof(work.terminate) == "function") work.terminate();
-                    for (let i = 0; i < works.length; i++) works[i].terminate();
+                    //if (work && typeof(work.terminate) == "function") work.terminate();
+                    //for (let i = 0; i < works.length; i++) works[i].terminate();
                     for (let i = cBd.SLTX * cBd.SLTY - 1; i >= 0; i--) {
                         if (typeof(cBd.P[i].text) == "number" || cBd.P[i].text == "●" || cBd.P[i].text == "⊙") {
                             cleLb(i);
@@ -210,29 +214,54 @@ let engine = (() => {
                     callback();
                 },
                 "vctSelectPoint": () => {
+                    threePoints = null;
+                    let arr = param[1];
+                    let color = param[0];
                     cBd.cleLb("all");
-                    let lvl = getLevelB(param[1], param[0], getArr([]));
-                    if (lvl.level >= 4) {
-                        let newarr = getArr([]);
-                        findFivePoint(param[1], param[0], newarr, param[3]);
-                        cBd.printArray(newarr, "⑤", "red");
-                        callback();
-                        msg(`${param[0]==1?"黑棋" : "白棋"} 有五连点`);
-                    }
-                    else if (lvl.level >= 3) {
-                        cBd.printMoves(lvl.moves, param[0]);
-                        callback();
-                        msg(`${param[0]==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param[0]==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param[0]==1?"活四":"活四(44,冲4抓)"}`}`);
-                    }
-                    else {
-                        work = createWork({
-                            "printSearchPoint": (p) => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
-                            "vctSelectPointEnd": (p) => {
-                                callback();
-                                work.terminate();
-                            },
-                        });
-                        work.postMessage({ "cmd": cmd, parameter: param });
+                    let lvl;
+                    work = createWork({
+                        "getLevelB_end": (p) => {
+                            lvl = p[0];
+                            continuefun();
+                        },
+                        "addThreePoint": (p) => {
+                            if (!threePoints) {
+                                threePoints = {};
+                                threePoints.arr = arr;
+                                threePoints.color = color;
+                                threePoints.points = [];
+                                threePoints.index = -1;
+                            }
+                            threePoints.points[p[0]] = p[1];
+                        },
+                        "printSearchPoint": (p) => { cBd.printSearchPoint(0, p[0], p[1], p[2]); },
+                        "vctSelectPointEnd": (p) => {
+                            if (threePoints) {
+                                //console.log(threePoints)
+                                cBd.threePoints = threePoints;
+                                threePoints = null;
+                            }
+                            callback();
+                            work.terminate();
+                        },
+                    });
+                    work.postMessage({ "cmd": "getLevelB", parameter: [param[1], param[0], getArr([])] });
+                    let continuefun = () => {
+                        if (lvl.level >= 4) {
+                            let newarr = getArr([]);
+                            findFivePoint(param[1], param[0], newarr, param[3]);
+                            cBd.printArray(newarr, "⑤", "red");
+                            callback();
+                            msg(`${param[0]==1?"黑棋" : "白棋"} 有五连点`);
+                        }
+                        else if (lvl.level >= 3) {
+                            cBd.printMoves(lvl.moves, param[0]);
+                            callback();
+                            msg(`${param[0]==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param[0]==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param[0]==1?"活四":"活四(44,冲4抓)"}`}`);
+                        }
+                        else {
+                            work.postMessage({ "cmd": cmd, parameter: param });
+                        }
                     }
                 },
                 "findVCT": () => {
@@ -310,18 +339,45 @@ let engine = (() => {
                     let color = param[0];
                     let arr = param[1];
                     let newarr = param[2];
-                    work = createWork();
-                    work.onmessage = (e) => {
-                        labelTime.setPrePostTimer(new Date().getTime());
-                        newarr = e.data.parameter[0];
-                        if (typeof newarr=="object") {
-                        continuefun();
-                        work.terminate();
-                        }
-                        else {
-                            console.log(newarr)
-                        }
-                    };
+                    let level1, level2;
+                    work = createWork({
+                        "getLevelB_end": (p) => {
+                            if (level1 == undefined) {
+                                level1 = p[0];
+                                work.postMessage({ "cmd": "getLevelB", parameter: [arr, color, getArr([]), null, 1] });
+                            }
+                            else if (level2 == undefined) {
+                                level2 = p[0];
+                                if (level1.level >= 3) {
+                                    let str = `${color == 1 ? "黑棋" : "白棋"} ${`${param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
+                                    if (cmd == "isLevelThreePoint") {
+                                        if (param[3] == onlySimpleWin && (level2.level < 3)) {
+                                            postMsg();
+                                        }
+                                        else {
+                                            opMsg(str);
+                                        }
+                                    }
+                                    else if (cmd == "isTwoVCF") {
+                                        opMsg(str);
+                                    }
+                                    else {
+                                        postMsg();
+                                    }
+                                }
+                                else {
+                                    postMsg();
+                                }
+                            }
+                        },
+                        "selectPointEnd": (p) => {
+                            labelTime.setPrePostTimer(new Date().getTime());
+                            newarr = p[0];
+                            continuefun();
+                            work.terminate();
+                        },
+                    });
+                    work.postMessage({ "cmd": "getLevelB", parameter: [arr, color, getArr([])] });
                     let lvl = (cmd == "isLevelThreePoint") ? { level: 2 } : null;
                     let selFour = (cmd != "isLevelThreePoint" && cmd != "isTwoVCF");
                     let opMsg = (str) => {
@@ -337,26 +393,7 @@ let engine = (() => {
                     let postMsg = () => {
                         work.postMessage({ "cmd": "selectPoint", parameter: [arr, color, newarr, null, null, true, lvl, null, null, selFour] });
                     };
-                    if (getLevelB(arr, color, getArr([])).level >= 3) {
-                        let str = `${color == 1 ? "黑棋" : "白棋"} ${`${param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
-                        if (cmd == "isLevelThreePoint") {
-                            if (param[3] == onlySimpleWin && (getLevelB(arr, color, getArr([]), null, 1).level < 3)) {
-                                postMsg();
-                            }
-                            else {
-                                opMsg(str);
-                            }
-                        }
-                        else if (cmd == "isTwoVCF") {
-                            opMsg(str);
-                        }
-                        else {
-                            postMsg();
-                        }
-                    }
-                    else {
-                        postMsg();
-                    }
+
                     //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
                     let continuefun = () => {
                         if (cmd == "isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
@@ -393,13 +430,14 @@ let engine = (() => {
                                         }
                                     },
                                     "addTreeKeyMap": (p) => {
-                                        treeKeyMap.set(p[0],p[1]);
+                                        treeKeyMap.set(p[0], p[1]);
                                         //console.log(p[1]);
                                     },
                                     "addThreePoint": (p) => {
                                         if (!threePoints) {
                                             threePoints = {};
                                             threePoints.arr = arr;
+                                            threePoints.color = color;
                                             threePoints.points = [];
                                             threePoints.index = -1;
                                         }
@@ -424,7 +462,7 @@ let engine = (() => {
                                                     treeKeyMap = new Map();
                                                 }
                                                 if (threePoints) {
-                                                    console.log(threePoints)
+                                                    //console.log(threePoints)
                                                     cBd.threePoints = threePoints;
                                                     threePoints = null;
                                                 }

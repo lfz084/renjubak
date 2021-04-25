@@ -162,6 +162,12 @@ Node.prototype.removeChild = function(child) {
 onmessage = function(e) {
     let p = e.data.parameter;
     const cmd = {
+        "getLevelB": function() {
+            //mConsole("getLevelB__>>")
+            let level = getLevelB(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+            post("getLevelB_end", [level]);
+            //mConsole("getLevelB__>>postEnd")
+        },
         "vctSelectPoint": function() {
             findLevelThreePoint(p[1], p[0], p[2], null, null, false);
             let fMoves = [];
@@ -169,6 +175,7 @@ onmessage = function(e) {
             if (fMoves) {
                 for (let i = fMoves.length - 1; i >= 0; i--) {
                     post("wLb", [fMoves[i][0], "④", "black"]);
+                    post("addThreePoint", [fMoves[i][0], { txt: "④", txtColor: "black", moves: [fMoves[i][1]] }]);
                 }
             }
             post("vctSelectPointEnd", []);
@@ -1180,6 +1187,18 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
     // //console.log(vcfFinding)
     if (!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
     vcfStartTimer = new Date().getTime();
+    /*
+    for (let i=0; i<5000; i++) {
+        findFourPoint(arr, 1, getArr([]));
+    }
+    let t1 = new Date().getTime();
+    mConsole(`timer=${t1 - vcfStartTimer}`);
+    for (let i = 0; i < 5000; i++) {
+        findFourPoint(arr, 1, getArr([]), undefined, undefined, true);
+    }
+    let t2 = new Date().getTime();
+    mConsole(`timer=${t2-t1}`);
+    */
     vcfActuator(timeOut, depth, count, backStage);
 
     //console.log("vcf end");
@@ -1286,14 +1305,14 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
 
                 // 上一手棋为中心，查找周围的点。
                 if (fs.length > 1) {
-                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2], 14));
+                    fs = fs.concat(aroundFindPoint(newarr, moves[moves.length - 2], 14, false));
                     vcfFS = fs; // concat方法改变了内存地址， 重新设置两个变量
                 }
                 else { // 如果是第一手，就以h8为中心
                     fs = fs.concat(aroundFindPoint(newarr, 112));
                     vcfFS = fs;
                 }
-
+                //mConsole(`>>___\n${fs}`)
                 ed = fs.length - 1;
                 let idx; // 优先选择活4,再43
                 if (ed > st) { // 两个以上冲四点，优先选择活4,再43
@@ -1315,22 +1334,25 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
                         }
                     }
                     //排序
-                    for (idx = ed - 1; idx >= st; idx--) {
+                    let freeThreeSt = ed;
+                    for (idx = ed; idx >= st; idx--) {
                         let x = fs[idx] % 15;
                         let y = parseInt(fs[idx] / 15);
                         // 把所有活3排到栈顶
                         //判断是否活3，最后一个参数五连，冲4不否定活3
                         for (let i = 0; i < 4; i++) {
                             if (isLineThree(x, y, Cmodel[i], color, arr, true)) {
-                                let v = fs.splice(idx, 1);
-                                fs.push(v * 1);
+                                freeThreeSt--;
+                                if (idx < freeThreeSt) {
+                                    let v = fs.splice(idx, 1);
+                                    fs.splice(freeThreeSt, 0, v * 1);
+                                }
                                 break;
                             }
                         }
                     }
                 }
-
-                // //console.log(fs)
+                //mConsole(`<<___\n${fs}`)
 
                 tx = fs[ed] % 15;
                 ty = parseInt(fs[ed] / 15);
@@ -2075,13 +2097,12 @@ function isFive(x, y, color, arr) {
 
 
 // 不会验证x,y是否有棋子
-function isFour(x, y, color, arr, free) {
+function isFour(x, y, color, arr, free, passFoul) {
 
     let ov = arr[y][x];
     arr[y][x] = color;
     let count = 0;
     let isfree = false;
-
     for (let i = 0; i < 4; i++) {
         if (count < 0) break;
         let isf = false;
@@ -2105,6 +2126,7 @@ function isFour(x, y, color, arr, free) {
             else { //黑棋
 
                 if (pw == 4 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+
                     if (isLineFF(x, y, Cmodel[i], color, arr)) {
                         count = -1;
                         break;
@@ -2129,7 +2151,9 @@ function isFour(x, y, color, arr, free) {
     arr[y][x] = ov;
 
     if (count == 1 && color == 1) { //黑棋
-        count = isFoul(x, y, arr) ? 0 : 1; // 禁手排除4
+        // 禁手排除4
+        // 已经排除所有  44;
+        count = (!passFoul && (isSix(x, y, 1, arr) || isTT(x, y, arr))) ? 0 : 1;
     }
 
     if (free == true) {
@@ -2551,10 +2575,11 @@ function isTT(x, y, arr) {
             let pw = getPower(x, y, arr, Cmodel[i], color, j)
 
             if (pw == 3) {
-                if (getArrValue(x, y, j, Cmodel[i], arr) == 0 || getArrValue(x, y, j, Cmodel[i], arr) == 0) {
+                if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
                     if (getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
                         count++;
-                        continue;
+                        break;
+                        //continue;
                     }
                 }
             } // 五连排除33
@@ -3434,13 +3459,12 @@ function findFour(arr, color, newarr) {
             }
         }
     }
-
 }
 
 
 
 // 找四连点
-function findFourPoint(arr, color, newarr, ftype, setnum) {
+function findFourPoint(arr, color, newarr, ftype, setnum, passFoul) {
 
     let count = 0;
     let fP = [];
@@ -3449,7 +3473,7 @@ function findFourPoint(arr, color, newarr, ftype, setnum) {
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             if (newarr[y][x] > 0) {
-                if (isFour(x, y, color, arr, free)) {
+                if (isFour(x, y, color, arr, free, passFoul)) {
                     newarr[y][x] = 1;
                     fP.push(y * 15 + x);
                     count++;
@@ -3654,8 +3678,11 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
                 if (true || (color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
                     if (true || fType == null) {
                         if (!backstage) {
+                            let txt = isThree(x, y, color, arr, true) ? "③" : "V"+ (l<100?String(l):"++");   
+                            let txtColor = txt == "③" ? "red" : l <= 3 ? "red" : "black";
                             post("printSearchPoint", []);
-                            post("wLb", [pnt.index[i], "③", color == 1 && !isThree(x, y, color, arr, true) ? "black" : "red"]);
+                            post("wLb", [pnt.index[i], txt, txtColor]);
+                            post("addThreePoint", [pnt.index[i], { txt: txt, txtColor: txtColor, moves: level.moves }]);
                         }
                         threeP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
                     }
@@ -3714,7 +3741,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
     let y = parseInt(idx / 15);
 
     arr[y][x] = color;
-    let level = getLevelB(arr, color, getArr([]), null, fType == onlySimpleWin ? 1 : null);
+    let level = getLevelB(arr, color, getArr([]), 60000, fType == onlySimpleWin ? 1 : null);
     let nColor = color == 1 ? 2 : 1;
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
@@ -3730,6 +3757,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
         else if (l == 1) {
             txt = color == 1 ? "③" : "V";
             txtColor = color == 1 ? "black" : "red";
+            txt = txt != "V" ? txt : l < 100 ? "V" + String(l) : "V++";
             if (fType == null) {
                 postPoint(idx, txt, txtColor, level.moves);
             }
@@ -3741,7 +3769,11 @@ function isLevelThreePoint(idx, color, arr, fType) {
 
             if (fType != onlySimpleWin && l > 3) { //搜索冲4复活3
                 findVCF(arr, color, 1, 1, 3000, true);
-                l = vcfWinMoves.length ? 3 : 5;
+                l = vcfWinMoves.length ? 3 : l;
+            }
+            if (l > 3) {
+                findVCF(arr, color, undefined, 10, 5000, true);
+                l = vcfWinMoves.length ? vcfWinMoves[0].length : l;
             }
             let x, y;
             for (let i = l - 2; i >= 0; i--) {
@@ -3761,6 +3793,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
             //mConsole(isF)
             txt = "V";
             txtColor = l > 3 ? "black" : (!isfreeFour && color == 2) ? "black" : "red";
+            txt = l < 100 ? "V" + String(l) : "V++";
             if (fType == null) {
                 postPoint(idx, txt, txtColor, level.moves);
             }
@@ -3785,7 +3818,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
 // 计算先手防 查找连续冲四，经过的点存入newarr,所有冲四分支存入fMoves。
 // 连续冲四方，必须没有VCF，如果有VCF可能影响计算结果
 //  depth＝0继续算一层，确保最后一手对手的棋不会是反 活4 and 44
-function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey) {
+function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey, winMoves) {
 
     if (stopFind) return;
     if (depth < 0) return;
@@ -3825,11 +3858,11 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
 
                         }
                         else {
-                            let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey);
+                            let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey, winMoves);
                             pushFailMoves(FailMoves, moves.slice(0));
                             if (ctn) {
-                                if ((selectArr && fMovesKey.length) || !selectArr) fMoves.push(moves.slice(0));
-                                if (selectArr && fMovesKey.length) selectArr.movesKey.push(fMovesKey.slice(0));
+                                if ((selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) || !selectArr) fMoves.push(moves.slice(0));
+                                if (selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) selectArr.movesKey.push(fMovesKey.slice(0));
                                 /*
                                 mConsole("st--")
                                 mConsole(moves.slice(0));
@@ -3873,11 +3906,11 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
                 arr[y][x] = 0;
             }
             else {
-                let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey);
+                let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey, winMoves);
                 pushFailMoves(FailMoves, moves.slice(0));
                 if (ctn) { //后续没有分支保存当前分支
-                    if ((selectArr && fMovesKey.length) || !selectArr) fMoves.push(moves.slice(0));
-                    if (selectArr && fMovesKey.length) selectArr.movesKey.push(fMovesKey.slice(0));
+                    if ((selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) || !selectArr) fMoves.push(moves.slice(0));
+                    if (selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) selectArr.movesKey.push(fMovesKey.slice(0));
                 }
                 moves.length -= 2;
                 if (pushKey) fMovesKey.length -= 2;
@@ -3893,6 +3926,13 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
     }
     return true;
     //console.log("fMoves.length=\n"+fMoves.length+"\n"+fMoves)
+    function isBlock(color, arr, winMoves) {
+        for (let i = winMoves.length - 1; i >= 0; i--) {
+            let moves = winMoves[i];
+            if (!isVCF(color, arr, moves)) return true;
+            //getBlockVCF([moves],color,arr,true,true);
+        }
+    }
 }
 
 
@@ -4009,9 +4049,10 @@ function around(arr, idx, radius) {
 
 
 // 围绕 idx 查找四周的点(包括idx),color=查找颜色，radius=辐射半径
-function aroundFindPoint(arr, idx, radius) {
+function aroundFindPoint(arr, idx, radius, continueFourFirst) {
 
     let P = [];
+    let firstP = [];
     radius = radius == null ? 7 : radius;
 
     // 从里到外，绕圈搜索
@@ -4021,26 +4062,26 @@ function aroundFindPoint(arr, idx, radius) {
     let y = parseInt(idx / 15);
     for (let i = 0; i < 225; i++) {
         if (arr[Pnt.point[i].y][Pnt.point[i].x] > 0) {
-            /*
-            if ((x==Pnt.point[i].x || y==Pnt.point[i].y || Math.abs(x-Pnt.point[i].x)==Math.abs(y-Pnt.point[i].y))&&i<Pnt.radius[4])  {
-                P.splice(0,0,Pnt.index[i]);
+
+            if (continueFourFirst && (x == Pnt.point[i].x || y == Pnt.point[i].y || Math.abs(x - Pnt.point[i].x) == Math.abs(y - Pnt.point[i].y)) && i < Pnt.radius[4]) {
+                firstP.unshift(Pnt.index[i]);
             }
-            else  {
-            */
-            P.unshift(Pnt.index[i]);
-            //}
+            else {
+                P.unshift(Pnt.index[i]);
+            }
         }
         if (i == max && P.length > 2) { break; }
     }
-    return P;
+    return P.concat(firstP);
 
 }
 
 
-
+let test;
 // 找VCF 级别双杀点
 function isTwoVCF(idx, color, arr) {
 
+    //test = idx == 58;
     let pNum = 0; //双杀点计数
     let timeout = 30000;
     let depth = 1000;
@@ -4080,42 +4121,52 @@ function isTwoVCF(idx, color, arr) {
 
         if (!notWin) { // 没有找到直接共防，继续寻找先手防
             //处理先手防
-            let fMoves = []; //  保存先手连续冲四分支
-            let cbps = continueBlockPoints(arr, color, winMoves, idx == 51);
-            continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]), undefined, undefined, cbps);
+            //  保存先手连续冲四分支
+            let fMoves = getContinueBlockVCF(arr, color, winMoves, idx);
+            /*
+            let cbps = continueBlockPoints(arr, color, winMoves);
+            continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]), undefined, undefined, cbps, [], winMoves);
             let j;
             mConsole(`idx=${idx}, leng=${fMoves.length}`)
+            //if (test) mConsole(fMoves)
             let tempMoves = [];
             let FailMoves = [];
             for (let i = 0; i < 225; i++) { FailMoves[i] = []; }
+
             for (j = fMoves.length - 1; j >= 0; j--) {
                 let Moves = [];
                 pushFailMoves(FailMoves, cbps.movesKey[j]);
                 pushWinMoves(Moves, fMoves[j]);
                 fMoves.length--;
                 cbps.movesKey.length--;
-                for (let k = j-1; k >= 0; k--) {
+                for (let k = j - 1; k >= 0; k--) {
                     if (findMoves(FailMoves, cbps.movesKey[k])) {
                         pushWinMoves(Moves, fMoves[k]);
-                        fMoves.splice(k,1);
-                        cbps.movesKey.splice(k,1);
+                        fMoves.splice(k, 1);
+                        cbps.movesKey.splice(k, 1);
                         j--;
                     }
                 }
                 tempMoves = tempMoves.concat(Moves);
             }
             fMoves = tempMoves;
+            mConsole(`>>idx=${idx}, leng=${fMoves.length}`)
+            */
+
+
+            let j;
             let testCount = 0;
             for (j = fMoves.length - 1; j >= 0; j--) {
-                //if (true || indexOfMoves(fMoves[j], cbps) + 1) {
+
                 testCount++;
-                if (idx == 185) {
-                    mConsole("start_____")
+                /*
+                if (test) {
+                    mConsole(`start_____${j}`)
                     mConsole(fMoves[j]);
                     mConsole(cbps.movesKey[j]);
                     mConsole("_____end")
                 }
-
+                */
                 // 摆棋
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
                     let x = fMoves[j][k] % 15;
@@ -4126,35 +4177,15 @@ function isTwoVCF(idx, color, arr) {
                 nd = movesToNode(fMoves[j], nd);
                 keyMapList.push({ key: getKey(arr), node: nd });
 
-                /*
-                let winLevel = getWinLevel(arr, color, timeout, depth, 1, nd);
-                //console.log("winLevel="+winLevel)
-                if (winLevel < 3.5) notWin = true; // 复原棋子
-                */
                 notWin = !isTwoWin(arr, color, timeout, depth, nd);
 
-                /*
-                }
-                else {
-                    nd.defaultChildNode = cNode[0].defaultChildNode;
-                    for (let i = bPoint.length - 1; i >= 0; i--) {
-                        let cnd = cNode[0].childNode;
-                        for (let j = cnd.length - 1; j >= 0; j--) {
-                            if (cnd[j].idx == bPoint[i]) {
-                                nd.childNode.push(cnd[j]);
-                                break;
-                            }
-                        }
-                    }
-                }
-                */
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
                     let x = fMoves[j][k] % 15;
                     let y = parseInt(fMoves[j][k] / 15);
                     arr[y][x] = 0;
                 }
                 if (notWin) j = -1;
-                //}
+
             }
             mConsole(`idx=${idx}, loop=${testCount}`)
 
@@ -4238,147 +4269,8 @@ function isTwoVCF(idx, color, arr) {
         }
     }
 
-    function continueBlockPoints(arr, color, winMoves, test) {
-        let nColor = color == 1 ? 2 : 1;
-        let newarr = getArr([]);
-        let narr = getArr([]);
-        
-        for (let moveIndex = winMoves.length-1; moveIndex>=0; moveIndex--) {
-        let moves = winMoves[0];
-        let bp = getBlockVCF(winMoves, color, arr, true, true);
-        let bpc = getBlockVCFc(winMoves, color, arr, true);
-        
-        let ps = [];
-        let x, y;
 
-        let len = moves.length;
-        for (let i = 1; i < len; i += 2) {
-            x = moves[i] % 15;
-            y = parseInt(moves[i] / 15);
-            let tx = moves[i - 1] % 15;
-            let ty = parseInt(moves[i - 1] / 15);
-            arr[ty][tx] = color;
-            arr[y][x] = nColor;
-            for (let j = 0; j < 4; j++) {
-                let start = 0;
-                let end = 0;
-                for (let k = -1; k > -5; k--) {
-                    let value = getArrValue(x, y, k, Cmodel[j], arr);
-                    if (value == 0 || value == nColor) {
-                        start--;
-                    }
-                    else {
-                        break;
-                    }
-                }
-                for (let k = 1; k < 5; k++) {
-                    let value = getArrValue(x, y, k, Cmodel[j], arr);
-                    if (value == 0 || value == nColor) {
-                        end++;
-                    }
-                    else {
-                        break;
-                    }
-                }
-                if (test) mConsole(`cmodel=${Cmodel[j]}, idx=${moves[i]}, start=${start}, end=${end}}`)
-                if (end - start >= 4) {
-                    for (let k = start; k <= end; k++) {
-                        let p = getArrPoint(x, y, k, Cmodel[j], arr);
-                        newarr[p.y][p.x] = 1;
-                    }
-                }
-            }
-        }
-        for (let i = 0; i < len; i++) {
-            x = moves[i] % 15;
-            y = parseInt(moves[i] / 15);
-            arr[y][x] = 0;
-        }
-        if (test) mConsole(toStr(newarr));
-        /*
-        for (let i = 0; i < 225; i++) {
-            x = i % 15;
-            y = parseInt(i / 15);
-            if (around(newarr, y * 15 + x, 3)) {
-                narr[y][x] = 1;
-            }
-        }
-        if (test) mConsole(toStr(narr))
-        */
-
-        for (let i = bp.length - 1; i >= 0; i--) {
-            x = bp[i] % 15;
-            y = parseInt(bp[i] / 15);
-            newarr[y][x] = 1;
-        }
-        if (test) mConsole(toStr(newarr))
-        for (let i = bpc.length - 1; i >= 0; i--) {
-            x = bpc[i] % 15;
-            y = parseInt(bpc[i] / 15);
-            narr[y][x] = 1;
-        }
-        if (test) mConsole(toStr(narr))
-        /*
-        for (let i = moves.length - 1; i >= 0; i--) {
-            x = moves[i] % 15;
-            y = parseInt(moves[i] / 15);
-            let nColor = color == 1 ? 2 : 1;
-            arr[y][x] = i % 2 ? nColor : color;
-        }
-        if (test) mConsole(toStr(arr))
-        for (let i = 0; i < -4; i++) {
-            if (isLineFour(x, y, Cmodel[i], color, arr, true)) {
-                let p;
-                for (let j = -1; j > -5; j--) {
-                    if (getArrValue(x, y, j, Cmodel[i], arr) != color) {
-                        p = getArrPoint(x, y, j, Cmodel[i], arr);
-                        if (p.x != -1) {
-                            narr[p.y][p.x] = 1;
-                        }
-                        p = getArrPoint(x, y, j-1, Cmodel[i], arr);
-                        if (p.x != -1) {
-                            narr[p.y][p.x] = 1;
-                        }
-                        break;
-                    }
-                }
-                if (test) mConsole(toStr(narr))
-                for (let j = 1; j < 5; j++) {
-                    if (getArrValue(x, y, j, Cmodel[i], arr) != color) {
-                        p = getArrPoint(x, y, j, Cmodel[i], arr);
-                        if (p.x != -1) {
-                            narr[p.y][p.x] = 1;
-                        }
-                        p = getArrPoint(x, y, j+1, Cmodel[i], arr);
-                        if (p.x != -1) {
-                            narr[p.y][p.x] = 1;
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        for (let i = moves.length - 1; i >= 0; i--) {
-            x = moves[i] % 15;
-            y = parseInt(moves[i] / 15);
-            arr[y][x] = 0;
-        }
-        if (test) mConsole(toStr(narr))
-        */
-        /*
-        for (let i = 0; i < 225; i++) {
-            x = i % 15;
-            y = parseInt(i / 15);
-            if (narr[y][x] == 1) ps.push(i);
-        }
-        */
-        }
-
-        return { colorArr: narr, nColorArr: newarr, movesKey: [] };
-
-    }
-
+    /*
     function indexOfMoves(moves, ctnBlockPoints) {
         let i;
         for (i = moves.length - 1; i >= 0; i--) {
@@ -4386,7 +4278,314 @@ function isTwoVCF(idx, color, arr) {
         }
         return i;
     }
+    */
 }
+
+
+
+function getContinueBlockVCF(arr, color, winMoves, idx) {
+
+    let fMoves = [];
+    let cbps = continueBlockPoints(arr, color, winMoves);
+    continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]), undefined, undefined, cbps, [], winMoves);
+    let j;
+    mConsole(`idx=${idx}, leng=${fMoves.length}`)
+    //if (test) mConsole(fMoves)
+    let tempMoves = [];
+    let FailMoves = [];
+    for (let i = 0; i < 225; i++) { FailMoves[i] = []; }
+
+    for (j = fMoves.length - 1; j >= 0; j--) {
+        let Moves = [];
+        pushFailMoves(FailMoves, cbps.movesKey[j]);
+        pushWinMoves(Moves, fMoves[j]);
+        fMoves.length--;
+        cbps.movesKey.length--;
+        for (let k = j - 1; k >= 0; k--) {
+            if (findMoves(FailMoves, cbps.movesKey[k])) {
+                pushWinMoves(Moves, fMoves[k]);
+                fMoves.splice(k, 1);
+                cbps.movesKey.splice(k, 1);
+                j--;
+            }
+        }
+        tempMoves = tempMoves.concat(Moves);
+    }
+
+    fMoves = tempMoves;
+    mConsole(`>>idx=${idx}, leng=${fMoves.length}`)
+    return fMoves;
+
+    function continueBlockPoints(arr, color, winMoves) {
+        let nColor = color == 1 ? 2 : 1;
+        let newarr = getArr([]);
+        let narr = getArr([]);
+
+        for (let moveIndex = winMoves.length - 1; moveIndex >= 0; moveIndex--) {
+            let moves = winMoves[moveIndex];
+            let bp = getBlockVCF([moves], color, arr, true);
+            let x, y;
+            //if (test) mConsole(`bp.length${bp.length}`)
+            for (let i = bp.length - 1; i >= 0; i--) {
+                x = bp[i] % 15;
+                y = parseInt(bp[i] / 15);
+                if (isFour(x, y, nColor, arr)) {
+                    arr[y][x] = nColor;
+                    let idx = getBlockFour(x, y, arr);
+                    let tx = idx % 15;
+                    let ty = parseInt(idx / 15);
+                    arr[ty][tx] = color;
+                    if (isVCF(color, arr, moves)) {
+                        bp.splice(i, 1);
+                    }
+                    arr[ty][tx] = 0;
+                    arr[y][x] = 0;
+                }
+            }
+            //if (test) mConsole(`>>bp.length${bp.length}`)
+            let bpc = getBlockVCFc([moves], color, arr, true);
+            let len = moves.length;
+            for (let i = 1; i < len; i += 2) {
+                x = moves[i] % 15;
+                y = parseInt(moves[i] / 15);
+                let tx = moves[i - 1] % 15;
+                let ty = parseInt(moves[i - 1] / 15);
+                arr[ty][tx] = color;
+                if (color == 1) {
+                    setBlockThree(tx, ty, arr, 0, newarr, narr, color);
+                }
+                arr[y][x] = nColor;
+                for (let j = 0; j < 4; j++) {
+                    let start = 0;
+                    let end = 0;
+                    for (let k = -1; k > -5; k--) {
+                        let value = getArrValue(x, y, k, Cmodel[j], arr);
+                        if (value == 0 || value == nColor) {
+                            start--;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    for (let k = 1; k < 5; k++) {
+                        let value = getArrValue(x, y, k, Cmodel[j], arr);
+                        if (value == 0 || value == nColor) {
+                            end++;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    //if (test) mConsole(`model=${Cmodel[j]}, idx=${moves[i]}, start=${start}, end=${end}}`)
+                    if (end - start >= 4) {
+                        for (let k = start; k <= end; k++) {
+                            let p = getArrPoint(x, y, k, Cmodel[j], arr);
+                            newarr[p.y][p.x] = 1;
+                        }
+                    }
+                }
+            }
+
+            x = moves[moves.length - 1] % 15;
+            y = parseInt(moves[moves.length - 1] / 15);
+            //arr[y][x] = color;
+            if (color == 1) {
+                arr[y][x] = color;
+                setBlockThree(x, y, arr, 0, newarr, narr, color);
+                arr[y][x] = 0;
+            }
+            else if (isCatchFoul(x, y, arr)) { //arr[y][x]==0 >> isCatchFoul;
+
+                arr[y][x] = color;
+                let idx = getBlockFour(x, y, arr);
+                let tx = idx % 15;
+                let ty = parseInt(idx / 15);
+                //mConsole(`catchfoul__idx=${idx}`)
+                setBlockThree(tx, ty, arr, 0, newarr, narr, color);
+                arr[y][x] = 0;
+
+            }
+            //arr[y][x] = 0;
+            for (let j = 0; j < 4; j++) {
+                if (isLineFour(x, y, Cmodel[j], color, arr, true)) {
+                    let i;
+                    let start, end;
+                    for (i = -1; i > -5; i--) {
+                        if (getArrValue(x, y, i, Cmodel[j], arr) != color) break;
+                    }
+                    start = i + 1;
+                    for (i = 1; i < 5; i++) {
+                        if (getArrValue(x, y, i, Cmodel[j], arr) != color) break;
+                    }
+                    end = i - 1;
+                    if (start == 0 || end == 0) { //连活3 设置夏止防选点
+                        start = start == 0 ? 1 : -3;
+                        setBlockFreeThree(x, y, start, start + 2, Cmodel[j], color, newarr, narr, color);
+                    }
+                    break;
+
+                }
+            }
+
+            for (let i = 0; i < len; i++) {
+                x = moves[i] % 15;
+                y = parseInt(moves[i] / 15);
+                arr[y][x] = 0;
+            }
+            //if (test) mConsole(toStr(newarr));
+
+            for (let i = bp.length - 1; i >= 0; i--) {
+                x = bp[i] % 15;
+                y = parseInt(bp[i] / 15);
+                newarr[y][x] = 1;
+            }
+            //if (test) mConsole(toStr(newarr))
+            for (let i = bpc.length - 1; i >= 0; i--) {
+                x = bpc[i] % 15;
+                y = parseInt(bpc[i] / 15);
+                narr[y][x] = 1;
+            }
+            //if (test) mConsole(toStr(narr))
+
+        }
+
+        if (test) mConsole(toStr(newarr))
+        if (test) mConsole(toStr(narr))
+
+        return { colorArr: narr, nColorArr: newarr, movesKey: [] };
+
+    }
+
+    function setBlockThree(x, y, arr, depth, nColorArr, colorArr, arrColor) {
+
+        depth = depth || 0;
+        let color = 1;
+        //五连否定33
+        if (isFive(x, y, color, arr)) return false;
+        let ov = arr[y][x];
+        arr[y][x] = color;
+        let points = [];
+        let count = 0;
+        // 先搜索33形状
+        for (let i = 0; i < 4; i++) {
+            if (count < 0) break;
+            for (let j = 0; j > -5; j--) {
+                let pw = getPower(x, y, arr, Cmodel[i], color, j);
+                if (pw == 3) {
+                    //if (test) mConsole(`j=${j}, pw=3, model=${Cmodel[i]}\n________`);
+                    if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
+                        if (getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+                            //if (test) mConsole(`i=${i}, j=${j}, pw=3, model=${Cmodel[i]}\n________\n${toStr(arr)}`);
+                            let k;
+                            let p;
+                            for (k = 2; k < 5; k++) {
+                                if (getArrValue(x, y, j + k, Cmodel[i], arr) == 0) break;
+                            }
+                            if (k == 4) {
+                                p = getArrPoint(x, y, j + k, Cmodel[i], arr);
+                                points.push({ p: p, model: Cmodel[i], len: 0 });
+                                p = getArrPoint(x, y, j, Cmodel[i], arr);
+                                points.push({ p: p, model: Cmodel[i], len: 3 });
+                            }
+                            else {
+                                p = getArrPoint(x, y, j + k, Cmodel[i], arr);
+                                points.push({ p: p, model: Cmodel[i], len: 4 });
+                            }
+                            count++;
+                            break;
+                        }
+                    }
+                } // 五连排除33
+                if (pw == 5 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+                    count = -1;
+                    break;
+                }
+            }
+        }
+        /*
+        arr[y][x] = "*";
+        if (test) mConsole(`depth=${depth}\ncount=${count}________>>\n${toStr(arr)}`);
+        arr[y][x] = color;
+        */
+        if (count >= 2) {
+            for (let i = points.length - 1; i >= 0; i--) {
+                /*
+                arr[points[i].p.y][points[i].p.x] = "*";
+                if (test) mConsole(`depth=${depth}\n>>\n${toStr(arr)}`);
+                arr[points[i].p.y][points[i].p.x] = color;
+                */
+                if ((arrColor == 1 && depth % 2) || (arrColor == 2 && (depth + 1) % 2)) {
+                    if (points[i].len == 3) setBlockFreeThree(points[i].p.x, points[i].p.y, 1, 3, points[i].model, color, nColorArr, colorArr, arrColor);
+                }
+                setBlockThree(points[i].p.x, points[i].p.y, arr, depth + 1, nColorArr, colorArr, arrColor);
+                /*
+                arr[points[i].p.y][points[i].p.x] = "*";
+                if (test) mConsole(`depth=${depth}\n<<\n${toStr(arr)}`);
+                arr[points[i].p.y][points[i].p.x] = 0;
+                */
+            }
+            /*
+                for (let i = points.length - 1; i >= 0; i--) {
+                    if (points[i].len == 3) {
+                        if (test) mConsole(`setBlockFreeThree`);
+                        arr[points[i].p.y][points[i].p.x] = color;
+                        
+                        arr[points[i].p.y][points[i].p.x] = 0;
+                    }
+                }
+            */
+        }
+        /*
+        arr[y][x] = "*";
+        if (test) mConsole(`depth=${depth}\ncount=${count}<<________\n${toStr(arr)}`);
+        arr[y][x] = color;
+        */
+        arr[y][x] = ov;
+    }
+
+    // 设置夏止防选点
+    function setBlockFreeThree(x, y, start, end, model, color, nColorArr, colorArr, arrColor) {
+        let arr;
+        for (let i = -1; i > -4; i--) {
+            let p = getArrPoint(x, y, start + i, model, arr);
+            if (p.x != -1) {
+                if (i > -3) {
+                    colorArr[p.y][p.x] = 1;
+                    nColorArr[p.y][p.x] = 1;
+                }
+                else {
+                    if (arrColor == 1) {
+                        colorArr[p.y][p.x] = 1;
+                    }
+                    else {
+                        nColorArr[p.y][p.x] = 1;
+                    }
+                }
+            }
+            if (color == 2 && i == -2) break;
+        }
+        for (let i = 1; i < 4; i++) {
+            let p = getArrPoint(x, y, end + i, model, arr);
+            if (p.x != -1) {
+                if (i < 3) {
+                    colorArr[p.y][p.x] = 1;
+                    nColorArr[p.y][p.x] = 1;
+                }
+                else {
+                    if (arrColor == 1) {
+                        colorArr[p.y][p.x] = 1;
+                    }
+                    else {
+                        nColorArr[p.y][p.x] = 1;
+                    }
+                }
+            }
+            if (color == 2 && i == 2) break;
+        }
+    }
+
+}
+
 
 
 // 排除直接防
@@ -4764,7 +4963,7 @@ function getLevelB(arr, color, newarr, timeout, depth, backstage, num) {
 }
 
 
-
+/*
 // 轮到对手落子
 // 判断必胜级别 depth==vcf深度，gDepth(递归深度) ==1不计算先手防, ==2计算先手防
 function getWinLevel(arr, color, timeout, depth, gDepth, node) {
@@ -4847,6 +5046,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, node) {
                      }
                      //console.log(j+"\n"+str)
                     */
+/*
                     let nd = movesToNode(fMoves[j], node);
                     winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1, nd);
                     //console.log("_____"+winLevel)
@@ -4868,7 +5068,7 @@ function getWinLevel(arr, color, timeout, depth, gDepth, node) {
     }
 
 }
-
+*/
 
 
 // 轮到对手落子

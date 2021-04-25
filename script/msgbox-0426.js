@@ -197,3 +197,8 @@
          }, AnimationTimeout);
      }, timer);
  }
+ 
+ 
+ function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction) {
+     msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, cancelTXT?2:1);
+ }
