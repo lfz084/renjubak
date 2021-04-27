@@ -14,15 +14,46 @@ let engine = (() => {
     let saveContinueData;
     let save = {};
     let tree = null;
+    let oldTree = null;
+    let oldCode = "";
     let treeKeyMap = new Map();
     let threePoints = null;
+    let oldThreePoints = null;
+    let removeTree = () => {
+        oldTree = cBd.oldCode == "" ? null : cBd.tree;
+        oldCode = cBd.oldCode;
+        cBd.oldCode = "";
+        cBd.tree = new cBd.node();
+        cBd.cleLb("all");
+    };
+    let addTree = (oldTree) => {
+        if (oldTree) {
+            cBd.oldCode = oldCode;
+            cBd.tree = oldTree;
+        }
+    };
+    let cleThreePoints = () => {
+        oldThreePoints = cBd.threePoints;
+        cBd.cleThreePoints();
+        cBd.cleLb("all");
+    };
+    let addThreePoint = (oldThreePoints) => {
+        if (oldThreePoints && oldThreePoints.arr) {
+            cBd.threePoints = oldThreePoints;
+            for (let i = cBd.threePoints.points.length - 1; i >= 0; i--) {
+                if (cBd.threePoints.points[i]) {
+                    cBd.wLb(i, cBd.threePoints.points[i].txt, cBd.threePoints.points[i].txtColor, undefined, false);
+                }
+            }
+        }
+    };
     let setCmd = () => { //calculate start
         //msg ("","msgbox",0,cBd.height,dw+8,dh-cBd.height,"停止计算",null,
         //  cancelFind,null,null,"auto");
         cFP.hide();
         cVCF.hide();
-        cBd.threePoints = {};
-        cBd.tree = new cBd.node();
+        removeTree();
+        cleThreePoints();
         cBd.showFoul(false, true);
         cBd.removeMarkArrow("all");
         cBd.removeMarkLine("all");
@@ -173,41 +204,48 @@ let engine = (() => {
                 },
                 "findThreePoint": () => {
                     let newarr = getArr([]);
+                    addThreePoint(oldThreePoints);
                     findThreePoint(param[0], param[1], newarr, param[3]);
                     cBd.printArray(newarr, "③", param[3] == onlyFree ? "red" : "black");
                     callback();
                 },
                 "findTTPoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findTTPoint(param[0], 1, newarr);
                     cBd.printArray(newarr, "❌", "red");
                     callback();
                 },
                 "findFFPoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFFPoint(param[0], 1, newarr);
                     cBd.printArray(newarr, "❌", "red");
                     callback();
                 },
                 "findSixPoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findSixPoint(param[0], 1, newarr, param[3]);
                     cBd.printArray(newarr, "❌", "red");
                     callback();
                 },
                 "findFoulPoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFoulPoint(param[0], newarr, param[3]);
                     cBd.printArray(newarr, "❌", "red");
                     callback();
                 },
                 "findFivePoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFivePoint(param[0], param[1], newarr, param[3]);
                     cBd.printArray(newarr, "⑤", "red");
                     callback();
                 },
                 "findFourPoint": () => {
+                    addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFourPoint(param[0], param[1], newarr, param[3]);
                     cBd.printArray(newarr, "④", param[3] == onlyFree ? "red" : "black");
@@ -320,6 +358,7 @@ let engine = (() => {
                                 cObjVCF.winMoves.push(p[0][i].slice(0));
                             }
                             cleLb("all");
+                            addTree(oldTree);
                             if (cObjVCF.winMoves.length) setTimeout(() => { cBd.printMoves(cObjVCF.winMoves[0], cObjVCF.color); }, 1100);
                             callback();
                             printMsg();
@@ -349,7 +388,7 @@ let engine = (() => {
                             else if (level2 == undefined) {
                                 level2 = p[0];
                                 if (level1.level >= 3) {
-                                    let str = `${color == 1 ? "黑棋" : "白棋"} ${`${param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
+                                    let str = `${color == 1 ? "黑棋" : "白棋"} ${`${level1.level>=4 ? "进攻级别 >= 冲4" : param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
                                     if (cmd == "isLevelThreePoint") {
                                         if (param[3] == onlySimpleWin && (level2.level < 3)) {
                                             postMsg();
@@ -362,7 +401,12 @@ let engine = (() => {
                                         opMsg(str);
                                     }
                                     else {
-                                        postMsg();
+                                        if (level1.level >= 4) {
+                                            opMsg(str);
+                                        }
+                                        else {
+                                            postMsg();
+                                        }
                                     }
                                 }
                                 else {

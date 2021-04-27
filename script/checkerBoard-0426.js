@@ -338,7 +338,7 @@ checkerBoard.prototype.addTree = function(tree) {
     this.oldResetNum = this.resetNum;
     this.resetNum = 0;
     this.oldCode = code; //要放在循环之后，不要改变顺序
-    console.log(tree);
+    console.log(`addTree>>\n__________\n${tree}`);
     this.tree = tree || new this.node();
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
@@ -3982,7 +3982,10 @@ checkerBoard.prototype.showNum = function() {
 //跳到最后一手
 checkerBoard.prototype.toEnd = function(isShowNum) {
 
-    if (this.MSindex < this.MS.length - 1) {
+    if (this.threePoints.arr) {
+        
+    }
+    else if (this.MSindex < this.MS.length - 1) {
         while (this.MSindex < this.MS.length - 1) {
             this.toNext(isShowNum);
         }
@@ -4069,10 +4072,15 @@ checkerBoard.prototype.toPrevious = function(isShowNum) {
 // 跳到第 0 手。
 checkerBoard.prototype.toStart = function(isShowNum) {
 
-    while (this.MSindex > 0) {
-        this.toPrevious(isShowNum);
+    if (this.threePoints.arr) {
+
     }
-    if (this.oldCode) this.toPrevious(isShowNum);
+    else {
+        while (this.MSindex > 0) {
+            this.toPrevious(isShowNum);
+        }
+        if (this.oldCode) this.toPrevious(isShowNum);
+    }
 };
 
 
@@ -4132,6 +4140,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 
 checkerBoard.prototype.unpackTree = function() {
 
+    console.log(this.tree)
     if (this.oldCode == "") return;
     if (this.oldCode) {
         /*
@@ -4172,6 +4181,14 @@ checkerBoard.prototype.unpackTree = function() {
             if (j == -1) {
                 if (nd.defaultChildNode && lvl.level < 4) {
                     nd = nd.defaultChildNode;
+                    let loopNode = nd.childNode[0];
+                    while (loopNode && loopNode.idx > -1) {
+                        if (loopNode.idx == MS[MSindex]) {
+                            nd = null;
+                            break;
+                        }
+                        loopNode = loopNode.childNode[0];
+                    }
                 }
                 else {
                     nd = null;
@@ -4220,7 +4237,7 @@ checkerBoard.prototype.unpackTree = function() {
         function printChildNode(node, txt) {
             //alert("p")
             for (let i = node.childNode.length - 1; i >= 0; i--) {
-                this.wLb(node.childNode[i].idx, txt, "black");
+                this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, "black");
             }
             /*
             if (!(MSindex % 2) && lvl.level < 4) {
