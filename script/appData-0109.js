@@ -85,6 +85,7 @@ let appData = (() => {
 
     // 数据量太大，localStorage存不下
     let saveContinueData = (data, cBd) => {
+        return;
         if (typeof(data) == "object") {
             if (cBd) {
                 initialCBoard.resetNum = cBd.resetNum;

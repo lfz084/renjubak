@@ -596,9 +596,10 @@ let control = (() => {
             cFindVCF.addOption(6, "四手五连");
             cFindVCF.addOption(7, "防 冲四抓禁");
             cFindVCF.addOption(8, "找  VCF防点");
-            cFindVCF.addOption(9, "找  VCF防点(深度)");
-            cFindVCF.addOption(10, "坂田三手胜(测试)");
-            cFindVCF.addOption(11, "VCT(测试）");
+            cFindVCF.addOption(9, "找  VCF防点(深度+1)");
+            cFindVCF.addOption(10, "找  VCF防点(深度+∞)");
+            cFindVCF.addOption(11, "坂田三手胜(测试)");
+            cFindVCF.addOption(12, "VCT(测试）");
             //cFindVCF.addOption(12, "︽");
             //cFindVCF.addOption(12, "test two");
         }
@@ -644,13 +645,16 @@ let control = (() => {
                 case 9:
                     engine.postMsg("getBlockVCFb", [arr, getRenjuSelColor()]);
                     break;
+                case 10:
+                    engine.postMsg("getBlockVCFTree", [arr, getRenjuSelColor()]);
+                    break;
                 case 7:
                     engine.postMsg("blockCatchFoul", [arr]);
                     break;
-                case 10:
+                case 11:
                     engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 2, null]);
                     break;
-                case 11:
+                case 12:
                     /*
                     console.log(isFFWin(8,12,2,arr))
                     arr[12][8] = "*"
@@ -1653,7 +1657,7 @@ let control = (() => {
                         }
                         break;
                 }
-    
+
             }
 
         }

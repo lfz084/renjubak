@@ -81,13 +81,13 @@
      s.left = parseInt(left) + "px";
      s.top = parseInt(top) + "px";
      s.width = parseInt(width) + "px";
-     s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + 3) * 1.3 + "px";
+     s.height = !!height ? parseInt(height) + "px" : parseInt(s.width) / 20 * (lineNum + (butNum===0?0.8:3)) * 1.3 + "px";
      s.backgroundColor = "#666666";
      s.border = `0px solid ${butEnter.selectBackgroundColor}`;
      s.margin = "0px";
      s.padding = "0px";
 
-     if (butNum != 0) {
+     if (true || butNum != 0) {
          s.left = (document.documentElement.clientWidth - width) / 2 + "px";
          s.top = (document.documentElement.clientHeight - parseInt(s.height)) / 2 + "px";
      }
@@ -129,12 +129,12 @@
          butEnter.div.style.border = `1px solid black`;
          butEnter.setontouchend(function() {
              MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-             MsgBoxobj.setAttribute("class", "hide");
+             if (MsgBoxobj.getAttribute("class")) MsgBoxobj.setAttribute("class", "hide");
              closeTimer = setTimeout(() => {
                  closeTimer = null;
                  MsgBoxobj.parentNode.removeChild(MsgBoxobj);
                  isMsgShow = false;
-
+                 MsgBoxobj.setAttribute("class", "");
              }, 300);
 
              if (callEnter) callEnter(String(msgTextarea.value));
@@ -150,11 +150,12 @@
          butCancel.setText(cancelTXT ? cancelTXT : "取消");
          butCancel.setontouchend(function() {
              MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-             MsgBoxobj.setAttribute("class", "hide");
+             if (MsgBoxobj.getAttribute("class")) MsgBoxobj.setAttribute("class", "hide");
              closeTimer = setTimeout(() => {
                  closeTimer = null;
                  MsgBoxobj.parentNode.removeChild(MsgBoxobj);
                  isMsgShow = false;
+                 MsgBoxobj.setAttribute("class", "");
              }, 300);
 
              if (callCancel) callCancel(String(msgTextarea.value));
@@ -171,8 +172,13 @@
          butCancel.hide();
          butEnter.hide();
      }
-
-     MsgBoxobj.setAttribute("class", "show");
+     
+     if (butNum) {
+         MsgBoxobj.setAttribute("class", "show");
+     }
+     else {
+         MsgBoxobj.setAttribute("class", "");
+     }
      setTimeout(() => { document.body.appendChild(MsgBoxobj) }, 1);
 
  }
@@ -188,17 +194,18 @@
      timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
      closeTimer = setTimeout(function() {
          closeTimer = null;
-         MsgBoxobj.setAttribute("class", "hide");
+         if (MsgBoxobj.getAttribute("class")) MsgBoxobj.setAttribute("class", "hide");
          closeTimer = setTimeout(() => {
              closeTimer = null;
              isMsgShow = false;
              if (MsgBoxobj.parentNode) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
              msgTextarea.value = "";
+             MsgBoxobj.setAttribute("class", "");
          }, AnimationTimeout);
      }, timer);
  }
- 
- 
- function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction) {
-     msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, cancelTXT?2:1);
+
+
+ function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum) {
+     msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, butNum==undefined ? cancelTXT ? 2 : 1 : butNum, butNum==0 ? 1 : undefined);
  }

@@ -197,6 +197,14 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.SLTX = 15;
     this.SLTY = 15; //默认是15×15棋盘;
     this.searchIdx = []; // 记录正在计算的点
+    this.searchPoints = [];
+    for (let i = 0; i < 225; i++) {
+        this.searchPoints[i] = document.createElement("div");
+        this.parentNode.appendChild(this.searchPoints[i]);
+        this.searchPoints[i].style.zIndex = -100;
+        this.searchPoints[i].style.borderRadius = "50%";
+    }
+    
     for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
     this.backgroundColor = "#f0f0f0"; //888888
     this.wNumColor = "white"; //do not change (printPDF && getSVG)
@@ -1045,6 +1053,14 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
         this.refreshMarkArrow(idx2);
     }
 
+}
+
+
+
+checkerBoard.prototype.cleSearchPoint = function() {
+    for (let i=this.searchPoints.length-1; i>=0; i--) {
+        this.printSearchPoint(i);
+    }
 }
 
 
@@ -3048,26 +3064,44 @@ checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, b
 // 在棋盘上打印当前正在计算的点
 checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
 
+    let size;
+    let temp;
     num = num ? parseInt(num) : 0;
     //清除旧标记
     if (this.searchIdx[num] > -1 && this.searchIdx[num] != idx) {
-        //this.cleLb(this.searchIdx[num]);
-        this.P[this.searchIdx[num]].cle();
-        this.clePointB(this.searchIdx[num]);
+        //this.P[this.searchIdx[num]].cle();
+        //this.clePointB(this.searchIdx[num]);
         //this.refreshMarkLine(this.searchIdx[num]);
         //this.refreshMarkArrow(this.searchIdx[num]);
+        this.searchPoints[num].innerHTML = "";
+        this.searchPoints[num].style.zIndex = -100;
+        this.searchPoints[num].setAttribute("class", "");
         this.searchIdx[num] = -1;
     }
     //写入新标记
     if (idx > -1) {
         this.searchIdx[num] = idx;
-        //this.wLb(idx, text, color);
-        this.P[idx].color = color;
-        this.P[idx].bkColor = null;
-        this.P[idx].type = tLb;
-        this.P[idx].text = text;
+        temp = (this.gW < this.gH) ? this.gW : this.gH;
+        size = parseInt(temp / 4 * 2);
+        this.searchPoints[num].innerHTML = "◎";
+        this.searchPoints[num].style.fontSize = size + "px";
+        this.searchPoints[num].style.color = color;
+        this.searchPoints[num].style.position = "absolute";
+        this.searchPoints[num].style.backgroundColor = "";
+        this.searchPoints[num].style.width = size + "px";
+        this.searchPoints[num].style.height = size + "px";
+        this.searchPoints[num].style.lineHeight = size + "px";
+        this.searchPoints[num].style.left = this.P[idx].x - parseInt(size / 2) + "px";
+        this.searchPoints[num].style.top = this.P[idx].y - parseInt(size / 2) + "px";
+        this.searchPoints[num].style.zIndex = 1;
+        this.searchPoints[num].setAttribute("class", "startPoint");
+        this.cleLb(idx);
+        //this.P[idx].color = color;
+        //this.P[idx].bkColor = null;
+        //this.P[idx].type = tLb;
+        //this.P[idx].text = text;
         //this.refreshMarkLine(idx);
-        this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+        //this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
         //this.refreshMarkArrow(idx);
     }
 
@@ -4140,7 +4174,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 
 checkerBoard.prototype.unpackTree = function() {
 
-    console.log(this.tree)
+    //console.log(this.tree)
     if (this.oldCode == "") return;
     if (this.oldCode) {
         /*
@@ -4202,7 +4236,7 @@ checkerBoard.prototype.unpackTree = function() {
             }
             else {
                 if (MSindex % 2) {
-                    if (lvl.level >= 4 && lvl.p) {
+                    if (false && lvl.level >= 4 && lvl.p) {
                         nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
                         printChildNode.call(this, nd, txt);
                         nd.childNode = [];
