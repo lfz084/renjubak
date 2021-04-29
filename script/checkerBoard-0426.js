@@ -231,7 +231,8 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.oldResetNum = 0;
     this.oldCode = "";
     this.tree = new this.node();
-    this.timerUnpackTree = null;
+    //this.timerUnpackTree = null;
+    this.unpacking = false;
     this.threePoints = {};
 
     //页面显示的棋盘
@@ -4175,7 +4176,7 @@ checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
 checkerBoard.prototype.unpackTree = function() {
 
     //console.log(this.tree)
-    if (this.oldCode == "") return;
+    if (this.unpacking || this.oldCode == "") return;
     if (this.oldCode) {
         /*
         if (this.timerUnpackTree) {
@@ -4183,6 +4184,7 @@ checkerBoard.prototype.unpackTree = function() {
             this.timerUnpackTree = null;
         }
         */
+        this.unpacking = true;
         let MS = this.MS;
         let MSindex = this.MSindex;
         let moveNodes = this.tree.moveNodes;
@@ -4267,6 +4269,7 @@ checkerBoard.prototype.unpackTree = function() {
             printChildNode.call(this, nd, txt);
         }
         this.tree.moveNodesIndex = MSindex;
+        this.unpacking = false;
 
         function printChildNode(node, txt) {
             //alert("p")
