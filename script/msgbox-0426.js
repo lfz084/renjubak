@@ -68,6 +68,8 @@
      s.height = document.documentElement.clientHeight * 2 + "px";
      s.top = "0px";
      s.left = "0px";
+     
+     MsgBoxobj.ontouchend = MsgBoxobj.onclick = butNum==0 ? ()=>{closeMsg(1)} : null;
 
      if (lineNum == "auto") {
          lineNum = parseInt(height * 0.8 / parseInt(s.width) / 0.05 / 1.25);
@@ -86,6 +88,8 @@
      s.border = `0px solid ${butEnter.selectBackgroundColor}`;
      s.margin = "0px";
      s.padding = "0px";
+     
+     MsgBoxobj.ontouchend = windowDiv.onclick = butNum==0 ? ()=>{closeMsg(1)} : null;
 
      if (true || butNum != 0) {
          s.left = (document.documentElement.clientWidth - width) / 2 + "px";
@@ -208,4 +212,5 @@
 
  function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum) {
      msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, butNum==undefined ? cancelTXT ? 2 : 1 : butNum, butNum==0 ? 1 : undefined);
+     if (butNum==0) closeMsg(2000);
  }

@@ -200,11 +200,14 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.searchPoints = [];
     for (let i = 0; i < 225; i++) {
         this.searchPoints[i] = document.createElement("div");
-        this.parentNode.appendChild(this.searchPoints[i]);
-        this.searchPoints[i].style.zIndex = -100;
+        //this.parentNode.appendChild(this.searchPoints[i]);
+        this.searchPoints[i].style.zIndex = 1;
         this.searchPoints[i].style.borderRadius = "50%";
+        this.searchPoints[i].style.borderStyle = "";
+        this.searchPoints[i].style.margin = "";
+        this.searchPoints[i].style.padding = "";
     }
-    
+
     for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
     this.backgroundColor = "#f0f0f0"; //888888
     this.wNumColor = "white"; //do not change (printPDF && getSVG)
@@ -351,6 +354,7 @@ checkerBoard.prototype.addTree = function(tree) {
     this.tree = tree || new this.node();
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
+
     /*
       this.tree.childNode.push({ idx: 1, node: new node() });
       let nd = this.tree.childNode[0].node;
@@ -1059,7 +1063,7 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
 
 
 checkerBoard.prototype.cleSearchPoint = function() {
-    for (let i=this.searchPoints.length-1; i>=0; i--) {
+    for (let i = this.searchPoints.length - 1; i >= 0; i--) {
         this.printSearchPoint(i);
     }
 }
@@ -1199,6 +1203,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         s.zIndex = 0;
         this.startIdx = idx;
         this.drawLine.startPoint.setAttribute("class", "startPoint");
+        
         let x = idx % this.SLTX;
         let y = parseInt(idx / this.SLTX);
         let lw = x;
@@ -1208,6 +1213,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         for (let i = 0; i < 4; i++) {
 
             let lWidth, rWidth;
+            this.parentNode.appendChild(this.drawLine.dashedLine[i]);
             s = this.drawLine.dashedLine[i].style;
             s.borderWidth = this.gW / 20 + "px";
             s.height = this.gW / 20 + "px";
@@ -1244,10 +1250,9 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             }
             s.opacity = 0.5;
             s.zIndex = 0;
-
             //console.log(`left=${s.left}, top=${s.top}, width=${s.width}, height=${s.height}`)
-
         }
+        
         this.selectIdx = findIdx(this.ARROWS, idx);
         let mk = null;
         if (this.selectIdx + 1) {
@@ -1268,6 +1273,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             this.drawLine.selectDiv.onmousedown = function() {
                 //console.log(1);
             }
+            this.parentNode.appendChild(this.drawLine.selectDiv);
             s = this.drawLine.selectDiv.style;
             s.borderWidth = this.gW / 8 + "px";
             s.borderColor = mk.color;
@@ -1280,6 +1286,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             s.zIndex = 0;
             this.drawLine.selectDiv.setAttribute("class", "selectLine");
         }
+        this.parentNode.appendChild(this.drawLine.startPoint);
 
     }
     else {
@@ -1322,8 +1329,11 @@ checkerBoard.prototype.drawLineEnd = function() {
 
     this.drawLine.startPoint.style.zIndex = -100;
     this.drawLine.selectDiv.style.zIndex = -100;
+    if (this.drawLine.startPoint.parentNode) this.drawLine.startPoint.parentNode.removeChild(this.drawLine.startPoint);
+    if (this.drawLine.selectDiv.parentNode) this.drawLine.selectDiv.parentNode.removeChild(this.drawLine.selectDiv);
     for (let i = 0; i < 4; i++) {
         this.drawLine.dashedLine[i].style.zIndex = -100;
+        if (this.drawLine.dashedLine[i].parentNode) this.drawLine.dashedLine[i].parentNode.removeChild(this.drawLine.dashedLine[i]);
     }
     this.startIdx = -1;
     this.selectIdx = -1;
@@ -3074,27 +3084,32 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         //this.clePointB(this.searchIdx[num]);
         //this.refreshMarkLine(this.searchIdx[num]);
         //this.refreshMarkArrow(this.searchIdx[num]);
-        this.searchPoints[num].innerHTML = "";
-        this.searchPoints[num].style.zIndex = -100;
+        //this.searchPoints[num].innerHTML = "";
         this.searchPoints[num].setAttribute("class", "");
-        this.searchIdx[num] = -1;
+        if(this.searchPoints[num] && this.searchPoints[num].parentNode) this.searchPoints[num].parentNode.removeChild(this.searchPoints[num])
     }
     //写入新标记
     if (idx > -1) {
         this.searchIdx[num] = idx;
-        temp = (this.gW < this.gH) ? this.gW : this.gH;
-        size = parseInt(temp / 4 * 2);
-        this.searchPoints[num].innerHTML = "◎";
+        temp = 1.3*((this.gW < this.gH) ? this.gW : this.gH);
+        size = parseInt(temp / 9);
+        this.searchPoints[num].innerHTML = "";
         this.searchPoints[num].style.fontSize = size + "px";
         this.searchPoints[num].style.color = color;
         this.searchPoints[num].style.position = "absolute";
-        this.searchPoints[num].style.backgroundColor = "";
-        this.searchPoints[num].style.width = size + "px";
-        this.searchPoints[num].style.height = size + "px";
-        this.searchPoints[num].style.lineHeight = size + "px";
-        this.searchPoints[num].style.left = this.P[idx].x - parseInt(size / 2) + "px";
-        this.searchPoints[num].style.top = this.P[idx].y - parseInt(size / 2) + "px";
-        this.searchPoints[num].style.zIndex = 1;
+        this.searchPoints[num].style.backgroundColor = this.backgroundColor;
+        this.searchPoints[num].style.width = temp/9 + "px";
+        this.searchPoints[num].style.height = temp/9 + "px";
+        this.searchPoints[num].style.lineHeight = temp/9 + "px";
+        this.searchPoints[num].style.textAlign = "center";
+        this.searchPoints[num].style.padding = "";
+        this.searchPoints[num].style.margin = "";
+        this.searchPoints[num].style.borderStyle = "solid";
+        this.searchPoints[num].style.borderWidth = temp/9 + "px";
+        this.searchPoints[num].style.borderColor = "green";
+        this.searchPoints[num].style.left = this.P[idx].x - parseInt(temp / 6) + this.canvas.offsetLeft + "px";
+        this.searchPoints[num].style.top = this.P[idx].y - parseInt(temp / 6) + this.canvas.offsetTop + "px";
+        this.parentNode.appendChild(this.searchPoints[num]);
         this.searchPoints[num].setAttribute("class", "startPoint");
         this.cleLb(idx);
         //this.P[idx].color = color;
@@ -3396,7 +3411,7 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
 
 
     if (typeof jsPDF != "function") {
-        msg("❌❌❌ 缺少 jsPDF 插件");
+        msgbox("❌❌❌ 缺少 jsPDF 插件", undefined, undefined, undefined, undefined, 0);
         return;
     }
 
@@ -4018,7 +4033,7 @@ checkerBoard.prototype.showNum = function() {
 checkerBoard.prototype.toEnd = function(isShowNum) {
 
     if (this.threePoints.arr) {
-        
+
     }
     else if (this.MSindex < this.MS.length - 1) {
         while (this.MSindex < this.MS.length - 1) {
@@ -4184,12 +4199,14 @@ checkerBoard.prototype.unpackTree = function() {
             this.timerUnpackTree = null;
         }
         */
-        this.unpacking = true;
+
         let MS = this.MS;
         let MSindex = this.MSindex;
         let moveNodes = this.tree.moveNodes;
         let moveNodesIndex = this.tree.moveNodesIndex;
-        //this.timerUnpackTree = setTimeout(function() {
+        //this.timerUnpackTree 
+        
+        this.unpacking = true;
         this.cleLb("all");
         let arr = this.getPointArray(getArr([]));
         let newarr = getArr([]);
@@ -4202,7 +4219,7 @@ checkerBoard.prototype.unpackTree = function() {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
             printChildNode.call(this, nd, txt);
         }
-        else if (MSindex > moveNodesIndex) {
+        else if (MSindex - 1 == moveNodesIndex) {
             //let i = 0; //unpackTree
             //for (i = 0; i <= MSindex; i++) {
             nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
@@ -4267,6 +4284,11 @@ checkerBoard.prototype.unpackTree = function() {
             moveNodes.length = this.MS.length;
             nd = MSindex == -1 ? this.tree : moveNodes[MSindex];
             printChildNode.call(this, nd, txt);
+        }
+        else if (MSindex - 2 >= moveNodesIndex) {
+            for (let i = MSindex - moveNodesIndex; i >= 1; i--) {
+                moveNodes.push(new Node());
+            }
         }
         this.tree.moveNodesIndex = MSindex;
         this.unpacking = false;

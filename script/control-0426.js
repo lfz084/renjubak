@@ -742,12 +742,12 @@ let control = (() => {
                     }
                     else {
                         let str = ` ${color==1?"黑棋":"白棋"} 只找到 ${cObjVCF.winMoves.length} 套 VCF 记录`;
-                        msg(str);
+                        msgbox(str, undefined, undefined, undefined, undefined, 0);
                     }
                 }
                 else {
                     let str = `请先 找全 ${color==1?"黑棋":"白棋"} VCF`;
-                    msg(str);
+                    msgbox(str, undefined, undefined, undefined, undefined, 0);
                 }
                 but.input.value = 0;
             }
@@ -1025,6 +1025,7 @@ let control = (() => {
         cLoadImg.setText("输入图片");
         cLoadImg.setonchange(function() {
             if (busy()) return;
+            cBd.drawLineEnd();
             let reader = new FileReader();
             let file = cLoadImg.input.files[0];
             cLoadImg.input.value = "";
@@ -1211,8 +1212,7 @@ let control = (() => {
             let continueData = appData.loadContinueData(cBd);
 
             if (continueData) {
-                msg("上次意外退出,继续计算...", null, null, null, null, null, null, null, null, null, 0);
-                closeMsg(3000);
+                msgbox("上次意外退出,继续计算...", undefined, undefined, undefined, undefined, 0);
                 engine.postMsg(continueData.cmd, [continueData]);
             }
 
@@ -1368,7 +1368,7 @@ let control = (() => {
                 putBoard();
             }
             else {
-                msg("小棋盘,长按屏幕(鼠标右键点击)定位H8");
+                msgbox("小棋盘,长按屏幕(鼠标右键点击)定位H8", undefined, undefined, undefined, undefined, 0);
             }
         });
 
@@ -1659,7 +1659,6 @@ let control = (() => {
                 }
 
             }
-
         }
         else if (playModel == lineModel) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "line");
@@ -1667,7 +1666,6 @@ let control = (() => {
         else if (playModel == arrowModel) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "arrow");
         }
-
 
     }
 

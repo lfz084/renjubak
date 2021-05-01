@@ -277,8 +277,8 @@ onmessage = function(e) {
         "isBlockVCFPath": function() {
             //mConsole(`__>> ${p[0]}`)
             let paths = isBlockVCFPath(p[0], p[1], p[2]);
-            post("end",[paths]);
-    
+            post("end", [paths]);
+
         },
         "selectPoint": function() {
             let newarr = selectPoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
@@ -1216,11 +1216,11 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
     let rt;
     depth = arr.depth ? data.depth : depth == null ? 225 : depth;
     count = arr.depth ? data.count : count == null ? 225 : count * 1;
-    if (count == 1 && depth > 4) {
-        rt = findVCFB(arr, color, 1, 2, timeOut, backStage);
-        if (rt) return rt;
-        rt = findVCFB(arr, color, 1, 4, timeOut, backStage);
-        if (rt) return rt;
+    if (count == 1 && depth > 4) {  // depth＞4 排除四手五连算法
+        for (let i = 1; i < 4; i++) {
+            rt = findVCFB(arr, color, 1, i, timeOut, backStage);
+            if (rt) return rt;
+        }
         rt = findVCFB(arr, color, 1, depth, timeOut, backStage);
     }
     /*
@@ -1808,8 +1808,8 @@ function findMoves(FailMoves, moves) {
     for (i = len - 1; i >= 0; i--) {
 
         // 判断另一个颜色,
-        for (k = moves.length - 1; k >= 0; k -= 2) {
-            for (j = FailMoves[l][sum][i].length - 1; j >= 0; j -= 2) {
+        for (k = moves.length - 2; k >= 0; k -= 2) {
+            for (j = FailMoves[l][sum][i].length - 2; j >= 0; j -= 2) {
                 if (FailMoves[l][sum][i][j] == moves[k] * 1) {
                     break; //找到相同数据
                 }
@@ -1819,8 +1819,8 @@ function findMoves(FailMoves, moves) {
 
         if (k < 0) {
             /*
-            for (k = moves.length - 2; k >= 0; k -= 2) {
-                for (j = FailMoves[l][sum][i].length - 2; j >= 0; j -= 2) {
+            for (k = moves.length - 1; k >= 0; k -= 2) {
+                for (j = FailMoves[l][sum][i].length - 1; j >= 0; j -= 2) {
                     if (FailMoves[l][sum][i][j] == moves[k] * 1) {
                         break; //找到相同数据
                     }
@@ -1828,7 +1828,7 @@ function findMoves(FailMoves, moves) {
                 if (j < 0) break; // 没有找到相同数据;
             }
             */
-            if (k<0) break; // 找到相同数据;
+            if (k < 0) break; // 找到相同数据;
         }
         //if (k < 0)  { rt = k<0 ? 1 :0.1; break; } // 找到相同数据;
     }
@@ -3252,6 +3252,7 @@ function blockCatchFoul(arr) {
     let FOULP = [];
     let notBlock = true; // 假设没有防点
     let node = new Node();
+        node.firstColor = "black";
     for (let y = 0; y < 15; y++) { // 找出所有冲四抓
         for (let x = 0; x < 15; x++) {
             let p = isCatchFoul(x, y, arr);
@@ -3317,19 +3318,19 @@ function blockCatchFoul(arr) {
             }
             notBlock = false;
             post("wLb", [bPoint[i], s, color]);
-            node.childNode.push(new Node(bPoint[i],node));
-            node.childNode[node.childNode.length-1].txt = s;
+            node.childNode.push(new Node(bPoint[i], node));
+            node.childNode[node.childNode.length - 1].txt = s;
         }
     }
     else {
         bPoint = []; // 没有防点，bPoint 从false改为空数组
     }
 
-    
+
     let fMoves = []; //  保存先手连续冲四分支
     //continueFour(arr, 1, 4, fMoves, getArr([]));
     fMoves = getContinueBlockVCF(arr, 2, fPoint);
-    if (fMoves.length) post("showLabel",[`开始计算 先手防 ......${fMoves.length}`,2000]);
+    if (fMoves.length) post("showLabel", [`开始计算 先手防 ......${fMoves.length}`, 2000]);
     /*
     if (fMoves.length) {
         // fMoves 排序
@@ -3382,7 +3383,7 @@ function blockCatchFoul(arr) {
             for (j = bPoint.length - 1; j >= 0; j--) {
                 if (bPoint[j] == blk[i]) break; // 没有先手增加的防点
             }
-            let nBlk = (j <0);
+            let nBlk = (j < 0);
             // 白棋占禁点
             for (let n = FOULP.length - 1; n >= 0; n--) {
                 if (fMoves[k][fMoves[k].length - 1] == FOULP[n]) {
@@ -3405,11 +3406,11 @@ function blockCatchFoul(arr) {
                     nd = movesToNode(fMoves[k], node);
                     if (nBlk) {
                         nd.childNode.push(new Node(blk[i], nd));
-                        nd = nd.childNode[nd.childNode.length-1];
+                        nd = nd.childNode[nd.childNode.length - 1];
                     }
                     nd.txt = "○";
                     let pNode = nd.parentNode;
-                    while (pNode && pNode!=node) {
+                    while (pNode && pNode != node) {
                         if (pNode.txt) break;
                         pNode.txt = "○";
                         pNode = pNode.parentNode;
@@ -3426,7 +3427,7 @@ function blockCatchFoul(arr) {
             y = parseInt(fMoves[k][i] / 15);
             arr[y][x] = 0;
         }
-         
+
         /*
         if (idx > -1) { // 有新增加的防点
             for (let i = k - 1; i >= 0; i--) { // 排除 idx 冲四的分支
@@ -4273,7 +4274,7 @@ let test;
 // 找VCF 级别双杀点
 function isTwoVCF(idx, color, arr) {
 
-    //test = idx == 71;
+    //test = idx == 130;
     let pNum = 0; //双杀点计数
     let timeout = 30000;
     let depth = 1000;
@@ -4282,7 +4283,7 @@ function isTwoVCF(idx, color, arr) {
     let oldVCFMoves = new vcfList([]);
     let keyMapList = [];
     let isAddTree;
-
+    if (isThree(x, y, color, arr, true)) return;
     // 处理直接防
     arr[y][x] = color;
     // 对手准备落子，判断对手是否有攻。
@@ -4292,7 +4293,7 @@ function isTwoVCF(idx, color, arr) {
     let node = new Node();
     let cNode = node.childNode;
     cNode[0] = new Node(idx, node);
-    if (fNum >= 2 || (fNum == 1 && vcfWinMoves[0].length == 1)) { // 有两套V，判断双杀是否成立
+    if (fNum) { // 有两套V，判断双杀是否成立
         isAddTree = true;
         let notWin = false; //后续计算，如果双杀不成立==true
         let winMoves = [];
@@ -4397,7 +4398,7 @@ function isTwoVCF(idx, color, arr) {
     }
     arr[y][x] = 0;
     //console.log(pNum + "--"+idx);
-    if (isAddTree || pNum) {
+    if (isAddTree) {
         if (!pNum) node.childNode[0].txt = "○";
         post("wLb", [idx, node.childNode[0].txt || "W", "black"]);
         node.firstColor = color == 1 ? "black" : "white";
@@ -4496,8 +4497,8 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
     let tempMoves = [];
     let FailMoves = [];
     for (let i = 0; i < 225; i++) { FailMoves[i] = []; }
-
     for (j = fMoves.length - 1; j >= 0; j--) {
+        //if (test) mConsole(`__>>${fMoves[j]}\nkey=${cbps.movesKey[j]}`)
         let Moves = [];
         pushFailMoves(FailMoves, cbps.movesKey[j]);
         pushWinMoves(Moves, fMoves[j]);
@@ -4505,6 +4506,7 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
         cbps.movesKey.length--;
         for (let k = j - 1; k >= 0; k--) {
             if (findMoves(FailMoves, cbps.movesKey[k])) {
+                //if (test) mConsole(`_`)
                 pushWinMoves(Moves, fMoves[k]);
                 fMoves.splice(k, 1);
                 cbps.movesKey.splice(k, 1);
@@ -4555,6 +4557,7 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
                 let ty = parseInt(moves[i - 1] / 15);
                 arr[ty][tx] = color;
                 if (color == 1) {
+                    //mConsole(`1__${tx},${ty}_>>${moves}`)
                     setBlockThree(tx, ty, arr, 0, newarr, narr, color);
                 }
                 arr[y][x] = nColor;
@@ -4594,6 +4597,7 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
             //arr[y][x] = color;
             if (color == 1) {
                 arr[y][x] = color;
+                //mConsole(`2__${x},${y}_>>${moves}`)
                 setBlockThree(x, y, arr, 0, newarr, narr, color);
                 arr[y][x] = 0;
             }
@@ -4604,7 +4608,8 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
                 let tx = idx % 15;
                 let ty = parseInt(idx / 15);
                 //mConsole(`catchfoul__idx=${idx}`)
-                setBlockThree(tx, ty, arr, 0, newarr, narr, color);
+                //mConsole(`3__${tx},${ty}_>>${moves}`)
+                setBlockThree(x, y, arr, 0, newarr, narr, color);
                 arr[y][x] = 0;
 
             }
@@ -4687,13 +4692,13 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
                             }
                             if (k == 4) {
                                 p = getArrPoint(x, y, j + k, Cmodel[i], arr);
-                                points.push({ p: p, model: Cmodel[i], len: 0 });
+                                if (p.x!=-1) points.push({ p: p, model: Cmodel[i], len: 0 });
                                 p = getArrPoint(x, y, j, Cmodel[i], arr);
-                                points.push({ p: p, model: Cmodel[i], len: 3 });
+                                if (p.x!=-1) points.push({ p: p, model: Cmodel[i], len: 3 });
                             }
                             else {
                                 p = getArrPoint(x, y, j + k, Cmodel[i], arr);
-                                points.push({ p: p, model: Cmodel[i], len: 4 });
+                                if (p.x!=-1) points.push({ p: p, model: Cmodel[i], len: 4 });
                             }
                             count++;
                             break;
@@ -4721,6 +4726,7 @@ function getContinueBlockVCF(arr, color, winMoves, idx) {
                 if ((arrColor == 1 && depth % 2) || (arrColor == 2 && (depth + 1) % 2)) {
                     if (points[i].len == 3) setBlockFreeThree(points[i].p.x, points[i].p.y, 1, 3, points[i].model, color, nColorArr, colorArr, arrColor);
                 }
+                //mConsole(`4__${points[i].p.x},${points[i].p.y}_>>${1}`)
                 setBlockThree(points[i].p.x, points[i].p.y, arr, depth + 1, nColorArr, colorArr, arrColor);
                 /*
                 arr[points[i].p.y][points[i].p.x] = "*";
@@ -5109,7 +5115,7 @@ function getBlockVCFPaths(VCF, color, arr, backStage, passFour, idx) {
     let bPoint = getBlockVCF(VCF, color, arr, backStage, true, idx);
     bPoint = bPoint || [];
     for (let i = bPoint.length - 1; i >= 0; i--) {
-        paths.push([bPoint[i]*1]);
+        paths.push([bPoint[i] * 1]);
     }
     //mConsole(paths.length)
     let continueFourPath = getContinueBlockVCF(arr, color, [VCF[0]]);
