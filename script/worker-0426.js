@@ -289,7 +289,7 @@ onmessage = function(e) {
             findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
             post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
             if (vcfWinMoves.length) {
-                sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial);
+                sPoint = getBlockVCF(vcfWinMoves, p[1], p[0]);
             }
             post("getBlockVCF_End", [sPoint]);
         },
@@ -298,7 +298,7 @@ onmessage = function(e) {
             findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
             post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
             if (vcfWinMoves.length) {
-                sPoint = getBlockVCF(vcfWinMoves, vcfColor, vcfInitial);
+                sPoint = getBlockVCF(vcfWinMoves, p[1], p[0]);
             }
             post("getBlockVCFb_End", [sPoint]);
         },
@@ -307,7 +307,7 @@ onmessage = function(e) {
             findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
             post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
             if (vcfWinMoves.length) {
-                paths = getBlockVCFPaths(vcfWinMoves, vcfColor, vcfInitial);
+                paths = getBlockVCFPaths(vcfWinMoves, p[1], p[0]);
             }
             //mConsole(paths.length)
             post("getBlockVCFTree_End", [paths]);
@@ -4309,13 +4309,13 @@ function isTwoVCF(idx, color, arr) {
 
         if (bPoint) { //排除直接防
             let nd = cNode[0];
-            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, nd, vcfWinMoves.slice(0)))) {
+            if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, nd, winMoves))) {
                 //排除失败，双杀不成立
                 notWin = true;
             }
         }
 
-        if (!notWin) { // 没有找到直接共防，继续寻找先手防
+        if (!notWin) { // 没有找到直接共防，继续寻找先手防  
             //处理先手防
             //  保存先手连续冲四分支
             let fMoves = getContinueBlockVCF(arr, color, winMoves, idx);
@@ -4841,7 +4841,7 @@ function excludeBP(arr, color, bPoint, timeout, depth, node, fMoves) {
         }
 
     }
-    //vList.getList(fMoves, 2);
+    vList.getList(fMoves);
     return rt;
 }
 
@@ -5111,14 +5111,16 @@ function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
 
 
 function getBlockVCFPaths(VCF, color, arr, backStage, passFour, idx) {
+    let winMoves = [VCF[0]];
     let paths = [];
-    let bPoint = getBlockVCF(VCF, color, arr, backStage, true, idx);
-    bPoint = bPoint || [];
-    for (let i = bPoint.length - 1; i >= 0; i--) {
-        paths.push([bPoint[i] * 1]);
+    let bPoint = getBlockVCF([VCF[0]], color, arr, backStage, true, idx);
+    if (bPoint) {
+        for (let i=bPoint.length-1; i>=0; i--) {
+            paths.push([bPoint[i]]);
+        }
+        excludeBP(arr, color == 1 ? 2 : 1, bPoint, undefined, undefined, undefined, winMoves);
     }
-    //mConsole(paths.length)
-    let continueFourPath = getContinueBlockVCF(arr, color, [VCF[0]]);
+    let continueFourPath = getContinueBlockVCF(arr, color, winMoves);
     //mConsole(continueFourPath.length)
     return paths.concat(continueFourPath);
 
