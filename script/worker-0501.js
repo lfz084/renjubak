@@ -4294,7 +4294,7 @@ function isTwoVCF(idx, color, arr) {
     let cNode = node.childNode;
     cNode[0] = new Node(idx, node);
     if (fNum) { // 有两套V，判断双杀是否成立
-        isAddTree = true;
+        
         let notWin = false; //后续计算，如果双杀不成立==true
         let winMoves = [];
         winMoves.push(vcfWinMoves[0].slice(0));
@@ -4314,7 +4314,7 @@ function isTwoVCF(idx, color, arr) {
                 notWin = true;
             }
         }
-
+        isAddTree = winMoves.length>=2;
         if (!notWin) { // 没有找到直接共防，继续寻找先手防  
             //处理先手防
             //  保存先手连续冲四分支

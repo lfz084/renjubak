@@ -131,7 +131,7 @@ let engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0426.js");
+        let wk = new Worker("./script/worker-0501.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -434,6 +434,7 @@ let engine = (() => {
                             //work.terminate();
                         },
                     });
+                    console.log(work);
                     work.postMessage({ "cmd": "getLevelB", parameter: [arr, color, getArr([])] });
                     let lvl = (cmd == "isLevelThreePoint") ? { level: 2 } : null;
                     let selFour = (cmd != "isLevelThreePoint" && cmd != "isTwoVCF");
@@ -473,6 +474,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (sPoint.length) {
+                                console.log(works[i]);
                                 works[i] = createWork({
                                     "addTree": (p) => {
                                         if (tree) {
