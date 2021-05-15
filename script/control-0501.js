@@ -1073,6 +1073,7 @@ let control = (() => {
             cSLTY.setText(cSLTY.input.value + " 行");
             ctx = null;
             viewport.userScalable();
+            msgbox(`长按棋盘，拖动虚线对齐棋子`,undefined,undefined,undefined,undefined,0);
         }
 
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);

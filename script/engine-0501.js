@@ -690,6 +690,7 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (paths.length) {
+                                console.log(i)
                                 works[i] = createWork({
                                     "printSearchPoint": (p) => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                     /*
@@ -723,6 +724,7 @@ let engine = (() => {
                                             //works[i].terminate();
                                             cBd.printSearchPoint(i);
                                             workCount--;
+                                            console.log(`-${i}`)
                                             if (workCount == 0) {
                                                 /*if (tree.childNode.length) {
                                                     tree.keyMap = treeKeyMap;

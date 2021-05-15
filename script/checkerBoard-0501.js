@@ -4255,7 +4255,8 @@ checkerBoard.prototype.unpackTree = function() {
             }
             else {
                 if (MSindex % 2) {
-                    if (false && lvl.level >= 4 && lvl.p) {
+                    if (lvl.level >= 4 && lvl.p) {
+                        console.log(moveNodes[moveNodes.length - 1])
                         nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
                         printChildNode.call(this, nd, txt);
                         nd.childNode = [];
