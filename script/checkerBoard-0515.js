@@ -350,7 +350,7 @@ checkerBoard.prototype.addTree = function(tree) {
     this.oldResetNum = this.resetNum;
     this.resetNum = 0;
     this.oldCode = code; //要放在循环之后，不要改变顺序
-    console.log(`addTree>>\n__________\n${tree}`);
+    console.log(tree);
     this.tree = tree || new this.node();
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
@@ -4215,6 +4215,7 @@ checkerBoard.prototype.unpackTree = function() {
         let nd;
         let txt = MSindex % 2 ? "W" : "L";
         let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
+        if (this.tree.keyMap.has(getKey(arr))) alert("has")
         if (MSindex == moveNodesIndex) {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
             printChildNode.call(this, nd, txt);

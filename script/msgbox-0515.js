@@ -210,7 +210,7 @@
  }
 
 
- function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum) {
+ function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum, timer) {
      msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, butNum==undefined ? cancelTXT ? 2 : 1 : butNum, butNum==0 ? 1 : undefined);
-     if (butNum==0) closeMsg(2000);
+     if (butNum==0) closeMsg(timer || 2000);
  }

@@ -68,21 +68,23 @@ let engine = (() => {
         threePoints = null;
     };
     let callback = () => { // calculate end
-        if (work && typeof(work.terminate) == "function") {work.terminate();work=null}
-        for (let i = 0; i < works.length; i++) {if(works[i] && works[i].terminate) {works[i].terminate();works[i]=null;}}
+        if (work && typeof(work.terminate) == "function") { work.terminate();
+            work = null }
+        for (let i = 0; i < works.length; i++) { if (works[i] && works[i].terminate) { works[i].terminate();
+                works[i] = null; } }
         cBd.cleSearchPoint();
-        let showLabel;
+        let isShowLabel;
         if (tree) {
             tree.keyMap = treeKeyMap;
             cBd.addTree(tree);
             tree = null;
             treeKeyMap = new Map();
-            showLabel = true;
+            isShowLabel = true;
         }
         if (threePoints) {
             cBd.threePoints = threePoints;
             threePoints = null;
-            showLabel = true;
+            isShowLabel = true;
         }
         cFP.show();
         cFP.setText("找点");
@@ -98,16 +100,16 @@ let engine = (() => {
         closeMsg();
         saveContinueData();
         closeNoSleep();
-        if (showLabel) msgbox("点击标记 展开分支 点击 [<<] 可以退出", undefined, undefined, undefined, undefined, 0);
+        if (isShowLabel) msgbox("点击标记 展开分支 点击 [<<] 可以退出", undefined, undefined, undefined, undefined, 0);
     };
     let printMsg = () => {
         let fclr = cObjVCF.color == 1 ? "黑棋" : "白棋";
         //console.log(cObjVCF.winMoves)
         if (cObjVCF.winMoves.length) {
-            msgbox("✔ " + fclr + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒",undefined,undefined,undefined,undefined,0);
+            msgbox("✔ " + fclr + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒", undefined, undefined, undefined, undefined, 0);
         }
         else {
-            msgbox("❌❌❌ " + fclr + " 查找VCF失败了❌❌❌",undefined, undefined, undefined, undefined, 0);
+            msgbox("❌❌❌ " + fclr + " 查找VCF失败了❌❌❌", undefined, undefined, undefined, undefined, 0);
         }
     };
     let cleLb = (idx) => {
@@ -120,7 +122,8 @@ let engine = (() => {
 
         let defaultCmd = {
             "showLabel": (p) => {
-                msgbox(p[0], undefined, undefined, undefined, undefined, 0);
+                showLabel.show(p[0],p[1]);
+                //msgbox(p[0], undefined, undefined, undefined, undefined, 0, p[1]);
             },
             "vConsole": (p) => { console.log(p) },
             "cleLb": (p) => { cleLb(p[0]); },
@@ -131,7 +134,7 @@ let engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0501.js");
+        let wk = new Worker("./script/worker-0515.js");
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -148,6 +151,18 @@ let engine = (() => {
 
         return wk;
     };
+    
+    function label() {
+        this.isShowLabel = true;
+    }
+    label.prototype.show = function (txt, timer) {
+        if (!this.isShowLabel) return;
+        this.isShowLabel = false;
+        msgbox(txt, undefined, undefined, undefined, undefined, 0, timer);
+        let lb = this;
+        setTimeout(()=>{lb.isShowLabel = true;},300);
+    };
+    let showLabel = new label();
 
     return {
         reset: (param) => {
@@ -265,12 +280,12 @@ let engine = (() => {
                             findFivePoint(param[1], param[0], newarr, param[3]);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            msgbox(`${param[0]==1?"黑棋" : "白棋"} 有五连点`,undefined, undefined, undefined, undefined, 0);
+                            msgbox(`${param[0]==1?"黑棋" : "白棋"} 有五连点`, undefined, undefined, undefined, undefined, 0);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, param[0]);
                             callback();
-                            msgbox(`${param[0]==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param[0]==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param[0]==1?"活四":"活四(44,冲4抓)"}`}`,undefined, undefined, undefined, undefined, 0);
+                            msgbox(`${param[0]==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param[0]==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param[0]==1?"活四":"活四(44,冲4抓)"}`}`, undefined, undefined, undefined, undefined, 0);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
@@ -325,10 +340,10 @@ let engine = (() => {
                             callback();
                             //work.terminate();
                             if (p[0] == -1) {
-                                msgbox("❌❌❌ 没有找到冲四抓禁 ❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌ 没有找到冲四抓禁 ❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                             else if (p[0] == 0) {
-                                msgbox("❌❌❌ 没有成立的解禁点 ❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌ 没有成立的解禁点 ❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                     });
@@ -339,12 +354,12 @@ let engine = (() => {
                             findFivePoint(param[0], 1, newarr);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            msgbox(`${"黑棋"} 有五连点`,undefined,undefined,undefined,undefined,0);
+                            msgbox(`${"黑棋"} 有五连点`, undefined, undefined, undefined, undefined, 0);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, 1);
                             callback();
-                            msgbox(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`,undefined,undefined,undefined,undefined,0);
+                            msgbox(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`, undefined, undefined, undefined, undefined, 0);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
@@ -553,7 +568,7 @@ let engine = (() => {
                             else {
                                 //work.terminate();
                                 callback();
-                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                         "getBlockVCF_End": (p) => {
@@ -566,7 +581,7 @@ let engine = (() => {
                             }
                             else {
                                 callback();
-                                msgbox("❌❌❌没有成立的防点❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌没有成立的防点❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                     });
@@ -586,7 +601,7 @@ let engine = (() => {
                             else {
                                 //work.terminate();
                                 callback();
-                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                         "getBlockVCFb_End": (p) => {
@@ -604,7 +619,7 @@ let engine = (() => {
                             }
                             else {
                                 callback();
-                                msgbox("❌❌❌没有成立的防点❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌没有成立的防点❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                     });
@@ -661,7 +676,7 @@ let engine = (() => {
                             else {
                                 //work.terminate();
                                 callback();
-                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌ " + fclr + " 没有VCF ❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                         "getBlockVCFTree_End": (p) => {
@@ -679,7 +694,7 @@ let engine = (() => {
                             }
                             else {
                                 callback();
-                                msgbox("❌❌❌没有成立的防点❌❌❌",undefined,undefined,undefined,undefined,0);
+                                msgbox("❌❌❌没有成立的防点❌❌❌", undefined, undefined, undefined, undefined, 0);
                             }
                         },
                     });
@@ -687,6 +702,7 @@ let engine = (() => {
                     work.postMessage({ "cmd": cmd, parameter: [param[0], param[1], 1, null, null, null] });
 
                     let excludePath = (cmd) => {
+                        let pathsLength = paths.length;
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (paths.length) {
@@ -702,7 +718,8 @@ let engine = (() => {
                                     "end": (p) => {
                                         if (p[0].length) {
                                             //console.log(`blockPath___>> ${p[0]}`)
-                                            if (!tree) {tree=new Node(); tree.firstColor=param[1] == 2 ? "black" : "white";}
+                                            if (!tree) { tree = new Node();
+                                                tree.firstColor = param[1] == 2 ? "black" : "white"; }
                                             for (let i = p[0].length - 1; i >= 0; i--) {
                                                 let nd = movesToNode(p[0][i], tree);
                                                 nd.txt = "○";
@@ -718,7 +735,7 @@ let engine = (() => {
                                         let path = paths.length ? paths.splice(0, 1)[0] : false;
                                         if (path) {
                                             cBd.printSearchPoint(i, path[0], "⊙", "green");
-                                            works[i].postMessage({ "cmd": cmd, parameter: [path, param[1], param[0], param[3], param[4], param[5], param[6]] });
+                                            works[i].postMessage({ "cmd": cmd, parameter: [path, param[1], param[0], param[3], `${pathsLength-paths.length}/${pathsLength}`, param[5], param[6]] });
                                         }
                                         else {
                                             //works[i].terminate();
@@ -741,7 +758,7 @@ let engine = (() => {
                                 workCount++;
                                 let path = paths.splice(0, 1)[0];
                                 cBd.printSearchPoint(i, path[0], "⊙", "green");
-                                works[i].postMessage({ "cmd": cmd, parameter: [path, param[1], param[0], param[3], param[4], param[5], param[6]] });
+                                works[i].postMessage({ "cmd": cmd, parameter: [path, param[1], param[0], param[3], `${pathsLength-paths.length}/${pathsLength}`, param[5], param[6]] });
                             }
                         }
 

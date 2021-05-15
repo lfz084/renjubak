@@ -276,7 +276,7 @@ onmessage = function(e) {
         },
         "isBlockVCFPath": function() {
             //mConsole(`__>> ${p[0]}`)
-            let paths = isBlockVCFPath(p[0], p[1], p[2]);
+            let paths = isBlockVCFPath(p[0], p[1], p[2], p[3], p[4]);
             post("end", [paths]);
 
         },
@@ -4272,7 +4272,7 @@ let test;
 // 找VCF 级别双杀点
 function isTwoVCF(idx, color, arr) {
 
-    test = idx == 106;
+    //test = idx == 106;
     let pNum = 0; //双杀点计数
     let timeout = 30000;
     let depth = 1000;
@@ -4323,6 +4323,7 @@ function isTwoVCF(idx, color, arr) {
             let j;
             for (j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
+                post("showLabel",[`${fMoves.length-j}/${fMoves.length} [${indexToName(idx)},${moveIndexToName(fMoves[j],20)}]`, 500000]);
                 /*
                 if (test) {
                     mConsole(`start_____${j}`)
@@ -4371,7 +4372,7 @@ function isTwoVCF(idx, color, arr) {
         node.firstColor = color == 1 ? "black" : "white";
         post("addTree", [node]);
         
-        if (pNum) {
+        if (true || pNum) {
             for (let i = keyMapList.length - 1; i >= 0; i--) {
                 post("addTreeKeyMap", [keyMapList[i].key, keyMapList[i].node]);
             }
@@ -5018,11 +5019,12 @@ function isBlockVCF(idx, color, arr, backStage) {
 
 
 
-function isBlockVCFPath(path, color, arr, backStage) {
+function isBlockVCFPath(path, color, arr, backStage, speed) {
     let isB;
     let paths = [];
     let len = path.length;
     let nColor = color == 1 ? 2 : 1;
+    post("showLabel",[`${speed} [${moveIndexToName(path,20)}]`, 500000]);
     if (len == 1) {
         if (isBlockVCF(path[0], color, arr, true)) {
             paths.push(path.slice(0));
@@ -5055,7 +5057,10 @@ function isBlockVCFPath(path, color, arr, backStage) {
             arr[y][x] = 0;
         }
     }
-    if (paths.length && !backStage) post("wLb", [paths[0][0], "○", "black"]);
+    if (paths.length && !backStage) {
+        post("wLb", [paths[0][0], "○", "black"]);
+        post("showLabel",[`找到分支  [${moveIndexToName(path,20)}]`, 500000]);
+    }
     return paths;
 }
 
@@ -5880,3 +5885,28 @@ function changeY(y, move, model) {
     }
 
 }
+
+
+
+// index ，转字母数字坐标
+function indexToName(idx) {
+    
+    let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let x = (idx % 15);
+    let y = parseInt(idx / 15);
+    return (alpha.charAt(x) + (15 - y));
+}
+
+
+
+function moveIndexToName(moves, maxLength) {
+    let name = "";
+    for (let i = 0; i < moves.length; i++) {
+        name += `${i?",":""}${indexToName(moves[i])}`;
+        if (name.length >= maxLength) {
+            name += "......";
+            break;
+        }
+    }
+    return name;
+};
