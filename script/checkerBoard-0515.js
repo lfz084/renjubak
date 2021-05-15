@@ -4215,7 +4215,7 @@ checkerBoard.prototype.unpackTree = function() {
         let nd;
         let txt = MSindex % 2 ? "W" : "L";
         let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
-        if (this.tree.keyMap.has(getKey(arr))) alert("has")
+        //if (this.tree.keyMap.has(getKey(arr))) alert("has")
         if (MSindex == moveNodesIndex) {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
             printChildNode.call(this, nd, txt);
