@@ -372,6 +372,9 @@ hr {
     }
 }
 
+.msgbox {
+    opacity: 0.75;
+}
 
 .show {
     -webkit-animation: show 150ms ease-in;

@@ -160,7 +160,7 @@ let engine = (() => {
         this.isShowLabel = false;
         msgbox(txt, undefined, undefined, undefined, undefined, 0, timer);
         let lb = this;
-        setTimeout(()=>{lb.isShowLabel = true;},300);
+        setTimeout(()=>{lb.isShowLabel = true;},1500);
     };
     let showLabel = new label();
 
@@ -706,7 +706,6 @@ let engine = (() => {
                         let workCount = 0;
                         for (let i = 0; i < maxThread; i++) {
                             if (paths.length) {
-                                console.log(i)
                                 works[i] = createWork({
                                     "printSearchPoint": (p) => { cBd.printSearchPoint(i, p[0], p[1], p[2]); },
                                     /*

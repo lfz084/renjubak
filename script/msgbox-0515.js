@@ -181,7 +181,7 @@
          MsgBoxobj.setAttribute("class", "show");
      }
      else {
-         MsgBoxobj.setAttribute("class", "");
+         MsgBoxobj.setAttribute("class", "msgbox");
      }
      setTimeout(() => { document.body.appendChild(MsgBoxobj) }, 1);
 

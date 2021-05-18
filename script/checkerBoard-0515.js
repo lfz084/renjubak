@@ -230,7 +230,7 @@ function checkerBoard(parentNode, left, top, width, height) {
         this.idx = value == undefined ? -1 : value;
         this.childNode = [];
     };
-    this.oldFirstColor = tBlack;
+    this.oldFirstColor = "black";
     this.oldResetNum = 0;
     this.oldCode = "";
     this.tree = new this.node();
@@ -4257,8 +4257,11 @@ checkerBoard.prototype.unpackTree = function() {
             else {
                 if (MSindex % 2) {
                     if (lvl.level >= 4 && lvl.p) {
-                        console.log(moveNodes[moveNodes.length - 1])
+                        //console.log(moveNodes[moveNodes.length - 1])
                         nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
+                        let cNd = getChildNode(moveNodes[moveNodes.length - 1],this.MS[this.MSindex]);
+                        txt = cNd ? cNd.txt : "?";
+                        nd.childNode[0].txt = txt;
                         printChildNode.call(this, nd, txt);
                         nd.childNode = [];
                     }
@@ -4307,6 +4310,23 @@ checkerBoard.prototype.unpackTree = function() {
                 this.printArray(newarr, txt, "black");
             }
             */
+        }
+        
+        function getTxT(node, idx) {
+            let txt;
+            for (let i=node.childNode.length-1; i>=0; i--) {
+                if (node.childNode[i].idx==idx) {
+                    txt = node.childNode[i].txt;
+                    break;
+                }
+            }
+            return txt;
+        }
+        
+        function getChildNode(node, idx) {
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                if (node.childNode[i].idx == idx) return node.childNode[i];
+            }
         }
         //}, 100);
     }

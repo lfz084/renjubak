@@ -404,6 +404,7 @@ let control = (() => {
             if (busy()) return;
             cBd.cle();
             cBd.resetNum = 0;
+            cBd.firstColor = "black";
             engine.postMsg("cancelFind");
         });
 
