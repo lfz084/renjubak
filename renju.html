@@ -90,12 +90,12 @@
         
         
         window.alert = function (name) {
-        const iframe = document.createElement('IFRAME');
-        iframe.style.display = 'none';
-        iframe.setAttribute('src', 'data:text/plain,');
-        document.documentElement.appendChild(iframe);
+        const IFRAME = document.createElement('IFRAME');
+        IFRAME.style.display = 'none';
+        IFRAME.setAttribute('src', 'data:text/plain,');
+        document.documentElement.appendChild(IFRAME);
         window.frames[0].window.alert(name);
-        iframe.parentNode.removeChild(iframe);
+        IFRAME.parentNode.removeChild(IFRAME);
         };
 
         //用来保存跟踪正在发送的触摸事件
@@ -533,7 +533,7 @@
                 let idx = cBoard.getPIndex(x, y);
                 if (idx < 0) return;
                 let color = control.cAddwhite2Checked() ? "white" : "black";
-                if (cBoard.P[idx].type != tEmpty) {
+                if (cBoard.P[idx].type != TYPE_EMPTY) {
                     cBoard.P[idx].cle();
                 }
                 else {

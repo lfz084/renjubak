@@ -19,14 +19,14 @@
     <script src="./script/msgbox-0515.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
     <script>
-        const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
-        const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
+        const TYPE_MARK = 1; // 用于point.type,表示当前点上面存在一个标签
+        const TYPE_NUMBER = 2; // 用于point.type,表示当前点上面存在一个数字
         //定义棋盘上的一个点
         function point(x, y, d) {
             this.x = x; // 棋盘一个点的坐标，相对于BODY
             this.y = y;
             this.d = d; // 对div标签的引用，null为空;
-            this.type = 0; // 这个点存放的数字，棋子=tNum,bi标记=tLb
+            this.type = 0; // 这个点存放的数字，棋子=TYPE_NUMBER,bi标记=TYPE_MARK
             this.text = "";
             this.color = null;
             this.setxy = function(x, y) {
@@ -65,7 +65,7 @@
                 let temp;
 
                 this.color = color;
-                this.type = tNum;
+                this.type = TYPE_NUMBER;
                 this.text = String(n);
                 this.d.innerHTML = this.text;
                 temp = (gW < gH) ? gW : gH;
@@ -95,7 +95,7 @@
                 //alert("printLb")
                 let size;
                 let temp;
-                this.type = tLb;
+                this.type = TYPE_MARK;
                 this.text = s;
                 this.color = color;
 
@@ -131,12 +131,12 @@
         }
         
         window.confirm = function (name) {
-        const iframe = document.createElement('IFRAME');
-        iframe.style.display = 'none';
-        iframe.setAttribute('src', 'data:text/plain,');
-        document.documentElement.appendChild(iframe);
+        const IFRAME = document.createElement('IFRAME');
+        IFRAME.style.display = 'none';
+        IFRAME.setAttribute('src', 'data:text/plain,');
+        document.documentElement.appendChild(IFRAME);
         let rt = window.frames[0].window.confirm(name);
-        iframe.parentNode.removeChild(iframe);
+        IFRAME.parentNode.removeChild(IFRAME);
         return rt;
         };
 
@@ -144,7 +144,7 @@
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        const maxHistory = 5;
+        const MAX_HISTORY = 5;
         let tempHistoryIndex;
         let timerMoveHistory = null;
         let timerSetCheckerBoard = null;
@@ -172,13 +172,13 @@
             let index = parseInt(tempHistoryIndex);
             //alert("getHistoryIndex index=" +index + "  x=" + x)
             if (x < 0) {
-                index = (index - 1) < 1 ? maxHistory : index -= 1;
+                index = (index - 1) < 1 ? MAX_HISTORY : index -= 1;
                 //alert("<0");
             }
             else if (x > 0) {
-                index = (index + 1) > maxHistory ? 1 : index += 1;
+                index = (index + 1) > MAX_HISTORY ? 1 : index += 1;
                 //alert(">0");
-                //alert((index + 1)>maxHistory);
+                //alert((index + 1)>MAX_HISTORY);
             }
             //alert("getHistoryIndex index=" +index + "  x=" + x)
             return index;
@@ -200,9 +200,9 @@
         function saveMaxHistory() {
 
             let max = localStorage.getItem("MaxHistory");
-            if (max != maxHistory) {
+            if (max != MAX_HISTORY) {
                 localStorage.clear();
-                localStorage.setItem("MaxHistory", maxHistory);
+                localStorage.setItem("MaxHistory", MAX_HISTORY);
             }
         }
 
@@ -252,7 +252,7 @@
             let str;
             let rNCid;
             let oldIndex = tempHistoryIndex;
-            for (i = 0; i < maxHistory; i++) {
+            for (i = 0; i < MAX_HISTORY; i++) {
 
                 delHistory(tempHistoryIndex);
                 tempHistoryIndex = getHistoryIndex(1);
@@ -377,7 +377,7 @@
         function saveImg(img, imgCanvas, index) {
             //存储
             //当图片加载完成时触发回调函数 
-            const maxFileleng = 200 * 1024; // 控制图片大小;
+            const MAX_FILELEN = 200 * 1024; // 控制图片大小;
             let imgContest = imgCanvas.getContext('2d');
             let imgContest2 = canvas2.getContext('2d');
             let width = parseInt(img.width);
@@ -394,8 +394,8 @@
             let imgAsDataURL = imgCanvas.toDataURL("image/jpeg", 0.3);
             let Fileleng = imgAsDataURL.length;
             //alert("压缩前 =" + imgAsDataURL.length/1024/1024 + " - " + img.width + "×" + img.height) ;
-            if (Fileleng > maxFileleng) { // 图片太大时候 启用压缩启用压缩
-                s = Math.sqrt(Fileleng / maxFileleng);
+            if (Fileleng > MAX_FILELEN) { // 图片太大时候 启用压缩启用压缩
+                s = Math.sqrt(Fileleng / MAX_FILELEN);
             }
 
             width = parseInt(width / s);
@@ -1241,7 +1241,7 @@
         function cleLb(p) //清空一个 div
         {
             //alert("cleLb sta")
-            if (p.type == tNum) return;
+            if (p.type == TYPE_NUMBER) return;
             p.cle();
         }
 
@@ -1476,7 +1476,7 @@
                 {
                     if (rL0.checked)
                     {
-                        if (p.type == tNum)
+                        if (p.type == TYPE_NUMBER)
                         {
                             if (parseInt(p.text) == backNum)
                             {
@@ -2210,7 +2210,7 @@
                 }
                 ctx.font = "bolder " + parseInt(w * 1.08 / 1.8 * 2) + "px mHeiTi";
                 for (let i = 0; i < P.length; i++) {
-                    if (P[i].type == tLb) {
+                    if (P[i].type == TYPE_MARK) {
                         p.x = P[i].x + lw;
                         p.y = P[i].y + tw;
                         xyPageToObj(p, bkimg);
@@ -2267,7 +2267,7 @@
         function shareClose() {
 
             shareWindow.setAttribute("class", "hide");
-            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},AnimationTimeout);
+            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},ANIMATION_TIMEOUT);
             timerShareClose = setTimeout("sharing = false", 1000);
 
         }

@@ -196,7 +196,7 @@ let engine = (() => {
                     let newarr = getArr([]);
                     addThreePoint(oldThreePoints);
                     findThreePoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "③", param[3] == onlyFree ? "red" : "black");
+                    cBd.printArray(newarr, "③", param[3] == ONLY_FREE ? "red" : "black");
                     callback();
                 },
                 "findTTPoint": () => {
@@ -238,7 +238,7 @@ let engine = (() => {
                     addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFourPoint(param[0], param[1], newarr, param[3]);
-                    cBd.printArray(newarr, "④", param[3] == onlyFree ? "red" : "black");
+                    cBd.printArray(newarr, "④", param[3] == ONLY_FREE ? "red" : "black");
                     callback();
                 },
                 "vctSelectPoint": () => {
@@ -416,9 +416,9 @@ let engine = (() => {
                             else if (level2 == undefined) {
                                 level2 = p[0];
                                 if (level1.level >= 3) {
-                                    let str = `${color == 1 ? "黑棋" : "白棋"} ${`${level1.level>=4 ? "进攻级别 >= 冲4" : param[3]==onlySimpleWin?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
+                                    let str = `${color == 1 ? "黑棋" : "白棋"} ${`${level1.level>=4 ? "进攻级别 >= 冲4" : param[3]==ONLY_SIMPLE_WIN?"进攻级别 >= 43杀":"进攻级别 >= 活3" },\n继续计算可能会得到错误的结果`}`;
                                     if (cmd == "isLevelThreePoint") {
-                                        if (param[3] == onlySimpleWin && (level2.level < 3)) {
+                                        if (param[3] == ONLY_SIMPLE_WIN && (level2.level < 3)) {
                                             postMsg();
                                         }
                                         else {
@@ -469,7 +469,7 @@ let engine = (() => {
 
                     //selectPoint(arr, color, newarr, null, null, true, { level: 2 });
                     let continuefun = () => {
-                        if (cmd == "isTwoVCF") findThreePoint(arr, color, newarr, onlyFree, -9999); //排除活三
+                        if (cmd == "isTwoVCF") findThreePoint(arr, color, newarr, ONLY_FREE, -9999); //排除活三
                         let sPoint = [];
                         let pnt = aroundPoint[112];
                         for (let i = 0; i < 225; i++) {

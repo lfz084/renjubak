@@ -1,7 +1,7 @@
 "use strict";
 let appData = (() => {
-    const tBlack = 3; // 无序号 添加的黑棋
-    const tWhite = 4; // 无序号 添加的黑棋
+    const TYPE_BLACK = 3; // 无序号 添加的黑棋
+    const TYPE_WHITE = 4; // 无序号 添加的黑棋
     let initialCBoard = { resetNum: 0, moves: [], whiteMoves: [], blackMoves: [] }; //开始计算时棋盘状态
     let timerSave = null; // 保存,定时器
 
@@ -47,8 +47,8 @@ let appData = (() => {
         }
         else {
             moves = cBd.getMoves();
-            whiteMoves = cBd.getMoves(tWhite);
-            blackMoves = cBd.getMoves(tBlack);
+            whiteMoves = cBd.getMoves(TYPE_WHITE);
+            blackMoves = cBd.getMoves(TYPE_BLACK);
             firstColor = cBd.firstColor;
             resetNum = cBd.resetNum;
         }
@@ -90,8 +90,8 @@ let appData = (() => {
             if (cBd) {
                 initialCBoard.resetNum = cBd.resetNum;
                 initialCBoard.moves = cBd.getMoves();
-                initialCBoard.whiteMoves = cBd.getMoves(tWhite);
-                initialCBoard.blackMoves = cBd.getMoves(tBlack);
+                initialCBoard.whiteMoves = cBd.getMoves(TYPE_WHITE);
+                initialCBoard.blackMoves = cBd.getMoves(TYPE_BLACK);
             }
             data.moves = initialCBoard.moves;
             data.whiteMoves = initialCBoard.whiteMoves;

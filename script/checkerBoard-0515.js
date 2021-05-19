@@ -2,13 +2,13 @@
 
 var tempp = new point(0, 0, null);
 
-const tEmpty = 0;
-const tLb = 1; // 用于point.type,表示当前点上面存在一个标签
-const tNum = 2; // 用于point.type,表示当前点上面存在一个数字
-const tBlack = 3; // 无序号 添加的黑棋
-const tWhite = 4; // 无序号 添加的黑棋
-const tLbMoves = 5; //VCF手顺
-const tLbFoul = 6;
+const TYPE_EMPTY = 0;
+const TYPE_MARK = 1; // 用于point.type,表示当前点上面存在一个标签
+const TYPE_NUMBER = 2; // 用于point.type,表示当前点上面存在一个数字
+const TYPE_BLACK = 3; // 无序号 添加的黑棋
+const TYPE_WHITE = 4; // 无序号 添加的黑棋
+const TYPE_MOVE = 5; //VCF手顺
+const TYPE_MARK_FOUL = 6;
 
 
 //定义棋盘上的一个点
@@ -17,7 +17,7 @@ function point(x, y, d) {
     this.x = x; // 棋盘一个点的坐标，相对于BODY
     this.y = y;
     this.d = d; // 对div标签的引用，null为空;
-    this.type = 0; // 这个点是否有棋子，=tEmpty为空，棋子=tNum,bi标记=tLb
+    this.type = 0; // 这个点是否有棋子，=TYPE_EMPTY为空，棋子=TYPE_NUMBER,bi标记=TYPE_MARK
     this.text = "";
     this.color = null;
     this.bkColor = null;
@@ -67,7 +67,7 @@ point.prototype.printLb = function(s, color, gW, gH) {
     //alert("printLb")
     var size;
     var temp;
-    this.type = tLb;
+    this.type = TYPE_MARK;
     this.text = s;
     this.color = color;
 
@@ -94,7 +94,7 @@ point.prototype.printNb = function(n, color, gW, gH, numColor) {
     var temp;
 
     this.color = numColor;
-    this.type = tNum;
+    this.type = TYPE_NUMBER;
     this.text = String(n);
     this.d.innerHTML = this.text;
     temp = (gW < gH) ? gW : gH;
@@ -339,10 +339,10 @@ checkerBoard.prototype.addTree = function(tree) {
             let idx = y * this.SLTX + x;
             switch (arr[y][x]) {
                 case 1:
-                    this.wNb(idx, "black", null, tBlack);
+                    this.wNb(idx, "black", null, TYPE_BLACK);
                     break;
                 case 2:
-                    this.wNb(idx, "white", null, tWhite);
+                    this.wNb(idx, "white", null, TYPE_WHITE);
                     break;
             }
         }
@@ -403,7 +403,7 @@ checkerBoard.prototype.autoShow = function(timer) {
 
     function findMoves() {
         for (let i = 0; i < cBoard.SLTX * cBoard.SLTY; i++) {
-            if (cBoard.P[i].type == tLbMoves) {
+            if (cBoard.P[i].type == TYPE_MOVE) {
                 return i;
             }
         }
@@ -504,10 +504,10 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
 
         for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-            if (this.P[idx].type == tWhite) {
+            if (this.P[idx].type == TYPE_WHITE) {
                 wMS.push(idx);
             }
-            else if (this.P[idx].type == tBlack) {
+            else if (this.P[idx].type == TYPE_BLACK) {
                 bMS.push(idx);
             }
         }
@@ -575,10 +575,10 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
 
     for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-        if (this.P[idx].type == tWhite) {
+        if (this.P[idx].type == TYPE_WHITE) {
             wMS.push(idx);
         }
-        else if (this.P[idx].type == tBlack) {
+        else if (this.P[idx].type == TYPE_BLACK) {
             bMS.push(idx);
         }
     }
@@ -646,10 +646,10 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
 
     for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-        if (this.P[idx].type == tWhite) {
+        if (this.P[idx].type == TYPE_WHITE) {
             wMS.push(idx);
         }
-        else if (this.P[idx].type == tBlack) {
+        else if (this.P[idx].type == TYPE_BLACK) {
             bMS.push(idx);
         }
     }
@@ -728,10 +728,10 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
         for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
 
-            if (this.P[idx].type == tWhite) {
+            if (this.P[idx].type == TYPE_WHITE) {
                 wMS.push(idx);
             }
-            else if (this.P[idx].type == tBlack) {
+            else if (this.P[idx].type == TYPE_BLACK) {
                 bMS.push(idx);
             }
         }
@@ -831,14 +831,14 @@ checkerBoard.prototype.cleLb = function(idx) {
 
     if (typeof(idx) == "string" && idx == "all") {
         for (let i = 0; i < this.SLTX * this.SLTY; i++) {
-            if (this.P[i].type == tLb || this.P[i].type == tLbMoves) {
+            if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
                 this.clePoint(i);
                 refreshLine.call(this, i);
             }
         }
     }
     else {
-        if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
+        if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
             this.clePoint(idx);
             refreshLine.call(this, idx);
         }
@@ -864,7 +864,7 @@ checkerBoard.prototype.cleLb = function(idx) {
 // 删除一颗棋子,不删除MS的记录
 checkerBoard.prototype.cleNb = function(idx, showNum) {
     if (idx < 0) return;
-    if (this.P[idx].type == tNum) {
+    if (this.P[idx].type == TYPE_NUMBER) {
         this.cletLbMoves();
         let i = this.MSindex;
         if (i < 0) return;
@@ -875,7 +875,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
         //console.log("cleNb")
         //this.unpackTree();
     }
-    else if (this.P[idx].type == tBlack || this.P[idx].type == tWhite) {
+    else if (this.P[idx].type == TYPE_BLACK || this.P[idx].type == TYPE_WHITE) {
         if (this.oldCode) return;
         this.cletLbMoves();
         this.clePoint(idx);
@@ -903,7 +903,7 @@ checkerBoard.prototype.cleNb = function(idx, showNum) {
 checkerBoard.prototype.cletLbMoves = function() {
 
     for (let i = 0; i < this.SLTX * this.SLTY; i++) {
-        if (this.P[i].type == tLbMoves) {
+        if (this.P[i].type == TYPE_MOVE) {
             this.cleLb(i);
         }
     }
@@ -1188,7 +1188,7 @@ checkerBoard.prototype.cutBkPoint = function(idx, width, height) {
 
 checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
 
-    const sin45 = 0.707105;
+    const SIN45 = 0.707105;
     let s = this.drawLine.startPoint.style;
     if (this.startIdx < 0) {
         //console.log(`offsetLeft=${this.canvas.offsetLeft}, offsetTop=${this.canvas.offsetTop}`)
@@ -1234,17 +1234,17 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
                 case 2:
                     lWidth = min(lw, uh);
                     rWidth = min(rw, bh);
-                    s.width = this.gW * (lWidth + rWidth) / sin45 + "px";
-                    s.left = this.P[idx].x - this.gW * lWidth / sin45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
-                    s.transformOrigin = `${parseInt(this.gW * lWidth/sin45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
+                    s.width = this.gW * (lWidth + rWidth) / SIN45 + "px";
+                    s.left = this.P[idx].x - this.gW * lWidth / SIN45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+                    s.transformOrigin = `${parseInt(this.gW * lWidth/SIN45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
                     s.transform = `rotate(${45}deg)`;
                     break;
                 case 3:
                     lWidth = min(lw, bh);
                     rWidth = min(rw, uh);
-                    s.width = this.gH * (lWidth + rWidth) / sin45 + "px";
-                    s.left = this.P[idx].x - this.gH * lWidth / sin45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
-                    s.transformOrigin = `${parseInt(this.gH * lWidth / sin45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
+                    s.width = this.gH * (lWidth + rWidth) / SIN45 + "px";
+                    s.left = this.P[idx].x - this.gH * lWidth / SIN45 - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
+                    s.transformOrigin = `${parseInt(this.gH * lWidth / SIN45)+parseInt(s.borderWidth)}px ${this.gW*3/40}px`;
                     s.transform = `rotate(${-45}deg)`;
                     break;
             }
@@ -1277,7 +1277,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             s = this.drawLine.selectDiv.style;
             s.borderWidth = this.gW / 8 + "px";
             s.borderColor = mk.color;
-            s.width = mk.direction % 2 ? this.gW * (mk.P.length - 1) / sin45 + "px" : this.gW * (mk.P.length - 1) + "px";
+            s.width = mk.direction % 2 ? this.gW * (mk.P.length - 1) / SIN45 + "px" : this.gW * (mk.P.length - 1) + "px";
             s.height = this.gH / 2 + "px";
             s.left = x - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
             s.top = y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + this.canvas.offsetTop + "px";
@@ -1431,8 +1431,8 @@ checkerBoard.prototype.getPIndex = function(x, y) {
 
 checkerBoard.prototype.getCode = function() {
     let code = this.getMoves();
-    code += "\n{" + this.getMoves(tBlack) + "}";
-    code += "{" + this.getMoves(tWhite) + "}";
+    code += "\n{" + this.getMoves(TYPE_BLACK) + "}";
+    code += "{" + this.getMoves(TYPE_WHITE) + "}";
     return code;
 };
 
@@ -1442,7 +1442,7 @@ checkerBoard.prototype.getCode = function() {
 checkerBoard.prototype.getMoves = function(type) {
 
     var ml = "";
-    if (type == tWhite || type == tBlack) {
+    if (type == TYPE_WHITE || type == TYPE_BLACK) {
         for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
             if (this.P[idx].type == type) {
                 ml += this.indexToName(idx);
@@ -1474,13 +1474,13 @@ checkerBoard.prototype.getPointArray = function(arrobj) {
         x = idx % this.SLTX;
         y = parseInt(idx / this.SLTX);
 
-        if (this.P[idx].type == tNum) {
+        if (this.P[idx].type == TYPE_NUMBER) {
             arrobj[y][x] = this.P[idx].color == this.bNumColor ? 1 : 2;
         }
-        else if (this.P[idx].type == tWhite) {
+        else if (this.P[idx].type == TYPE_WHITE) {
             arrobj[y][x] = 2;
         }
-        else if (this.P[idx].type == tBlack) {
+        else if (this.P[idx].type == TYPE_BLACK) {
             arrobj[y][x] = 1;
         }
         else {
@@ -1856,17 +1856,17 @@ checkerBoard.prototype.getSVG = function() {
     // 打印棋子，和标记
     for (let i = 0; i < this.SLTY * this.SLTX; i++) {
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        if (this.P[i].type == tNum || this.P[i].type == tWhite || this.P[i].type == tBlack) {
+        if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
             lineWidth = w / 25;
             svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
             /*
-             if (this.P[i].type==tNum) {
+             if (this.P[i].type==TYPE_NUMBER) {
                  let color = this.P[i].color=="white" ? "black" : "white";
                  svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
              }
             */
         }
-        else if (this.P[i].type == tLb || this.P[i].type == tLbMoves) {
+        else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
             svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
             //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
         }
@@ -1874,7 +1874,7 @@ checkerBoard.prototype.getSVG = function() {
         let txt = this.P[i].text;
         let color = this.P[i].color;
         color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-        if (this.P[i].type == tNum) { //控制从第几手显示❶
+        if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
@@ -1924,7 +1924,7 @@ checkerBoard.prototype.hideNum = function() {
     for (let i = 0; i <= this.MSindex; i++)
     {
         color = (i % 2) ? this.wNumColor : this.bNumColor;
-        this.printPoint(this.MS[i], "", color, tNum);
+        this.printPoint(this.MS[i], "", color, TYPE_NUMBER);
         this.refreshMarkArrow(this.MS[i]);
     }
 
@@ -2005,7 +2005,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
         switch (move) {
             case "left":
                 for (i = 0; i < this.SLTX * this.SLTY; i += this.SLTX) {
-                    if (this.P[i].type != tEmpty) break;
+                    if (this.P[i].type != TYPE_EMPTY) break;
                 }
                 if (i < this.SLTX * this.SLTY) return;
                 // 转换MS数组
@@ -2023,7 +2023,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
                 break;
             case "right":
                 for (i = this.SLTX - 1; i < this.SLTX * this.SLTY; i += this.SLTX) {
-                    if (this.P[i].type != tEmpty) break;
+                    if (this.P[i].type != TYPE_EMPTY) break;
                 }
                 if (i < this.SLTX * this.SLTY) return;
                 for (i = 0; i < this.MS.length; i++) {
@@ -2039,7 +2039,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
                 break;
             case "top":
                 for (i = 0; i < this.SLTX; i++) {
-                    if (this.P[i].type != tEmpty) break;
+                    if (this.P[i].type != TYPE_EMPTY) break;
                 }
                 if (i < this.SLTX) return;
                 for (i = 0; i < this.MS.length; i++) {
@@ -2055,7 +2055,7 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
                 break;
             case "bottom":
                 for (i = this.SLTX * (this.SLTY - 1); i < this.SLTX * this.SLTY; i++) {
-                    if (this.P[i].type != tEmpty) break;
+                    if (this.P[i].type != TYPE_EMPTY) break;
                 }
                 if (i < this.SLTX * this.SLTY) return;
                 for (i = 0; i < this.MS.length; i++) {
@@ -2084,9 +2084,9 @@ checkerBoard.prototype.moveCheckerBoard = function(move) {
         board.P[idx].text = board.P[idx1].text;
         board.P[idx].type = board.P[idx1].type;
         board.P[idx].color = board.P[idx1].color;
-        if (board.P[idx].type != tEmpty) {
+        if (board.P[idx].type != TYPE_EMPTY) {
             let txt = board.P[idx].text;
-            if (board.P[idx].type == tNum) { //控制从第几手显示❶
+            if (board.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
                 txt = parseInt(board.P[idx].text) - board.resetNum;
                 txt = parseInt(txt) < 1 ? "" : txt;
                 txt = board.isShowNum ? txt : "";
@@ -2157,7 +2157,7 @@ checkerBoard.prototype.printThreePointMoves = function(idx) {
 
 checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
 
-    const sin45 = 0.707105;
+    const SIN45 = 0.707105;
     let ctx = this.canvas.getContext("2d");
     ctx.strokeStyle = markArrow.color;
     ctx.lineWidth = this.gW / 8;
@@ -2339,8 +2339,8 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
 
         let x1, x2, y1, y2;
         let tx, ty;
-        let arrowWidth = direction % 2 ? cBd.gW * 0.8 * sin45 : cBd.gW * 0.8;
-        let arrowHeight = direction % 2 ? ctx.lineWidth * 4 * sin45 : ctx.lineWidth * 4;
+        let arrowWidth = direction % 2 ? cBd.gW * 0.8 * SIN45 : cBd.gW * 0.8;
+        let arrowHeight = direction % 2 ? ctx.lineWidth * 4 * SIN45 : ctx.lineWidth * 4;
         arrowWidth += cleArrow ? 1 : 0;
         arrowHeight += cleArrow ? 1 : 0;
         ctx.beginPath();
@@ -2731,7 +2731,7 @@ checkerBoard.prototype.printMoves = function(moves, firstColor) {
     for (let y = 0; y < this.SLTY; y++) {
         for (let x = 0; x < this.SLTX; x++) {
             idx = y * this.SLTX + x;
-            if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
+            if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
                 this.cleLb(idx);
             }
         }
@@ -2861,7 +2861,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
     // 打印棋子，和标记
     for (let i = 0; i < this.SLTY * this.SLTX; i++) {
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        if (this.P[i].type == tNum || this.P[i].type == tWhite || this.P[i].type == tBlack) {
+        if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
             lineWidth = w / 25;
             doc.setLineWidth(lineWidth * size);
             doc.setDrawColor(0, 0, 0);
@@ -2876,7 +2876,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
             doc.circle(x1, y1, w * size, "DF");
             //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
         }
-        else if (this.P[i].type == tLb || this.P[i].type == tLbMoves) {
+        else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
             doc.setLineWidth(3 * size);
             if (this.P[i].bkColor) {
                 doc.setDrawColor(187, 187, 187);
@@ -2895,7 +2895,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
         let txt = this.P[i].text;
         let color = this.P[i].color;
         color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-        if (this.P[i].type == tNum) { //控制从第几手显示❶
+        if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
             txt = parseInt(this.P[i].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
@@ -2992,7 +2992,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
     let ctx = this.canvas.getContext("2d");
     p.setxy(this.P[idx].x, this.P[idx].y);
     // 打印棋子
-    if (type == tNum || type == tWhite || type == tBlack) {
+    if (type == TYPE_NUMBER || type == TYPE_WHITE || type == TYPE_BLACK) {
         ctx.lineWidth = w / 25;
         ctx.beginPath();
         ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
@@ -3013,7 +3013,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
             //ctx.stroke();
         }
         //ctx.beginPath();
-        ctx.arc(p.x, p.y, this.P[idx].type == tLbFoul ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
+        ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARK_FOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillStyle = color;
         //ctx.font = "bolder " + parseInt(w * 1.1) + "px  mHeiTi";
@@ -3043,7 +3043,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
     ctx = null;
 
     //console.log(`text=${text}, notShowLastNum=${notShowLastNum}`)
-    if (type == tNum && !notShowLastNum) {
+    if (type == TYPE_NUMBER && !notShowLastNum) {
         this.showLastNum(showNum);
     }
     if (appData.renjuSave && !refresh) appData.renjuSave(this);
@@ -3054,17 +3054,17 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
 
 checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum) {
 
-    if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == tEmpty) return;
+    if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == TYPE_EMPTY) return;
     let txt = text;
-    if (this.P[idx].type == tNum || this.P[idx].type == tWhite || this.P[idx].type == tBlack) { //控制从第几手显示❶
-        if (this.P[idx].type == tNum) {
+    if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) { //控制从第几手显示❶
+        if (this.P[idx].type == TYPE_NUMBER) {
             txt = parseInt(this.P[idx].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
         }
         this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
     }
-    else { //this.P[idx].type == tLb;
+    else { //this.P[idx].type == TYPE_MARK;
         this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
     }
 
@@ -3114,7 +3114,7 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         this.cleLb(idx);
         //this.P[idx].color = color;
         //this.P[idx].bkColor = null;
-        //this.P[idx].type = tLb;
+        //this.P[idx].type = TYPE_MARK;
         //this.P[idx].text = text;
         //this.refreshMarkLine(idx);
         //this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
@@ -3188,9 +3188,9 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
     ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
 
     for (let idx = this.P.length - 1; idx >= 0; idx--) {
-        if (this.P[idx].type == tNum || this.P[idx].type == tWhite || this.P[idx].type == tBlack) {
+        if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) {
             let txt = this.P[idx].text;
-            if (this.P[idx].type == tNum) { //控制从第几手显示❶
+            if (this.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
                 txt = parseInt(this.P[idx].text) - this.resetNum;
                 txt = parseInt(txt) < 1 ? "" : txt;
                 txt = this.isShowNum ? txt : "";
@@ -3198,7 +3198,7 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
             this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, null, true);
             //console.log(this.P[idx].type)
         }
-        else if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
+        else if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
             this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
             //console.log(this.P[idx].type)
         }
@@ -3843,10 +3843,10 @@ checkerBoard.prototype.showAutoLine = function(display, notChange) {
     if (display) {
         let arr = this.getPointArray([]);
         let newarr = getArr([]);
-        findThreePoint(arr, 1, newarr, onlyFree);
+        findThreePoint(arr, 1, newarr, ONLY_FREE);
         addLines.call(this, 1, arr, newarr, 3);
         newarr = getArr([]);
-        findThreePoint(arr, 2, newarr, onlyFree);
+        findThreePoint(arr, 2, newarr, ONLY_FREE);
         addLines.call(this, 2, arr, newarr, 3);
         newarr = getArr([]);
         findFourPoint(arr, 1, newarr);
@@ -3890,7 +3890,7 @@ checkerBoard.prototype.showFoul = function(display, notChange) {
     let cBoard = this;
     //this.timerShowFoul = setTimeout(function() {
     for (let i = cBoard.P.length - 1; i >= 0; i--) {
-        if (cBoard.P[i].type == tLbFoul) {
+        if (cBoard.P[i].type == TYPE_MARK_FOUL) {
             cBoard.P[i].cle();
             cBoard.clePointB(i);
             cBoard.refreshMarkLine(i);
@@ -3907,7 +3907,7 @@ checkerBoard.prototype.showFoul = function(display, notChange) {
                     let idx = x + this.SLTX * y;
                     this.P[idx].color = "red";
                     this.P[idx].bkColor = null;
-                    this.P[idx].type = tLbFoul;
+                    this.P[idx].type = TYPE_MARK_FOUL;
                     this.P[idx].text = "❌";
                     this.refreshMarkLine(idx);
                     this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
@@ -4020,7 +4020,7 @@ checkerBoard.prototype.showNum = function() {
         //从设定的手数开始显示序号
         txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
         txt = parseInt(txt) < 1 ? "" : txt;
-        this.printPoint(this.MS[i], txt, color, tNum, true, null, true);
+        this.printPoint(this.MS[i], txt, color, TYPE_NUMBER, true, null, true);
         this.refreshMarkArrow(this.MS[i]);
     }
     this.showLastNum(true);
@@ -4364,15 +4364,15 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
         }
         this.resetNum = bNarr.length;
         for (let i = 0; i < bNarr.length; i++) {
-            this.wNb(bNarr[i], "auto", isShowNum, tNum);
+            this.wNb(bNarr[i], "auto", isShowNum, TYPE_NUMBER);
         }
     }
     else {
         for (let i = 0; i < bNarr.length; i++) {
-            this.wNb(bNarr[i], "black", isShowNum, tBlack);
+            this.wNb(bNarr[i], "black", isShowNum, TYPE_BLACK);
         }
         for (let i = 0; i < wNarr.length; i++) {
-            this.wNb(wNarr[i], "white", isShowNum, tWhite);
+            this.wNb(wNarr[i], "white", isShowNum, TYPE_WHITE);
         }
     }
 };
@@ -4382,8 +4382,8 @@ checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
 //  在棋盘的一个点上面，打印一个标记
 checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
     if (idx < 0) return;
-    if (this.P[idx].type != tEmpty) {
-        if (this.P[idx].type == tLb || this.P[idx].type == tLbMoves) {
+    if (this.P[idx].type != TYPE_EMPTY) {
+        if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
             this.cleLb(idx);
         }
         else {
@@ -4393,7 +4393,7 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
     this.P[idx].color = color;
     this.P[idx].bkColor = backgroundColor || null;
     //console.log(backgroundColor)
-    this.P[idx].type = backgroundColor ? tLbMoves : tLb;
+    this.P[idx].type = backgroundColor ? TYPE_MOVE : TYPE_MARK;
     this.P[idx].text = text;
     //this.refreshMarkLine(idx);
     this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
@@ -4414,7 +4414,7 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     let c = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
     if (isFoulPoint && c == "black") return;
     this.cletLbMoves();
-    if (color == "auto" || type == tNum) { // 顺序添加棋子
+    if (color == "auto" || type == TYPE_NUMBER) { // 顺序添加棋子
 
         this.MSindex++;
         // 如果当前添加的点和历史记录不一样，就把后面没用的记录删除
@@ -4427,10 +4427,10 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     }
     color = color == "black" ? this.bNumColor : color == "white" ? this.wNumColor : color;
     this.P[idx].color = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? this.wNumColor : this.bNumColor) : ((i % 2) ? this.bNumColor : this.wNumColor);
-    this.P[idx].type = type == null ? color == "auto" ? tNum : color == this.wNumColor ? tWhite : tBlack : type;
-    this.P[idx].text = this.P[idx].type == tNum ? String(i + 1) : "";
+    this.P[idx].type = type == null ? color == "auto" ? TYPE_NUMBER : color == this.wNumColor ? TYPE_WHITE : TYPE_BLACK : type;
+    this.P[idx].text = this.P[idx].type == TYPE_NUMBER ? String(i + 1) : "";
     let txt = this.P[idx].text;
-    if (this.P[idx].type == tNum) { //控制从第几手显示❶
+    if (this.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
         txt = parseInt(this.P[idx].text) - this.resetNum;
         txt = parseInt(txt) < 1 ? "" : txt;
         txt = showNum ? txt : "";

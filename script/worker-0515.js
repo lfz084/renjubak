@@ -1,9 +1,9 @@
 "use strict";
-const Cmodel = new Array("x", "y", "d", "u"); // 米字线
-const onlyFree = 1; // 只找活3，活4
-const onlyNoFree = 2; // 只找眠3，眠4
-const onlyVCF = 1; // 只找做VCF点
-const onlySimpleWin = 2; // 只找43级别做杀点
+const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
+const ONLY_FREE = 1; // 只找活3，活4
+const ONLY_NOFREE = 2; // 只找眠3，眠4
+const ONLY_VCF = 1; // 只找做VCF点
+const ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
 
 let generator;
 
@@ -29,19 +29,15 @@ let vctNode;
 
 
 //，保存周围点的坐标
-let aroundPoint = [];
 // 创建二维数组，保存 0-224 个点周围点的坐标信息。
 // 以H8 为例，H8周围的点坐标 保存在 aroundPoint[112]
 // aroundPoint[112].index  ，aroundPoint[112].point,保存坐标信息
 // aroundPoint[112].radius 搜索半径内 点 的个数。
+let aroundPoint = [];
 for (let i = 0; i < 225; i++) {
     aroundPoint[i] = { index: [], point: [], radius: [] };
     setAroundPoint(aroundPoint[i].index, aroundPoint[i].point, aroundPoint[i].radius, i);
 }
-
-
-
-
 // 设置idx为中心，保存周围点的坐标
 function setAroundPoint(index, point, radius, idx) {
 
@@ -204,7 +200,7 @@ Node.prototype.removeChild = function(child) {
 
 onmessage = function(e) {
     let p = e.data.parameter;
-    const cmd = {
+    const CMD = {
         "getLevelB": function() {
             //mConsole("getLevelB__>>")
             let level = getLevelB(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
@@ -319,8 +315,7 @@ onmessage = function(e) {
         },
 
     };
-    //console.log("engine.onmessage parameter =" + p);
-    if (typeof cmd[e.data.cmd] == "function") cmd[e.data.cmd]();
+    if (typeof CMD[e.data.cmd] == "function") CMD[e.data.cmd]();
 }
 
 
@@ -418,9 +413,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
     depth = depth || 5;
     backStage = backStage ? true : false;
     vctNode = node;
-    const notVCT = -1;
-    const isTTWin = 1;
-    const continueVCT = 0;
+    const NOT_VCT = -1;
+    const IS_TTWIN = 1;
+    const CONTINUE_VCT = 0;
     let vctCount = 0;
     let vctArr = arr; // 保存棋盘初始状态
     let vctInitial = copyArr([], arr); // 计算vct前，备份 初始arr
@@ -482,17 +477,17 @@ function findVCT(arr, color, node, count, depth, backStage) {
             let y = parseInt(moves[moves.length - 1] / 15);
             if ((moves.length + 1) % 2 && !isFour(x, y, nColor, arr)) {
                 mConsole(`rt >>> -1 >>> depth out : [depth=${movesDepth[movesDepth.length-1]}]`);
-                return nextNode(notVCT) ? 0 : -1;
+                return nextNode(NOT_VCT) ? 0 : -1;
             }
         }
         else if (movesDepth[movesDepth.length - 1] > depth) {
             mConsole(`rt >>> -1 >>> depth out : [depth=${movesDepth[movesDepth.length-1]}]`);
-            return nextNode(notVCT) ? 0 : -1
+            return nextNode(NOT_VCT) ? 0 : -1
         }
 
         if (cNode.length && cNode[cNode.length - 1].idx == -1) {
             mConsole(`rt >>> -1 >>> idx==-1`);
-            return nextNode(isTTWin) ? 0 : -1
+            return nextNode(IS_TTWIN) ? 0 : -1
         }
 
         let key = getKey(arr);
@@ -500,14 +495,14 @@ function findVCT(arr, color, node, count, depth, backStage) {
             //let nd = movesToNode(fMoves[j], ctnNode);
             let nd = loadHistoryNode(key, ctnNode);
             mConsole(`rt >>> 1 >>> has Node : [${!!nd}]`);
-            return nextNode(!!nd ? isTTWin : notVCT) ? 0 : -1;
+            return nextNode(!!nd ? IS_TTWIN : NOT_VCT) ? 0 : -1;
         }
 
         if ((moves.length + 1) % 2) {
 
             if (ctnNode.childNode.length) {
-                mConsole("co.continueVCT")
-                return nextNode(continueVCT) ? 0 : -1;
+                mConsole("continueVCT")
+                return nextNode(CONTINUE_VCT) ? 0 : -1;
             }
             let fMoves = []; //  保存先手连续冲四分支
             continueFour(arr, color, 1, fMoves, getArr([]));
@@ -529,18 +524,18 @@ function findVCT(arr, color, node, count, depth, backStage) {
             for (i = 0; i < leng; i++) { //find VCT point
                 t = isVCTNode(tPoint[i], color, arr, ctnNode);
                 switch (t) {
-                    case isTTWin:
+                    case IS_TTWIN:
                         mConsole(`isTTWin winPoint[${tPoint[i].idx}]`);
                         scoreCount[ctnNode.childNode[ctnNode.childNode.length - 1].idx] += 10;
                         ctnNode.childNode.splice(0, ctnNode.childNode.length - 1);
-                        return nextNode(isTTWin) ? 0 : -1;
+                        return nextNode(IS_TTWIN) ? 0 : -1;
                         break;
-                    case notVCT:
-                        //mConsole("notVCT");
+                    case NOT_VCT:
+                        //mConsole("NOT_VCT");
                         scoreCount[ctnNode.childNode[ctnNode.childNode.length - 1].idx] -= 1;
                         ctnNode.childNode.length--;
                         break;
-                    case continueVCT:
+                    case CONTINUE_VCT:
                         //mConsole("continueVCT");
                         break;
                 }
@@ -555,7 +550,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     if (node.idx == -1) {
                         //node.parentNode.childNode.length--;
                         mConsole(`isTTWin 2 winPoint[${ctnNode.idx}]`);
-                        return nextNode(isTTWin) ? 0 : -1;
+                        return nextNode(IS_TTWIN) ? 0 : -1;
                     }
                     if (c == nColor) { // add -1 mark
                         addMark(ctnNode);
@@ -569,7 +564,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                             movesDepth.push(getDepth(arr, vctColor, ctnNode));
                         }
                         mConsole(`rt >>> 2 >>> continue`);
-                        return nextNode(continueVCT) ? 0 : -1;
+                        return nextNode(CONTINUE_VCT) ? 0 : -1;
                     }
                     ctnNode = ctnNode.childNode[ctnNode.childNode.length - 1];
                     changeArr(arr, ctnNode.idx, c);
@@ -580,14 +575,14 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     if (vctHistoryNode.has(key)) {
                         let nd = loadHistoryNode(key, ctnNode);
                         mConsole(`rt >>> 3 >>> has Node : [${!!nd}]`);
-                        return nextNode(!!nd ? isTTWin : notVCT) ? 0 : -1;
+                        return nextNode(!!nd ? IS_TTWIN : NOT_VCT) ? 0 : -1;
                     }
                 } while (node);
 
             }
             else {
                 mConsole(`rt >>> 4 >>> not finded threePoint `);
-                return nextNode(notVCT) ? 0 : -1;
+                return nextNode(NOT_VCT) ? 0 : -1;
             }
 
 
@@ -600,7 +595,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         if (node.idx == -1) {
                             //node.parentNode.childNode.length--;
                             mConsole(`isTTWin 3`);
-                            return nextNode(isTTWin) ? 0 : -1;
+                            return nextNode(IS_TTWIN) ? 0 : -1;
                         }
                         if (c == nColor) { // add -1 mark
                             //if (!node || !node.idx) mConsole(node);
@@ -615,7 +610,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         if (vctHistoryNode.has(key)) {
                             let nd = loadHistoryNode(key, ctnNode);
                             mConsole(`rt >>> 5 >>> has Node : [${!!nd}]`);
-                            return nextNode(!!nd ? isTTWin : notVCT) ? 0 : -1;
+                            return nextNode(!!nd ? IS_TTWIN : NOT_VCT) ? 0 : -1;
                         }
                     } while (node);
                 }
@@ -646,15 +641,15 @@ function findVCT(arr, color, node, count, depth, backStage) {
             if (!backStage) pStr += `<< moves = ${moves} (${moves.length})  [${getChildNodeIdx(node)}]`;
 
             if (moves.length % 2) {
-                if (isT == isTTWin) {
+                if (isT == IS_TTWIN) {
                     let nd = cNode.splice(cNode.length - 1, 1);
                     cNode.splice(0, 0, nd[0]);
                     if (cNode[cNode.length - 1].idx == -1) {
                         //cNode.length--;
                         //mConsole("isT "+ moves)
                         if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 1 remove -1\n`;
-                        setHistoryNode(arr, isT == isTTWin ? ctnNode : false);
-                        scoreCount[node.idx] += isT == isTTWin ? 5 : -5;
+                        setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
+                        scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     }
                     else {
                         if (!backStage) pStr += ` [${getChildNodeIdx(node)}] >> 2\n`;
@@ -662,31 +657,31 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         break;
                     }
                 }
-                else if (isT == notVCT) {
+                else if (isT == NOT_VCT) {
                     cNode.splice(0, cNode.length);
                     if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 3 delete all\n`;
-                    setHistoryNode(arr, isT == isTTWin ? ctnNode : false);
-                    scoreCount[node.idx] += isT == isTTWin ? 5 : -5;
+                    setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
+                    scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                 }
                 else { //continueVCT
                     if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 4 continue\n`;
                 }
             }
             else {
-                if (isT == isTTWin) {
+                if (isT == IS_TTWIN) {
                     cNode.splice(0, cNode.length - 1);
                     cNode.push(new Node(-1, cNode[0].parentNode));
                     if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 5 reserve one\n`;
-                    setHistoryNode(arr, isT == isTTWin ? ctnNode : false);
-                    scoreCount[node.idx] += isT == isTTWin ? 5 : -5;
+                    setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
+                    scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     //mConsole("isT= " + moves);
                 }
-                else if (isT == notVCT) {
+                else if (isT == NOT_VCT) {
                     if (cNode.length == 1) {
                         cNode.splice(0, cNode.length);
                         if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 6 delete all\n`;
-                        setHistoryNode(arr, isT == isTTWin ? ctnNode : false);
-                        scoreCount[node.idx] += isT == isTTWin ? 5 : -5;
+                        setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
+                        scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     }
                     else {
                         cNode.length--;
@@ -697,7 +692,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                         }
                         else {
                             if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 8 continue\n`;
-                            isT = continueVCT;
+                            isT = CONTINUE_VCT;
                             if (moves.length == 0 && scoreIdx && node.childNode.length) {
                                 scoreIdx--;
                                 node = node.childNode[node.childNode.length - 1];
@@ -794,7 +789,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 movesDepth.push(getDepth(arr, vctColor, ctnNode));
             }
             mConsole(`rt >>> 2 >>> continue`);
-            return nextNode(continueVCT) ? 0 : -1;
+            return nextNode(CONTINUE_VCT) ? 0 : -1;
         }
 
         let node = ctnNode.childNode[ctnNode.childNode.length - 1];
@@ -803,7 +798,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             if (node.idx == -1) {
                 //node.parentNode.childNode.length--;
                 mConsole(`isTTWin 2 winPoint[${ctnNode.idx}]`);
-                return nextNode(isTTWin) ? 0 : -1;
+                return nextNode(IS_TTWIN) ? 0 : -1;
             }
             if (c == nColor) { // add -1 mark
                 addMark(ctnNode);
@@ -817,7 +812,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             if (vctHistoryNode.has(key)) {
                 let nd = loadHistoryNode(key, ctnNode);
                 mConsole(`rt >>> 3 >>> has Node : [${!!nd}]`);
-                return nextNode(!!nd ? isTTWin : notVCT) ? 0 : -1;
+                return nextNode(!!nd ? IS_TTWIN : NOT_VCT) ? 0 : -1;
             }
         } while (node);
     }
@@ -1026,7 +1021,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
         scoreCount[node.idx]++;
         arr[y][x] = 0;
 
-        return notV ? notVCT : notWin ? continueVCT : isTTWin;
+        return notV ? NOT_VCT : notWin ? CONTINUE_VCT : IS_TTWIN;
 
     }
 
@@ -1101,16 +1096,16 @@ function findVCT(arr, color, node, count, depth, backStage) {
     function getScore(x, y, color, arr) {
         let score = 0;
         for (let i = 0; i < 4; i++) {
-            if (isLineFour(x, y, Cmodel[i], color, arr)) {
+            if (isLineFour(x, y, DIRECTIONS[i], color, arr)) {
                 score += 210;
             }
-            else if (isLineThree(x, y, Cmodel[i], color, arr, true)) {
+            else if (isLineThree(x, y, DIRECTIONS[i], color, arr, true)) {
                 score += 230;
             }
-            else if (isLineThree(x, y, Cmodel[i], color, arr)) {
+            else if (isLineThree(x, y, DIRECTIONS[i], color, arr)) {
                 score += 200;
             }
-            else if (isLineTwo(x, y, Cmodel[i], color, arr, true)) {
+            else if (isLineTwo(x, y, DIRECTIONS[i], color, arr, true)) {
                 score += 190;
             }
         }
@@ -1221,20 +1216,8 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
             rt = findVCFB(arr, color, 1, i, timeOut, backStage);
             if (rt) return rt;
         }
-        rt = findVCFB(arr, color, 1, depth, timeOut, backStage);
     }
-    /*
-    else if (count == 2 && depth > 4) {
-        rt = findVCFB(arr, color, 2, 2, timeOut, backStage);
-        if (rt >= 2) return rt;
-        rt = findVCFB(arr, color, 2, 4, timeOut, backStage);
-        if (rt >= 2) return rt;
-        rt = findVCFB(arr, color, 2, depth, timeOut, backStage);
-    }
-    */
-    else {
-        rt = findVCFB(arr, color, count, depth, timeOut, backStage);
-    }
+    rt = findVCFB(arr, color, count, depth, timeOut, backStage);
     return rt;
 }
 
@@ -1266,34 +1249,17 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
         for (let i = 0; i < 225; i++) { vcfFailMoves[i] = {}; };
     vcfWinMoves = data ? data.vcfWinMoves : [];
     vcfnLevel = data ? data.vcfnLevel : null;
-    /*
-    if (color==2) vcfWhiteWinMoves = [];
-    if (color==1) vcfBlackWinMoves = [];
-    */
 
-    // //console.log(vcfFinding)
     if (!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
     vcfStartTimer = new Date().getTime();
-    /*
-    for (let i=0; i<5000; i++) {
-        findFourPoint(arr, 1, getArr([]));
-    }
-    let t1 = new Date().getTime();
-    mConsole(`timer=${t1 - vcfStartTimer}`);
-    for (let i = 0; i < 5000; i++) {
-        findFourPoint(arr, 1, getArr([]), undefined, undefined, true);
-    }
-    let t2 = new Date().getTime();
-    mConsole(`timer=${t2-t1}`);
-    */
+
     vcfActuator(timeOut, depth, count, backStage);
 
-    //console.log("vcf end");
     return vcfWinMoves.length;
 
 
 
-    // 定时器调用，实现搜索VCF
+    // 搜索VCF
     function vcfActuator() {
 
         let x;
@@ -1309,30 +1275,6 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                     vcfFinding = 100;
                     vcfCount = vcfCount == 90000 ? 1 : vcfCount + 1;
                     let t = new Date().getTime();
-
-                    if ((t - vcfStartTimer) / 10000 > postContinueCount) {
-                        postContinueCount++;
-                        let data = {
-                            cmd: "findVCF",
-                            timeOut: timeOut,
-                            depth: depth,
-                            count: count,
-                            backStage: backStage,
-                            vcfCount: vcfCount,
-                            vcfArr: vcfArr,
-                            vcfInitial: vcfInitial,
-                            vcfFS: vcfFS,
-                            vcfMoves: vcfMoves,
-                            vcfColor: vcfColor,
-                            vcfFailMoves: cutFailMoves([], vcfFailMoves),
-                            vcfStartTimer: vcfStartTimer,
-                            vcfWinMoves: vcfWinMoves,
-                            vcfnLevel: vcfnLevel,
-                        };
-
-                        if (!backStage) post("saveContinueData", [data, postContinueCount == 1 ? true : false]);
-                    }
-
                     if (t - prvTimer > maxTimer) {
                         prvTimer += maxTimer;
                         maxTimer = maxTimer < 60000 ? maxTimer + parseInt((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
@@ -1352,7 +1294,6 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                     break;
             }
         }
-        //log (vcfFinding)
     }
 
 
@@ -1428,7 +1369,7 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                         // 把所有活3排到栈顶
                         //判断是否活3，最后一个参数五连，冲4不否定活3
                         for (let i = 0; i < 4; i++) {
-                            if (isLineThree(x, y, Cmodel[i], color, arr, true)) {
+                            if (isLineThree(x, y, DIRECTIONS[i], color, arr, true)) {
                                 freeThreeSt--;
                                 if (idx < freeThreeSt) {
                                     let v = fs.splice(idx, 1);
@@ -1658,133 +1599,85 @@ function pushPoint(ps, point) {
 
 
 
-// 会改变moves
-// 添加失败分支
-function pushFailMoves(FailMoves, moves) {
-
-    let mv = moves.slice(0);
-    let len = moves.length;
-    let sum = 0; // 对单色棋子索引求和，保存到数组最后位置。
-    for (let i = len - 1; i >= 0; i -= 2) {
-        sum += mv[i];
+function getMoveKey(move) {
+    const MOVE_LEN = move.length;
+    let sum = 0; // 对每一手棋索引求，保存到数组最后位置。
+    for (let i = 0; i < MOVE_LEN; i += 2) {
+        sum += move[i];
     }
-    //mv.push(sum * 1);
-    // hash 数组保存失败分支;
-    if (FailMoves[len][sum] == null) {
-        FailMoves[len][sum] = [];
-    }
-    FailMoves[len][sum].push(mv); // 保存失败分支   
+    return sum;
 }
 
 
 
-function pushVCF(VCF, moves) {
+// 会改变moves
+// 添加失败分支
+function pushFailMoves(FailMoves, move) {
 
-    let i;
+    let mv = move.slice(0);
+    const MOVE_LEN = move.length;
+    const MOVE_KEY = getMoveKey(mv); // 对单色棋子索引求和，保存到数组最后位置。
+    // hash 数组保存失败分支;
+    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) {
+        FailMoves[MOVE_LEN][MOVE_KEY] = [];
+    }
+    FailMoves[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
+}
+
+
+
+function isChildMove(parentMove, childMove) {
+
     let j;
     let k;
-    let l = moves.length;
-    let len = VCF.length;
-    // //console.log(moves+"  对比")
-    // 确认是否重复
-    if (l > 20) return;
-    for (i = len - 1; i >= 0; i--) {
-        if (l == VCF[i].length) {
-            for (k = l - 1; k >= 0; k -= 2) {
-                for (j = l - 1; j >= 0; j -= 2) {
-                    if (VCF[i][j] == moves[k] * 1) {
-                        break; //找到相同数据
-                    }
-                }
-                if (j < 0) break; // 没有找到相同数据;
+    // 判断一个颜色,最后一手活四级忽略
+    for (k = 0; k < parentMove.length; k += 2) {
+        for (j = 0; j < childMove.length; j += 2) {
+            if (childMove[j] == parentMove[k]) {
+                break; //找到相同数据
             }
-            if (k >= 0) continue; // 没有找到相同数据;
-
-            // 判断另一个颜色
-            for (k = l - 2; k >= 0; k -= 2) {
-                for (j = l - 2; j >= 0; j -= 2) {
-                    if (VCF[i][j] == moves[k] * 1) {
-                        break; //找到相同数据
-                    }
-                }
-                if (j < 0) break; // 没有找到相同数据;
-            }
-            if (k < 0) {
-                return;
-            }
-
         }
+        if (j >= childMove.length) break; // 没有找到相同数据;
     }
+    return k >= parentMove.length;
 
-    for (i = 0; i < VCF.length; i++) {
-        if (VCF[i].length >= l) break;
-    }
-    // //console.log("准备添加"+VCF)
-    VCF.splice(i, 0, copyMoves(moves)); // 
-    // //console.log("添加后"+VCF)
-    return true;
+}
+
+
+
+function isRepeatMove(newMove, oldMove) {
+    return isChildMove(newMove, oldMove);
 }
 
 
 
 // 添加一个成立的VCF分支
-function pushWinMoves(WinMoves, moves) {
+function pushWinMoves(winMoves, move) {
 
     let i;
-    let j;
-    let k;
-    let l = moves.length;
-    let len = WinMoves.length;
-    // //console.log(moves+"  对比")
-    // 确认是否重复
+    const MOVE_LEN = move.length;
+    const WINMOVES_LEN = winMoves.length;
 
-    for (i = len - 1; i >= 0; i--) {
-        if (l < WinMoves[i].length) {
-            // 判断一个颜色,最后一手活四级忽略
-            for (k = l < 3 ? l - 1 : l - 3; k >= 0; k -= 2) {
-                for (j = WinMoves[i].length - 1; j >= 0; j -= 2) {
-                    if (WinMoves[i][j] == moves[k] * 1) {
-                        break; //找到相同数据
-                    }
-                }
-                if (j < 0) break; // 没有找到相同数据;
+    function getSpliceStart(move, moves) {
+        const LEN = move.length;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].length >= LEN) return i;
+        }
+    }
+    for (i = WINMOVES_LEN - 1; i >= 0; i--) {
+        if (MOVE_LEN < winMoves[i].length) {
+            if (isChildMove(move, winMoves[i])) { // 把所有重复的替换掉
+                winMoves.splice(i, 1);
             }
-            if (k >= 0) continue; // 没有找到相同数据;
-
-            if (k < 0) { // 把所有重复的替换掉
-                //console.log("准备替换"+WinMoves)
-                WinMoves.splice(i, 1); // 找到后续相同数据,删除
-                // //console.log("替换后"+WinMoves)
-            }
-
         }
         else {
-
-            // 判断一个颜色
-            for (k = WinMoves[i].length < 3 ? WinMoves[i].length - 1 : WinMoves[i].length - 3; k >= 0; k -= 2) {
-                for (j = l - 1; j >= 0; j -= 2) {
-                    if (WinMoves[i][k] == moves[j] * 1) {
-                        break; //找到相同数据
-                    }
-                }
-                if (j < 0) break; // 没有找到相同数据;
-            }
-            //console.log (moves +"move")
-            //console.log (WinMoves[i] + "winmov")
-            if (k >= 0) continue; // 没有找到相同数据;
-
-            if (k < 0) {
+            if (isChildMove(winMoves[i], move)) {
                 return false;
             }
         }
     }
-
-    for (i = 0; i < WinMoves.length; i++) {
-        if (WinMoves[i].length >= l) break;
-    }
-    // //console.log("准备添加"+WinMoves)
-    WinMoves.splice(i, 0, copyMoves(moves)); // 找到相同数据;
-    // //console.log("添加后"+WinMoves)
+    const START = getSpliceStart(move, winMoves);
+    winMoves.splice(START, 0, copyMoves(move)); // 找到相同数据;
     return true;
 
 }
@@ -1792,45 +1685,15 @@ function pushWinMoves(WinMoves, moves) {
 
 
 // 对比VCF手顺是否相等
-function findMoves(FailMoves, moves) {
+function findMoves(FailMoves, move) {
 
     let i;
-    let j;
-    let k;
-    let rt = 0;
-    let l = moves.length;
-    let sum = 0; // 对每一手棋索引求，保存到数组最后位置。
-    for (let i = l - 1; i >= 0; i -= 2) {
-        sum += moves[i];
-    }
-    if (FailMoves[l][sum] == null) return false;
-    let len = FailMoves[l][sum].length;
-    for (i = len - 1; i >= 0; i--) {
-
-        // 判断另一个颜色,
-        for (k = moves.length - 2; k >= 0; k -= 2) {
-            for (j = FailMoves[l][sum][i].length - 2; j >= 0; j -= 2) {
-                if (FailMoves[l][sum][i][j] == moves[k] * 1) {
-                    break; //找到相同数据
-                }
-            }
-            if (j < 0) break; // 没有找到相同数据;
-        }
-
-        if (k < 0) {
-            /*
-            for (k = moves.length - 1; k >= 0; k -= 2) {
-                for (j = FailMoves[l][sum][i].length - 1; j >= 0; j -= 2) {
-                    if (FailMoves[l][sum][i][j] == moves[k] * 1) {
-                        break; //找到相同数据
-                    }
-                }
-                if (j < 0) break; // 没有找到相同数据;
-            }
-            */
-            if (k < 0) break; // 找到相同数据;
-        }
-        //if (k < 0)  { rt = k<0 ? 1 :0.1; break; } // 找到相同数据;
+    const MOVE_LEN = move.length;
+    const MOVE_KEY = getMoveKey(move); // 对每一手棋索引求，保存到数组最后位置。
+    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) return false;
+    const FAILMOVES_MOVES_LEN = FailMoves[MOVE_LEN][MOVE_KEY].length;
+    for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
+        if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
     }
 
     return (i >= 0) ? true : false;
@@ -1845,12 +1708,12 @@ function isWin(color, arr) {
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, Cmodel[i], color);
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
                 if (pw == 5) {
                     if (color == 2) {
                         return true;
                     }
-                    else if (getArrValue(x, y, -1, Cmodel[i], arr) != color) {
+                    else if (getArrValue(x, y, -1, DIRECTIONS[i], arr) != color) {
                         return true;
                     }
                 }
@@ -2149,14 +2012,14 @@ function isSix(x, y, color, arr) {
     for (let i = 0; i < 4; i++) { // 分别从4个方向判断
         if (count < 0 || (color == 2 && count > 0)) break;
         for (let j = 0; j > -5; j--) { // 分别判断这个点相关的5个 五
-            let pw = getPower(x, y, arr, Cmodel[i], color, j);
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
             if (color == 2) { // 白棋判断
                 if (pw > 5) {
                     count = 1;
                     break;
                 }
                 // 五连 否定长连
-                if (pw == 5 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color) {
+                if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color) {
                     count = -1;
                     break;
                 }
@@ -2167,7 +2030,7 @@ function isSix(x, y, color, arr) {
                     continue;
                 }
                 if (pw == 5) {
-                    if (getArrValue(x, y, j - 1, Cmodel[i], arr) == color) {
+                    if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == color) {
                         count = 1;
                         continue;
                     }
@@ -2186,13 +2049,13 @@ function isSix(x, y, color, arr) {
 
 
 // 不会验证x,y是否有棋子
-function isLineSix(x, y, model, color, arr) {
+function isLineSix(x, y, direction, color, arr) {
 
     let ov = arr[y][x];
     arr[y][x] = color;
 
     for (let i = -5; i < 1; i++) {
-        let pw = getPower(x, y, arr, model, color, i);
+        let pw = getPower(x, y, arr, direction, color, i);
         if (pw == 6) { arr[y][x] = ov; return true; }
     }
 
@@ -2213,7 +2076,7 @@ function isFive(x, y, color, arr) {
     for (let i = 0; i < 4; i++) {
         if (count > 0) break;
         for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, Cmodel[i], color, j);
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
             if (color == 2) { // 白棋
                 if (pw >= 5) {
                     count = 1;
@@ -2221,7 +2084,7 @@ function isFive(x, y, color, arr) {
                 }
             }
             else { //黑棋
-                if (pw == 5 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color) {
+                if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color) {
                     count = 1;
                     break;
                 }
@@ -2245,11 +2108,11 @@ function isFour(x, y, color, arr, free, passFoul) {
         if (count < 0) break;
         let isf = false;
         for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, Cmodel[i], color, j);
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
             if (color == 2) { //白棋
 
                 if (pw == 4) {
-                    if ((getArrValue(x, y, j, Cmodel[i], arr) == 0 && getArrValue(x, y, j + 5, Cmodel[i], arr) == 0) || (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0 && getArrValue(x, y, j - 1, Cmodel[i], arr) == 0)) {
+                    if ((getArrValue(x, y, j, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0) || (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0)) {
                         isfree = true;
                     }
                     count = 1;
@@ -2263,14 +2126,14 @@ function isFour(x, y, color, arr, free, passFoul) {
             }
             else { //黑棋
 
-                if (pw == 4 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+                if (pw == 4 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
 
-                    if (isLineFF(x, y, Cmodel[i], color, arr)) {
+                    if (isLineFF(x, y, DIRECTIONS[i], color, arr)) {
                         count = -1;
                         break;
                     }
                     else { // 确认是黑 ，4连点
-                        if ((getArrValue(x, y, j, Cmodel[i], arr) == 0 && getArrValue(x, y, j + 5, Cmodel[i], arr) == 0 && getArrValue(x, y, j + 6, Cmodel[i], arr) != color) || (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0 && getArrValue(x, y, j - 1, Cmodel[i], arr) == 0 && getArrValue(x, y, j - 2, Cmodel[i], arr) != color)) {
+                        if ((getArrValue(x, y, j, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 6, DIRECTIONS[i], arr) != color) || (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 2, DIRECTIONS[i], arr) != color)) {
                             isfree = true;
                         }
                         isf = true;
@@ -2307,14 +2170,14 @@ function isFour(x, y, color, arr, free, passFoul) {
 
 
 
-function isLineFive(x, y, model, color, arr) {
+function isLineFive(x, y, direction, color, arr) {
 
     let ov = arr[y][x];
     arr[y][x] = color;
     let count = 0;
 
     for (let j = 0; j > -5; j--) {
-        let pw = getPower(x, y, arr, model, color, j);
+        let pw = getPower(x, y, arr, direction, color, j);
         if (color == 2) { // 白棋
             if (pw >= 5) {
                 count = 1;
@@ -2322,7 +2185,7 @@ function isLineFive(x, y, model, color, arr) {
             }
         }
         else { //黑棋
-            if (pw == 5 && getArrValue(x, y, j - 1, model, arr) != color) {
+            if (pw == 5 && getArrValue(x, y, j - 1, direction, arr) != color) {
                 count = 1;
                 break;
             }
@@ -2339,8 +2202,8 @@ function isLineFive(x, y, model, color, arr) {
 
 
 // 不会验证x,y是否有棋子
-// 辅助判断33禁，x,y,点在 model指定这条线上是不是一个冲4点,活4
-function isLineFour(x, y, model, color, arr, free, pass) {
+// 辅助判断33禁，x,y,点在 direction指定这条线上是不是一个冲4点,活4
+function isLineFour(x, y, direction, color, arr, free, pass) {
 
     let ov = arr[y][x];
     arr[y][x] = color;
@@ -2348,9 +2211,9 @@ function isLineFour(x, y, model, color, arr, free, pass) {
 
     if (color == 2) { // 判断白棋
         for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, model, color, i);
+            let pw = getPower(x, y, arr, direction, color, i);
             if (pw == 4) {
-                if ((getArrValue(x, y, i, model, arr) == 0 && getArrValue(x, y, i + 5, model, arr) == 0) || (getArrValue(x, y, i + 4, model, arr) == 0 && getArrValue(x, y, i - 1, model, arr) == 0)) {
+                if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0)) {
                     isf += free == false ? 0 : 1;
                 }
                 else {
@@ -2363,9 +2226,9 @@ function isLineFour(x, y, model, color, arr, free, pass) {
     }
     else { // 判断黑棋
         for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, model, color, i);
-            if (pw == 4 && getArrValue(x, y, i - 1, model, arr) != color && getArrValue(x, y, i + 5, model, arr) != color) {
-                if ((getArrValue(x, y, i, model, arr) == 0 && getArrValue(x, y, i + 5, model, arr) == 0 && getArrValue(x, y, i + 6, model, arr) != color) || (getArrValue(x, y, i + 4, model, arr) == 0 && getArrValue(x, y, i - 1, model, arr) == 0 && getArrValue(x, y, i - 2, model, arr) != color)) {
+            let pw = getPower(x, y, arr, direction, color, i);
+            if (pw == 4 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
+                if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0 && getArrValue(x, y, i + 6, direction, arr) != color) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0 && getArrValue(x, y, i - 2, direction, arr) != color)) {
                     isf += free == false ? 0 : 1;
                 }
                 else {
@@ -2593,10 +2456,10 @@ function isFF(x, y, color, arr) {
         let isf = false;
         if (color == 2) { // 判断白棋
             for (let i = 0; i > -5; i--) {
-                let pw = getPower(x, y, arr, Cmodel[j], color, i);
-                //if (Cmodel[j]=="u") //console.log (pw)
+                let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
+                //if (DIRECTIONS[j]=="u") //console.log (pw)
                 if (pw == 4) {
-                    if (isLineFF(x, y, Cmodel[j], color, arr)) {
+                    if (isLineFF(x, y, DIRECTIONS[j], color, arr)) {
                         count = 2;
                     }
                     else {
@@ -2608,16 +2471,16 @@ function isFF(x, y, color, arr) {
         }
         else { // 判断黑棋
             for (let i = 0; i > -5; i--) {
-                let pw = getPower(x, y, arr, Cmodel[j], color, i);
-                if (pw == 4 && getArrValue(x, y, i - 1, Cmodel[j], arr) != color && getArrValue(x, y, i + 5, Cmodel[j], arr) != color) {
-                    if (isLineFF(x, y, Cmodel[j], color, arr)) {
+                let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
+                if (pw == 4 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color && getArrValue(x, y, i + 5, DIRECTIONS[j], arr) != color) {
+                    if (isLineFF(x, y, DIRECTIONS[j], color, arr)) {
                         count = 2;
                     }
                     else {
                         isf = true;
                     }
                 } // 五连否定冲44
-                if (pw == 5 && getArrValue(x, y, i - 1, Cmodel[j], arr) != color) {
+                if (pw == 5 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color) {
                     count = -2;
                     break;
                 }
@@ -2646,19 +2509,19 @@ function isThree(x, y, color, arr, free) {
         if (count < 0) break;
         isf = false;
         for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, Cmodel[i], color, j)
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j)
             if (color == 2) {
                 if (pw == 3) {
                     count++;
-                    if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
-                        if (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0 && (getArrValue(x, y, j + 5, Cmodel[i], arr) == 0 || getArrValue(x, y, j - 1, Cmodel[i], arr) == 0)) {
+                    if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                        if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && (getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0 || getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0)) {
                             isf = true;
                         }
-                        else if (getArrValue(x, y, j + 5, Cmodel[i], arr) == 0) {
+                        else if (getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0) {
                             isf = true;
                         }
                     }
-                    else if (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0 && getArrValue(x, y, j - 1, Cmodel[i], arr) == 0) {
+                    else if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0) {
                         isf = true;
                     }
                     continue;
@@ -2672,33 +2535,33 @@ function isThree(x, y, color, arr, free) {
             else {
                 if (pw == 3) {
                     count++;
-                    if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
-                        if (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0) {
-                            let p = getNextEmpty(x, y, arr, Cmodel[i], 1, j);
-                            if (isLineFour(p.x, p.y, Cmodel[i], color, arr, true)) {
+                    if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                        if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0) {
+                            let p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j);
+                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
                                 isf = true;
                             }
-                            p = getNextEmpty(x, y, arr, Cmodel[i], 1, j + 4);
-                            if (isLineFour(p.x, p.y, Cmodel[i], color, arr, true)) {
+                            p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j + 4);
+                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
                                 isf = true;
                             }
                         }
                         else {
-                            let p = getNextEmpty(x, y, arr, Cmodel[i], 1, j + 1);
-                            if (isLineFour(p.x, p.y, Cmodel[i], color, arr, true)) {
+                            let p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j + 1);
+                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
                                 isf = true;
                             }
                         }
                     }
-                    else if (getArrValue(x, y, j + 4, Cmodel[i], arr) == 0) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], j + 1);
-                        if (isLineFour(p.x, p.y, Cmodel[i], color, arr, true)) {
+                    else if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0) {
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], j + 1);
+                        if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
                             isf = true;
                         }
                     }
                 } // 四连以上排除
 
-                if ((pw >= 5) || (pw == 4 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color)) {
+                if ((pw >= 5) || (pw == 4 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color)) {
                     count = -1;
                     break;
                 }
@@ -2732,18 +2595,18 @@ function isTT(x, y, arr) {
     for (let i = 0; i < 4; i++) {
         if (count < 0) break;
         for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, Cmodel[i], color, j)
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j)
 
             if (pw == 3) {
-                if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
-                    if (getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+                if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                    if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
                         count++;
                         break;
                         //continue;
                     }
                 }
             } // 五连排除33
-            if (pw == 5 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+            if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
                 count = -1;
                 break;
             }
@@ -2758,7 +2621,7 @@ function isTT(x, y, arr) {
         count = 0; // 确认有了33形状，进一步判断是否是活3，count累计活3个数
         for (let i = 0; i < 4; i++) {
             // 从4个方向判断是否活3，是就计数
-            if (isLineThree(x, y, Cmodel[i], 1, arr, true)) {
+            if (isLineThree(x, y, DIRECTIONS[i], 1, arr, true)) {
                 count++;
             }
             if (count > 1) break;
@@ -2772,8 +2635,8 @@ function isTT(x, y, arr) {
 
 
 // 不会验证x,y是否有棋子
-// x,y,点在model指定这条线上面是否为3
-function isLineThree(x, y, model, color, arr, free) {
+// x,y,点在direction指定这条线上面是否为3
+function isLineThree(x, y, direction, color, arr, free) {
 
     let ov = arr[y][x];
     arr[y][x] = color;
@@ -2782,20 +2645,20 @@ function isLineThree(x, y, model, color, arr, free) {
 
     if (color == 2) { // 判断白棋
         for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, model, color, i);
+            let pw = getPower(x, y, arr, direction, color, i);
             if (pw == 3) {
                 isf = true;
-                if (getArrValue(x, y, i, model, arr) == 0) {
-                    if (getArrValue(x, y, i + 4, model, arr) == 0 && (getArrValue(x, y, i + 5, model, arr) == 0 || getArrValue(x, y, i - 1, model, arr) == 0)) {
+                if (getArrValue(x, y, i, direction, arr) == 0) {
+                    if (getArrValue(x, y, i + 4, direction, arr) == 0 && (getArrValue(x, y, i + 5, direction, arr) == 0 || getArrValue(x, y, i - 1, direction, arr) == 0)) {
                         isfree = true;
                         break;
                     }
-                    else if (getArrValue(x, y, i + 5, model, arr) == 0) {
+                    else if (getArrValue(x, y, i + 5, direction, arr) == 0) {
                         isfree = true;
                         break;
                     }
                 }
-                else if (getArrValue(x, y, i + 4, model, arr) == 0 && getArrValue(x, y, i - 1, model, arr) == 0) {
+                else if (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0) {
                     isfree = true;
                     break;
                 }
@@ -2806,33 +2669,33 @@ function isLineThree(x, y, model, color, arr, free) {
     }
     else { // 判断黑棋
         for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, model, color, i);
-            if (pw == 3 && getArrValue(x, y, i - 1, model, arr) != color && getArrValue(x, y, i + 5, model, arr) != color) {
+            let pw = getPower(x, y, arr, direction, color, i);
+            if (pw == 3 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
                 isf = true;
-                if (getArrValue(x, y, i, model, arr) == 0) {
-                    if (getArrValue(x, y, i + 4, model, arr) == 0) {
-                        let p = getNextEmpty(x, y, arr, model, 1, i);
-                        if (isLineFour(p.x, p.y, model, color, arr, true)) {
+                if (getArrValue(x, y, i, direction, arr) == 0) {
+                    if (getArrValue(x, y, i + 4, direction, arr) == 0) {
+                        let p = getNextEmpty(x, y, arr, direction, 1, i);
+                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, 1, i + 4);
-                        if (isLineFour(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, 1, i + 4);
+                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             break;
                         }
                     }
                     else {
-                        let p = getNextEmpty(x, y, arr, model, 1, i + 1);
-                        if (isLineFour(p.x, p.y, model, color, arr, true)) {
+                        let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
+                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             break;
                         }
                     }
                 }
-                else if (getArrValue(x, y, i + 4, model, arr) == 0) {
-                    let p = getNextEmpty(x, y, arr, model, 1, i + 1);
-                    if (isLineFour(p.x, p.y, model, color, arr, true)) {
+                else if (getArrValue(x, y, i + 4, direction, arr) == 0) {
+                    let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
+                    if (isLineFour(p.x, p.y, direction, color, arr, true)) {
                         isfree = true;
                         break;
                     }
@@ -2850,22 +2713,22 @@ function isLineThree(x, y, model, color, arr, free) {
 
 
 // 不会验证x,y是否有棋子
-// x,y,点在model指定这条线上面是否为2
-function isLineTwo(x, y, model, color, arr, free) {
+// x,y,点在direction指定这条线上面是否为2
+function isLineTwo(x, y, direction, color, arr, free) {
     let ov = arr[y][x];
     arr[y][x] = color;
     let isf = false;
     let isfree = false;
 
     for (let i = 0; i > -5; i--) {
-        let pw = getPower(x, y, arr, model, color, i);
+        let pw = getPower(x, y, arr, direction, color, i);
         if (pw == 2) {
             isf = true;
-            if (!getArrValue(x, y, i, model, arr) || !getArrValue(x, y, i + 4, model, arr)) {
+            if (!getArrValue(x, y, i, direction, arr) || !getArrValue(x, y, i + 4, direction, arr)) {
                 let st = -1;
                 let end = -1;
                 for (let j = 0; j < 5; j++) {
-                    if (getArrValue(x, y, i + j, model, arr) == color) {
+                    if (getArrValue(x, y, i + j, direction, arr) == color) {
                         if (st == -1) {
                             st = j;
                         }
@@ -2878,60 +2741,60 @@ function isLineTwo(x, y, model, color, arr, free) {
                 let p;
                 switch (end - st) {
                     case 1:
-                        p = getNextEmpty(x, y, arr, model, color, i + st - 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st - 2);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st - 1);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 2);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 3);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
                         break;
                     case 2:
-                        p = getNextEmpty(x, y, arr, model, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st - 1);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 1);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 3);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
                         break;
                     case 3:
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 1);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
                         }
-                        p = getNextEmpty(x, y, arr, model, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, model, color, arr, true)) {
+                        p = getNextEmpty(x, y, arr, direction, color, i + st + 2);
+                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
                             isfree = true;
                             i = -9999;
                             break;
@@ -2953,20 +2816,20 @@ function isLineTwo(x, y, model, color, arr, free) {
 
 // 不会验证x,y是否有棋子
 // 判断是否是一条线上的44,不判断x，y是否五连
-function isLineFF(x, y, model, color, arr) {
+function isLineFF(x, y, direction, color, arr) {
 
     let st = 0;
     let ed = 0;
     let i;
     for (i = -1; i > -4; i--) {
-        if (getArrValue(x, y, i, model, arr) != color) {
+        if (getArrValue(x, y, i, direction, arr) != color) {
             break;
         }
     }
     st = i + 1;
 
     for (i = 1; i < 4 + st; i++) {
-        if (getArrValue(x, y, i, model, arr) != color) {
+        if (getArrValue(x, y, i, direction, arr) != color) {
             break;
         }
     }
@@ -2974,25 +2837,25 @@ function isLineFF(x, y, model, color, arr) {
     //console.log("st="+ st + "   ed=" + ed)
     switch (ed - st) {
         case 0:
-            if (getArrValue(x, y, -4, model, arr) == color && getArrValue(x, y, 4, model, arr) == color && getArrValue(x, y, -3, model, arr) == color && getArrValue(x, y, 3, model, arr) == color && getArrValue(x, y, -2, model, arr) == color && getArrValue(x, y, 2, model, arr) == color && getArrValue(x, y, -1, model, arr) == 0 && getArrValue(x, y, 1, model, arr) == 0) {
+            if (getArrValue(x, y, -4, direction, arr) == color && getArrValue(x, y, 4, direction, arr) == color && getArrValue(x, y, -3, direction, arr) == color && getArrValue(x, y, 3, direction, arr) == color && getArrValue(x, y, -2, direction, arr) == color && getArrValue(x, y, 2, direction, arr) == color && getArrValue(x, y, -1, direction, arr) == 0 && getArrValue(x, y, 1, direction, arr) == 0) {
                 if (color == 2) return true;
-                if (getArrValue(x, y, -5, model, arr) != color && getArrValue(x, y, 5, model, arr) != color) {
+                if (getArrValue(x, y, -5, direction, arr) != color && getArrValue(x, y, 5, direction, arr) != color) {
                     return true;
                 }
             }
             break;
         case 1:
-            if (getArrValue(x, y, -3 + st, model, arr) == color && getArrValue(x, y, 3 + ed, model, arr) == color && getArrValue(x, y, -2 + st, model, arr) == color && getArrValue(x, y, 2 + ed, model, arr) == color && getArrValue(x, y, -1 + st, model, arr) == 0 && getArrValue(x, y, 1 + ed, model, arr) == 0) {
+            if (getArrValue(x, y, -3 + st, direction, arr) == color && getArrValue(x, y, 3 + ed, direction, arr) == color && getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
                 if (color == 2) return true;
-                if (getArrValue(x, y, -4 + st, model, arr) != color && getArrValue(x, y, 4 + ed, model, arr) != color) {
+                if (getArrValue(x, y, -4 + st, direction, arr) != color && getArrValue(x, y, 4 + ed, direction, arr) != color) {
                     return true;
                 }
             }
             break;
         case 2:
-            if (getArrValue(x, y, -2 + st, model, arr) == color && getArrValue(x, y, 2 + ed, model, arr) == color && getArrValue(x, y, -1 + st, model, arr) == 0 && getArrValue(x, y, 1 + ed, model, arr) == 0) {
+            if (getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
                 if (color == 2) return true;
-                if (getArrValue(x, y, -3 + st, model, arr) != color && getArrValue(x, y, 3 + ed, model, arr) != color) {
+                if (getArrValue(x, y, -3 + st, direction, arr) != color && getArrValue(x, y, 3 + ed, direction, arr) != color) {
                     return true;
                 }
             }
@@ -3001,10 +2864,10 @@ function isLineFF(x, y, model, color, arr) {
             /*
                 if (color==2) {
                     for ( i=0;i>st;i--)  {
-                       if(getPower(x,y,arr,model,color,i)==4) return true;
+                       if(getPower(x,y,arr,direction,color,i)==4) return true;
                     }
                     for ( i=0;i<ed;i++)  {
-                       if(getPower(x,y,arr,model,color,i-4)==4) return true;
+                       if(getPower(x,y,arr,direction,color,i-4)==4) return true;
                     }
                 }
                 break;
@@ -3022,26 +2885,26 @@ function getLines(idx, color, arr, level) {
     let y = parseInt(idx / 15);
     //console.log(`idx=${idx}, x=${x}, y=${y}`)
     for (let i = 0; i < 4; i++) {
-        let line = getLine(Cmodel[i]);
+        let line = getLine(DIRECTIONS[i]);
         //console.log(line)
         if (line) lines.push(line);
     }
     return lines;
 
-    function getLine(model) {
+    function getLine(direction) {
         let p;
         let isf;
         let count = 0;
         let start, end;
         let points = [];
         arr[y][x] = color;
-        //console.log(model)
+        //console.log(direction)
         switch (level) {
             case 3:
                 for (let i = -3; i < 0; i++) {
-                    p = getArrPoint(x, y, i, model);
+                    p = getArrPoint(x, y, i, direction);
                     if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFour(p.x, p.y, model, color, arr, true);
+                        isf = isLineFour(p.x, p.y, direction, color, arr, true);
                         if (isf) {
                             points.push(p);
                             break;
@@ -3050,9 +2913,9 @@ function getLines(idx, color, arr, level) {
                 }
 
                 for (let i = 3; i > 0; i--) {
-                    p = getArrPoint(x, y, i, model);
+                    p = getArrPoint(x, y, i, direction);
                     if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFour(p.x, p.y, model, color, arr, true);
+                        isf = isLineFour(p.x, p.y, direction, color, arr, true);
                         if (isf) {
                             points.push(p);
                             break;
@@ -3063,9 +2926,9 @@ function getLines(idx, color, arr, level) {
                 break;
             case 4:
                 for (let i = -4; i < 0; i++) {
-                    p = getArrPoint(x, y, i, model);
+                    p = getArrPoint(x, y, i, direction);
                     if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFive(p.x, p.y, model, color, arr);
+                        isf = isLineFive(p.x, p.y, direction, color, arr);
                         if (isf) {
                             points.push(p);
                             break;
@@ -3074,9 +2937,9 @@ function getLines(idx, color, arr, level) {
                 }
 
                 for (let i = 4; i > 0; i--) {
-                    p = getArrPoint(x, y, i, model);
+                    p = getArrPoint(x, y, i, direction);
                     if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFive(p.x, p.y, model, color, arr);
+                        isf = isLineFive(p.x, p.y, direction, color, arr);
                         if (isf) {
                             points.push(p);
                             break;
@@ -3086,7 +2949,7 @@ function getLines(idx, color, arr, level) {
                 setLine();
                 break;
             case 5:
-                if (isLineFive(x, y, model, color, arr)) {
+                if (isLineFive(x, y, direction, color, arr)) {
                     points.push({ x: x, y: y });
                 }
                 setLine();
@@ -3095,31 +2958,31 @@ function getLines(idx, color, arr, level) {
         arr[y][x] = 0;
 
         if (start != end) {
-            //console.log(`start=${start}, end=${end}, model=${model}`)
+            //console.log(`start=${start}, end=${end}, direction=${direction}`)
             return { "start": start, "end": end };
         }
 
         function setLine() {
             if (points.length) {
-                start = getArrIndex(points[0].x, points[0].y, 0, model);
+                start = getArrIndex(points[0].x, points[0].y, 0, direction);
                 let j = 0;
                 while (true) {
                     j--;
-                    let c = getArrValue(points[0].x, points[0].y, j, model, arr);
+                    let c = getArrValue(points[0].x, points[0].y, j, direction, arr);
                     if (c == color) {
-                        start = getArrIndex(points[0].x, points[0].y, j, model);
+                        start = getArrIndex(points[0].x, points[0].y, j, direction);
                     }
                     else {
                         break;
                     }
                 }
-                end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, 0, model);
+                end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, 0, direction);
                 j = 0;
                 while (true) {
                     j++;
-                    let c = getArrValue(points[points.length - 1].x, points[points.length - 1].y, j, model, arr);
+                    let c = getArrValue(points[points.length - 1].x, points[points.length - 1].y, j, direction, arr);
                     if (c == color) {
-                        end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, j, model);
+                        end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, j, direction);
                     }
                     else {
                         break;
@@ -3138,23 +3001,23 @@ function getThreeUndoFail(x, y, arr) {
     let ps = [];
     for (let i = 0; i < 4; i++) {
         for (let j = 1; j < 5; j++) {
-            let p = getArrPoint(x, y, j, Cmodel[i], arr);
+            let p = getArrPoint(x, y, j, DIRECTIONS[i], arr);
             let ov;
             if (p.x != -1 && arr[p.y][p.x] == 0) {
                 ov = arr[p.y][p.x];
                 arr[p.y][p.x] = 1;
-                if (isLineFour(x, y, Cmodel[i], 1, arr, null, true)) {
-                    ps.push(getArrIndex(x, y, j, Cmodel[i], arr) * 1);
+                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, null, true)) {
+                    ps.push(getArrIndex(x, y, j, DIRECTIONS[i], arr) * 1);
                     //post("wLb", [ps[ps.length-1],"6","red"]);
                 }
                 arr[p.y][p.x] = ov;
             }
-            p = getArrPoint(x, y, -j, Cmodel[i], arr);
+            p = getArrPoint(x, y, -j, DIRECTIONS[i], arr);
             if (p.x != -1 && arr[p.y][p.x] == 0) {
                 ov = arr[p.y][p.x];
                 arr[p.y][p.x] = 1;
-                if (isLineFour(x, y, Cmodel[i], 1, arr, null, true)) {
-                    ps.push(getArrIndex(x, y, -j, Cmodel[i], arr) * 1);
+                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, null, true)) {
+                    ps.push(getArrIndex(x, y, -j, DIRECTIONS[i], arr) * 1);
                     //post("wLb", [ps[ps.length-1],"6","red"]);
                 }
                 arr[p.y][p.x] = ov;
@@ -3172,20 +3035,20 @@ function getSixFramePoint(x, y, arr) {
     let ov = arr[y][x];
     arr[y][x] = 1
     for (let i = 0; i < 4; i++) {
-        if (isLineThree(x, y, Cmodel[i], 1, arr, true)) {
+        if (isLineThree(x, y, DIRECTIONS[i], 1, arr, true)) {
             let count = 0;
             let p;
             let fp;
             for (let j = 1; j < 4; j++) { // 找活四点计数
-                if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
-                    p = getArrPoint(x, y, j, Cmodel[i], arr);
+                if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                    p = getArrPoint(x, y, j, DIRECTIONS[i], arr);
                     if (isFour(p.x, p.y, 1, arr, true)) {
                         count += 1;
                         fp = p;
                     }
                 }
-                if (getArrValue(x, y, -j, Cmodel[i], arr) == 0) {
-                    p = getArrPoint(x, y, -j, Cmodel[i], arr);
+                if (getArrValue(x, y, -j, DIRECTIONS[i], arr) == 0) {
+                    p = getArrPoint(x, y, -j, DIRECTIONS[i], arr);
                     if (isFour(p.x, p.y, 1, arr, true)) {
                         count += 2;
                         fp = p;
@@ -3198,23 +3061,23 @@ function getSixFramePoint(x, y, arr) {
             let idx;
             if (count == 1 || count == 2) { // 存在唯一活四点
                 for (let j = 1; j < 5; j++) { // 找六腐防点
-                    if (getArrValue(fp.x, fp.y, j, Cmodel[i], arr) == 0) {
-                        if (getArrValue(fp.x, fp.y, j + 1, Cmodel[i], arr) == 0) {
-                            idx = getArrIndex(fp.x, fp.y, j + 1, Cmodel[i], arr);
+                    if (getArrValue(fp.x, fp.y, j, DIRECTIONS[i], arr) == 0) {
+                        if (getArrValue(fp.x, fp.y, j + 1, DIRECTIONS[i], arr) == 0) {
+                            idx = getArrIndex(fp.x, fp.y, j + 1, DIRECTIONS[i], arr);
                             tx = idx % 15;
                             ty = parseInt(idx / 15);
-                            if (!isLineFour(tx, ty, Cmodel[i], 1, arr)) ps.push(idx);
+                            if (!isLineFour(tx, ty, DIRECTIONS[i], 1, arr)) ps.push(idx);
                         }
                         break;
                     }
                 }
                 for (let j = 1; j < 5; j++) { //找六腐防点
-                    if (getArrValue(fp.x, fp.y, -j, Cmodel[i], arr) == 0) {
-                        if (getArrValue(fp.x, fp.y, -j - 1, Cmodel[i], arr) == 0) {
-                            idx = getArrIndex(fp.x, fp.y, -j - 1, Cmodel[i], arr);
+                    if (getArrValue(fp.x, fp.y, -j, DIRECTIONS[i], arr) == 0) {
+                        if (getArrValue(fp.x, fp.y, -j - 1, DIRECTIONS[i], arr) == 0) {
+                            idx = getArrIndex(fp.x, fp.y, -j - 1, DIRECTIONS[i], arr);
                             tx = idx % 15;
                             ty = parseInt(idx / 15);
-                            if (!isLineFour(tx, ty, Cmodel[i], 1, arr)) ps.push(idx);
+                            if (!isLineFour(tx, ty, DIRECTIONS[i], 1, arr)) ps.push(idx);
                         }
                         break;
                     }
@@ -3491,12 +3354,12 @@ function findSixPoint(arr, color, newarr, setnum) {
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, Cmodel[i], color)
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color)
 
                 if (pw == 4) {
 
-                    let p = getNextEmpty(x, y, arr, Cmodel[i], color);
-                    if (getArrValue(x, y, -1, Cmodel[i], arr) == color || getArrValue(x, y, 5, Cmodel[i], arr) == color) {
+                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
+                    if (getArrValue(x, y, -1, DIRECTIONS[i], arr) == color || getArrValue(x, y, 5, DIRECTIONS[i], arr) == color) {
                         newarr[p.y][p.x] += Math.pow(10, i);
                         count++;
                     }
@@ -3531,10 +3394,10 @@ function findFivePoint(arr, color, newarr, setnum) {
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, Cmodel[i], color);
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
                 if (color == 2) {
                     if (pw == 4) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
                         if (fP.indexOf(p.y * 15 + p.x) == -1) fP.push(p.y * 15 + p.x);
                         count++;
@@ -3544,11 +3407,11 @@ function findFivePoint(arr, color, newarr, setnum) {
                 else {
 
                     if (pw == 4) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
                         count++;
 
-                        if (getArrValue(x, y, -1, Cmodel[i], arr) == color || getArrValue(x, y, 5, Cmodel[i], arr) == color) {
+                        if (getArrValue(x, y, -1, DIRECTIONS[i], arr) == color || getArrValue(x, y, 5, DIRECTIONS[i], arr) == color) {
                             newarr[p.y][p.x] -= Math.pow(10, i);
                             count--;
                         }
@@ -3612,33 +3475,33 @@ function findFour(arr, color, newarr) {
         for (let x = 0; x < 15; x++) {
             for (let i = 0; i < 4; i++) {
 
-                let pw = getPower(x, y, arr, Cmodel[i], color);
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
 
                 if (color == 2) {
                     if (pw == 3) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
                     }
 
                     if (pw == 4) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] = -9999;
                     }
 
                 }
                 else {
 
-                    if (pw == 3 && getArrValue(x, y, -1, Cmodel[i], arr) != color && getArrValue(x, y, 5, Cmodel[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                    if (pw == 3 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
 
                     }
-                    if (pw == 4 && getArrValue(x, y, -1, Cmodel[i], arr) != color && getArrValue(x, y, 5, Cmodel[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                    if (pw == 4 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] = -9999;
 
                     }
@@ -3655,7 +3518,7 @@ function findFourPoint(arr, color, newarr, ftype, setnum, passFoul) {
 
     let count = 0;
     let fP = [];
-    let free = ftype == onlyFree ? true : ftype == onlyNoFree ? false : null;
+    let free = ftype == ONLY_FREE ? true : ftype == ONLY_NOFREE ? false : null;
     findFour(arr, color, newarr);
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
@@ -3752,36 +3615,36 @@ function findThree(arr, color, newarr) {
         for (let x = 0; x < 15; x++) {
             for (let i = 0; i < 4; i++) {
 
-                let pw = getPower(x, y, arr, Cmodel[i], color);
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
 
                 if (color == 2) {
                     if (pw == 2) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
                     }
                     if (pw == 4) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] = -9999;
                     }
 
                 }
                 else {
 
-                    if (pw == 2 && getArrValue(x, y, -1, Cmodel[i], arr) != color && getArrValue(x, y, 5, Cmodel[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                    if (pw == 2 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, Cmodel[i], color, 1);
+                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
                         newarr[p.y][p.x] += Math.pow(10, i);
 
                     }
-                    if (pw == 4 && getArrValue(x, y, -1, Cmodel[i], arr) != color && getArrValue(x, y, 5, Cmodel[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, Cmodel[i], color);
+                    if (pw == 4 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
+                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
                         newarr[p.y][p.x] = -9999;
 
                     }
@@ -3801,7 +3664,7 @@ function findThreePoint(arr, color, newarr, ftype, setnum) {
     let P = [];
     findThree(arr, color, newarr);
     //console.log(newarr)
-    let free = ftype == onlyFree ? true : ftype == onlyNoFree ? false : null;
+    let free = ftype == ONLY_FREE ? true : ftype == ONLY_NOFREE ? false : null;
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             if (newarr[y][x] > 0) {
@@ -3854,7 +3717,7 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
             arr[y][x] = color;
             if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
 
-            let level = getLevelB(arr, color, newarr, null, fType == onlySimpleWin ? 1 : depth, null, num == 9999 ? 9999 : num - 1);
+            let level = getLevelB(arr, color, newarr, null, fType == ONLY_SIMPLE_WIN ? 1 : depth, null, num == 9999 ? 9999 : num - 1);
             let nColor = color == 1 ? 2 : 1;
             let fNum = findVCF(arr, nColor, 1, depth, null, true);
             if (level.level < 4 && level.level >= 3 && fNum == 0) {
@@ -3890,7 +3753,7 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
                         }
                     }
                     else { // 进一步判断是否做V
-                        if ((fType == onlyVCF && l > 3) || (fType == onlySimpleWin && l == 3)) {
+                        if ((fType == ONLY_VCF && l > 3) || (fType == ONLY_SIMPLE_WIN && l == 3)) {
                             if (!backstage) {
                                 post("printSearchPoint", []);
                                 post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
@@ -3928,7 +3791,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
     let y = parseInt(idx / 15);
 
     arr[y][x] = color;
-    let level = getLevelB(arr, color, getArr([]), 60000, fType == onlySimpleWin ? 1 : null);
+    let level = getLevelB(arr, color, getArr([]), 60000, fType == ONLY_SIMPLE_WIN ? 1 : null);
     let nColor = color == 1 ? 2 : 1;
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
@@ -3948,13 +3811,13 @@ function isLevelThreePoint(idx, color, arr, fType) {
             if (fType == null) {
                 postPoint(idx, txt, txtColor, level.moves);
             }
-            else if (fType == onlySimpleWin && color == 2) {
+            else if (fType == ONLY_SIMPLE_WIN && color == 2) {
                 postPoint(idx, txt, txtColor, level.moves);
             }
         }
         else {
 
-            if (fType != onlySimpleWin && l > 3) { //搜索冲4复活3
+            if (fType != ONLY_SIMPLE_WIN && l > 3) { //搜索冲4复活3
                 findVCF(arr, color, 1, 1, 3000, true);
                 l = vcfWinMoves.length ? 3 : l;
                 level.moves = vcfWinMoves.length ? vcfWinMoves[0] : level.moves;
@@ -3987,7 +3850,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
                 postPoint(idx, txt, txtColor, level.moves);
             }
             else { // 进一步判断是否做V
-                if ((fType == onlyVCF && txtColor == "black") || (fType == onlySimpleWin && txtColor == "red")) {
+                if ((fType == ONLY_VCF && txtColor == "black") || (fType == ONLY_SIMPLE_WIN && txtColor == "red")) {
                     postPoint(idx, txt, txtColor, level.moves);
                 }
             }
@@ -4229,9 +4092,9 @@ function around(arr, idx, radius) {
     let y = parseInt(idx / 15);
     for (let i = 0; i < 4; i++) {
         for (let j = 1; j <= radius; j++) {
-            let v = getArrValue(x, y, j, Cmodel[i], arr);
+            let v = getArrValue(x, y, j, DIRECTIONS[i], arr);
             if (v == 1 || v == 2) return true;
-            v = getArrValue(x, y, -j, Cmodel[i], arr);
+            v = getArrValue(x, y, -j, DIRECTIONS[i], arr);
             if (v == 1 || v == 2) return true;
         }
     }
@@ -4289,7 +4152,7 @@ function isTwoVCF(idx, color, arr) {
     // 对手准备落子，判断对手是否有攻。
     let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
     //findVCF(color,timeOut,depth,count,backStage,arr) 
-    let fNum = nLevel.level >= 3 ? 0 : findVCF(arr, color, 2, depth, timeout, true);
+    let fNum = nLevel.level >= 3 ? 0 : findVCF(arr, color, 1, depth, timeout, true);
     let node = new Node();
     let cNode = node.childNode;
     cNode[0] = new Node(idx, node);
@@ -4321,9 +4184,10 @@ function isTwoVCF(idx, color, arr) {
             //  保存先手连续冲四分支
             let testCount = 0;
             let fMoves = []; //
-            //getContinueBlockVCF(arr, color, winMoves, undefined, undefined, idx);
+            let cbps = getContinueBlockPoints(arr, color, winMoves);
             continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
-            movesSort(fMoves,(a,b)=>{return a>=b;});
+            movesSort(fMoves, (a, b) => { return a <= b; });
+            removeUselessFour(fMoves, cbps);
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
                 post("showLabel", [`${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, 10000]);
@@ -4446,6 +4310,22 @@ function isTwoVCF(idx, color, arr) {
     }
 
 
+
+    function removeUselessFour(fMoves, cbps) {
+        //let count=0;
+        //let max = fMoves.length;
+        for (let i = fMoves.length - 1; i >= 0; i--) {
+            let j;
+            for (j = fMoves[i].length - 1; j >= 0; j--) {
+                let value = getArrIdxValue(fMoves[i][j],fMoves[i][j] % 2 ?cbps.colorArr : cbps.nColorArr);
+                if (value) break;
+            }
+            if (j<0) {fMoves.splice(i,1);}
+        }
+        //mConsole(`removeCount=${count}/${max}\nncolor=\n${toStr(cbps.nColorArr)}\ncolor=\n${toStr(cbps.colorArr)}`)
+    }
+
+
     function setMovesKey(cbps, color, fMoves, fMovesKey) {
         let nColor = color == 1 ? 2 : 1;
         let len = fMoves.length;
@@ -4516,10 +4396,11 @@ function isTwoVCF(idx, color, arr) {
 
 
 
+
 /*
 function isTwoVCF(idx, color, arr) {
 
-    test = idx == 145;
+    test = idx == 62;
     let maxCount = 0;
     let count = 0;
     let moves = [];
@@ -4632,10 +4513,10 @@ function isTwoVCF(idx, color, arr) {
         }
     }
 }
+
 */
+/*
 
-
-/*,
 // arr 局面 color 色做了VCF 在 winMoves 中，返回潜在的连续冲4先手防分支(去除了明显的无谓冲4)
 function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
 
@@ -4681,7 +4562,7 @@ function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
     //if (test) mConsole(`>>idx=${idx}, leng=${fMoves.length}`)
     return fMoves;
 }
-
+*/
 
 
 // 找到先手防 可能经过的点，黑白分开找
@@ -4696,23 +4577,23 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
         let bPoint = [];
         let moves = winMoves[moveIndex];
         if (!isVCF(color, arr, moves)) {
-            for (let i=blockPoints.length - 1; i>=0; i--) {
+            for (let i = blockPoints.length - 1; i >= 0; i--) {
                 let x = blockPoints[i] % 15;
-                let y = parseInt(blockPoints[i]/15);
+                let y = parseInt(blockPoints[i] / 15);
                 let ov = arr[y][x];
-                arr[y][x] = color==1?2:1;
-                if (isVCF(color, arr, moves)) bPoint.push({x:x,y:y});
+                arr[y][x] = color == 1 ? 2 : 1;
+                if (isVCF(color, arr, moves)) bPoint.push({ x: x, y: y });
                 arr[y][x] = ov;
             }
         }
         else {
-            bPoint.push({x:-1,y:-1});
+            bPoint.push({ x: -1, y: -1 });
         }
         for (let bIdx = bPoint.length - 1; bIdx >= 0; bIdx--) {
             let ox = bPoint[bIdx].x;
             let oy = bPoint[bIdx].y;
-            let OV = ox==-1 ? 0 : arr[oy][ox];
-            if (ox!=-1) arr[oy][ox] = color==1?2:1;
+            let OV = ox == -1 ? 0 : arr[oy][ox];
+            if (ox != -1) arr[oy][ox] = color == 1 ? 2 : 1;
             let bp = getBlockVCF([moves], color, arr, true);
             let x, y;
             //if (test) mConsole(`bp.length${bp.length}\n>> color==${color}[${moves}]`)
@@ -4742,15 +4623,14 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                 let ty = parseInt(moves[i - 1] / 15);
                 arr[ty][tx] = color;
                 if (color == 1) {
-                    //mConsole(`1__${tx},${ty}_>>${moves}`)
                     setBlockThree(tx, ty, arr, 0, newarr, narr, color);
                 }
                 arr[y][x] = nColor;
-                for (let j = 0; j < 4; j++) {
+                for (let j = 0; j < 4; j++) { //设置潜在反防点
                     let start = 0;
                     let end = 0;
                     for (let k = -1; k > -5; k--) {
-                        let value = getArrValue(x, y, k, Cmodel[j], arr);
+                        let value = getArrValue(x, y, k, DIRECTIONS[j], arr);
                         if (value == 0 || value == nColor) {
                             start--;
                         }
@@ -4759,7 +4639,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                         }
                     }
                     for (let k = 1; k < 5; k++) {
-                        let value = getArrValue(x, y, k, Cmodel[j], arr);
+                        let value = getArrValue(x, y, k, DIRECTIONS[j], arr);
                         if (value == 0 || value == nColor) {
                             end++;
                         }
@@ -4767,16 +4647,18 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                             break;
                         }
                     }
-                    //if (test) mConsole(`model=${Cmodel[j]}, idx=${moves[i]}, start=${start}, end=${end}}`)
+
+                    //if (test) mConsole(`direction=${DIRECTIONS[j]}, idx=${moves[i]}, start=${start}, end=${end}}`)
                     if (end - start >= 4) {
                         for (let k = start; k <= end; k++) {
-                            let p = getArrPoint(x, y, k, Cmodel[j], arr);
-                            if (arr[y][x] == 0) newarr[p.y][p.x] = 1;
+                            if (test) mConsole(`>_>_i=${i}, j=${j}`)
+                            let p = getArrPoint(x, y, k, DIRECTIONS[j], arr);
+                            newarr[p.y][p.x] = 1;
                         }
                     }
                 }
             }
-
+            if (test) mConsole(`_______\n${toStr(newarr)}`);
             x = moves[moves.length - 1] % 15;
             y = parseInt(moves[moves.length - 1] / 15);
             //arr[y][x] = color;
@@ -4800,20 +4682,20 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             }
             //arr[y][x] = 0;
             for (let j = 0; j < 4; j++) {
-                if (isLineFour(x, y, Cmodel[j], color, arr, true)) {
+                if (isLineFour(x, y, DIRECTIONS[j], color, arr, true)) {
                     let i;
                     let start, end;
                     for (i = -1; i > -5; i--) {
-                        if (getArrValue(x, y, i, Cmodel[j], arr) != color) break;
+                        if (getArrValue(x, y, i, DIRECTIONS[j], arr) != color) break;
                     }
                     start = i + 1;
                     for (i = 1; i < 5; i++) {
-                        if (getArrValue(x, y, i, Cmodel[j], arr) != color) break;
+                        if (getArrValue(x, y, i, DIRECTIONS[j], arr) != color) break;
                     }
                     end = i - 1;
                     if (start == 0 || end == 0) { //连活3 设置夏止防选点
                         start = start == 0 ? 1 : -3;
-                        setBlockFreeThree(x, y, start, start + 2, Cmodel[j], color, newarr, narr, color);
+                        setBlockFreeThree(x, y, start, start + 2, DIRECTIONS[j], color, newarr, narr, color);
                     }
                     break;
 
@@ -4830,17 +4712,17 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             for (let i = bp.length - 1; i >= 0; i--) {
                 x = bp[i] % 15;
                 y = parseInt(bp[i] / 15);
-                if (arr[y][x] == 0) newarr[y][x] = 1;
+                newarr[y][x] = 1;
             }
             //if (test) mConsole(toStr(newarr))
             for (let i = bpc.length - 1; i >= 0; i--) {
                 x = bpc[i] % 15;
                 y = parseInt(bpc[i] / 15);
-                if (arr[y][x] == 0) narr[y][x] = 1;
+                narr[y][x] = 1;
             }
             //if (test) mConsole(toStr(narr))
             //if (test) mConsole(`bpleng=${bp.length}\n${moveIndex}\nVCF=${winMoves[moveIndex]}\nnewarr=\n${toStr(newarr)}\nnarr=\n${toStr(narr)}\narr=${toStr(arr)}`)
-            if (ox!=-1) arr[oy][ox] = OV;
+            if (ox != -1) arr[oy][ox] = OV;
         }
     }
 
@@ -4863,90 +4745,90 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
         for (let i = 0; i < 4; i++) {
             if (count < 0) break;
             for (let j = 0; j > -5; j--) {
-                let pw = getPower(x, y, arr, Cmodel[i], color, j);
+                let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
                 if (pw == 3) {
-                    //if (test) mConsole(`j=${j}, pw=3, model=${Cmodel[i]}\n________`);
-                    if (getArrValue(x, y, j, Cmodel[i], arr) == 0) {
-                        if (getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
-                            //if (test) mConsole(`i=${i}, j=${j}, pw=3, model=${Cmodel[i]}\n________\n${toStr(arr)}`);
+                    //if (test) mConsole(`j=${j}, pw=3, direction=${DIRECTIONS[i]}\n________`);
+                    if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                        if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
+                            //if (test) mConsole(`i=${i}, j=${j}, pw=3, direction=${DIRECTIONS[i]}\n________\n${toStr(arr)}`);
                             let k;
                             let p;
                             for (k = 2; k < 5; k++) {
-                                if (getArrValue(x, y, j + k, Cmodel[i], arr) == 0) break;
+                                if (getArrValue(x, y, j + k, DIRECTIONS[i], arr) == 0) break;
                             }
                             if (k == 4) {
-                                p = getArrPoint(x, y, j + k, Cmodel[i], arr);
-                                if (p.x != -1) points.push({ p: p, model: Cmodel[i], len: 0 });
-                                p = getArrPoint(x, y, j, Cmodel[i], arr);
-                                if (p.x != -1) points.push({ p: p, model: Cmodel[i], len: 3 });
+                                p = getArrPoint(x, y, j + k, DIRECTIONS[i], arr);
+                                if (p.x != -1) points.push({ p: p, direction: DIRECTIONS[i], len: 0 });
+                                p = getArrPoint(x, y, j, DIRECTIONS[i], arr);
+                                if (p.x != -1) points.push({ p: p, direction: DIRECTIONS[i], len: 3 });
                             }
                             else {
-                                p = getArrPoint(x, y, j + k, Cmodel[i], arr);
-                                if (p.x != -1) points.push({ p: p, model: Cmodel[i], len: 4 });
+                                p = getArrPoint(x, y, j + k, DIRECTIONS[i], arr);
+                                if (p.x != -1) points.push({ p: p, direction: DIRECTIONS[i], len: 4 });
                             }
                             count++;
                             break;
                         }
                     }
                 } // 五连排除33
-                if (pw == 5 && getArrValue(x, y, j - 1, Cmodel[i], arr) != color && getArrValue(x, y, j + 5, Cmodel[i], arr) != color) {
+                if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
                     count = -1;
                     break;
                 }
             }
         }
-        
+
         arr[y][x] = "*";
-        if (test) mConsole(`depth=${depth}\ncount=${count}________>>\n${toStr(arr)}`);
+        //if (test) mConsole(`depth=${depth}\ncount=${count}________>>\n${toStr(arr)}`);
         arr[y][x] = color;
-        
-        
+
+
         if (count >= 2) {
             for (let i = points.length - 1; i >= 0; i--) {
-                
+
                 arr[points[i].p.y][points[i].p.x] = "*";
-                if (test) mConsole(`depth=${depth}\n>>\n${toStr(arr)}`);
+                //if (test) mConsole(`depth=${depth}\n>>\n${toStr(arr)}`);
                 arr[points[i].p.y][points[i].p.x] = color;
-                
+
 
                 if ((arrColor == 1 && depth % 2) || (arrColor == 2 && (depth + 1) % 2)) {
-                    if (points[i].len == 3) setBlockFreeThree(points[i].p.x, points[i].p.y, 1, 3, points[i].model, color, nColorArr, colorArr, arrColor);
+                    if (points[i].len == 3) setBlockFreeThree(points[i].p.x, points[i].p.y, 1, 3, points[i].direction, color, nColorArr, colorArr, arrColor);
                 }
                 //mConsole(`4__${points[i].p.x},${points[i].p.y}_>>${1}`)
                 setBlockThree(points[i].p.x, points[i].p.y, arr, depth + 1, nColorArr, colorArr, arrColor);
-                
+
                 arr[points[i].p.y][points[i].p.x] = "*";
-                if (test) mConsole(`depth=${depth}\n<<\n${toStr(arr)}`);
+                //if (test) mConsole(`depth=${depth}\n<<\n${toStr(arr)}`);
                 arr[points[i].p.y][points[i].p.x] = 0;
-                
+
 
             }
-            
-                for (let i = points.length - 1; i >= 0; i--) {
-                    if (points[i].len == 3) {
-                        if (test) mConsole(`setBlockFreeThree`);
-                        arr[points[i].p.y][points[i].p.x] = color;
-                        
-                        arr[points[i].p.y][points[i].p.x] = 0;
-                    }
+
+            for (let i = points.length - 1; i >= 0; i--) {
+                if (points[i].len == 3) {
+                    //if (test) mConsole(`setBlockFreeThree`);
+                    arr[points[i].p.y][points[i].p.x] = color;
+
+                    arr[points[i].p.y][points[i].p.x] = 0;
                 }
-            
+            }
+
 
         }
-        
+
         arr[y][x] = "*";
-        if (test) mConsole(`depth=${depth}\ncount=${count}<<________\n${toStr(arr)}`);
+        //if (test) mConsole(`depth=${depth}\ncount=${count}<<________\n${toStr(arr)}`);
         arr[y][x] = color;
-        
+
 
         arr[y][x] = ov;
     }
 
     // 设置夏止防选点
-    function setBlockFreeThree(x, y, start, end, model, color, nColorArr, colorArr, arrColor) {
+    function setBlockFreeThree(x, y, start, end, direction, color, nColorArr, colorArr, arrColor) {
         let arr;
         for (let i = -1; i > -4; i--) {
-            let p = getArrPoint(x, y, start + i, model, arr);
+            let p = getArrPoint(x, y, start + i, direction, arr);
             if (p.x != -1) {
                 if (i > -3) {
                     colorArr[p.y][p.x] = 1;
@@ -4964,7 +4846,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             if (color == 2 && i == -2) break;
         }
         for (let i = 1; i < 4; i++) {
-            let p = getArrPoint(x, y, end + i, model, arr);
+            let p = getArrPoint(x, y, end + i, direction, arr);
             if (p.x != -1) {
                 if (i < 3) {
                     colorArr[p.y][p.x] = 1;
@@ -4985,7 +4867,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
 
 
 }
-*/
+
 
 
 // 排除直接防
@@ -5140,14 +5022,14 @@ function getBlockFour(x, y, arr) {
     let nColor = arr[y][x];
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, Cmodel[i], nColor, j);
+            let pw = getPower(x, y, arr, DIRECTIONS[i], nColor, j);
             if (pw == 4) {
                 if (nColor == 2) {
-                    let p = getNextEmpty(x, y, arr, Cmodel[i], nColor, j);
+                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], nColor, j);
                     return p.y * 15 + p.x;
                 }
-                else if (getArrValue(x, y, j - 1, Cmodel[i], arr) != nColor && getArrValue(x, y, j + 5, Cmodel[i], arr) != nColor) {
-                    let p = getNextEmpty(x, y, arr, Cmodel[i], nColor, j);
+                else if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != nColor && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != nColor) {
+                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], nColor, j);
                     return p.y * 15 + p.x;
                 }
             }
@@ -5324,8 +5206,8 @@ function getBlockVCFPaths(VCF, color, arr, backStage, passFour, idx) {
     }
     let continueFourPath = [];
     continueFour(arr, color == 1 ? 2 : 1, 9, continueFourPath, getArr([]));
-    movesSort(continueFourPath, (a,b)=>{return a<=b;})
-    
+    movesSort(continueFourPath, (a, b) => { return a <= b; })
+
     //mConsole(continueFourPath)
     //getContinueBlockVCF(arr, color, winMoves);
     //mConsole(continueFourPath.length)
@@ -5744,7 +5626,7 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
 
     // 再排除黑禁手
     if (!selFour) findFourPoint(arr, color, newarr, null, -9999); //排除冲4
-    //findThreePoint (arr,color,newarr,onlyFree,-9999); //排除活三
+    //findThreePoint (arr,color,newarr,ONLY_FREE,-9999); //排除活三
     if (color == 1) findFoulPoint(arr, newarr, -9999); //排除禁手
     if (!backstage) printNewarr(newarr);
     return newarr;
@@ -5761,13 +5643,13 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
 
 
 
-function getNextEmpty(x, y, arr, model, color, move, maxLen) {
+function getNextEmpty(x, y, arr, direction, color, move, maxLen) {
 
     let nx = -1;
     let ny = -1;
     move = move == null ? 0 : move;
     maxLen = maxLen == null ? 5 : maxLen;
-    switch (String(model)) {
+    switch (String(direction)) {
 
         case "x":
 
@@ -5822,7 +5704,7 @@ function getNextEmpty(x, y, arr, model, color, move, maxLen) {
 
 
 // x,y,坐标代表第一个点和后面的4个点成五格。返回在这五格内的子力。
-function getPower(x, y, arr, model, color, move, maxLen) {
+function getPower(x, y, arr, direction, color, move, maxLen) {
 
     let count = 0;
     let thisColor = color;
@@ -5830,7 +5712,7 @@ function getPower(x, y, arr, model, color, move, maxLen) {
     move = move == null ? 0 : move;
     maxLen = maxLen == null ? 5 : maxLen;
 
-    switch (String(model)) {
+    switch (String(direction)) {
 
         case "x":
             for (let i = 0; i < maxLen; i++) {
@@ -5871,8 +5753,8 @@ function getPower(x, y, arr, model, color, move, maxLen) {
     }
 
     if (count == maxLen) {
-        let nx = changeX(x, maxLen + move, model);
-        let ny = changeY(y, maxLen + move, model);
+        let nx = changeX(x, maxLen + move, direction);
+        let ny = changeY(y, maxLen + move, direction);
 
         for (let i = 0; i < 10; i++) {
             if (nx < 0 || nx > 14 || ny < 0 || ny > 14) break;
@@ -5884,8 +5766,8 @@ function getPower(x, y, arr, model, color, move, maxLen) {
                 break;
             }
 
-            nx = changeX(nx, 1, model);
-            ny = changeY(ny, 1, model);
+            nx = changeX(nx, 1, direction);
+            ny = changeY(ny, 1, direction);
         }
     }
 
@@ -5958,10 +5840,10 @@ function toStr(arr) {
 
 
 // 取得一个点的值
-function getArrValue(x, y, move, model, arr) {
+function getArrValue(x, y, move, direction, arr) {
 
-    let nx = changeX(x, move, model);
-    let ny = changeY(y, move, model);
+    let nx = changeX(x, move, direction);
+    let ny = changeY(y, move, direction);
     if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
         return arr[ny][nx];
     }
@@ -5971,12 +5853,20 @@ function getArrValue(x, y, move, model, arr) {
 
 
 
+function getArrIdxValue(idx, arr) {
+    let x = idx % 15;
+    let y = parseInt(idx / 15);
+    return getArrValue(x, y, 0, "x", arr);
+}
+
+
+
 // 取得一个点的x,y
-function getArrPoint(x, y, move, model, arr) {
+function getArrPoint(x, y, move, direction, arr) {
 
 
-    let nx = changeX(x, move, model);
-    let ny = changeY(y, move, model);
+    let nx = changeX(x, move, direction);
+    let ny = changeY(y, move, direction);
     if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
         return { x: nx, y: ny };
     }
@@ -5987,10 +5877,10 @@ function getArrPoint(x, y, move, model, arr) {
 
 
 // 取得一个点的Index
-function getArrIndex(x, y, move, model, arr) {
+function getArrIndex(x, y, move, direction, arr) {
 
-    let nx = changeX(x, move, model);
-    let ny = changeY(y, move, model);
+    let nx = changeX(x, move, direction);
+    let ny = changeY(y, move, direction);
     if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
         return ny * 15 + nx;
     }
@@ -6014,9 +5904,9 @@ function getY(idx) {
 
 
 
-function changeX(x, move, model) {
+function changeX(x, move, direction) {
 
-    switch (String(model)) {
+    switch (String(direction)) {
         case "x":
             return x + move;
             break;
@@ -6035,9 +5925,9 @@ function changeX(x, move, model) {
 
 
 
-function changeY(y, move, model) {
+function changeY(y, move, direction) {
 
-    switch (String(model)) {
+    switch (String(direction)) {
         case "x":
             return y;
             break;
@@ -6097,7 +5987,7 @@ function toArr(r, arr) {
 function movesSort(fMoves, fun) {
     for (let i = fMoves.length - 2; i >= 0; i--) {
         for (let j = fMoves.length - 1; j > i; j--) {
-            if (fun(fMoves[j].length,fMoves[i].length)) {
+            if (fun(fMoves[j].length, fMoves[i].length)) {
                 let t = fMoves.splice(i, 1);
                 fMoves.splice(j, 0, t[0]);
                 break;

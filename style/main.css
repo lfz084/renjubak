@@ -174,7 +174,7 @@ hr {
         opacity: 1;
         /*border-color: red;*/
     }
-    
+
     30% {
         opacity: 0.2;
         /*border-color: red;*/
@@ -191,7 +191,7 @@ hr {
         opacity: 1;
         /*border-color: red;*/
     }
-    
+
     30% {
         opacity: 0.2;
         /*border-color: red;*/
@@ -208,17 +208,78 @@ hr {
         opacity: 1;
         /*border-color: red;*/
     }
-    
+
     30% {
         opacity: 0.2;
         /*border-color: red;*/
     }
-    
+
     100% {
         opacity: 1;
         /*border-color: white;*/
     }
 }
+
+
+
+@-webkit-keyframes showlabel {
+    0% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.75;
+    }
+}
+
+@-moz-keyframes showlabel {
+    0% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.75;
+    }
+}
+
+@keyframes showlabel {
+    0% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.75;
+    }
+}
+
+
+@-webkit-keyframes hidelabel {
+    0% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@-moz-keyframes hidelabel {
+    0% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes hidelabel {
+    0% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
 
 
 @-webkit-keyframes show {
@@ -372,8 +433,22 @@ hr {
     }
 }
 
-.msgbox {
-    opacity: 0.75;
+.showlabel {
+    -webkit-animation: showlabel 1000ms ease-in;
+    -moz-animation: showlabel 1000ms ease-in;
+    animation: showlabel 1000ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.hidelabel {
+    -webkit-animation: hidelabel 380ms ease-in;
+    -moz-animation: hidelabel 380ms ease-in;
+    animation: hidelabel 380ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
 }
 
 .show {

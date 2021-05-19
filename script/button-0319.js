@@ -1,5 +1,5 @@
   "use strict";
-  const AnimationTimeout = 300;
+  const ANIMATION_TIMEOUT = 300;
   // 定制按钮，button，file，Radio，select。
   function button(parentNode, type, left, top, width, height) {
 
@@ -193,7 +193,7 @@
           };
           muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
           isMsgShow = false;
-          but.hideMenu(closeAnimation ? 350 : AnimationTimeout);
+          but.hideMenu(closeAnimation ? 350 : ANIMATION_TIMEOUT);
       };
 
       this.menuWindow = muWindow;
@@ -264,7 +264,7 @@
                   muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
                   isMsgShow = false;
                   if (closeAnimation) input.onchange();
-                  but.hideMenu(closeAnimation ? AnimationTimeout : AnimationTimeout, !closeAnimation ? input.onchange : null);
+                  but.hideMenu(closeAnimation ? ANIMATION_TIMEOUT : ANIMATION_TIMEOUT, !closeAnimation ? input.onchange : null);
               }
           };
           

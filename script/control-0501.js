@@ -1,13 +1,13 @@
 "use strict";
 let control = (() => {
-    const maxThread = 0 || window.navigator.hardwareConcurrency - 2 || 4;
+    const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
     setTimeout(function() {
-        //alert(maxThread);
+        //alert(MAX_THREAD_NUM);
     }, 3000);
-    const renjuModel = 0;
-    const imgModel = 1;
-    const lineModel = 2;
-    const arrowModel = 3;
+    const MODEL_RENJU = 0;
+    const MODEL_LOADIMG = 1;
+    const MODEL_LINE_EDIT = 2;
+    const MODEL_ARROW_EDIT = 3;
     let cBd;
     let engine;
     let msg;
@@ -16,7 +16,7 @@ let control = (() => {
     let dw;
     let dh;
 
-    let playModel = renjuModel;
+    let playModel = MODEL_RENJU;
     let oldPlayModel = playModel;
     //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
     let lbColor = [
@@ -231,7 +231,7 @@ let control = (() => {
                     cNewGame.input.ontouchend();
                     break;
                 case 4:
-                    if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves || cBd.P[idx].type == tEmpty) {
+                    if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) {
                         inputLabel(idx);
                     }
                     break;
@@ -487,11 +487,11 @@ let control = (() => {
             cSelChecked(cSelWhite);
         });
 
-        const calculate = 1;
+        const CALCULATE = 1;
         let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
-        if (calculate) {
+        if (CALCULATE) {
             //cFindPoint.addOption(0, "︾" );
             cFindPoint.addOption(1, "VCT选点");
             cFindPoint.addOption(2, "做V点");
@@ -519,7 +519,7 @@ let control = (() => {
         cFindPoint.setonchange(function(but) {
             but.setText("找点");
             if (busy()) return;
-            if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
+            if (but.input.value < 1 || vcfFinding != -1 || !CALCULATE) {
                 but.input.value = 0;
                 return;
             }
@@ -538,11 +538,11 @@ let control = (() => {
                     engine.postMsg("vctSelectPoint", [getRenjuSelColor(), arr, newarr]);
                     break;
                 case 2:
-                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlyVCF]);
+                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, ONLY_VCF]);
                     break;
 
                 case 3:
-                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, onlySimpleWin]);
+                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, ONLY_SIMPLE_WIN]);
                     break;
 
                 case 4:
@@ -550,7 +550,7 @@ let control = (() => {
                     break;
 
                 case 5:
-                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, onlyFree]);
+                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, ONLY_FREE]);
                     break;
 
                 case 6:
@@ -569,13 +569,13 @@ let control = (() => {
                     engine.postMsg("findFivePoint", [arr, getRenjuSelColor(), newarr, null]);
                     break;
                 case 10:
-                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, onlyFree]);
+                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, ONLY_FREE]);
                     break;
                 case 11:
-                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, onlyNoFree]);
+                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, ONLY_NOFREE]);
                     break;
                 case 12:
-                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, onlyNoFree]);
+                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, ONLY_NOFREE]);
                     break;
             }
 
@@ -587,7 +587,7 @@ let control = (() => {
 
 
         cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        if (calculate) {
+        if (CALCULATE) {
             //cFindVCF.addOption(0, "︾");
             cFindVCF.addOption(1, "快速找  VCF");
             cFindVCF.addOption(2, "找全   VCF");
@@ -615,7 +615,7 @@ let control = (() => {
         cFindVCF.setonchange(function(but) {
             but.setText("解题");
             if (busy()) return;
-            if (but.input.value < 1 || vcfFinding != -1 || !calculate) {
+            if (but.input.value < 1 || vcfFinding != -1 || !CALCULATE) {
                 but.input.value = 0;
                 return;
             }
@@ -666,9 +666,9 @@ let control = (() => {
                     engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
                     break;
                 case 112:
-                    let cModel = ["x", "y", "d", "u"];
+                    const DIRECTIONS = ["x", "y", "d", "u"];
                     for (let i = 0; i < 4; i++) {
-                        let two = isLineTwo(7, 7, cModel[i], getRenjuSelColor(), arr, false);
+                        let two = isLineTwo(7, 7, DIRECTIONS[i], getRenjuSelColor(), arr, false);
                         alert(two);
                     }
                     break;
@@ -838,17 +838,17 @@ let control = (() => {
 
         let changePlayModel = function() {
             if (cLABC.input.value == 0) {
-                playModel = arrowModel;
-                //console.log("arrowModel")
+                playModel = MODEL_ARROW_EDIT;
+                //console.log("MODEL_ARROW_EDIT")
             }
             else if (cLABC.input.value == 1) {
-                playModel = lineModel;
-                //console.log("lineModel")
+                playModel = MODEL_LINE_EDIT;
+                //console.log("MODEL_LINE_EDIT")
             }
             else {
-                playModel = renjuModel;
+                playModel = MODEL_RENJU;
                 cBd.drawLineEnd();
-                //console.log("renjuModel")
+                //console.log("MODEL_RENJU")
             }
         };
 
@@ -1064,7 +1064,7 @@ let control = (() => {
             parentNode.removeChild(renjuCmddiv);
             parentNode.appendChild(imgCmdDiv);
             oldPlayModel = playModel;
-            playModel = imgModel;
+            playModel = MODEL_LOADIMG;
             cLockImg.setChecked(0);
             cAddblack2.setChecked(1);
             cAddwhite2.setChecked(0);
@@ -1187,7 +1187,7 @@ let control = (() => {
             cLABC.setChecked(0);
             chk.setChecked(1);
             if (chk != cLABC) {
-                playModel = renjuModel;
+                playModel = MODEL_RENJU;
                 cBd.drawLineEnd();
             }
         }
@@ -1197,7 +1197,7 @@ let control = (() => {
         setTimeout(function() {
 
             engine.reset({
-                "maxThread": maxThread,
+                "maxThread": MAX_THREAD_NUM,
                 "cObjVCF": cObjVCF,
                 "cBoard": cBd,
                 "cFindVCF": cFindVCF,
@@ -1474,19 +1474,19 @@ let control = (() => {
         switch (true) {
 
             case cAutoadd.checked:
-                return { type: tNum, cmd: "auto", showNum: isShow };
+                return { type: TYPE_NUMBER, cmd: "auto", showNum: isShow };
             case cAddblack.checked:
-                return { type: tBlack, cmd: "black", showNum: isShow };
+                return { type: TYPE_BLACK, cmd: "black", showNum: isShow };
             case cAddwhite.checked:
-                return { type: tWhite, cmd: "white", showNum: isShow };
+                return { type: TYPE_WHITE, cmd: "white", showNum: isShow };
             case cLba.checked:
-                return { type: tLb, cmd: "■", showNum: isShow };
+                return { type: TYPE_MARK, cmd: "■", showNum: isShow };
             case cLbb.checked:
-                return { type: tLb, cmd: "◎", showNum: isShow };
+                return { type: TYPE_MARK, cmd: "◎", showNum: isShow };
             case cLbc.checked:
-                return { type: tLb, cmd: "▲", showNum: isShow };
+                return { type: TYPE_MARK, cmd: "▲", showNum: isShow };
             case cLbd.checked:
-                return { type: tLb, cmd: "✖", showNum: isShow };
+                return { type: TYPE_MARK, cmd: "✖", showNum: isShow };
             case cLABC.checked:
 
                 switch (cLABC.input.value * 1) {
@@ -1494,7 +1494,7 @@ let control = (() => {
                         // 搜索棋盘上最大的字母;
                         code = "A".charCodeAt(); // 65→90
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) && cBd.P[idx].text.length == 1) {
+                            if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) && cBd.P[idx].text.length == 1) {
                                 let tcode = cBd.P[idx].text.charCodeAt(0);
                                 if (tcode >= code && tcode <= 90) {
                                     code = tcode < 90 ? tcode + 1 : tcode;
@@ -1502,14 +1502,14 @@ let control = (() => {
                             }
                         }
                         txt = String.fromCharCode(code);
-                        return { type: tLb, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
 
                     case 3:
 
                         // 搜索棋盘上最大的字母;
                         code = "a".charCodeAt(); // 65→90
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) && cBd.P[idx].text.length == 1) {
+                            if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) && cBd.P[idx].text.length == 1) {
                                 tcode = cBd.P[idx].text.charCodeAt(0);
                                 if (tcode >= code && tcode <= 122) {
                                     code = tcode < 122 ? tcode + 1 : tcode;
@@ -1517,13 +1517,13 @@ let control = (() => {
                             }
                         }
                         txt = String.fromCharCode(code);
-                        return { type: tLb, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
 
                     case 4:
                         // 搜索棋盘上最大的数字
                         code = 1 // 1-225;
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) {
+                            if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) {
                                 tcode = cBd.P[idx].text * 1;
                                 if (tcode >= code && tcode <= 225) {
                                     code = tcode < 225 ? tcode + 1 : tcode;
@@ -1531,11 +1531,11 @@ let control = (() => {
                             }
                         }
                         txt = code;
-                        return { type: tLb, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
                     case 5:
                         lbIdx = 0;
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == tLb || cBd.P[idx].type == tBlack || cBd.P[idx].type == tWhite) {
+                            if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) {
                                 tcode = cBd.P[idx].text;
                                 let i = continueLabel.indexOf(tcode);
                                 if (i >= lbIdx) {
@@ -1544,11 +1544,11 @@ let control = (() => {
                             }
                         }
                         txt = continueLabel[lbIdx];
-                        return { type: tLb, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
                     case 6:
-                        return { type: tLb, cmd: "☆", showNum: isShow };
+                        return { type: TYPE_MARK, cmd: "☆", showNum: isShow };
                     case 7:
-                        return { type: tLb, cmd: "❌", showNum: isShow };
+                        return { type: TYPE_MARK, cmd: "❌", showNum: isShow };
 
                 }
         }
@@ -1585,11 +1585,11 @@ let control = (() => {
         if (sharing) return;
         let idx = cBd.getPIndex(x, y);
 
-        if (playModel == renjuModel) {
+        if (playModel == MODEL_RENJU) {
             if (idx > -1) {
                 let cmds = getRenjuCmd();
                 let arr = cBd.getPointArray([]);
-                if (cBd.oldCode) cmds.type = tNum;
+                if (cBd.oldCode) cmds.type = TYPE_NUMBER;
                 if (cBd.threePoints && cBd.threePoints.arr) {
                     if (cBd.threePoints.index > -1) {
                         cBd.printThreePoints();
@@ -1601,51 +1601,51 @@ let control = (() => {
                     }
                 }
                 switch (cmds.type) {
-                    case tNum:
+                    case TYPE_NUMBER:
                         cancelKeepTouck();
-                        if (cBd.P[idx].type == tNum) {
+                        if (cBd.P[idx].type == TYPE_NUMBER) {
                             //点击棋子，触发悔棋
                             cBd.cleNb(idx, cmds.showNum);
                         }
-                        else if (cBd.P[idx].type == tEmpty || ((cBd.oldCode || cBd.P[idx].text == "❌") && cBd.P[idx].type == tLb)) {
+                        else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || cBd.P[idx].text == "❌") && cBd.P[idx].type == TYPE_MARK)) {
                             // 添加棋子  wNb(idx,color,showNum)
                             let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
                             cBd.wNb(idx, "auto", cmds.showNum, null, isF);
                         }
                         break;
 
-                    case tBlack:
-                        if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                    case TYPE_BLACK:
+                        if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
                             //点击棋子，触发悔棋
                             cBd.cleNb(idx);
                         }
-                        else if (cBd.P[idx].type == tEmpty) {
+                        else if (cBd.P[idx].type == TYPE_EMPTY) {
                             // 添加棋子  wNb(idx,color,showNum)
                             cBd.wNb(idx, "black", cmds.showNum);
                         }
                         break;
 
-                    case tWhite:
-                        if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                    case TYPE_WHITE:
+                        if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
                             //点击棋子，触发悔棋
                             cBd.cleNb(idx);
                         }
-                        else if (cBd.P[idx].type == tEmpty) {
+                        else if (cBd.P[idx].type == TYPE_EMPTY) {
                             // 添加棋子  wNb(idx,color,showNum)
                             cBd.wNb(idx, "white", cmds.showNum);
                         }
                         break;
 
-                    case tLb:
-                        if (cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves) {
+                    case TYPE_MARK:
+                        if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE) {
                             // 点击标记，删除标记
                             cBd.cleLb(idx);
                         }
-                        else if (cBd.P[idx].type == tEmpty) {
+                        else if (cBd.P[idx].type == TYPE_EMPTY) {
                             // 添加标记 wLb(idx,text,color, showNum:isShow) 
                             cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
                         }
-                        else if (cBd.P[idx].type == tWhite || cBd.P[idx].type == tBlack) {
+                        else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
                             if (cBd.P[idx].text) {
                                 cBd.P[idx].text = "";
                                 cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
@@ -1662,10 +1662,10 @@ let control = (() => {
 
             }
         }
-        else if (playModel == lineModel) {
+        else if (playModel == MODEL_LINE_EDIT) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "line");
         }
-        else if (playModel == arrowModel) {
+        else if (playModel == MODEL_ARROW_EDIT) {
             cBd.drawLineStart(idx, getRenjuLbColor(), "arrow");
         }
 
@@ -1679,7 +1679,7 @@ let control = (() => {
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
             // 触发快速悔棋
-            if (cBd.P[idx].type == tNum) {
+            if (cBd.P[idx].type == TYPE_NUMBER) {
                 if (idx != cBd.MS[cBd.MSindex]) {
                     for (let i = cBd.MSindex + 1; i > parseInt(cBd.P[idx].text); i--) {
                         cBd.cleNb(idx, getShowNum());
@@ -1689,7 +1689,7 @@ let control = (() => {
                     if (!cancelKeepTouck()) renjuKeepTouch(x, y);
                 }
             } // 触发，手动输入标记
-            else if ((cBd.P[idx].type == tLb || cBd.P[idx].type == tLbMoves || cBd.P[idx].type == tEmpty) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
+            else if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
                 inputLabel(idx);
             }
 
@@ -1710,7 +1710,7 @@ let control = (() => {
 
         /*
         switch (cBd.P[idx].type) {
-            case tNum:
+            case TYPE_NUMBER:
                 if (idx == cBd.MS[cBd.MSindex]) {
                     let str = cBd.notShowLastNum ? "确认恢复 最后一手红色显示。" : "确认取消 最后一手红色显示。";
                     msg(str, null, null, null, null, null, null, null, function() {
@@ -1726,11 +1726,11 @@ let control = (() => {
                     }, null, 2);
                 }
                 break;
-            case tLb:
+            case TYPE_MARK:
                 // 设置弹窗，让用户手动输入标记
                 inputLabel(idx);
                 break;
-            case tEmpty:
+            case TYPE_EMPTY:
                 // 设置弹窗，让用户手动输入标记
                 inputLabel(idx);
                 break;
@@ -1930,16 +1930,16 @@ let control = (() => {
         setTimeout(() => {
             shareWindow.parentNode.removeChild(shareWindow);
             sharing = false;
-        }, AnimationTimeout);
+        }, ANIMATION_TIMEOUT);
 
     }
 
     return {
         "getPlayModel": () => { return playModel },
-        "renjuModel": renjuModel,
-        "imgModel": imgModel,
-        "lineModel": lineModel,
-        "arrowModel": arrowModel,
+        "renjuModel": MODEL_RENJU,
+        "imgModel": MODEL_LOADIMG,
+        "lineModel": MODEL_LINE_EDIT,
+        "arrowModel": MODEL_ARROW_EDIT,
         "cLockImgChecked": () => { return cLockImg.checked; },
         "cAddwhite2Checked": () => { return cAddwhite2.checked; },
         "putCheckerBoard": putCheckerBoard,
