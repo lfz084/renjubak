@@ -53,9 +53,9 @@
          };
          */
 
-         left = left || dw < dh ? dw * 0.1 : dh * 0.1;
+         left = left || (dw-cWidth*0.8)/2;
          top = top || dh / 11;
-         width = width || dw < dh ? dw * 0.8 : dh * 0.8;
+         width = width || cWidth*0.8;
          butNum = butNum == null ? type == "input" ? 2 : 1 : butNum;
 
          let s = MsgBoxobj.style;
