@@ -1,15 +1,14 @@
  // 弹窗代码
  "use strict";
  let isMsgShow = false; // =true 屏蔽 bodytouch 事件;
- let msgWindow = (()=>{
+ let msgWindow = (() => {
      const TYPE_MSG = 1;
      const TYPE_INPUT = 2;
      let closeTimer = null;
-     
+
 
      // 创建一个屏蔽层
      let MsgBoxobj = document.createElement("div");
-     //MsgBoxobj.ontouchend = function() { if (!msgTextarea.readOnly) msgTextarea.focus(); } //event.preventDefault(); };
 
      // msg 窗口
      let windowDiv = document.createElement("div");
@@ -43,15 +42,16 @@
              clearTimeout(closeTimer);
              closeTimer = null;
          }
-         MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-         setTimeout(function() {
-             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
+         /*
+         MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
+             setTimeout(function() {
                  if (!msgTextarea.readOnly) {
                      msgTextarea.focus();
                      if (event) event.preventDefault();
                  }
-             };
-         }, 500);
+             }, 500);
+         };
+         */
 
          left = left || dw < dh ? dw * 0.1 : dh * 0.1;
          top = top || dh / 11;
@@ -102,7 +102,6 @@
          s.padding = "0px";
          if (type == "msgbox") {
              msgTextarea.readOnly = true;
-             s.autofocus = "false";
              s.textAlign = "center";
              s.border = `0px`;
              s.color = "#f0f0f0";
@@ -127,19 +126,8 @@
              butEnter.show(butNum == 1 ? w * 1.5 : w * 0.66, t, w, h);
              butEnter.div.style.border = `1px solid black`;
              butEnter.setontouchend(function() {
-                 MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-                 let classStr = MsgBoxobj.getAttribute("class");
-                 if (classStr) MsgBoxobj.setAttribute("class", classStr == "show" ? "hide" : "hidelabel");
-                 closeTimer = setTimeout(() => {
-                     closeTimer = null;
-                     MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-                     isMsgShow = false;
-                     MsgBoxobj.setAttribute("class", "");
-                 }, 300);
-
+                 closeMsg(1);
                  if (callEnter) callEnter(String(msgTextarea.value));
-                 msgTextarea.value = "";
-                 if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
              });
          }
 
@@ -149,18 +137,8 @@
              butCancel.div.style.border = `1px solid black`;
              butCancel.setText(cancelTXT ? cancelTXT : "取消");
              butCancel.setontouchend(function() {
-                 MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-                 let classStr = MsgBoxobj.getAttribute("class");
-                 if (classStr) MsgBoxobj.setAttribute("class", classStr == "show" ? "hide" : "hidelabel");
-                 closeTimer = setTimeout(() => {
-                     closeTimer = null;
-                     MsgBoxobj.parentNode.removeChild(MsgBoxobj);
-                     isMsgShow = false;
-                     MsgBoxobj.setAttribute("class", "");
-                 }, 300);
-
+                 closeMsg(1);
                  if (callCancel) callCancel(String(msgTextarea.value));
-                 if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
              });
 
          }
@@ -188,35 +166,37 @@
          timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
          closeTimer = setTimeout(function() {
              closeTimer = null;
-             let classStr = MsgBoxobj.getAttribute("class");
-             if (classStr) MsgBoxobj.setAttribute("class", classStr == "show" ? "hide" : "hidelabel");
+             const CLASS_NAME = MsgBoxobj.getAttribute("class");
+             const NEW_CLASS_NAME = CLASS_NAME == "show" ? "hide" : "hidelabel";
+             if (CLASS_NAME) MsgBoxobj.setAttribute("class", NEW_CLASS_NAME);
              closeTimer = setTimeout(() => {
                  closeTimer = null;
                  isMsgShow = false;
                  if (MsgBoxobj.parentNode) MsgBoxobj.parentNode.removeChild(MsgBoxobj);
                  msgTextarea.value = "";
                  MsgBoxobj.setAttribute("class", "");
+                 MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
+                 if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
              }, ANIMATION_TIMEOUT);
          }, timer);
      }
-     
 
-    return {
-        "msg": msg,
-        "closeMsg": closeMsg,
-    }
-})();
- 
+
+     return {
+         "msg": msg,
+         "closeMsg": closeMsg,
+     }
+ })();
+
  function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum) {
      msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum);
  }
- 
+
  function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum, timer) {
      msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
      if (butNum == 0) msgWindow.closeMsg(timer || 2000);
  }
- 
+
  function closeMsg(timer) {
      msgWindow.closeMsg(timer);
  }
- 

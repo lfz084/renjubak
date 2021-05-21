@@ -6,12 +6,13 @@ const ONLY_VCF = 1; // 只找做VCF点
 const ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
 
 let generator;
+let workerIdx = 0;
 
 let vcfCount = 0;
 let vcfArr = []; // 保存棋盘初始状态
 let vcfInitial = []; // 计算vcf前，备份 初始arr
 let vcfColor = 0; // 自己棋子颜色
-let vcfnColor = 0; // 对手棋子颜色
+let vcfnColor = 0; // 对手棋子颜色  
 let vcfFS = []; // 递归栈
 let vcfMoves = []; // 当前正在计算的分支
 let vcfFailMoves = []; // 保存失败节点,已经地毯的节点
@@ -42,8 +43,8 @@ for (let i = 0; i < 225; i++) {
 function setAroundPoint(index, point, radius, idx) {
 
     let r = 1;
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     let left;
     let top;
     let right;
@@ -154,11 +155,10 @@ vcfList.prototype.getList = function(movesList, length) {
 }
 
 
-
-function Node(idx, parentNode, childNode) {
+function Node(idx = `-1`, parentNode, childNode = []) {
     this.parentNode = parentNode;
-    this.idx = idx == undefined ? -1 : idx;
-    this.childNode = childNode == undefined ? [] : childNode;
+    this.idx = idx;
+    this.childNode = childNode;
 }
 
 /*
@@ -201,117 +201,113 @@ Node.prototype.removeChild = function(child) {
 onmessage = function(e) {
     let p = e.data.parameter;
     const CMD = {
+        "setWorkerIdx": function() {workerIdx=p.workerIdx},
         "getLevelB": function() {
-            //mConsole("getLevelB__>>")
-            let level = getLevelB(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
-            post("getLevelB_End", [level]);
-            //mConsole("getLevelB__>>postEnd")
+            let level = getLevelB(p.arr, p.color, p.timeout, p.depth, p.num);
+            post("getLevelB_End", {level:level});
         },
         "vctSelectPoint": function() {
-            findLevelThreePoint(p[1], p[0], p[2], null, null, false);
+            findLevelThreePoint(p.arr, p.color, p.newarr, undefined, undefined, false);
             let fMoves = [];
-            continueFour(p[1], p[0], 1, fMoves, getArr([]));
+            continueFour(p.arr, p.color, 1, fMoves, getArr([]));
             if (fMoves) {
                 for (let i = fMoves.length - 1; i >= 0; i--) {
-                    post("wLb", [fMoves[i][0], "④", "black"]);
-                    post("addThreePoint", [fMoves[i][0], { txt: "④", txtColor: "black", moves: [fMoves[i][1]] }]);
+                    post("wLb", {idx:fMoves[i][0], text:"④", color:"black"});
+                    post("addThreePoint", {idx:fMoves[i][0], point:{ txt: "④", txtColor: "black", moves: [fMoves[i][1]] }});
                 }
             }
-            post("vctSelectPoint_End", []);
+            post("vctSelectPoint_End");
         },
         "findVCT": function() {
-            let fNum = findVCF(p[0], p[1], 1, null, null, true);
+            let fNum = findVCF(p.arr, p.color, 1);
             if (fNum) {
                 vctNode = new Node();
                 movesToNode(vcfWinMoves[0], vctNode);
-                vctNode.firstColor = p[1] == 1 ? "black" : "white";
+                vctNode.firstColor = p.color == 1 ? "black" : "white";
             }
             else {
-                findVCT(p[0], p[1], p[2], p[3], p[4], p[5]);
+                findVCT(p.arr, p.color, p.node, p.count, p.depth, p.backstage);
                 vctNode = vctNode.childNode.length ? vctNode : null;
             }
-            post("findVCT_End", [vctNode]);
+            post("findVCT_End", {node:vctNode});
         },
         "findVCF": function() {
-            findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
-            post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+            findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
+            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
         },
         "findLevelThreePoint": function() {
-            let sPoint = findLevelThreePoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
-            //console.log(sPoint)
-            post("findLevelThreePoint_End", []);
+            let sPoint = findLevelThreePoint(p.arr, p.color, p.newarr, p.ftype, p.idx, p.backstage, p.num, p.depth);
+            post("findLevelThreePoint_End");
         },
         "cancelFind": function() { cancelFind(); },
         "isTwoVCF": function() {
-            isTwoVCF(p[0], p[1], p[2]);
+            isTwoVCF(p.idx, p.color, p.arr);
             post("end");
         },
         "isLevelThreePoint": function() {
-            isLevelThreePoint(p[0], p[1], p[2], p[3]);
+            isLevelThreePoint(p.idx, p.color, p.arr, p.ftype);
             post("end");
         },
         "isSimpleWin": function() {
-            isSimpleWin(p[0], p[1], p[2], p[3], p[4]);
+            isSimpleWin(p.idx, p.color, p.arr, p.num, p.level);
             post("end");
         },
         "isFourWinPoint": function() {
-            isFourWinPoint(p[0], p[1], p[2], p[3]);
+            isFourWinPoint(p.idx, p.color, p.arr, p.backstage);
             post("end");
         },
         "isThreeWinPoint": function() {
-            isThreeWinPoint(p[0], p[1], p[2], p[3], p[4]);
+            isThreeWinPoint(p.idx, p.color, p.arr, p.backstage);
             post("end");
         },
         "blockCatchFoul": function() {
-            let rt = blockCatchFoul(p[0]);
-            post("blockCatchFoul_End", rt);
+            let rt = blockCatchFoul(p.arr);
+            post("blockCatchFoul_End", {value:rt});
         },
         "isBlockVCF": function() {
-            isBlockVCF(p[0], p[1], p[2]);
+            isBlockVCF(p.idx, p.color, p.arr);
             post("end");
         },
         "isBlockVCFPath": function() {
-            //mConsole(`__>> ${p[0]}`)
-            let paths = isBlockVCFPath(p[0], p[1], p[2], p[3], p[4]);
-            post("end", [paths]);
+            let paths = isBlockVCFPath(p.path, p.color, p.arr, p.backstage, p.speed);
+            post("end", {paths:paths});
 
         },
         "selectPoint": function() {
-            let newarr = selectPoint(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
-            post("selectPoint_End", [newarr]);
+            let newarr = selectPoint(p.arr, p.color, p.newarr, p.timeout, p.depth, p.backstage, p.level, p.allColor, p.num, p.selFour);
+            post("selectPoint_End", {newarr:newarr});
         },
         "getBlockVCF": function() {
             let sPoint = [];
-            findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
-            post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+            findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
+            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
             if (vcfWinMoves.length) {
-                sPoint = getBlockVCF(vcfWinMoves, p[1], p[0]);
+                sPoint = getBlockVCF(vcfWinMoves, p.color, p.arr);
             }
-            post("getBlockVCF_End", [sPoint]);
+            post("getBlockVCF_End", {points:sPoint});
         },
         "getBlockVCFb": function() {
             let sPoint = [];
-            findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
-            post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+            findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
+            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
             if (vcfWinMoves.length) {
-                sPoint = getBlockVCF(vcfWinMoves, p[1], p[0]);
+                sPoint = getBlockVCF(vcfWinMoves, p.color, p.arr);
             }
-            post("getBlockVCFb_End", [sPoint]);
+            post("getBlockVCFb_End", {points:sPoint, color:p.color});
         },
         "getBlockVCFTree": function() {
             let paths = [];
-            findVCF(p[0], p[1], p[2], p[3], p[4], p[5]);
-            post("findVCF_End", [vcfWinMoves, vcfColor, (new Date().getTime() - vcfStartTimer) / 1000, vcfInitial]);
+            findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
+            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
             if (vcfWinMoves.length) {
-                paths = getBlockVCFPaths(vcfWinMoves, p[1], p[0]);
+                paths = getBlockVCFPaths(vcfWinMoves, p.color, p.arr);
             }
-            //mConsole(paths.length)
-            post("getBlockVCFTree_End", [paths]);
+            post("getBlockVCFTree_End", {paths:paths, color:p.color});
         },
         "findThreeWin": function() {
-            let idx = findThreeWin(p[0], p[1], p[2]);
+            let idx = findThreeWin(p.arr, p.color, p.newarr);
             idx = idx.length ? idx[0] : -1;
-            post("findThreeWin_End", [idx]);
+            post("findThreeWin_End", {idx:idx});
         },
 
     };
@@ -408,10 +404,10 @@ function cutFailMoves(arrs, hash) {
 
 
 
-function findVCT(arr, color, node, count, depth, backStage) {
+function findVCT(arr, color, node, count, depth, backstage) {
     node = node || new Node();
     depth = depth || 5;
-    backStage = backStage ? true : false;
+    backstage = backstage ? true : false;
     vctNode = node;
     const NOT_VCT = -1;
     const IS_TTWIN = 1;
@@ -443,7 +439,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case 0:
                     //mConsole("vctFinding = 0")
                     vctFinding = continueFindVCT();
-                    if (!backStage) post("printMoves", [vctMoves, vctColor]);
+                    if (!backstage) post("printMoves", {winMoves:vctMoves, color:vctColor});
                     break;
                 case 1:
                     //mConsole("vctFinding = 1")
@@ -453,7 +449,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 case -1:
                     //mConsole("vctFinding = -1")
                     //post("findVCT_End", [vctNode]);
-                    if (!backStage) post("cleLb", ["all"]);
+                    if (!backstage) post("cleLb", {idx:"all"});
                     vctNode.firstColor = vctColor == 1 ? "black" : "white";
                     return;
                     break;
@@ -473,8 +469,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
         mConsole(`moves= ${moves}  (${moves.length}) \n selectPoint= [${getChildNodeIdx(cd)}] \n movesDepth=[${movesDepth}] \n scoreIdx=(${scoreIdx})`);
 
         if (movesDepth[movesDepth.length - 1] == depth) {
-            let x = moves[moves.length - 1] % 15;
-            let y = parseInt(moves[moves.length - 1] / 15);
+            let x = getX(moves[moves.length - 1]);
+            let y = getY(moves[moves.length - 1]);
             if ((moves.length + 1) % 2 && !isFour(x, y, nColor, arr)) {
                 mConsole(`rt >>> -1 >>> depth out : [depth=${movesDepth[movesDepth.length-1]}]`);
                 return nextNode(NOT_VCT) ? 0 : -1;
@@ -508,8 +504,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
             continueFour(arr, color, 1, fMoves, getArr([]));
             let j;
             for (j = fMoves.length - 1; j >= 0; j--) { // continue find VCT point
-                let x = fMoves[j][0] % 15;
-                let y = parseInt(fMoves[j][0] / 15);
+                let x = getX(fMoves[j][0]);
+                let y = getY(fMoves[j][0]);
                 let score = getScore(x, y, color, arr);
                 let nd = movesToNode(fMoves[j], ctnNode);
                 ctnNode.childNode[findIdx(ctnNode, fMoves[j][0])].score = score;
@@ -517,7 +513,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
             //mConsole(` fourPoint =  ${getChildNodeIdx(ctnNode)}`);
             let key = getKey(arr);
-            let tPoint = findLevelThreePoint(arr, color, getArr([]), null, ctnNode.idx >= 0 ? ctnNode.idx : 112, true, null, 4);
+            let tPoint = findLevelThreePoint(arr, color, getArr([]), undefined, ctnNode.idx >= 0 ? ctnNode.idx : 112, true, undefined, 4);
             let i;
             let t;
             let leng = tPoint.length;
@@ -619,9 +615,9 @@ function findVCT(arr, color, node, count, depth, backStage) {
         return 0;
     }
 
-    function nextNode(isT, backStage) {
-        backStage = backStage == null ? true : backStage;
-        backStage = false;
+    function nextNode(isT, backstage) {
+        backstage = backstage == null ? true : backstage;
+        backstage = false;
         let node = ctnNode;
         let moves = vctMoves;
         let movesDepth = vctMovesDepth;
@@ -638,7 +634,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             cNode = node.parentNode.childNode;
             node = node.parentNode;
             ctnNode = node;
-            if (!backStage) pStr += `<< moves = ${moves} (${moves.length})  [${getChildNodeIdx(node)}]`;
+            if (!backstage) pStr += `<< moves = ${moves} (${moves.length})  [${getChildNodeIdx(node)}]`;
 
             if (moves.length % 2) {
                 if (isT == IS_TTWIN) {
@@ -647,31 +643,31 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     if (cNode[cNode.length - 1].idx == -1) {
                         //cNode.length--;
                         //mConsole("isT "+ moves)
-                        if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 1 remove -1\n`;
+                        if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 1 remove -1\n`;
                         setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
                         scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     }
                     else {
-                        if (!backStage) pStr += ` [${getChildNodeIdx(node)}] >> 2\n`;
+                        if (!backstage) pStr += ` [${getChildNodeIdx(node)}] >> 2\n`;
                         node = node.childNode[node.childNode.length - 1];
                         break;
                     }
                 }
                 else if (isT == NOT_VCT) {
                     cNode.splice(0, cNode.length);
-                    if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 3 delete all\n`;
+                    if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 3 delete all\n`;
                     setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
                     scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                 }
                 else { //continueVCT
-                    if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 4 continue\n`;
+                    if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 4 continue\n`;
                 }
             }
             else {
                 if (isT == IS_TTWIN) {
                     cNode.splice(0, cNode.length - 1);
                     cNode.push(new Node(-1, cNode[0].parentNode));
-                    if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 5 reserve one\n`;
+                    if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 5 reserve one\n`;
                     setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
                     scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     //mConsole("isT= " + moves);
@@ -679,19 +675,19 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 else if (isT == NOT_VCT) {
                     if (cNode.length == 1) {
                         cNode.splice(0, cNode.length);
-                        if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 6 delete all\n`;
+                        if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 6 delete all\n`;
                         setHistoryNode(arr, isT == IS_TTWIN ? ctnNode : false);
                         scoreCount[node.idx] += isT == IS_TTWIN ? 5 : -5;
                     }
                     else {
                         cNode.length--;
                         if (selectNode(node, vctColor)) {
-                            if (!backStage) pStr += ` [${getChildNodeIdx(node)}] >> 7\n`;
+                            if (!backstage) pStr += ` [${getChildNodeIdx(node)}] >> 7\n`;
                             node = node.childNode[node.childNode.length - 1];
                             break;
                         }
                         else {
-                            if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 8 continue\n`;
+                            if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 8 continue\n`;
                             isT = CONTINUE_VCT;
                             if (moves.length == 0 && scoreIdx && node.childNode.length) {
                                 scoreIdx--;
@@ -708,12 +704,12 @@ function findVCT(arr, color, node, count, depth, backStage) {
                 else { //continueVC
 
                     if (selectNode(node, vctColor)) {
-                        if (!backStage) pStr += ` [${getChildNodeIdx(node)}] >> 9\n`;
+                        if (!backstage) pStr += ` [${getChildNodeIdx(node)}] >> 9\n`;
                         node = node.childNode[node.childNode.length - 1];
                         break;
                     }
                     else if (moves.length == 0 && scoreIdx && node.childNode.length) {
-                        if (!backStage) pStr += ` [${getChildNodeIdx(node)}] << 10 scoreIdx--   minScore[${minScore[scoreIdx -1]}]\n`;
+                        if (!backstage) pStr += ` [${getChildNodeIdx(node)}] << 10 scoreIdx--   minScore[${minScore[scoreIdx -1]}]\n`;
                         scoreIdx--;
                         node = node.childNode[node.childNode.length - 1];
                         changeArr(arr, node.idx, vctColor)
@@ -732,8 +728,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
         if (moves.length || node.parentNode) {
 
             while (node) {
-                let x = node.idx % 15;
-                let y = parseInt(node.idx / 15);
+                let x = getX(node.idx);
+                let y = getY(node.idx);
                 let c = moves.length % 2 ? vctnColor : vctColor;
                 if (node.idx == -1) {
                     //node.parentNode.childNode.length--;   // not remove -1 mark;
@@ -771,7 +767,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
             else {
                 cNode.splice(0, cNode.length);
             }
-            if (!backStage) pStr += `false>>moves = ${moves} _${moves.length}`;
+            if (!backstage) pStr += `false>>moves = ${moves} _${moves.length}`;
             mConsole(pStr);
             return false;
         }
@@ -824,8 +820,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
         let nColor = color == 1 ? 2 : 1;
         let timeout = 30000;
         let depth = 1000;
-        let x = point.idx % 15;
-        let y = parseInt(point.idx / 15);
+        let x = getX(point.idx);
+        let y = getY(point.idx);
         let notWin = false;
         let VCF = new Node();
         movesToNode(point.moves, VCF);
@@ -838,17 +834,17 @@ function findVCT(arr, color, node, count, depth, backStage) {
         moves.push(point.moves);
         //if (point.idx==40) mConsole(`idx==40  vcf = [${point.moves}]`)
         arr[y][x] = color;
-        let bPoint = getBlockVCF(moves, color, arr, true, true, point.moves[point.moves.length - 1]);
+        let bPoint = getBlockVCF(moves, color, arr, true, point.moves[point.moves.length - 1]);
         //if (point.idx==40) mConsole(`bPoint==[${bPoint}]`)
         if (bPoint) { //排除直接防
 
             for (let i = bPoint.length - 1; i >= 0; i--) {
-                let x = bPoint[i] % 15;
-                let y = parseInt(bPoint[i] / 15);
+                let x = getX(bPoint[i]);
+                let y = getY(bPoint[i]);
                 let nd = new Node(bPoint[i], node);
                 arr[y][x] = color == 1 ? 2 : 1;
                 // 确保没有新的VCF
-                let fNum = findVCF(arr, color, 1, null, 60000, true);
+                let fNum = findVCF(arr, color, 1, undefined, 60000);
                 arr[y][x] = 0;
                 if (fNum) {
                     movesToNode(vcfWinMoves[0], nd);
@@ -857,8 +853,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
                     bPoint.splice(i, 1);
                     // 用新VCF排除剩下防点
                     for (let j = i - 1; j >= 0; j--) {
-                        x = bPoint[j] % 15;
-                        y = parseInt(bPoint[j] / 15);
+                        x = getX(bPoint[j]);
+                        y = getY(bPoint[j]);
                         arr[y][x] = color == 1 ? 2 : 1;
                         if (isVCF(color, arr, vcfWinMoves[0])) {
                             nd = new Node(bPoint[j], node);
@@ -901,18 +897,18 @@ function findVCT(arr, color, node, count, depth, backStage) {
         for (j = fMoves.length - 1; j >= 0; j--) { // continue add block point
             // 摆棋
             for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                let x = fMoves[j][k] % 15;
-                let y = parseInt(fMoves[j][k] / 15);
+                let x = getX(fMoves[j][k]);
+                let y = getY(fMoves[j][k]);
                 arr[y][x] = k % 2 ? color : nColor;
             }
             //mConsole(`fMoves[j] = ${fMoves[j]}`)
             let fNum;
-            let tx = fMoves[j][fMoves[j].length - 1] % 15;
-            let ty = parseInt(fMoves[j][fMoves[j].length - 1] / 15);
+            let tx = getX(fMoves[j][fMoves[j].length - 1]);
+            let ty = getY(fMoves[j][fMoves[j].length - 1]);
             if (isFour(tx, ty, color, arr)) {
 
                 arr[ty][tx] = 0;
-                fNum = findVCF(arr, color, 1, null, null, true);
+                fNum = findVCF(arr, color, 1);
                 if (fNum) {
 
                     let nd = node;
@@ -946,7 +942,7 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
             if (!fNum) {
                 notWin = true;
-                fNum = findVCF(arr, color, 1, null, null, true);
+                fNum = findVCF(arr, color, 1);
                 if (fNum) { // continue find vct
                     movesToNode(fMoves[j].slice(0, fMoves[j].length - 1), node);
                     //mConsole(`fMoves add [${fMoves[j].slice(0, fMoves[j].length - 1)}]`)
@@ -958,8 +954,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
             //mConsole(fMoves[j].slice(0, fMoves[j].length - 1))
             // 复原棋子
             for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                let x = fMoves[j][k] % 15;
-                let y = parseInt(fMoves[j][k] / 15);
+                let x = getX(fMoves[j][k]);
+                let y = getY(fMoves[j][k]);
                 arr[y][x] = 0;
             }
             if (notV) break;
@@ -975,11 +971,11 @@ function findVCT(arr, color, node, count, depth, backStage) {
             let tStart = node.childNode.length;
             for (let i = node.childNode.length - 1; i >= 0; i--) {
                 if (node.childNode[i].idx != -1) {
-                    let x = node.childNode[i].idx % 15;
-                    let y = parseInt(node.childNode[i].idx / 15);
+                    let x = getX(node.childNode[i].idx);
+                    let y = getY(node.childNode[i].idx);
                     arr[y][x] = color == 1 ? 2 : 1;
 
-                    let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, 2, 6000, true);
+                    let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, 2, 6000);
                     if (fNum) {
                         if (i < vStart) {
                             let nd = node.childNode.splice(i, 1);
@@ -1033,8 +1029,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
     }
 
     function changeArr(arr, idx, color) {
-        let x = idx % 15;
-        let y = parseInt(idx / 15);
+        let x = getX(idx);
+        let y = getY(idx);
         arr[y][x] = color;
     }
 
@@ -1043,14 +1039,14 @@ function findVCT(arr, color, node, count, depth, backStage) {
         let dp = movesDepth.length ? movesDepth[movesDepth.length - 1] : 0;
         if (color == vctColor) {
             let nColor = color == 1 ? 2 : 1;
-            let x = node.idx % 15;
-            let y = parseInt(node.idx / 15);
+            let x = getX(node.idx);
+            let y = getY(node.idx);
             if (!isFour(x, y, color, arr)) {
                 let OV = arr[y][x];
                 arr[y][x] = 0;
                 if (node.parentNode && node.parentNode.idx != -1) {
-                    let tx = node.parentNode.idx % 15;
-                    let ty = parseInt(node.parentNode.idx / 15);
+                    let tx = getX(node.parentNode.idx);
+                    let ty = getY(node.parentNode.idx);
                     if (!isFour(tx, ty, nColor, arr)) {
                         //mConsole(`moves = [${vctMoves}]  >> rt_1 (${dp+1}) [${movesDepth}]`);
                         arr[y][x] = OV;
@@ -1195,8 +1191,8 @@ function findVCT(arr, color, node, count, depth, backStage) {
         else {
             node = node.parentNode;
             if (node) {
-                let x = node.idx % 15;
-                let y = parseInt(node.idx / 15);
+                let x = getX(node.idx);
+                let y = getY(node.idx);
                 let score = getScore(x, y, color, arr);
                 node.score = scoreIdx ? minScore[scoreIdx - 1] + score : minScore[0] + score;
             }
@@ -1207,17 +1203,18 @@ function findVCT(arr, color, node, count, depth, backStage) {
 
 
 
-function findVCF(arr, color, count, depth, timeOut, backStage) {
+function findVCF(arr, color, count=1, depth=225, timeOut=36000000, backstage=true) {
     let rt;
-    depth = arr.depth ? data.depth : depth == null ? 225 : depth;
-    count = arr.depth ? data.count : count == null ? 225 : count * 1;
+    depth = arr.depth ? data.depth : depth;
+    count = arr.depth ? data.count : count;
     if (count == 1 && depth > 4) { // depth＞4 排除四手五连算法
         for (let i = 1; i < 4; i++) {
-            rt = findVCFB(arr, color, 1, i, timeOut, backStage);
+            rt = findVCFB(arr, color, 1, i, timeOut, backstage);
             if (rt) return rt;
         }
     }
-    rt = findVCFB(arr, color, count, depth, timeOut, backStage);
+    
+    rt = findVCFB(arr, color, count, depth, timeOut, backstage);
     return rt;
 }
 
@@ -1225,16 +1222,16 @@ function findVCF(arr, color, count, depth, timeOut, backStage) {
 
 // 连续查找,VCF
 //color 设置棋子颜色， timeout 设置超时毫秒单位， 
-// depth 计算深度， backStage 后台模式, count VCF个数上限
+// depth 计算深度， backstage 后台模式, count VCF个数上限
 // 不会会改变arr参数的值，不需要 copyArr([], data）
-function findVCFB(arr, color, count, depth, timeOut, backStage) {
+function findVCFB(arr, color, count, depth, timeOut, backstage) {
 
     //console.log("vcf start");
     let data = arr.depth ? arr : null; // loadcontinue findvcf
-    timeOut = data ? data.timeOut : timeOut == null ? 36000000 : timeOut;
-    depth = data ? data.depth : depth == null ? 225 : depth;
-    count = data ? data.count : count == null ? 225 : count * 1;
-    backStage = data ? data.backStage : backStage ? true : false;
+    timeOut = data ? data.timeOut : timeOut;
+    depth = data ? data.depth : depth;
+    count = data ? data.count : count;
+    backstage = data ? data.backstage : backstage;
     vcfCount = data ? data.vcfCount : 0;
 
     vcfArr = data ? data.vcfArr : arr;
@@ -1250,10 +1247,10 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
     vcfWinMoves = data ? data.vcfWinMoves : [];
     vcfnLevel = data ? data.vcfnLevel : null;
 
-    if (!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+    if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
     vcfStartTimer = new Date().getTime();
 
-    vcfActuator(timeOut, depth, count, backStage);
+    vcfActuator(timeOut, depth, count, backstage);
 
     return vcfWinMoves.length;
 
@@ -1278,8 +1275,8 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                     if (t - prvTimer > maxTimer) {
                         prvTimer += maxTimer;
                         maxTimer = maxTimer < 60000 ? maxTimer + parseInt((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
-                        if (!backStage) {
-                            post("printMoves", [vcfMoves, vcfColor, vcfFailMoves]);
+                        if (!backstage) {
+                            post("printMoves", {winMoves:vcfMoves, color:vcfColor});
                         }
                     }
                     vcfFinding = continueFindVCF(timeOut, depth);
@@ -1345,16 +1342,16 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 let idx; // 优先选择活4,再43
                 if (ed > st) { // 两个以上冲四点，优先选择活4,再43
                     for (idx = ed; idx >= st; idx--) { //找到一个活4级的点可以排除其它点
-                        let x = fs[idx] % 15;
-                        let y = parseInt(fs[idx] / 15);
+                        let x = getX(fs[idx]);
+                        let y = getY(fs[idx]);
                         // 如果没有活4，白棋继续找44，冲4抓
                         if (isFFWin(x, y, color, arr, true)) {
                             let v = fs.splice(idx, 1);
                             fs.splice(st - 1, ed - st + 1);
                             let wMoves = moves.concat(v);
                             if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                            if (pushWinMoves(WinMoves, wMoves) && !backStage) {
-                                if (!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+                            if (pushWinMoves(WinMoves, wMoves) && !backstage) {
+                                if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
                             };
                             pushFailMoves(FailMoves, moves);
                             backFindVCF();
@@ -1364,8 +1361,8 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                     //排序
                     let freeThreeSt = ed;
                     for (idx = ed; idx >= st; idx--) {
-                        let x = fs[idx] % 15;
-                        let y = parseInt(fs[idx] / 15);
+                        let x = getX(fs[idx]);
+                        let y = getY(fs[idx]);
                         // 把所有活3排到栈顶
                         //判断是否活3，最后一个参数五连，冲4不否定活3
                         for (let i = 0; i < 4; i++) {
@@ -1382,14 +1379,14 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 }
                 //mConsole(`<<___\n${fs}`)
 
-                tx = fs[ed] % 15;
-                ty = parseInt(fs[ed] / 15);
+                tx = getX(fs[ed]);
+                ty = getY(fs[ed]);
                 moves.push(fs[ed] * 1);
                 arr[ty][tx] = color;
 
                 moves.push(getBlockFour(tx, ty, arr) * 1);
-                tx = moves[moves.length - 1] % 15;
-                ty = parseInt(moves[moves.length - 1] / 15);
+                tx = getX(moves[moves.length - 1]);
+                ty = getY(moves[moves.length - 1]);
 
                 arr[ty][tx] = nColor;
                 // 为下次调用保存进攻级别
@@ -1413,8 +1410,8 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 if (isFFWin(tx, ty, color, arr, true)) {
                     let wMoves = moves.concat(ty * 15 + tx);
                     if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
-                    if (pushWinMoves(WinMoves, wMoves) && !backStage) {
-                        if (!backStage) post("findVCF_addVCF", [vcfWinMoves, vcfColor, 0, vcfInitial]);
+                    if (pushWinMoves(WinMoves, wMoves) && !backstage) {
+                        if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
                     };
                     pushFailMoves(FailMoves, moves);
                     backFindVCF();
@@ -1426,8 +1423,8 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 arr[ty][tx] = color;
 
                 moves.push(getBlockFour(tx, ty, arr) * 1);
-                tx = moves[moves.length - 1] % 15;
-                ty = parseInt(moves[moves.length - 1] / 15);
+                tx = getX(moves[moves.length - 1]);
+                ty = getY(moves[moves.length - 1]);
                 arr[ty][tx] = nColor;
                 // 为下次调用保存进攻级别
                 vcfSaveLevel(tx, ty, nColor, arr);
@@ -1454,11 +1451,11 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
             let y;
             if (moves.length) { // 退一手
                 let l = moves.length;
-                x = moves[l - 1] % 15;
-                y = parseInt(moves[l - 1] / 15);
+                x = getX(moves[l - 1]);
+                y = getY(moves[l - 1]);
                 arr[y][x] = 0;
-                x = moves[l - 2] % 15;
-                y = parseInt(moves[l - 2] / 15);
+                x = getX(moves[l - 2]);
+                y = getY(moves[l - 2]);
                 arr[y][x] = 0;
                 moves.length = l - 2;
                 fs.length--;
@@ -1471,11 +1468,11 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 pushFailMoves(FailMoves, moves);
                 //FailMoves.push(copyMoves(moves));
                 let l = moves.length;
-                x = moves[l - 1] % 15;
-                y = parseInt(moves[l - 1] / 15);
+                x = getX(moves[l - 1]);
+                y = getY(moves[l - 1]);
                 arr[y][x] = 0;
-                x = moves[l - 2] % 15;
-                y = parseInt(moves[l - 2] / 15);
+                x = getX(moves[l - 2]);
+                y = getY(moves[l - 2]);
                 arr[y][x] = 0;
                 moves.length = l - 2;
                 fs.length--;
@@ -1484,13 +1481,13 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
             if (fs.length > 1) { // 退到下一分支
                 let l = fs.length;
                 moves.push(fs[l - 1] * 1);
-                x = fs[l - 1] % 15;
-                y = parseInt(fs[l - 1] / 15);
+                x = getX(fs[l - 1]);
+                y = getY(fs[l - 1]);
                 arr[y][x] = color;
                 moves.push(getBlockFour(x, y, arr) * 1);
                 l = moves.length;
-                x = moves[l - 1] % 15;
-                y = parseInt(moves[l - 1] / 15);
+                x = getX(moves[l - 1]);
+                y = getY(moves[l - 1]);
 
                 arr[y][x] = nColor;
                 // 为下次调用保存进攻级别
@@ -1512,8 +1509,8 @@ function findVCFB(arr, color, count, depth, timeOut, backStage) {
                 }
                 else { // 一个五连点是冲4
                     let idx = getBlockFour(x, y, arr);
-                    let tx = idx % 15;
-                    let ty = parseInt(idx / 15);
+                    let tx = getX(idx);
+                    let ty = getY(idx);
                     // p 保存冲4防点
                     vcfnLevel = { level: 4, p: { x: tx, y: ty } };
                 }
@@ -1536,8 +1533,8 @@ function simpleVCF(color, arr, moves) {
     let nColor = color == 1 ? 2 : 1;
     let leng = moves.length - 6;
     for (let j = 0; j <= leng; j++) { // 摆棋子
-        let x = moves[j] % 15;
-        let y = parseInt(moves[j] / 15);
+        let x = getX(moves[j]);
+        let y = getY(moves[j]);
         arr[y][x] = j % 2 == 0 ? color : nColor;
     }
 
@@ -1546,16 +1543,16 @@ function simpleVCF(color, arr, moves) {
         if (isVCF(color, arr, VCF)) moves.splice(i, 2); //删除无谓冲四
         for (let j = 1; j < 3; j++) { // 复原两步，直到最后可以完全复原数组
             if (i - 1 < 0) break;
-            let x = moves[i - j] % 15;
-            let y = parseInt(moves[i - j] / 15);
+            let x = getX(moves[i - j]);
+            let y = getY(moves[i - j]);
             arr[y][x] = 0;
         }
     }
 
     leng = moves.length - 6;
     for (let j = 1; j <= leng; j += 2) { // add fourPoint
-        let x = moves[j] % 15;
-        let y = parseInt(moves[j] / 15);
+        let x = getX(moves[j]);
+        let y = getY(moves[j]);
         if (isFour(x, y, nColor, arr)) fs.push(j);
     }
     while (fs.length) { //判断引起对手反四的手顺是否可以去除
@@ -1583,18 +1580,6 @@ function cancelFind() {
 
     stopFind = true;
     setTimeout("stopFind = false;", 2500);
-}
-
-
-
-// 给ps数组添加一个值，重复的会忽略
-function pushPoint(ps, point) {
-
-    let len = ps.length;
-    for (let i = 0; i < len; i++) {
-        if (ps[i] == point) return;
-    }
-    ps[len] = point;
 }
 
 
@@ -1728,7 +1713,7 @@ function isWin(color, arr) {
 
 // 不判断对手是否五连
 // 判断是否活四级别胜
-function isFFWin(x, y, color, arr, pass) {
+function isFFWin(x, y, color, arr, pass = false) {
 
     let win = false;
     if (isFour(x, y, color, arr, true)) {
@@ -1748,22 +1733,28 @@ function isFFWin(x, y, color, arr, pass) {
 
 
 
+function isFFWin_Point(point, color, arr, pass = false) {
+    return isFFWin(point.x, point.y, color, arr, pass);
+}
 
 
 
+function isFFWin_Idx(idx, color, arr, pass = false) {
+    return isFFWin(getX(idx), getY(idx), color, arr, pass);
+}
 
 
 
 // 判断是idx否三手五连点
-function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
-    node = node || new Node();
+function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
+
     let nd = node;
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     let isWin = false;
     let OV = arr[y][x];
     arr[y][x] = color;
-    let level = getLevelB(arr, color, getArr([]), 3000, null, true, 2);
+    let level = getLevelB(arr, color, 3000, undefined, 2);
     if (level.level >= 4.5) {
         nd.childNode[nd.childNode.length] = new Node(idx, nd);
         isWin = true;
@@ -1810,18 +1801,18 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
 
     }
     else {
-        if (findVCF(arr, color, 1, 0, null, true)) {
+        if (findVCF(arr, color, 1, 0)) {
             isWin = true;
             let VCF = new Node();
             movesToNode(vcfWinMoves[0], VCF);
-            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true);
+            let bPoint = getBlockVCF(vcfWinMoves, color, arr);
             bPoint = bPoint || [];
             node.childNode[node.childNode.length] = new Node(idx, node);
             node.childNode[node.childNode.length - 1].childNode.length = bPoint.length;
             node.childNode[node.childNode.length - 1].defaultChildNode = VCF;
             for (let i = bPoint.length - 1; i >= 0; i--) {
-                let tx = bPoint[i] % 15;
-                let ty = parseInt(bPoint[i] / 15);
+                let tx = getX(bPoint[i]);
+                let ty = getY(bPoint[i]);
                 arr[ty][tx] = color == 1 ? 2 : 1;
                 let fPoint = findFFWin(arr, color, getArr([]));
                 if (fPoint.length == 0) {
@@ -1856,18 +1847,18 @@ function isThreeWinPoint(idx, color, arr, backStage, pass, node) {
             //node.childNode = [];
         }
         if (isWin && !pass) { //验证对手先手
-            let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, null, null, true);
+            let fNum = findVCF(arr, color == 1 ? 2 : 1, 1);
             isWin = fNum == 0;
             if (!isWin) node.childNode.length--;
         }
     }
 
     arr[y][x] = OV;
-    //if (isWin && !backStage) {
-    if (node && node.childNode.length && !backStage) {
-        post("wLb", [idx, node.childNode[node.childNode.length - 1].txt || "W", "black"]);
+    //if (isWin && !backstage) {
+    if (node && node.childNode.length && !backstage) {
+        post("wLb", {idx:idx, text:node.childNode[node.childNode.length - 1].txt || "W", color:"black"});
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", [node]);
+        post("addTree", {node:node});
     }
     return isWin;
 }
@@ -1887,8 +1878,8 @@ function isVCF(color, arr, moves) {
         getArr(newarr);
         let level = getLevel(arr, nColor);
         if (level.level < 4) { // 对方进攻级别小于冲4
-            let x = moves[i] % 15;
-            let y = parseInt(moves[i] / 15);
+            let x = getX(moves[i]);
+            let y = getY(moves[i]);
             // 先手会判断禁手
             if ((arr[y][x] == 0 && isFour(x, y, color, arr)) && (color == 2 || !isFoul(x, y, arr))) {
                 OV.push({ "x": x, "y": y, "v": arr[y][x] * 1 });
@@ -1896,8 +1887,8 @@ function isVCF(color, arr, moves) {
                 if (i + 1 >= l) break;
                 //后手不判断禁手
                 let idx = getBlockFour(x, y, arr);
-                x = idx % 15;
-                y = parseInt(idx / 15);
+                x = getX(idx);
+                y = getY(idx);
                 if (idx == moves[i + 1] && arr[y][x] == 0) {
                     OV.push({ "x": x, "y": y, "v": arr[y][x] * 1 });
                     arr[y][x] = nColor;
@@ -1921,8 +1912,8 @@ function isVCF(color, arr, moves) {
                 if (i + 1 >= l) break;
                 //后手不判断禁手
                 let idx = getBlockFour(x, y, arr);
-                x = idx % 15;
-                y = parseInt(idx / 15);
+                x = getX(idx);
+                y = getY(idx);
                 if (idx == moves[i + 1] && arr[y][x] == 0) {
                     OV.push({ "x": x, "y": y, "v": arr[y][x] * 1 });
                     arr[y][x] = nColor;
@@ -1950,8 +1941,8 @@ function isVCF(color, arr, moves) {
                 isV = true;
             }
             else {
-                let x = fP[0] % 15;
-                let y = parseInt(fP[0] / 15);
+                let x = getX(fP[0]);
+                let y = getY(fP[0]);
                 if (color == 2 && isFoul(x, y, arr)) isV = true;
             }
         }
@@ -1977,13 +1968,23 @@ function isCatchFoul(x, y, arr) {
     let ch = false;
     let idx = getBlockFour(x, y, arr);
     if (idx != -1) {
-        let tx = idx % 15;
-        let ty = parseInt(idx / 15);
+        let tx = getX(idx);
+        let ty = getY(idx);
         if (isFoul(tx, ty, arr)) ch = tx + ty * 15;
     }
     arr[y][x] = 0;
     return ch;
 
+}
+
+
+function isCatchFoul_Point(point, arr) {
+    return isCatchFoul(point.x, point.y, arr);
+}
+
+
+function isCatchFoul_Idx(idx, arr) {
+    return isCatchFoul(getX(idx), getY(idx), arr);
 }
 
 
@@ -1997,6 +1998,16 @@ function isFoul(x, y, arr) {
     if (isFF(x, y, 1, arr)) return true;
     if (isTT(x, y, arr)) return true;
     return false;
+}
+
+
+function isFoul_Point(point, arr) {
+    return isFoul(point.x, point.y, arr);
+}
+
+
+function isFoul_Idx(idx, arr) {
+    return isFoul(getX(idx), getY(idx), arr);
 }
 
 
@@ -2047,6 +2058,16 @@ function isSix(x, y, color, arr) {
 }
 
 
+function isSix_Point(point, color, arr) {
+    return isSix(point.x, point.y, color, arr);
+}
+
+
+function isSix_Idx(idx, color, arr) {
+    return isSix(getX(idx), getY(idx), color, arr);
+}
+
+
 
 // 不会验证x,y是否有棋子
 function isLineSix(x, y, direction, color, arr) {
@@ -2061,6 +2082,16 @@ function isLineSix(x, y, direction, color, arr) {
 
     arr[y][x] = ov;
     return false;
+}
+
+
+function isLineSix_Point(point, direction, color, arr) {
+    return isLineSix(point.x, point.y, direction, color, arr);
+}
+
+
+function isLineSix_Idx(idx, direction, color, arr) {
+    return isLineSix(getX(idx), getY(idx), direction, color, arr);
 }
 
 
@@ -2093,6 +2124,16 @@ function isFive(x, y, color, arr) {
     }
     arr[y][x] = ov;
     return count > 0 ? true : false;
+}
+
+
+function isFive_Point(point, color, arr) {
+    return isFive(point.x, point.y, color, arr);
+}
+
+
+function isFive_Idx(idx, color, arr) {
+    return isFive(getX(idx), getY(idx), color, arr);
 }
 
 
@@ -2169,6 +2210,16 @@ function isFour(x, y, color, arr, free, passFoul) {
 }
 
 
+function isFour_Point(point, color, arr, free, passFoul) {
+    return isFour(point.x, point.y, color, arr, free, passFoul);
+}
+
+
+function isFour_Idx(idx, color, arr, free, passFoul) {
+    return isFour(getX(idx), getY(idx), color, arr, free, passFoul);
+}
+
+
 
 function isLineFive(x, y, direction, color, arr) {
 
@@ -2192,11 +2243,18 @@ function isLineFive(x, y, direction, color, arr) {
         }
     }
 
-    //console.log(arr)
-    //console.log(count)
-
     arr[y][x] = ov;
     return count > 0 ? true : false;
+}
+
+
+function isLineFive_Point(point, direction, color, arr) {
+    return isLineFive(point.x, point.y, direction, color, arr);
+}
+
+
+function isLineFive_Idx(idx, direction, color, arr) {
+    return isLineFive(getX(idx), getY(idx), direction, color, arr);
 }
 
 
@@ -2250,19 +2308,29 @@ function isLineFour(x, y, direction, color, arr, free, pass) {
 }
 
 
+function isLineFour_Point(point, direction, color, arr, free, pass) {
+    return isLineFour(point.x, point.y, direction, color, arr, free, pass);
+}
 
-function isFourWinPoint(idx, color, arr, backStage, pass, node) {
-    node = node || new Node();
+
+function isLineFour_Idx(idx, direction, color, arr, free, pass) {
+    return isLineFour(getX(idx), getY(idx), direction, color, arr, free, pass);
+}
+
+
+
+function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
+
     //let istest = idx ==112;
     let pnt = aroundPoint[112];
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     let isWin = false; //初始为false, 后续如果无防点就是手数太短不算四手五连
     let OV = arr[y][x];
     let tWinPoint = [];
     let VCT = new Node();
     arr[y][x] = color;
-    let lvl = getLevelB(arr, color, getArr([]), 3000, null, true, 3);
+    let lvl = getLevelB(arr, color, 3000, undefined, 3);
     /*
     if (lvl.level >= 4.5) {
         node.childNode[0] = new Node(idx, node);
@@ -2271,7 +2339,7 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
     */
     //mConsole(`__>> idx=${idx}`)
     if (lvl.level >= 3 || findThreeWin(arr, color, getArr([]), [], VCT).length) {
-        if (lvl.level >= 3 && isThreeWinPoint(idx, color, arr, true, null, node)) {
+        if (lvl.level >= 3 && isThreeWinPoint(idx, color, arr, true, undefined, node)) {
             isWin = true;
         }
         else {
@@ -2288,7 +2356,7 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
                 node.childNode[0].defaultChildNode = VCT;
                 VCT.parentNode = node.childNode[0];
             }
-            let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), null, 3 - 2, true, null, true, null, true);
+            let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), undefined, 3 - 2, true, undefined, true, undefined, true);
             for (let i = 0; i < 225; i++) { //find blockVCT point
                 if (lvl.level >= 3) break;
                 let tx = pnt.point[i].x;
@@ -2354,7 +2422,7 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
             }
 
             if (isWin && !pass) { //验证对方先手, 先不验证对手VCT
-                let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, 5, 3000, true);
+                let fNum = findVCF(arr, color == 1 ? 2 : 1, 1, 5, 3000);
                 isWin = fNum == 0;
                 if (!isWin) node.childNode = [];
             }
@@ -2362,19 +2430,19 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
     }
 
     arr[y][x] = OV;
-    //if (isWin && !backStage) {
-    if (node.childNode.length && !backStage) {
-        post("wLb", [idx, node.childNode[0].txt || "W", "black"]);
+    //if (isWin && !backstage) {
+    if (node.childNode.length && !backstage) {
+        post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", [node]);
+        post("addTree", {node:node});
     }
     if (!isWin) node = new Node();
     return isWin;
 
     function isTWin(arr, color, node) {
 
-        let x = node.childNode[0].idx % 15;
-        let y = parseInt(node.childNode[0].idx / 15);
+        let x = getX(node.childNode[0].idx);
+        let y = getY(node.childNode[0].idx);
         let cNode = node.childNode[0].childNode;
         let isT = false;
         if (arr[y][x] > 0) return false;
@@ -2394,18 +2462,18 @@ function isFourWinPoint(idx, color, arr, backStage, pass, node) {
         //if (y*15+x == 160 && istest) console.log(true)
         if (!isT) {
             arr[y][x] = color; //test VCT
-            if (findVCF(arr, color, 1, 0, 3000, true)) { //test VCT
-                let bPoint = getBlockVCF(vcfWinMoves, color, arr, true);
+            if (findVCF(arr, color, 1, 0, 3000)) { //test VCT
+                let bPoint = getBlockVCF(vcfWinMoves, color, arr);
                 bPoint = bPoint || [];
                 if (bPoint && bPoint.length == cNode.length) {
                     let i;
                     for (i = bPoint.length - 1; i >= 0; i--) {
                         if (bPoint.indexOf(cNode[i].idx) + 1) {
                             let idx = cNode[i].idx;
-                            let tx = idx % 15;
-                            let ty = parseInt(idx / 15);
-                            let ttx = cNode[i].childNode[0].idx % 15;
-                            let tty = parseInt(cNode[i].childNode[0].idx / 15);
+                            let tx = getX(idx);
+                            let ty = getY(idx);
+                            let ttx = getX(cNode[i].childNode[0].idx);
+                            let tty = getY(cNode[i].childNode[0].idx);
                             if (arr[ty][tx] > 0 || arr[tty][ttx] > 0) { arr[y][x] = 0; return false; }
                             arr[ty][tx] = color == 1 ? 2 : 1;
                             /*
@@ -2494,6 +2562,15 @@ function isFF(x, y, color, arr) {
 }
 
 
+function isFF_Point(point, color, arr) {
+    return isFF(point.x, point.y, color, arr);
+}
+
+
+function isFF_Idx(idx, color, arr) {
+    return isFF(getX(idx), getY(idx), color, arr);
+}
+
 
 
 // 不会验证x,y是否有棋子
@@ -2579,6 +2656,16 @@ function isThree(x, y, color, arr, free) {
 }
 
 
+function isThree_Point(point, color, arr, free) {
+    return isThree(point.x, point.y, color, arr, free);
+}
+
+
+function isThree_Idx(idx, color, arr, free) {
+    return isThree(getX(idx), getY(idx), color, arr, free);
+}
+
+
 
 // 不会验证x,y是否有棋子
 // x,y,点是否形成33
@@ -2630,6 +2717,16 @@ function isTT(x, y, arr) {
         // 累计够两个活3，确认是33
         return count > 1 ? true : false;
     }
+}
+
+
+function isTT_Point(point, arr) {
+    return isTT(point.x, point.y, arr);
+}
+
+
+function isTT_Idx(idx, arr) {
+    return isTT(getX(idx), getY(idx), arr);
 }
 
 
@@ -2708,6 +2805,16 @@ function isLineThree(x, y, direction, color, arr, free) {
 
     return free === true ? (isfree && isf) : (!isfree && isf);
 
+}
+
+
+function isLineThree_Point(point, direction, color, arr, free) {
+    return isLineThree(point.x, point.y, direction, color, arr, free);
+}
+
+
+function isLineThree_Idx(idx, direction, color, arr, free) {
+    return isLineThree(getX(idx), getY(idx), direction, color, arr, free);
 }
 
 
@@ -2813,6 +2920,15 @@ function isLineTwo(x, y, direction, color, arr, free) {
 }
 
 
+function isLineTwo_Point(point, direction, color, arr, free) {
+    return isLineTwo(point.x, point.y, direction, color, arr, free);
+}
+
+
+function isLineTwo_Idx(idx, direction, color, arr, free) {
+    return isLineTwo(getX(idx), getY(idx), direction, color, arr, free);
+}
+
 
 // 不会验证x,y是否有棋子
 // 判断是否是一条线上的44,不判断x，y是否五连
@@ -2861,28 +2977,28 @@ function isLineFF(x, y, direction, color, arr) {
             }
             break;
         case 3:
-            /*
-                if (color==2) {
-                    for ( i=0;i>st;i--)  {
-                       if(getPower(x,y,arr,direction,color,i)==4) return true;
-                    }
-                    for ( i=0;i<ed;i++)  {
-                       if(getPower(x,y,arr,direction,color,i-4)==4) return true;
-                    }
-                }
-                break;
-            */
+
     }
 
     return false;
 }
 
 
+function isLineFF_Point(point, direction, color, arr) {
+    return isLineFF(point.x, point.y, direction, color, arr);
+}
+
+
+function isLineFF_Idx(idx, direction, color, arr) {
+    return isLineFF(getX(idx), getY(idx), direction, color, arr);
+}
+
+
 
 function getLines(idx, color, arr, level) {
     let lines = [];
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     //console.log(`idx=${idx}, x=${x}, y=${y}`)
     for (let i = 0; i < 4; i++) {
         let line = getLine(DIRECTIONS[i]);
@@ -2959,7 +3075,10 @@ function getLines(idx, color, arr, level) {
 
         if (start != end) {
             //console.log(`start=${start}, end=${end}, direction=${direction}`)
-            return { "start": start, "end": end };
+            return {
+                "start": start,
+                "end": end
+            };
         }
 
         function setLine() {
@@ -3006,9 +3125,8 @@ function getThreeUndoFail(x, y, arr) {
             if (p.x != -1 && arr[p.y][p.x] == 0) {
                 ov = arr[p.y][p.x];
                 arr[p.y][p.x] = 1;
-                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, null, true)) {
+                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, undefined, true)) {
                     ps.push(getArrIndex(x, y, j, DIRECTIONS[i], arr) * 1);
-                    //post("wLb", [ps[ps.length-1],"6","red"]);
                 }
                 arr[p.y][p.x] = ov;
             }
@@ -3016,9 +3134,8 @@ function getThreeUndoFail(x, y, arr) {
             if (p.x != -1 && arr[p.y][p.x] == 0) {
                 ov = arr[p.y][p.x];
                 arr[p.y][p.x] = 1;
-                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, null, true)) {
+                if (isLineFour(x, y, DIRECTIONS[i], 1, arr, undefined, true)) {
                     ps.push(getArrIndex(x, y, -j, DIRECTIONS[i], arr) * 1);
-                    //post("wLb", [ps[ps.length-1],"6","red"]);
                 }
                 arr[p.y][p.x] = ov;
             }
@@ -3064,8 +3181,8 @@ function getSixFramePoint(x, y, arr) {
                     if (getArrValue(fp.x, fp.y, j, DIRECTIONS[i], arr) == 0) {
                         if (getArrValue(fp.x, fp.y, j + 1, DIRECTIONS[i], arr) == 0) {
                             idx = getArrIndex(fp.x, fp.y, j + 1, DIRECTIONS[i], arr);
-                            tx = idx % 15;
-                            ty = parseInt(idx / 15);
+                            tx = getX(idx);
+                            ty = getY(idx);
                             if (!isLineFour(tx, ty, DIRECTIONS[i], 1, arr)) ps.push(idx);
                         }
                         break;
@@ -3075,8 +3192,8 @@ function getSixFramePoint(x, y, arr) {
                     if (getArrValue(fp.x, fp.y, -j, DIRECTIONS[i], arr) == 0) {
                         if (getArrValue(fp.x, fp.y, -j - 1, DIRECTIONS[i], arr) == 0) {
                             idx = getArrIndex(fp.x, fp.y, -j - 1, DIRECTIONS[i], arr);
-                            tx = idx % 15;
-                            ty = parseInt(idx / 15);
+                            tx = getX(idx);
+                            ty = getY(idx);
                             if (!isLineFour(tx, ty, DIRECTIONS[i], 1, arr)) ps.push(idx);
                         }
                         break;
@@ -3100,7 +3217,7 @@ function getScore(x, y, color, arr, level) {
         let idx = getBlockFour(x, y, arr);
     }
     else {
-        let bPoint = getBlockVCF(vcfWinMoves, color, arr, true);
+        let bPoint = getBlockVCF(vcfWinMoves, color, arr);
     }
     arr[y][x] = ov;
 }
@@ -3135,24 +3252,22 @@ function blockCatchFoul(arr) {
     for (let i = fp.length - 1; i >= 0; i--) {
         fPoint.push(fp[i].slice(0));
     }
-    //console.log(fPoint)
 
     // 找出这些抓的防点，排除先手防
-    let bPoint = getBlockVCF(fPoint, 2, arr, true, true);
-    //console.log("bPoint"+bPoint)
+    let bPoint = getBlockVCF(fPoint, 2, arr, true);
     if (bPoint) {
-        post("cleLb", ["all"]);
+        post("cleLb", {idx:"all"});
         let fourP = fPoint[0]; // 冲四点
-        let x = fourP % 15;
-        let y = parseInt(fourP / 15);
+        let x = getX(fourP);
+        let y = getY(fourP);
         arr[y][x] = 2;
         let foulP = getBlockFour(x, y, arr); //禁点
         arr[y][x] = 0;
-        x = foulP % 15;
-        y = parseInt(foulP / 15);
+        x = getX(foulP);
+        y = getY(foulP);
         let threeP = getThreeUndoFail(x, y, arr); // 三三 潜在反防点
-        let tx = fPoint[0][0] % 15;
-        let ty = parseInt(fPoint[0][0] / 15);
+        let tx = getX(fPoint[0][0]);
+        let ty = getY(fPoint[0][0]);
         arr[ty][tx] = 2; // 先填白棋冲4点，再找六腐框架，避免多层禁手漏算
         let sixFrameP = getSixFramePoint(x, y, arr); // 六腐解禁点
         arr[ty][tx] = 0;
@@ -3167,8 +3282,8 @@ function blockCatchFoul(arr) {
                     s = "✖";
                 }
                 else {
-                    x = bPoint[i] % 15;
-                    y = parseInt(bPoint[i] / 15);
+                    x = getX(bPoint[i]);
+                    y = getY(bPoint[i]);
                     arr[y][x] = 1; // 反防 : 禁解禁;
                     s = isFour(getX(foulP), getY(foulP), 1, arr) && (threeP.indexOf(bPoint[i]) > -1) ? "■" : "◎";
                     arr[y][x] = 0;
@@ -3180,7 +3295,7 @@ function blockCatchFoul(arr) {
                 color = "black";
             }
             notBlock = false;
-            post("wLb", [bPoint[i], s, color]);
+            post("wLb", {idx:bPoint[i], text:s, color:color});
             node.childNode.push(new Node(bPoint[i], node));
             node.childNode[node.childNode.length - 1].txt = s;
         }
@@ -3188,46 +3303,36 @@ function blockCatchFoul(arr) {
     else {
         bPoint = []; // 没有防点，bPoint 从false改为空数组
     }
-
-
-    let fMoves = []; //  保存先手连续冲四分支
-    continueFour(arr, 1, 4, fMoves, getArr([]));
-    //fMoves = getContinueBlockVCF(arr, 2, fPoint);
-    if (fMoves.length) post("showLabel", [`开始计算 先手防 ......${fMoves.length}`, 2000]);
-    if (fMoves.length) {
-        // fMoves 排序
-        let len = fMoves.length;
-        for (let i = len - 2; i >= 0; i--) {
-            for (let j = len - 1; j > i; j--) {
-                if (fMoves[i].length <= fMoves[j].length) {
-                    let m = fMoves[i]; // 不能用 splice 返回的指针赋值给m，会变三维数组
-                    fMoves.splice(i, 1);
-                    fMoves.splice(j, 0, m);
-                    break;
-                }
-            }
-        }
+    
+    if (!notBlock) {
+        node.firstColor = "black";
+        post("addTree", { node: node });
     }
 
 
+    post("showLabel", {text:`开始计算 先手防 ......`, timeout:2000});
+    let fMoves = []; //  保存先手连续冲四分支
+    continueFour(arr, 1, 6, fMoves, getArr([]));
+    movesSort(fMoves,(a,b)=>{return a>=b;})
+    
     // 分析先手增加防点，(先手直接解禁&先手用白子解禁,必增加防点)
-    let len = fMoves.length;
+    const LEN = fMoves.length;
     let x;
     let y;
     let idx; // 保存先手防第一手的idx
 
-    for (let k = len - 1; k >= 0; k--) {
+    for (let k = LEN - 1; k >= 0; k--) {
         idx = -1;
         // 摆棋
         for (let i = fMoves[k].length - 1; i >= 0; i--) {
-            x = fMoves[k][i] % 15;
-            y = parseInt(fMoves[k][i] / 15);
+            x = getX(fMoves[k][i]);
+            y = getY(fMoves[k][i]);
             arr[y][x] = i % 2 ? 2 : 1;
         }
 
         // 打印正在计算的点
-        post("printSearchPoint", [fMoves[k][0], "⊙", "green"]);
-        post("showLabel", [`[${moveIndexToName(fMoves[k],20)}]`, 500000]);
+        post("printSearchPoint", {workerIdx:workerIdx, idx:fMoves[k][0], text:"⊙", color:"green"});
+        post("showLabel", {text:`${LEN-k}/${LEN} [${moveIndexToName(fMoves[k],20)}]`, timeout:500000});
         // 扫描防点
         let lvl = getLevel(arr, 2)
         let blk = [];
@@ -3237,7 +3342,7 @@ function blockCatchFoul(arr) {
             }
         }
         else if (lvl.level < 4) {
-            blk = getBlockVCF(fPoint, 2, arr, true, true);
+            blk = getBlockVCF(fPoint, 2, arr, true);
         }
         //bPoint = bPoint==false ? [] : bPoint;
         for (let i = blk.length - 1; i >= 0; i--) {
@@ -3254,17 +3359,17 @@ function blockCatchFoul(arr) {
                 }
             }
             if (j < 0) { // 找到新防点,或者白占禁点
-                x = blk[i] % 15;
-                y = parseInt(blk[i] / 15);
+                x = getX(blk[i]);
+                y = getY(blk[i]);
                 let narr = copyArr([], arr);
                 narr[y][x] = 1;
                 // 需要判断对手是否有攻，搜索VCF不严谨
-                //lvl = findVCF(narr, 2, 1, 10, 10000, true);
+                //lvl = findVCF(narr, 2, 1, 10, 10000);
                 if (true || lvl == 0) { // 白棋没有新的VCF,新防点成立
                     let nd;
                     idx = fMoves[k][0];
-                    //post("printSearchPoint", []); // 清空刚才计算的点
-                    post("wLb", [idx, "○", "black"]);
+                    //post("printSearchPoint",{workerIdx:workerIdx}); // 清空刚才计算的点
+                    post("wLb", {idx:idx, text:"○", color:"black"});
                     nd = movesToNode(fMoves[k], node);
                     if (nBlk) {
                         nd.childNode.push(new Node(blk[i], nd));
@@ -3278,6 +3383,10 @@ function blockCatchFoul(arr) {
                         pNode = pNode.parentNode;
                     }
                     i = -1;
+                    if (!notBlock) {
+                        node.firstColor = "black";
+                        post("addTree", { node: node });
+                    }
                 }
                 notBlock = false;
             }
@@ -3285,8 +3394,8 @@ function blockCatchFoul(arr) {
 
         // 复原棋子
         for (let i = fMoves[k].length - 1; i >= 0; i--) {
-            x = fMoves[k][i] % 15;
-            y = parseInt(fMoves[k][i] / 15);
+            x = getX(fMoves[k][i]);
+            y = getY(fMoves[k][i]);
             arr[y][x] = 0;
         }
 
@@ -3308,11 +3417,8 @@ function blockCatchFoul(arr) {
 
 
     }
-    //post("printSearchPoint", []); // 清空刚才计算的点
-    if (!notBlock) {
-        node.firstColor = "black";
-        post("addTree", [node]);
-    }
+    //post("printSearchPoint",{workerIdx:workerIdx}); // 清空刚才计算的点
+    
     return [notBlock ? 0 : 1];
 
 }
@@ -3554,8 +3660,8 @@ function findFFWin(arr, color, newarr) {
     let wPoint = [];
     let fPoint = findFourPoint(arr, color, newarr) || [];
     for (let i = fPoint.length - 1; i >= 0; i--) {
-        let x = fPoint[i] % 15;
-        let y = parseInt(fPoint[i] / 15);
+        let x = getX(fPoint[i]);
+        let y = getY(fPoint[i]);
         if (isFFWin(x, y, color, arr)) {
             arr[y][x] = "*";
             arr[y][x] = 0;
@@ -3705,7 +3811,7 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
     let pnt = aroundPoint[idx || 112];
 
     // 先判断对手进攻级别,快速选点     
-    selectPoint(arr, color, newarr, null, 3, backstage);
+    selectPoint(arr, color, newarr, undefined, 3, backstage);
 
     for (let i = 0; i < 225; i++) {
 
@@ -3715,24 +3821,24 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
         if (!stopFind && newarr[y][x] == 0) {
 
             arr[y][x] = color;
-            if (!backstage) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
+            if (!backstage) post("printSearchPoint", {workerIdx:workerIdx,idx:pnt.index[i], text:"⊙", color:"green"});
 
-            let level = getLevelB(arr, color, newarr, null, fType == ONLY_SIMPLE_WIN ? 1 : depth, null, num == 9999 ? 9999 : num - 1);
+            let level = getLevelB(arr, color, undefined, fType == ONLY_SIMPLE_WIN ? 1 : depth, num == 9999 ? 9999 : num - 1);
             let nColor = color == 1 ? 2 : 1;
-            let fNum = findVCF(arr, nColor, 1, depth, null, true);
+            let fNum = findVCF(arr, nColor, 1, depth);
             if (level.level < 4 && level.level >= 3 && fNum == 0) {
                 //console.log(x+15*y)
                 let l = level.moves.length; // 保存手数，待后面判断43杀
                 // 已经确认对手低于活三级别
-                //if (!backstage) post("cleLb", [pnt.index[i]]);
+                //if (!backstage) post("cleLb", {idx:pnt.index[i]});
                 if (true || (color == 1 && l == 1) || isThree(x, y, color, arr, true)) {
                     if (true || fType == null) {
                         if (!backstage) {
                             let txt = isThree(x, y, color, arr, true) ? "③" : "V" + (l < 100 ? String(l) : "++");
                             let txtColor = txt == "③" ? "red" : l <= 3 ? "red" : "black";
-                            post("printSearchPoint", []);
-                            post("wLb", [pnt.index[i], txt, txtColor]);
-                            post("addThreePoint", [pnt.index[i], { txt: txt, txtColor: txtColor, moves: level.moves }]);
+                            post("printSearchPoint",{workerIdx:workerIdx});
+                            post("wLb", {idx:pnt.index[i], text:txt, color:txtColor});
+                            post("addThreePoint", {idx:pnt.index[i], point:{ txt: txt, txtColor: txtColor, moves: level.moves }});
                         }
                         threeP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
                     }
@@ -3742,8 +3848,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
 
                     if (fType == null) {
                         if (!backstage) {
-                            post("printSearchPoint", []);
-                            post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
+                            post("printSearchPoint",{workerIdx:workerIdx});
+                            post("wLb", {idx:pnt.index[i], text:"V", color:l > 3 ? "black" : "red"});
                         }
                         if (l > 3) {
                             vcfP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
@@ -3755,8 +3861,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
                     else { // 进一步判断是否做V
                         if ((fType == ONLY_VCF && l > 3) || (fType == ONLY_SIMPLE_WIN && l == 3)) {
                             if (!backstage) {
-                                post("printSearchPoint", []);
-                                post("wLb", [pnt.index[i], "V", l > 3 ? "black" : "red"]);
+                                post("printSearchPoint",{workerIdx:workerIdx});
+                                post("wLb", {idx:pnt.index[i], text:"V", color:l > 3 ? "black" : "red"});
                             }
                             if (l > 3) {
                                 vcfP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
@@ -3771,11 +3877,11 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
             arr[y][x] = 0;
         }
         else {
-            if (!backstage) post("cleLb", [pnt.index[i]]);
+            if (!backstage) post("cleLb", {idx:pnt.index[i]});
         }
     }
 
-    if (!backstage) post("printSearchPoint", []);
+    if (!backstage) post("printSearchPoint",{workerIdx:workerIdx});
 
     return threeP;
     return simpleP.concat(threeP, vcfP);
@@ -3787,12 +3893,13 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
 
 function isLevelThreePoint(idx, color, arr, fType) {
 
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
 
     arr[y][x] = color;
-    let level = getLevelB(arr, color, getArr([]), 60000, fType == ONLY_SIMPLE_WIN ? 1 : null);
+    let level = getLevelB(arr, color, 60000, fType == ONLY_SIMPLE_WIN ? 1 : undefined);
     let nColor = color == 1 ? 2 : 1;
+    mConsole(`[${indexToName(idx)}]level=${level.level}, [${level.level==3?moveIndexToName(level.moves):""}]`)
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
         let txt = "";
@@ -3818,28 +3925,28 @@ function isLevelThreePoint(idx, color, arr, fType) {
         else {
 
             if (fType != ONLY_SIMPLE_WIN && l > 3) { //搜索冲4复活3
-                findVCF(arr, color, 1, 1, 3000, true);
+                findVCF(arr, color, 1, 1, 3000);
                 l = vcfWinMoves.length ? 3 : l;
                 level.moves = vcfWinMoves.length ? vcfWinMoves[0] : level.moves;
             }
             if (l > 3) {
-                findVCF(arr, color, undefined, 10, 5000, true);
+                findVCF(arr, color, undefined, 10, 5000);
                 l = vcfWinMoves.length ? vcfWinMoves[0].length : l;
                 level.moves = vcfWinMoves.length ? vcfWinMoves[0] : level.moves;
             }
             let x, y;
             for (let i = l - 2; i >= 0; i--) {
-                x = level.moves[i] % 15;
-                y = parseInt(level.moves[i] / 15);
+                x = getX(level.moves[i]);
+                y = getY(level.moves[i]);
                 arr[y][x] = i % 2 ? nColor : color;
             }
-            x = level.moves[l - 1] % 15;
-            y = parseInt(level.moves[l - 1] / 15);
+            x = getX(level.moves[l - 1]);
+            y = getY(level.moves[l - 1]);
             let isfreeFour = isFour(x, y, color, arr, true);
             //mConsole(toStr(arr))
             for (let i = l - 2; i >= 0; i--) {
-                x = level.moves[i] % 15;
-                y = parseInt(level.moves[i] / 15);
+                x = getX(level.moves[i]);
+                y = getY(level.moves[i]);
                 arr[y][x] = 0;
             }
             //mConsole(isF)
@@ -3860,8 +3967,8 @@ function isLevelThreePoint(idx, color, arr, fType) {
     arr[y][x] = 0;
 
     function postPoint(idx, txt, txtColor, moves) {
-        post("wLb", [idx, txt, txtColor]);
-        post("addThreePoint", [idx, { txt: txt, txtColor: txtColor, moves: moves }]);
+        post("wLb", {idx:idx, text:txt, color:txtColor});
+        post("addThreePoint", {idx:idx, point:{ txt: txt, txtColor: txtColor, moves: moves }});
     }
 }
 
@@ -3891,8 +3998,8 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
                         arr[y][x] = color;
                         moves.push(y * 15 + x);
                         let idx = getBlockFour(x, y, arr);
-                        let tx = idx % 15;
-                        let ty = parseInt(idx / 15);
+                        let tx = getX(idx);
+                        let ty = getY(idx);
 
                         arr[ty][tx] = color == 1 ? 2 : 1;
                         //冲四方不存在VCF,不验证禁手
@@ -3941,8 +4048,8 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
             arr[y][x] = color;
             moves.push(y * 15 + x);
             let idx = getBlockFour(x, y, arr);
-            let tx = idx % 15;
-            let ty = parseInt(idx / 15);
+            let tx = getX(idx);
+            let ty = getY(idx);
             arr[ty][tx] = color == 1 ? 2 : 1;
             //冲四方不存在VCF,不验证禁手
             moves.push(ty * 15 + tx);
@@ -3982,7 +4089,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
         for (let i = winMoves.length - 1; i >= 0; i--) {
             let moves = winMoves[i];
             if (!isVCF(color, arr, moves)) return true;
-            //getBlockVCF([moves],color,arr,true,true);
+            //getBlockVCF([moves],color,arr,true);
         }
     }
 }
@@ -4024,12 +4131,11 @@ function findTTPoint(arr, color, newarr, setnum) {
 }
 
 // 找三手五连
-function findThreeWin(arr, color, newarr, tWinPoint, node) {
-    tWinPoint = tWinPoint || [];
-    node = node || new Node();
+function findThreeWin(arr, color, newarr, tWinPoint = [], node = new Node()) {
+
     let wPoint = [];
     //快速搜索VCF
-    if (findVCF(arr, color, 1, 3 - 2, null, true)) {
+    if (findVCF(arr, color, 1, 3 - 2)) {
         wPoint.push(vcfWinMoves[0][0] * 1);
         let nd = node;
         nd.childNode[0] = new Node(vcfWinMoves[0][0] * 1, nd);
@@ -4042,7 +4148,7 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
 
     }
     else { //再搜索活3的3手胜
-        let tPoint = findLevelThreePoint(arr, color, newarr, null, null, true, 3);
+        let tPoint = findLevelThreePoint(arr, color, newarr, undefined, undefined, true, 3);
         let tempPs = [];
         for (let i = tPoint.length - 1; i >= 0; i--) {
             tempPs.push(tPoint[i].idx * 1);
@@ -4056,7 +4162,7 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
             let idx = tPoint.indexOf(tWinPoint[twIdx] * 1);
             if (idx > -1) {
                 tPoint.splice(idx, 1);
-                if (isThreeWinPoint(tWinPoint[twIdx], color, arr, true, null, node)) {
+                if (isThreeWinPoint(tWinPoint[twIdx], color, arr, true, undefined, node)) {
                     wPoint.push(tWinPoint[twIdx] * 1);
                     console.log("复用")
                     break;
@@ -4068,7 +4174,7 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
         //if (testidx) console.log("twIdx < 0_____" + tPoint)
         for (let i = tPoint.length - 1; i >= 0; i--) {
             //if (testidx) console.log(tPoint[i]);
-            if (isThreeWinPoint(tPoint[i], color, arr, true, null, node)) {
+            if (isThreeWinPoint(tPoint[i], color, arr, true, undefined, node)) {
                 wPoint.push(tPoint[i] * 1);
                 let tNode = node.childNode.splice(node.childNode.length - 1, 1);
                 node.childNode.splice(0, 0, tNode[0]);
@@ -4088,8 +4194,8 @@ function findThreeWin(arr, color, newarr, tWinPoint, node) {
 // 搜索米字线,半径内是否有棋子，不判断中心点
 function around(arr, idx, radius) {
 
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     for (let i = 0; i < 4; i++) {
         for (let j = 1; j <= radius; j++) {
             let v = getArrValue(x, y, j, DIRECTIONS[i], arr);
@@ -4104,17 +4210,16 @@ function around(arr, idx, radius) {
 
 
 // 围绕 idx 查找四周的点(包括idx),color=查找颜色，radius=辐射半径
-function aroundFindPoint(arr, idx, radius, continueFourFirst) {
+function aroundFindPoint(arr, idx, radius = 7, continueFourFirst) {
 
     let P = [];
     let firstP = [];
-    radius = radius == null ? 7 : radius;
 
     // 从里到外，绕圈搜索
     let Pnt = aroundPoint[idx];
     let max = Pnt.radius[radius] - 1;
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     for (let i = 0; i < 225; i++) {
         if (arr[Pnt.point[i].y][Pnt.point[i].x] > 0) {
 
@@ -4141,8 +4246,8 @@ function isTwoVCF(idx, color, arr) {
     let pNum = 0; //双杀点计数
     let timeout = 30000;
     let depth = 1000;
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     let oldVCFMoves = new vcfList([]);
     let keyMapList = [];
     let isAddTree;
@@ -4150,9 +4255,8 @@ function isTwoVCF(idx, color, arr) {
     // 处理直接防
     arr[y][x] = color;
     // 对手准备落子，判断对手是否有攻。
-    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
-    //findVCF(color,timeOut,depth,count,backStage,arr) 
-    let fNum = nLevel.level >= 3 ? 0 : findVCF(arr, color, 1, depth, timeout, true);
+    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, timeout, depth);
+    let fNum = nLevel.level >= 3 ? 0 : findVCF(arr, color, 1, depth, timeout);
     let node = new Node();
     let cNode = node.childNode;
     cNode[0] = new Node(idx, node);
@@ -4166,7 +4270,7 @@ function isTwoVCF(idx, color, arr) {
         movesToNode(winMoves[0], VCF);
         cNode[0].defaultChildNode = VCF;
         VCF.parentNode = cNode[0];
-        let bPoint = getBlockVCF(winMoves, color, arr, true, true);
+        let bPoint = getBlockVCF(winMoves, color, arr, true);
         //console.log(bPoint)
 
 
@@ -4181,20 +4285,17 @@ function isTwoVCF(idx, color, arr) {
         //if (test) mConsole(winMoves)
         if (!notWin) { // 没有找到直接共防，继续寻找先手防  
             //处理先手防
-            //  保存先手连续冲四分支
             let testCount = 0;
             let fMoves = []; //
-            let cbps = getContinueBlockPoints(arr, color, winMoves);
             continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
             movesSort(fMoves, (a, b) => { return a <= b; });
-            removeUselessFour(fMoves, cbps);
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
-                post("showLabel", [`${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, 10000]);
+                post("showLabel", {text:`${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, timeout:10000});
                 // 摆棋
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                    let x = fMoves[j][k] % 15;
-                    let y = parseInt(fMoves[j][k] / 15);
+                    let x = getX(fMoves[j][k]);
+                    let y = getY(fMoves[j][k]);
                     arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
                 }
                 let nd = cNode[0];
@@ -4212,8 +4313,8 @@ function isTwoVCF(idx, color, arr) {
                 }
 
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                    let x = fMoves[j][k] % 15;
-                    let y = parseInt(fMoves[j][k] / 15);
+                    let x = getX(fMoves[j][k]);
+                    let y = getY(fMoves[j][k]);
                     arr[y][x] = 0;
                 }
                 if (notWin) j = -1;
@@ -4227,13 +4328,13 @@ function isTwoVCF(idx, color, arr) {
     //console.log(pNum + "--"+idx);
     if (isAddTree) {
         if (!pNum) node.childNode[0].txt = "○";
-        post("wLb", [idx, node.childNode[0].txt || "W", "black"]);
+        post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", [node]);
+        post("addTree", {node:node});
 
         if (true || pNum) {
             for (let i = keyMapList.length - 1; i >= 0; i--) {
-                post("addTreeKeyMap", [keyMapList[i].key, keyMapList[i].node]);
+                post("addTreeKeyMap", {key:keyMapList[i].key, node:keyMapList[i].node});
             }
         }
 
@@ -4254,7 +4355,7 @@ function isTwoVCF(idx, color, arr) {
     function isTwoWin(arr, color, timeout, depth, node) {
 
         let cNode = node.childNode;
-        let winLevel = getLevelB(arr, color, getArr([]), timeout, depth);
+        let winLevel = getLevelB(arr, color, timeout, depth);
         if (winLevel.level >= 4.5) {
             return true; //==5 or ==4.5
         }
@@ -4262,7 +4363,7 @@ function isTwoVCF(idx, color, arr) {
             let y = winLevel.p.y;
             let x = winLevel.p.x;
             arr[y][x] = color == 1 ? 2 : 1;
-            let num = findVCF(arr, color, 1, depth, timeout, true);
+            let num = findVCF(arr, color, 1, depth, timeout);
             arr[y][x] = 0;
             if (num) {
                 cNode[cNode.length] = new Node(y * 15 + x, node);
@@ -4284,7 +4385,7 @@ function isTwoVCF(idx, color, arr) {
                 winMoves.push(fNum);
             }
             else {
-                if (findVCF(arr, color, 1, depth, timeout, true)) {
+                if (findVCF(arr, color, 1, depth, timeout)) {
                     winMoves = vcfWinMoves;
                     oldVCFMoves.push(winMoves[0]);
                 }
@@ -4292,7 +4393,7 @@ function isTwoVCF(idx, color, arr) {
             if (winMoves.length) { // 有(一套以上)两套V，判断双杀是否成立
 
                 let notWin = false; //后续计算，如果双杀不成立==true
-                let bPoint = getBlockVCF(winMoves, color, arr, true, true);
+                let bPoint = getBlockVCF(winMoves, color, arr, true);
                 let wMoves = winMoves[0];
                 let VCF = new Node();
                 movesToNode(wMoves, VCF);
@@ -4317,10 +4418,10 @@ function isTwoVCF(idx, color, arr) {
         for (let i = fMoves.length - 1; i >= 0; i--) {
             let j;
             for (j = fMoves[i].length - 1; j >= 0; j--) {
-                let value = getArrIdxValue(fMoves[i][j],fMoves[i][j] % 2 ?cbps.colorArr : cbps.nColorArr);
+                let value = getArrValue_Idx(fMoves[i][j], fMoves[i][j] % 2 ? cbps.colorArr : cbps.nColorArr);
                 if (value) break;
             }
-            if (j<0) {fMoves.splice(i,1);}
+            if (j < 0) { fMoves.splice(i, 1); }
         }
         //mConsole(`removeCount=${count}/${max}\nncolor=\n${toStr(cbps.nColorArr)}\ncolor=\n${toStr(cbps.colorArr)}`)
     }
@@ -4333,10 +4434,10 @@ function isTwoVCF(idx, color, arr) {
             let l = fMoves[i].length;
             let key = [];
             for (let j = 0; j < l; j += 2) {
-                let x = fMoves[i][j] % 15;
-                let y = parseInt(fMoves[i][j] / 15);
-                let tx = fMoves[i][j + 1] % 15;
-                let ty = parseInt(fMoves[i][j + 1] / 15);
+                let x = getX(fMoves[i][j]);
+                let y = getY(fMoves[i][j]);
+                let tx = getX(fMoves[i][j + 1]);
+                let ty = getY(fMoves[i][j + 1]);
                 if (cbps.colorArr[ty][tx] != 0 || cbps.nColorArr[y][x] != 0) {
                     key.push(fMoves[i][j]);
                     key.push(fMoves[i][j + 1]);
@@ -4406,8 +4507,8 @@ function isTwoVCF(idx, color, arr) {
     let moves = [];
     moves.push(idx);
     let keyMapList = [];
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     if (isThree(x, y, color, arr, true)) return;
     let node = new Node();
     let cNode = node.childNode;
@@ -4420,11 +4521,11 @@ function isTwoVCF(idx, color, arr) {
 
     if (isAddTree) {
         if (!isW) node.childNode[0].txt = "○";
-        post("wLb", [idx, node.childNode[0].txt || "W", "black"]);
+        post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", [node]);
+        post("addTree", {node:node});
         for (let i = keyMapList.length - 1; i >= 0; i--) {
-            post("addTreeKeyMap", [keyMapList[i].key, keyMapList[i].node]);
+            post("addTreeKeyMap", {key:keyMapList[i].key, node:keyMapList[i].node});
         }
     }
 
@@ -4433,9 +4534,8 @@ function isTwoVCF(idx, color, arr) {
     function isTwoWin(color, arr, node, moves) {
         // 对手准备落子，判断对手是否有攻。
         let level = getLevel(arr, color);
-        let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), undefined, undefined, true);
-        //findVCF(color,timeOut,depth,count,backStage,arr) 
-        let fNum = level.level == 4 ? 1 : nLevel.level >= 3 ? 0 : findVCF(arr, color, 1, undefined, undefined, true);
+        let nLevel = getLevelB(arr, color == 1 ? 2 : 1);
+        let fNum = level.level == 4 ? 1 : nLevel.level >= 3 ? 0 : findVCF(arr, color, 1);
         let notWin = !fNum; //后续计算，如果双杀不成立==true
         if (!notWin) { // 有两套V，判断双杀是否成立
 
@@ -4448,7 +4548,7 @@ function isTwoVCF(idx, color, arr) {
                 node.defaultChildNode = VCF;
                 VCF.parentNode = node;
             }
-            let bPoint = level.level == 4 ? [level.p.y * 15 + level.p.x] : getBlockVCF(winMoves, color, arr, true, true);
+            let bPoint = level.level == 4 ? [level.p.y * 15 + level.p.x] : getBlockVCF(winMoves, color, arr, true);
             if (bPoint) { //排除直接防
                 let nd = node;
                 if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, undefined, undefined, nd, winMoves))) {
@@ -4466,16 +4566,16 @@ function isTwoVCF(idx, color, arr) {
                 //continueFour(arr, color == 1 ? 2 : 1, 3, fMoves, getArr([]));
                 maxCount += fMoves.length;
                 for (let j = fMoves.length - 1; j >= 0; j--) {
-                    //post("showLabel", [`[${moveIndexToName(moves,20)}]`, 5000]);
+                    //post("showLabel", {text:`[${moveIndexToName(moves,20)}]`, timeout:5000});
                     // 摆棋
                     for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
+                        let x = getX(fMoves[j][k]);
+                        let y = getY(fMoves[j][k]);
                         arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
                     }
                     moves = moves.concat(fMoves[j]);
 
-                    post("showLabel", [`${count++}/${maxCount} [${moveIndexToName(moves,20)}]`, 500000]);
+                    post("showLabel", {text:`${count++}/${maxCount} [${moveIndexToName(moves,20)}]`, timeout:500000});
                     //if (test) mConsole(`__\n${moveIndexToName(moves)}`)
                     let nd = node;
                     nd = movesToNode(fMoves[j], nd);
@@ -4491,8 +4591,8 @@ function isTwoVCF(idx, color, arr) {
                     }
 
                     for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
+                        let x = getX(fMoves[j][k]);
+                        let y = getY(fMoves[j][k]);
                         arr[y][x] = 0;
                         moves.length--;
                     }
@@ -4564,7 +4664,7 @@ function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
 }
 */
 
-
+/*
 // 找到先手防 可能经过的点，黑白分开找
 function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
     let nColor = color == 1 ? 2 : 1;
@@ -4578,8 +4678,8 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
         let moves = winMoves[moveIndex];
         if (!isVCF(color, arr, moves)) {
             for (let i = blockPoints.length - 1; i >= 0; i--) {
-                let x = blockPoints[i] % 15;
-                let y = parseInt(blockPoints[i] / 15);
+                let x = getX(blockPoints[i]);
+                let y = getY(blockPoints[i]);
                 let ov = arr[y][x];
                 arr[y][x] = color == 1 ? 2 : 1;
                 if (isVCF(color, arr, moves)) bPoint.push({ x: x, y: y });
@@ -4594,17 +4694,17 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             let oy = bPoint[bIdx].y;
             let OV = ox == -1 ? 0 : arr[oy][ox];
             if (ox != -1) arr[oy][ox] = color == 1 ? 2 : 1;
-            let bp = getBlockVCF([moves], color, arr, true);
+            let bp = getBlockVCF([moves], color, arr);
             let x, y;
             //if (test) mConsole(`bp.length${bp.length}\n>> color==${color}[${moves}]`)
             for (let i = bp.length - 1; i >= 0; i--) {
-                x = bp[i] % 15;
-                y = parseInt(bp[i] / 15);
+                x = getX(bp[i]);
+                y = getY(bp[i]);
                 if (isFour(x, y, nColor, arr)) {
                     arr[y][x] = nColor;
                     let idx = getBlockFour(x, y, arr);
-                    let tx = idx % 15;
-                    let ty = parseInt(idx / 15);
+                    let tx = getX(idx);
+                    let ty = getY(idx);
                     arr[ty][tx] = color;
                     if (isVCF(color, arr, moves)) {
                         bp.splice(i, 1);
@@ -4617,10 +4717,10 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             let bpc = getCancelVCF([moves], color, arr, true);
             let len = moves.length;
             for (let i = 1; i < len; i += 2) {
-                x = moves[i] % 15;
-                y = parseInt(moves[i] / 15);
-                let tx = moves[i - 1] % 15;
-                let ty = parseInt(moves[i - 1] / 15);
+                x = getX(moves[i]);
+                y = getY(moves[i]);
+                let tx = getX(moves[i - 1]);
+                let ty = getY(moves[i - 1]);
                 arr[ty][tx] = color;
                 if (color == 1) {
                     setBlockThree(tx, ty, arr, 0, newarr, narr, color);
@@ -4659,8 +4759,8 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                 }
             }
             if (test) mConsole(`_______\n${toStr(newarr)}`);
-            x = moves[moves.length - 1] % 15;
-            y = parseInt(moves[moves.length - 1] / 15);
+            x = getX(moves[moves.length - 1]);
+            y = getY(moves[moves.length - 1]);
             //arr[y][x] = color;
             if (color == 1) {
                 arr[y][x] = color;
@@ -4672,8 +4772,8 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
 
                 arr[y][x] = color;
                 let idx = getBlockFour(x, y, arr);
-                let tx = idx % 15;
-                let ty = parseInt(idx / 15);
+                let tx = getX(idx);
+                let ty = getY(idx);
                 //mConsole(`catchfoul__idx=${idx}`)
                 //mConsole(`3__${tx},${ty}_>>${moves}`)
                 setBlockThree(x, y, arr, 0, newarr, narr, color);
@@ -4703,21 +4803,21 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             }
 
             for (let i = 0; i < len; i++) {
-                x = moves[i] % 15;
-                y = parseInt(moves[i] / 15);
+                x = getX(moves[i]);
+                y = getY(moves[i]);
                 arr[y][x] = 0;
             }
             //if (test) mConsole(toStr(newarr));
 
             for (let i = bp.length - 1; i >= 0; i--) {
-                x = bp[i] % 15;
-                y = parseInt(bp[i] / 15);
+                x = getX(bp[i]);
+                y = getY(bp[i]);
                 newarr[y][x] = 1;
             }
             //if (test) mConsole(toStr(newarr))
             for (let i = bpc.length - 1; i >= 0; i--) {
-                x = bpc[i] % 15;
-                y = parseInt(bpc[i] / 15);
+                x = getX(bpc[i]);
+                y = getY(bpc[i]);
                 narr[y][x] = 1;
             }
             //if (test) mConsole(toStr(narr))
@@ -4728,7 +4828,11 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
 
 
 
-    return { colorArr: narr, nColorArr: newarr, movesKey: [] };
+    return { 
+    colorArr: narr, 
+    nColorArr: newarr, 
+    movesKey: [] 
+    };
 
     // 搜索夏止防 相关的点，记录
     function setBlockThree(x, y, arr, depth, nColorArr, colorArr, arrColor) {
@@ -4864,31 +4968,29 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
             if (color == 2 && i == 2) break;
         }
     }
-
-
 }
+*/
 
 
 
 // 排除直接防
-function excludeBP(arr, color, bPoint, timeout, depth, node, fMoves) {
+function excludeBP(arr, color, bPoint, timeout, depth, node = new Node(), winMoves = []) {
 
     let i;
     let x;
     let y;
     let fNum;
     let rt = true;
-    fMoves = fMoves || [];
-    let vList = new vcfList(fMoves); // 临时保存找到的VCF
-    node = node || new Node();
+    let vList = new vcfList(winMoves); // 临时保存找到的VCF
+
     for (i = bPoint.length - 1; i >= 0; i--) {
         let cNode = node.childNode;
-        x = bPoint[i] % 15;
-        y = parseInt(bPoint[i] / 15);
+        x = getX(bPoint[i]);
+        y = getY(bPoint[i]);
         arr[y][x] = color;
         let j = vList.getVCF(color == 1 ? 2 : 1, arr);
         //if (test) mConsole(`j=${j} , b=${bPoint.length}`)
-        fNum = j ? 1 : findVCF(arr, color == 1 ? 2 : 1, 1, depth, timeout, true);
+        fNum = j ? 1 : findVCF(arr, color == 1 ? 2 : 1, 1, depth, timeout);
         //if (node.idx==187) mConsole(toStr(arr))
         arr[y][x] = 0;
         //if (node.idx==187) mConsole(`bPoint=${bPoint[i]}__>>fnum=${fNum}\nj=${j}`)
@@ -4913,7 +5015,7 @@ function excludeBP(arr, color, bPoint, timeout, depth, node, fMoves) {
         }
 
     }
-    vList.getList(fMoves);
+    vList.getList(winMoves);
     return rt;
 }
 
@@ -4943,70 +5045,29 @@ function movesToNode(moves, node) {
 
 
 
-/*
-//限珠题
-function findSimpleWin(arr, color, newarr, num) {
-
-    let rt = false;
-    if (num == 4) {
-        let pnt = aroundPoint[112];
-        let timeout = 30000;
-        let depth = 1;
-        // 确定双杀选点范围
-        // 先判断对手进攻级别,快速选点
-        selectPoint(arr, color, newarr, timeout, depth, false, null, null, null, true);
-
-        for (let i = 0; i < 225; i++) {
-            let x = pnt.point[i].x;
-            let y = pnt.point[i].y;
-
-            if (!stopFind && newarr[y][x] == 0) {
-                // 处理直接防
-                arr[y][x] = color;
-                if (true) post("printSearchPoint", [pnt.index[i], "⊙", "green"]);
-                let winLevel = getWinLevel(arr, color, timeout, depth, 2, 2);
-                if (winLevel > 3) {
-                    post("printSearchPoint", []);
-                    post("wLb", [pnt.index[i], "◎", "red"]);
-                    rt = true;
-                }
-                arr[y][x] = 0;
-            }
-            else { // 清空选点范围外的点
-                if (true) post("cleLb", [pnt.index[i]]);
-            }
-        }
-        if (true) post("printSearchPoint", []);
-    }
-    return rt;
-}
-*/
-
-
 function isSimpleWin(idx, color, arr, num, level) {
 
     if (num == 4) {
         if (level == 3) { //大道五目
             let timeout = 30000;
             let depth = 1;
-            let x = idx % 15;
-            let y = parseInt(idx / 15);
+            let x = getX(idx);
+            let y = getY(idx);
             arr[y][x] = color;
             let node = new Node();
             node.childNode[0] = new Node(idx, node);
             let nd = node.childNode[0];
             let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2, nd);
             if (winLevel > 3) {
-                post("wLb", [idx, "W", "black"]);
+                post("wLb", {idx:idx, text:"W", color:"black"});
                 node.firstColor = color == 1 ? "black" : "white";
-                post("addTree", [node]);
+                post("addTree", {node:node});
             }
             else if (winLevel == 3) {
                 nd.txt = "○";
-                post("wLb", [idx, nd.txt, "black"]);
+                post("wLb", {idx:idx, text:nd.txt, color:"black"});
                 node.firstColor = color == 1 ? "black" : "white";
-                post("addTree", [node]);
-                mConsole(node)
+                post("addTree", {node:node});
             }
             arr[y][x] = 0;
         }
@@ -5040,30 +5101,30 @@ function getBlockFour(x, y, arr) {
 
 
 //判断idx 是否可以防住 color色的所有VCF
-function isBlockVCF(idx, color, arr, backStage) {
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
+function isBlockVCF(idx, color, arr, backstage) {
+    let x = getX(idx);
+    let y = getY(idx);
     arr[y][x] = color == 1 ? 2 : 1;
     // 确保没有新的VCF
-    let fNum = findVCF(arr, color, 1, null, 60000, true);
+    let fNum = findVCF(arr, color, 1, undefined, 60000);
     arr[y][x] = 0;
     if (fNum) {
         return false;
     }
     else {
-        if (!backStage) post("wLb", [idx, "◎", "black"]);
+        if (!backstage) post("wLb", {idx:idx, text:"◎", color:"black"});
         return true;
     }
 }
 
 
 
-function isBlockVCFPath(path, color, arr, backStage, speed) {
+function isBlockVCFPath(path, color, arr, backstage, speed) {
     let isB;
     let paths = [];
     let len = path.length;
     let nColor = color == 1 ? 2 : 1;
-    post("showLabel", [`${speed} [${moveIndexToName(path,20)}]`, 500000]);
+    post("showLabel", {text:`${speed} [${moveIndexToName(path,20)}]`, timeout:500000});
     if (len == 1) {
         if (isBlockVCF(path[0], color, arr, true)) {
             paths.push(path.slice(0));
@@ -5071,11 +5132,11 @@ function isBlockVCFPath(path, color, arr, backStage, speed) {
     }
     else {
         for (let i = 0; i < len; i++) {
-            let x = path[i] % 15;
-            let y = parseInt(path[i] / 15);
+            let x = getX(path[i]);
+            let y = getY(path[i]);
             arr[y][x] = i % 2 ? color : nColor;
         }
-        let winLevel = getLevelB(arr, color, getArr([]));
+        let winLevel = getLevelB(arr, color);
         if (winLevel.level > 4.5) {}
         else if (winLevel.level == 4) {
             let idx = winLevel.p.x + winLevel.p.y * 15;
@@ -5085,7 +5146,7 @@ function isBlockVCFPath(path, color, arr, backStage, speed) {
             }
         }
         else if (winLevel.level >= 3) {
-            let bPoint = getBlockVCF([winLevel.moves], color, arr, true, true);
+            let bPoint = getBlockVCF([winLevel.moves], color, arr, true);
             bPoint = bPoint || [];
             for (let i = bPoint.length - 1; i >= 0; i--) {
                 isB = isBlockVCF(bPoint[i], color, arr, true);
@@ -5099,14 +5160,14 @@ function isBlockVCFPath(path, color, arr, backStage, speed) {
             paths.push(path.slice(0));
         }
         for (let i = 0; i < len; i++) {
-            let x = path[i] % 15;
-            let y = parseInt(path[i] / 15);
+            let x = getX(path[i]);
+            let y = getY(path[i]);
             arr[y][x] = 0;
         }
     }
-    if (paths.length && !backStage) {
-        post("wLb", [paths[0][0], "○", "black"]);
-        post("showLabel", [`找到分支  [${moveIndexToName(path,20)}]`, 500000]);
+    if (paths.length && !backstage) {
+        post("wLb", {idx:paths[0][0], text:"○", color:"black"});
+        post("showLabel", {text:`找到分支  [${moveIndexToName(path,20)}]`, timeout:500000});
     }
     return paths;
 }
@@ -5115,9 +5176,9 @@ function isBlockVCFPath(path, color, arr, backStage, speed) {
 
 // 找VCF(活三级别)防点，返回一个数组,不存在防点返回 false
 // VCF 二维数组保存保存了 n 套color色VCF,
-function getBlockVCF(VCF, color, arr, backStage, passFour, idx) {
+function getBlockVCF(VCF, color, arr, passFour=false, idx=112) {
     let p = [];
-    let pnt = aroundPoint[idx || 112];
+    let pnt = aroundPoint[idx];
     let len = VCF.length;
     let nColor = color == 1 ? 2 : 1;
     for (let i = 225 - 1; i >= 0; i--) {
@@ -5136,7 +5197,6 @@ function getBlockVCF(VCF, color, arr, backStage, passFour, idx) {
                 if (color == 1 || !isFoul(x, y, arr)) {
                     // if color==1 then  blockColor==2
                     p.push(pnt.index[i]);
-                    if (!backStage) post("wLb", [pnt.index[i], "◎", "black"]);
                 }
             }
         }
@@ -5148,16 +5208,16 @@ function getBlockVCF(VCF, color, arr, backStage, passFour, idx) {
 
 /*
 // 找出成立的VCF(活三级别)防点,深度比 blockVCF 多一层
-function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
+function getBlockVCFb(VCF, color, arr, backstage, passFour, node, idx) {
     node = node || new Node();
-    let p = getBlockVCF(VCF, color, arr, true, passFour, idx);
+    let p = getBlockVCF(VCF, color, arr, passFour, idx);
     if (!p) return false;
     for (let i = p.length - 1; i >= 0; i--) {
-        let x = p[i] % 15;
-        let y = parseInt(p[i] / 15);
+        let x = getX(p[i]);
+        let y = getY(p[i]);
         arr[y][x] = color == 1 ? 2 : 1;
         // 确保没有新的VCF
-        let fNum = findVCF(arr, color, 1, null, 60000, true);
+        let fNum = findVCF(arr, color, 1, undefind, 60000);
         arr[y][x] = 0;
         if (fNum) {
             let VCF = new Node(y * 15 + x, node); // new block point
@@ -5167,8 +5227,8 @@ function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
             p.splice(i, 1);
             // 用新VCF排除剩下防点
             for (let j = i - 1; j >= 0; j--) {
-                x = p[j] % 15;
-                y = parseInt(p[j] / 15);
+                x = getX(p[j]);
+                y = getY(p[j]);
                 arr[y][x] = color == 1 ? 2 : 1;
                 if (isVCF(color, arr, vcfWinMoves[0])) {
                     let VCF = new Node(y * 15 + x, node); // new block point
@@ -5183,7 +5243,7 @@ function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
 
         }
         else {
-            if (!backStage) post("wLb", [y * 15 + x, "b", "blue"]);
+            if (!backstage) post("wLb", {idx:y * 15 + x, text:"b", color:"blue"});
         }
         if (stopFind) i = -1;
     }
@@ -5194,23 +5254,20 @@ function getBlockVCFb(VCF, color, arr, backStage, passFour, node, idx) {
 
 
 
-function getBlockVCFPaths(VCF, color, arr, backStage, passFour, idx) {
+function getBlockVCFPaths(VCF, color, arr, backstage, passFour, idx) {
     let winMoves = [VCF[0]];
     let paths = [];
-    let bPoint = getBlockVCF([VCF[0]], color, arr, backStage, true, idx);
+    let bPoint = getBlockVCF([VCF[0]], color, arr, true, idx);
     if (bPoint) {
         for (let i = bPoint.length - 1; i >= 0; i--) {
             paths.push([bPoint[i]]);
         }
-        excludeBP(arr, color == 1 ? 2 : 1, bPoint, undefined, undefined, undefined, winMoves);
+        //excludeBP(arr, color == 1 ? 2 : 1, bPoint, undefined, undefined, undefined, winMoves);
     }
     let continueFourPath = [];
     continueFour(arr, color == 1 ? 2 : 1, 9, continueFourPath, getArr([]));
     movesSort(continueFourPath, (a, b) => { return a <= b; })
 
-    //mConsole(continueFourPath)
-    //getContinueBlockVCF(arr, color, winMoves);
-    //mConsole(continueFourPath.length)
     return paths.concat(continueFourPath);
 
 }
@@ -5218,7 +5275,7 @@ function getBlockVCFPaths(VCF, color, arr, backStage, passFour, idx) {
 
 
 //找出同色棋子，破坏自己 VCF 的点
-function getCancelVCF(VCF, color, arr, backStage, passFour, idx) {
+function getCancelVCF(VCF, color, arr, backstage, passFour, idx) {
     let p = [];
     let pnt = aroundPoint[idx || 112];
     let len = VCF.length;
@@ -5239,7 +5296,7 @@ function getCancelVCF(VCF, color, arr, backStage, passFour, idx) {
                 if (color == 2 || !isFoul(x, y, arr)) {
                     // if color==1 then  blockColor==2
                     p.push(pnt.index[i]);
-                    if (!backStage) post("wLb", [pnt.index[i], "◎", "black"]);
+                    if (!backstage) post("wLb", {idx:pnt.index[i], text: "◎", color:"black"});
                 }
             }
         }
@@ -5253,9 +5310,18 @@ function getCancelVCF(VCF, color, arr, backStage, passFour, idx) {
 // 返回进攻级别,完成后newarr保存有五连点的信息
 function getLevel(arr, color, num) {
     num = typeof num == "number" ? parseInt(num) : 9999;
-    if (isWin(color == 1 ? 2 : 1, arr)) return { level: -1, p: null };
-    if (isWin(color, arr)) return { level: 5, p: null };
-    if (num < 1) return { level: 0, p: null };
+    if (isWin(color == 1 ? 2 : 1, arr)) return {
+        level: -1,
+        p: null
+    };
+    if (isWin(color, arr)) return {
+        level: 5,
+        p: null
+    };
+    if (num < 1) return {
+        level: 0,
+        p: null
+    };
     let newarr = getArr([]);
     if (findFivePoint(arr, color, newarr)) {
         let count = 0;
@@ -5266,17 +5332,37 @@ function getLevel(arr, color, num) {
                     count++;
                     if (count == 2) {
                         // p 保存冲4防点
-                        return { level: 4.5, p: p }; // 44 || 活4
+                        return {
+                            level: 4.5,
+                            p: p
+                        }; // 44 || 活4
                     }
-                    p = { "x": x, "y": y };
+                    p = {
+                        "x": x,
+                        "y": y
+                    };
                 }
             }
         }
-        if (color == 2 && isFoul(p.x, p.y, arr)) return { level: 4.5, p: p }; //冲4抓
-        return { level: 4, p: p }; // 单冲4
+        if (color == 2 && isFoul(p.x, p.y, arr)) return {
+            level: 4.5,
+            p: p
+
+        }; //冲4抓
+        return {
+            level: 4,
+            p: p
+        }; // 单冲4
     }
 
-    return num == 1 ? { level: 0, p: null } : { level: 2, p: null };
+    return num == 1 ?{
+            level: 0,
+            p: null
+        } :
+        {
+            level: 2,
+            p: null
+        };
 
 }
 
@@ -5286,164 +5372,35 @@ function getLevel(arr, color, num) {
 // level =={level:level,p:{x:x,y:y} || moves:moves};
 // level.level==4 ,level =={level:level,p:{x:x,y:y} ,p保存冲4防点
 // level.level==3,level =={level:level,moves:moves} moves保存一套成立的VCF手顺
-function getLevelB(arr, color, newarr, timeout, depth, backstage, num) {
-    num = typeof num == "number" ? parseInt(num) : 9999;
-    timeout = timeout || 10000;
-    depth = depth || 100;
-    backstage = backstage !== false ? true : false;
+function getLevelB(arr, color, timeout = 10000, depth = 100, num = 9999) {
+
     // 判断是否有在冲4以上进攻级别
     let level = getLevel(arr, color, num);
     if (level.level >= 4 || level.level <= 0) {
         return level;
     }
-    /*
-    else if (level.level == 4) {
-        let nColor = color==1 ? 2 : 1;
-        let x = level.p.x;
-        let y = level.p.y;
-        arr[y][x] = nColor;
-        let fNum = findVCF(arr, color, 1, num == 9999 ? depth : num - 2, timeout, backstage);
-        level.level = fNum ? 4.4 : 4;
-        arr[y][x] = 0;
-        return level;
-    }
-    */
-    // 剩余0-1颗棋子在上面结束判断，
-    // 判断是否有活3 级别
-    /*        // 快速对比之前的计算结果，快速判断VCF
-    let winMoves = color==1 ? vcfBlackWinMoves : vcfWhiteWinMoves;
-    let len = winMoves.length;
-    for (let i=0; i<len; i++) {
-        if (winMoves[i].length<=depth*2+1) {
-            if (isVCF(color,arr,winMoves[i])) {
-                return {level:3,moves:winMoves[i]} ;
-            }
-        }
-        else {
-            i = 10000;
-        }
-    }
-    */
-
     // 快速搜索VCF
-    //(color,timeout,depth,count,backstage,arr)
-    let n = findVCF(arr, color, 1, num == 9999 ? depth : num - 2, timeout, backstage);
+    let n = findVCF(arr, color, 1, num == 9999 ? depth : num - 2, timeout);
     if (n > 0) {
-        return ({ level: 3, moves: vcfWinMoves[0] });
+        return {
+            level: 3,
+            moves: vcfWinMoves[0].slice(0)
+        };
     }
     else {
-        return num == 2 ? { level: 0, moves: null } : { level: 2, moves: null };
+        return num == 2 ?
+            {
+                level: 0,
+                moves: null
+            } :
+            {
+                level: 2,
+                moves: null
+            };
     }
 
 }
 
-
-/*
-// 轮到对手落子
-// 判断必胜级别 depth==vcf深度，gDepth(递归深度) ==1不计算先手防, ==2计算先手防
-function getWinLevel(arr, color, timeout, depth, gDepth, node) {
-
-    node = node || new Node();
-    timeout = timeout || 30000;
-    depth = depth || 1000;
-    gDepth = gDepth || 2;
-    // 判断对手进攻级别
-    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth, true);
-    let winLevel;
-    let cNode = node.childNode;
-    //console.log("对手进攻级别="+nLevel.level)
-    if (nLevel.level == 5) { // 对手已胜
-        return 2;
-    }
-    else if (nLevel.level >= 3) { // 对手有攻,没五连就败了
-        winLevel = getLevel(arr, color);
-        return winLevel.level == 5 ? 5 : 2;
-    }
-    else { // 对方没有V
-        winLevel = getLevel(arr, color);
-        if (winLevel.level >= 4.5) {
-            return winLevel.level; //==5 or ==4.5
-        }
-        else if (winLevel.level == 4) {
-            let y = winLevel.p.y;
-            let x = winLevel.p.x;
-            arr[y][x] = color == 1 ? 2 : 1;
-            let num = findVCF(arr, color, 1, depth, timeout, true);
-            arr[y][x] = 0;
-            if (num) {
-                cNode[cNode.length] = new Node(y * 15 + x, node);
-                let nd = cNode[cNode.length - 1];
-                let moves = vcfWinMoves[0];
-                arr[y][x] = color == 1 ? 2 : 1;
-                //simpleVCF(color, arr, moves);
-                arr[y][x] = 0;
-                movesToNode(moves, nd);
-                return 4.4;
-            }
-        }
-
-        //findVCF(color,timeOut,depth,count,backStage,arr) 
-        let fNum = findVCF(arr, color, 1, depth, timeout, true);
-        if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
-
-            let notWin = false; //后续计算，如果双杀不成立==true
-            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
-            let wMoves = vcfWinMoves[0];
-            let VCF = new Node();
-            //simpleVCF(color, arr, wMoves);
-            movesToNode(wMoves, VCF);
-            node.defaultChildNode = VCF;
-            if (bPoint) { //排除直接防
-                if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, node))) {
-                    //排除失败，双杀不成立
-                    notWin = true;
-                }
-            }
-
-            if (!notWin && gDepth >= 2) { // 没有找到直接共防，继续寻找先手防
-                //处理先手防
-                let fMoves = []; //  保存对手连续冲四分支
-                continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
-                let j;
-                for (j = fMoves.length - 1; j >= 0; j--) {
-                    //console.log("gDepth="+gDepth+"\nj="+j);
-
-                    // 摆棋
-                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
-                        arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
-                    }
-                    /*
-                     let str = "";
-                     for (let l=0;l<=j;l++)  {
-                         str+="\n"+fMoves[l];
-                     }
-                     //console.log(j+"\n"+str)
-                    */
-/*
-                    let nd = movesToNode(fMoves[j], node);
-                    winLevel = getWinLevel(arr, color, timeout, depth, gDepth - 1, nd);
-                    //console.log("_____"+winLevel)
-                    if (winLevel < 3.5) notWin = true;
-
-                    // 复原棋子
-                    for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
-                        arr[y][x] = 0;
-                    }
-                    if (notWin) j = -1;
-                }
-            }
-
-            return notWin ? 2 : 3.5;
-        }
-        return 2;
-    }
-
-}
-*/
 
 
 // 轮到对手落子
@@ -5454,7 +5411,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
     timeout = timeout || 30000;
     gDepth = gDepth || 2;
     // 判断对手进攻级别
-    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, null, true);
+    let nLevel = getLevelB(arr, color == 1 ? 2 : 1, timeout);
     let winLevel;
     let cNode = node.childNode;
     //console.log("对手进攻级别="+nLevel.level)
@@ -5474,7 +5431,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             let y = winLevel.p.y;
             let x = winLevel.p.x;
             arr[y][x] = color == 1 ? 2 : 1;
-            let num = findVCF(arr, color, 1, maxNum - 2, timeout, true);
+            let num = findVCF(arr, color, 1, maxNum - 2, timeout);
             //if (node.idx==111) mConsole(`${toStr(arr)}\n________\nwinLevel.level=${winLevel.level}\nfMum=${num}`)
             arr[y][x] = 0;
 
@@ -5497,14 +5454,14 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
                 return 2;
             }
         }
-        //findVCF(color,timeOut,depth,count,backStage,arr) 
-        let fNum = findVCF(arr, color, 1, maxNum - 2, timeout, true);
+        
+        let fNum = findVCF(arr, color, 1, maxNum - 2, timeout);
         if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
             let notWin = false; //后续计算，如果双杀不成立==true
             let VCF = new Node();
             movesToNode(vcfWinMoves[0], VCF);
             node.defaultChildNode = VCF;
-            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true, true);
+            let bPoint = getBlockVCF(vcfWinMoves, color, arr, true);
             if (bPoint) { //排除直接防
                 if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, maxNum - 2, node, vcfWinMoves))) {
                     //排除失败，双杀不成立
@@ -5519,8 +5476,8 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
                 for (j = fMoves.length - 1; j >= 0; j--) {
                     // 摆棋
                     for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
+                        let x = getX(fMoves[j][k]);
+                        let y = getY(fMoves[j][k]);
                         arr[y][x] = k % 2 ? color : color == 1 ? 2 : 1;
                     }
                     let nd = movesToNode(fMoves[j], node);
@@ -5538,8 +5495,8 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
 
                     // 复原棋子
                     for (let k = fMoves[j].length - 1; k >= 0; k--) {
-                        let x = fMoves[j][k] % 15;
-                        let y = parseInt(fMoves[j][k] / 15);
+                        let x = getX(fMoves[j][k]);
+                        let y = getY(fMoves[j][k]);
                         arr[y][x] = 0;
                     }
                     if (notWin) j = -1;
@@ -5555,14 +5512,11 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
 
 
 // 确定选点范围
-function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allColor, num, selFour) {
-    num = typeof num == "number" ? parseInt(num) : 9999;
-    timeout = timeout || 30000;
-    depth = depth || 1000;
-    backstage = backstage == null ? true : backstage;
+function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstage = true, level, allColor, num = 9999, selFour) {
+
     // 确定活三级选点范围
     // 先判断对手进攻级别,快速选点
-    if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, getArr([]), timeout, depth);
+    if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, timeout, depth);
     if (level.level >= 5) {
         //if (testidx) console.log(5)
         getArr(newarr, -9999);
@@ -5594,12 +5548,12 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
         let mv = []; //转二维数组
         mv.push(level.moves);
         //let p = getBlockVCFb(mv, color == 1 ? 2 : 1, arr, true);
-        let p = getBlockVCF(mv, color == 1 ? 2 : 1, arr, true);
+        let p = getBlockVCF(mv, color == 1 ? 2 : 1, arr);
         getArr(newarr, -9999);
 
         for (let i = p.length - 1; i >= 0; i--) {
-            let x = p[i] % 15;
-            let y = parseInt(p[i] / 15);
+            let x = getX(p[i]);
+            let y = getY(p[i]);
             newarr[y][x] = 0;
         }
     }
@@ -5607,7 +5561,7 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
         //if (testidx) console.log(2)
         let narr = getArr([]);
         let narr1 = getArr([]);
-        findFourPoint(arr, color == 1 ? 2 : 1, narr1, null); // 保存对手冲四点
+        findFourPoint(arr, color == 1 ? 2 : 1, narr1, undefined); // 保存对手冲四点
         continueFour(arr, color, num > 4 ? 5 : num, [], narr); //分析连续冲四
         for (let y = 0; y < 15; y++) { // 把 arr 的数据合并到 narr;
             for (let x = 0; x < 15; x++) {
@@ -5625,7 +5579,7 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
     }
 
     // 再排除黑禁手
-    if (!selFour) findFourPoint(arr, color, newarr, null, -9999); //排除冲4
+    if (!selFour) findFourPoint(arr, color, newarr, undefined, -9999); //排除冲4
     //findThreePoint (arr,color,newarr,ONLY_FREE,-9999); //排除活三
     if (color == 1) findFoulPoint(arr, newarr, -9999); //排除禁手
     if (!backstage) printNewarr(newarr);
@@ -5634,7 +5588,7 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
     function printNewarr(newarr) {
         for (let y = 0; y < 15; y++) { // 
             for (let x = 0; x < 15; x++) {
-                if (newarr[y][x] == 0) post("wLb", [y * 15 + x, "●", "#888888"]);
+                if (newarr[y][x] == 0) post("wLb", {idx:y * 15 + x, text:"●", color:"#888888"});
             }
         }
     }
@@ -5643,12 +5597,11 @@ function selectPoint(arr, color, newarr, timeout, depth, backstage, level, allCo
 
 
 
-function getNextEmpty(x, y, arr, direction, color, move, maxLen) {
+function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
 
     let nx = -1;
     let ny = -1;
-    move = move == null ? 0 : move;
-    maxLen = maxLen == null ? 5 : maxLen;
+
     switch (String(direction)) {
 
         case "x":
@@ -5697,20 +5650,21 @@ function getNextEmpty(x, y, arr, direction, color, move, maxLen) {
             break;
     }
 
-    return { "x": nx, "y": ny };
+    return {
+        "x": nx,
+        "y": ny
+    };
 
 }
 
 
 
 // x,y,坐标代表第一个点和后面的4个点成五格。返回在这五格内的子力。
-function getPower(x, y, arr, direction, color, move, maxLen) {
+function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
 
     let count = 0;
     let thisColor = color;
     let nColor = thisColor == 1 ? 2 : 1;
-    move = move == null ? 0 : move;
-    maxLen = maxLen == null ? 5 : maxLen;
 
     switch (String(direction)) {
 
@@ -5794,12 +5748,9 @@ function getKey(arr) {
 
 
 
-function getArr(arr, setnum, x, y) {
+function getArr(arr, setnum = 0, x = 15, y = 15) {
 
     let j = 0;
-    setnum = setnum || 0;
-    x = x || 15;
-    y = y || 15;
     arr.length = 0;
     for (j = 0; j < y; j++) {
         arr[j] = [];
@@ -5853,10 +5804,11 @@ function getArrValue(x, y, move, direction, arr) {
 
 
 
-function getArrIdxValue(idx, arr) {
-    let x = idx % 15;
-    let y = parseInt(idx / 15);
-    return getArrValue(x, y, 0, "x", arr);
+function getArrValue_Idx(idx, arr) {
+
+    let x = getX(idx);
+    let y = getY(idx);
+    return getArrValue(x, y, 0, DIRECTIONS[0], arr);
 }
 
 
@@ -5864,13 +5816,18 @@ function getArrIdxValue(idx, arr) {
 // 取得一个点的x,y
 function getArrPoint(x, y, move, direction, arr) {
 
-
     let nx = changeX(x, move, direction);
     let ny = changeY(y, move, direction);
     if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return { x: nx, y: ny };
+        return {
+            x: nx,
+            y: ny
+        };
     }
-    return { x: -1, y: -1 };
+    return {
+        x: -1,
+        y: -1
+    };
 
 }
 
@@ -5900,6 +5857,22 @@ function getX(idx) {
 function getY(idx) {
 
     return parseInt(idx / 15);
+}
+
+
+
+function getArrElement(idx, arr) {
+
+    let x = getX(idx);
+    let y = getY(idx);
+    return arr[y][x];
+}
+
+
+
+function setArr(idx, arr, value) {
+
+    getArrElement(idx, arr) = value;
 }
 
 
@@ -5950,8 +5923,8 @@ function changeY(y, move, direction) {
 function indexToName(idx) {
 
     let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let x = (idx % 15);
-    let y = parseInt(idx / 15);
+    let x = getX(idx);
+    let y = getY(idx);
     return (alpha.charAt(x) + (15 - y));
 }
 

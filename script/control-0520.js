@@ -164,6 +164,7 @@ let control = (() => {
         cBd.cle();
         cBd.printCheckerBoard();
         cBd.hideCutDiv();
+        cBd.firstColor = "black";
         parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         parentNode.removeChild(imgCmdDiv);
         parentNode.appendChild(renjuCmddiv);
@@ -279,7 +280,7 @@ let control = (() => {
         let p = { x: 0, y: 0 };
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
-        cMenu.createMenu(left, null, width, null, fontSize, true);
+        cMenu.createMenu(left, undefined, width, undefined, fontSize, true);
     }
 
 
@@ -344,7 +345,7 @@ let control = (() => {
         cShownum.show();
         cShownum.setText("❶");
         //setShowNum(1);
-        cShownum.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cShownum.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cShownum.menu.lis[0].checked = true;
         cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
         cShownum.setonchange(function() {
@@ -513,7 +514,7 @@ let control = (() => {
             }
         }
 
-        cFindPoint.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cFindPoint.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
@@ -528,54 +529,102 @@ let control = (() => {
             let newarr = getArr([]);
             switch (but.input.value * 1) {
                 case 1:
-                    /*
-                    let ls = getLines(122,getRenjuSelColor(),arr,4);
-                    cBd.wLb(122,"0","black" );
-                    for (let i=ls.length-1; i>=0; i--) {
-                        cBd.createMarkLine(ls[i].start, ls[i].end, "red")
-                    }
-                    */
-                    engine.postMsg("vctSelectPoint", [getRenjuSelColor(), arr, newarr]);
+                    engine.postMsg("vctSelectPoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: newarr
+                    });
                     break;
                 case 2:
-                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, ONLY_VCF]);
+                    engine.postMsg("isLevelThreePoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: newarr,
+                        ftype: ONLY_VCF
+                    });
                     break;
 
                 case 3:
-                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, ONLY_SIMPLE_WIN]);
+                    engine.postMsg("isLevelThreePoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: newarr,
+                        ftype: ONLY_SIMPLE_WIN
+                    });
                     break;
 
                 case 4:
-                    engine.postMsg("isLevelThreePoint", [getRenjuSelColor(), arr, newarr, null]);
+                    engine.postMsg("isLevelThreePoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: newarr,
+                        ftype: undefined
+                    });
                     break;
 
                 case 5:
-                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, ONLY_FREE]);
+                    engine.postMsg("findThreePoint", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        newarr: newarr,
+                        ftype: ONLY_FREE
+                    });
                     break;
 
                 case 6:
-                    engine.postMsg("findTTPoint", [arr, 1, newarr]);
+                    engine.postMsg("findTTPoint", {
+                        arr: arr,
+                        color: 1,
+                        newarr: newarr
+                    });
                     break;
 
                 case 7:
-                    engine.postMsg("findFFPoint", [arr, 1, newarr]);
+                    engine.postMsg("findFFPoint", {
+                        arr: arr,
+                        color: 1,
+                        newarr: newarr
+                    });
                     break;
 
                 case 8:
-                    engine.postMsg("findSixPoint", [arr, 1, newarr]);
+                    engine.postMsg("findSixPoint", {
+                        arr: arr,
+                        color: 1,
+                        newarr: newarr
+                    });
                     break;
 
                 case 9:
-                    engine.postMsg("findFivePoint", [arr, getRenjuSelColor(), newarr, null]);
+                    engine.postMsg("findFivePoint", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        newarr: newarr
+                    });
                     break;
                 case 10:
-                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, ONLY_FREE]);
+                    engine.postMsg("findFourPoint", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        newarr: newarr,
+                        ftype: ONLY_FREE
+                    });
                     break;
                 case 11:
-                    engine.postMsg("findFourPoint", [arr, getRenjuSelColor(), newarr, ONLY_NOFREE]);
+                    engine.postMsg("findFourPoint", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        newarr: newarr,
+                        ftype: ONLY_NOFREE
+                    });
                     break;
                 case 12:
-                    engine.postMsg("findThreePoint", [arr, getRenjuSelColor(), newarr, ONLY_NOFREE]);
+                    engine.postMsg("findThreePoint", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        newarr: newarr,
+                        ftype: ONLY_NOFREE
+                    });
                     break;
             }
 
@@ -609,7 +658,7 @@ let control = (() => {
                 cFindVCF.addOption(i, tMsg[i]);
             }
         }
-        cFindVCF.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cFindVCF.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
@@ -623,47 +672,97 @@ let control = (() => {
             cBd.getPointArray(arr);
             switch (but.input.value * 1) {
                 case 1:
-                    engine.postMsg("findVCF", [arr, getRenjuSelColor(), 1, null, null, null]);
+                    engine.postMsg("findVCF", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        count: 1,
+                        depth: undefined,
+                        timeout: undefined,
+                        backstage: false
+                    });
                     break;
                 case 2:
-                    engine.postMsg("findVCF", [arr, getRenjuSelColor(), null, null, null, null]);
+                    engine.postMsg("findVCF", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        count: 225,
+                        depth: undefined,
+                        timeout: undefined,
+                        backstage: false
+                    });
                     break;
                 case 3:
-                    engine.postMsg("isTwoVCF", [getRenjuSelColor(), arr, getArr([])]);
+                    engine.postMsg("isTwoVCF", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: getArr([])
+                    });
                     break;
                 case 4:
-                    engine.postMsg("isSimpleWin", [getRenjuSelColor(), arr, getArr([]), 4, 3]);
+                    engine.postMsg("isSimpleWin", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: getArr([]),
+                        num: 4,
+                        level: 3
+                    });
                     break;
                 case 5:
-                    engine.postMsg("isThreeWinPoint", [getRenjuSelColor(), arr, getArr([])]);
+                    engine.postMsg("isThreeWinPoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: getArr([])
+                    });
                     break;
                 case 6:
-                    engine.postMsg("isFourWinPoint", [getRenjuSelColor(), arr, getArr([])]);
+                    engine.postMsg("isFourWinPoint", {
+                        color: getRenjuSelColor(),
+                        arr: arr,
+                        newarr: getArr([])
+                    });
                     break;
                 case 8:
-                    engine.postMsg("getBlockVCF", [arr, getRenjuSelColor()]);
+                    engine.postMsg("getBlockVCF", {
+                        color: getRenjuSelColor(),
+                        arr: arr
+                    });
                     break;
                 case 9:
-                    engine.postMsg("getBlockVCFb", [arr, getRenjuSelColor()]);
+                    engine.postMsg("getBlockVCFb", {
+                        color: getRenjuSelColor(),
+                        arr: arr
+                    });
                     break;
                 case 10:
-                    engine.postMsg("getBlockVCFTree", [arr, getRenjuSelColor()]);
+                    engine.postMsg("getBlockVCFTree", {
+                        color: getRenjuSelColor(),
+                        arr: arr
+                    });
                     break;
                 case 7:
-                    engine.postMsg("blockCatchFoul", [arr]);
+                    engine.postMsg("blockCatchFoul", {
+                        arr: arr
+                    });
                     break;
                 case 11:
-                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 2, null]);
+                    engine.postMsg("findVCT", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        node: undefined,
+                        count: 1,
+                        depth: 2,
+                        backstage: undefined
+                    });
                     break;
                 case 12:
-                    /*
-                    console.log(isFFWin(8,12,2,arr))
-                    arr[12][8] = "*"
-                    console.log(arr)
-                    arr[12][8] = 0
-                    */
-                    //engine.postMsg("findLevelThreePoint", [arr, getRenjuSelColor(), getArr([]), null, null, false]);
-                    engine.postMsg("findVCT", [arr, getRenjuSelColor(), null, 1, 5, null]);
+                    engine.postMsg("findVCT", {
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        node: undefined,
+                        count: 1,
+                        depth: 5,
+                        backstage: undefined
+                    });
                     break;
                 case 112:
                     const DIRECTIONS = ["x", "y", "d", "u"];
@@ -727,7 +826,7 @@ let control = (() => {
         cPrintVCF.addOption(7, "第7套VCF");
         cPrintVCF.addOption(8, "第8套VCF");
         //cPrintVCF.addOption(9, "︽");
-        cPrintVCF.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cPrintVCF.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cPrintVCF.show();
         cPrintVCF.setText("➩ VCF ");
         cPrintVCF.setonchange(function(but) {
@@ -788,7 +887,7 @@ let control = (() => {
         cLABC.addOption(6, "☆标记");
         cLABC.addOption(7, "❌标记");
 
-        cLABC.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cLABC.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cLABC.show();
 
         cLABC.setontouchend(function() {
@@ -808,8 +907,8 @@ let control = (() => {
                 for (let i = 0; i < continueLabel.length; i++) {
                     lbStr += (continueLabel[i] + ",");
                 }
-                msg(`${lbStr}......\n\n\n,-------------\n类似(ABC...),(abc...),(123...)\n可在上面编辑 连续输入的 标记。每个标记 用英文 [,] 逗号隔开，每个标记最多3个字符`, "input", l, t, w, h, "输入代码", null,
-                    newContinueLabel, null, null, 10);
+                msg(`${lbStr}......\n\n\n,-------------\n类似(ABC...),(abc...),(123...)\n可在上面编辑 连续输入的 标记。每个标记 用英文 [,] 逗号隔开，每个标记最多3个字符`, "input", l, t, w, h, "输入代码", undefined,
+                    newContinueLabel, undefined, undefined, 10);
             }
         });
 
@@ -891,7 +990,7 @@ let control = (() => {
             cLbColor.addOption(i, lbColor[i].colName);
         }
         //cLbColor.addOption(3, "︽");
-        cLbColor.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cLbColor.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         for (let i = cLbColor.menu.lis.length - 1; i >= 0; i--) {
             cLbColor.menu.lis[i].style.color = lbColor[i].color;
             let div = document.createElement("div");
@@ -999,8 +1098,8 @@ let control = (() => {
             let l = (dw - w) / 2;
             let t = (dh - dw) / 4;
             t = t < 0 ? 1 : t;
-            msg("长按下面空白区域，粘贴棋谱代码 " + "\n" + "-------------" + "\n\n", "input", l, t, w, h, "输入代码", null,
-                inputCode, null, null, 10);
+            msg("长按下面空白区域，粘贴棋谱代码 " + "\n" + "-------------" + "\n\n", "input", l, t, w, h, "输入代码", undefined,
+                inputCode, undefined, undefined, 10);
         });
 
         cOutputcode = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
@@ -1016,8 +1115,8 @@ let control = (() => {
             t = t < 0 ? 1 : t;
             let code = cBd.getCode();
             code = code == "\n{}{}" ? "空棋盘没有棋盘代码" : code;
-            msg(code + "\n\n\n" + "-------------" + "\n" + "长按上面代码，复制棋谱代码 ", "input", l, t, w, h, "输入代码", null,
-                inputCode, null, null, 10);
+            msg(code + "\n\n\n" + "-------------" + "\n" + "长按上面代码，复制棋谱代码 ", "input", l, t, w, h, "输入代码", undefined,
+                inputCode, undefined, undefined, 10);
         });
 
         cLoadImg = new button(renjuCmddiv, "file", w * 2.66, t, w, h);
@@ -1074,7 +1173,7 @@ let control = (() => {
             cSLTY.setText(cSLTY.input.value + " 行");
             ctx = null;
             viewport.userScalable();
-            msgbox(`长按棋盘，拖动虚线对齐棋子`,undefined,undefined,undefined,undefined,0);
+            msgbox(`长按棋盘，拖动虚线对齐棋子`, undefined, undefined, undefined, undefined, 0);
         }
 
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
@@ -1086,7 +1185,7 @@ let control = (() => {
         cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
         cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
         //cCutImage.addOption(7, "︽");
-        cCutImage.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cCutImage.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cCutImage.show();
         cCutImage.setText("✄ 截图");
         cCutImage.setonchange(function(but) {
@@ -1164,7 +1263,7 @@ let control = (() => {
 
         t = t + h * 1.5;
 
-        createContextMenu(null, null, menuWidth, null, menuFontSize);
+        createContextMenu(undefined, undefined, menuWidth, undefined, menuFontSize);
 
 
         function cSelChecked(chk) {
@@ -1212,10 +1311,9 @@ let control = (() => {
             });
 
             let continueData = appData.loadContinueData(cBd);
-
             if (continueData) {
                 msgbox("上次意外退出,继续计算...", undefined, undefined, undefined, undefined, 0);
-                engine.postMsg(continueData.cmd, [continueData]);
+                engine.postMsg(continueData.cmd, continueData);
             }
 
         }, 1000 * 1);
@@ -1408,7 +1506,7 @@ let control = (() => {
             cSLTY.addOption(i, i);
         }
         //cSLTY.addOption(4, "︽");
-        cSLTY.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cSLTY.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cSLTY.show();
         cSLTY.setText(cSLTY.input.value + " 行");
         cSLTY.setonchange(function(but) {
@@ -1431,7 +1529,7 @@ let control = (() => {
             cSLTX.addOption(i, i);
         }
         //cSLTX.addOption(4, "︽");
-        cSLTX.createMenu(menuLeft, null, menuWidth, null, menuFontSize);
+        cSLTX.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cSLTX.show();
         cSLTX.setText(cSLTX.input.value + " 列");
         cSLTX.setonchange(function(but) {
@@ -1610,7 +1708,7 @@ let control = (() => {
                         else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || cBd.P[idx].text == "❌") && cBd.P[idx].type == TYPE_MARK)) {
                             // 添加棋子  wNb(idx,color,showNum)
                             let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
-                            cBd.wNb(idx, "auto", cmds.showNum, null, isF);
+                            cBd.wNb(idx, "auto", cmds.showNum, undefined, isF);
                         }
                         break;
 
@@ -1713,7 +1811,7 @@ let control = (() => {
             case TYPE_NUMBER:
                 if (idx == cBd.MS[cBd.MSindex]) {
                     let str = cBd.notShowLastNum ? "确认恢复 最后一手红色显示。" : "确认取消 最后一手红色显示。";
-                    msg(str, null, null, null, null, null, null, null, function() {
+                    msg(str, undefined, undefined, undefined, undefined, undefined, undefined, undefined, function() {
 
                         if (cBd.setNotShowLastNum(idx)) {
                             if (getShowNum()) {
@@ -1723,7 +1821,7 @@ let control = (() => {
                                 cBd.hideNum();
                             }
                         }
-                    }, null, 2);
+                    }, undefined, 2);
                 }
                 break;
             case TYPE_MARK:
@@ -1739,7 +1837,7 @@ let control = (() => {
         */
         if (idx == cBd.MS[cBd.MSindex]) {
             let str = cBd.notShowLastNum ? "确认恢复 最后一手红色显示。" : "确认取消 最后一手红色显示。";
-            msg(str, null, null, null, null, null, null, null, function() {
+            msg(str, undefined, undefined, undefined, undefined, undefined, undefined, undefined, function() {
 
                 if (cBd.setNotShowLastNum(idx)) {
                     if (getShowNum()) {
@@ -1749,12 +1847,12 @@ let control = (() => {
                         cBd.hideNum();
                     }
                 }
-            }, null, 2);
+            }, undefined, 2);
         }
         else {
             //console.log(`top=${window.scrollY}, left=${window.scrollX}`);
             cMenu.idx = idx;
-            cMenu.showMenu(null, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
+            cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
 
         }
 
@@ -1768,7 +1866,7 @@ let control = (() => {
         let t = dh / 7;
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
-        msg("", "input", l, t, w, h, "输入标记", null, function(msgStr) {
+        msg("", "input", l, t, w, h, "输入标记", undefined, function(msgStr) {
 
                 if (msgStr.length > 3) { // printMoves  || add Num
                     let add = msgStr.indexOf("add");

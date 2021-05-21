@@ -460,7 +460,7 @@
           //console.log(`click t=${this.text}`);
           let top = window.scrollY + this.menu.fontSize * 2.5 * 2;
           let y = event && event.pageY ? event.pageY - top : event && event.changedTouches[0] ? event.changedTouches[0].pageY - top : undefined;
-          this.showMenu(null, y);
+          this.showMenu(undefined, y);
           //this.click event continue set select label text;
           //return false;
       }

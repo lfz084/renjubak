@@ -1,6 +1,6 @@
 "use strict";
 
-var tempp = new point(0, 0, null);
+var tempp = new point(0, 0, undefined);
 
 const TYPE_EMPTY = 0;
 const TYPE_MARK = 1; // 用于point.type,表示当前点上面存在一个标签
@@ -339,10 +339,10 @@ checkerBoard.prototype.addTree = function(tree) {
             let idx = y * this.SLTX + x;
             switch (arr[y][x]) {
                 case 1:
-                    this.wNb(idx, "black", null, TYPE_BLACK);
+                    this.wNb(idx, "black", undefined, TYPE_BLACK);
                     break;
                 case 2:
-                    this.wNb(idx, "white", null, TYPE_WHITE);
+                    this.wNb(idx, "white", undefined, TYPE_WHITE);
                     break;
             }
         }
@@ -924,7 +924,7 @@ checkerBoard.prototype.cleMarkLine = function(markLine) {
     let oldIdx = -1;
     let color = markLine.color;
     markLine.color = this.backgroundColor;
-    this.printMarkLine(markLine, null, true);
+    this.printMarkLine(markLine, undefined, true);
     markLine.color = color;
     for (let i = markLine.P.length - 1; i >= 0; i--) {
         let idx = markLine.P[i];
@@ -995,7 +995,7 @@ checkerBoard.prototype.cleMarkArrow = function(markArrow) {
     let oldIdx = -1;
     let color = markArrow.color;
     markArrow.color = this.backgroundColor;
-    this.printMarkArrow(markArrow, null, true);
+    this.printMarkArrow(markArrow, undefined, true);
     markArrow.color = color;
     for (let i = markArrow.P.length - 1; i >= 0; i--) {
         let idx = markArrow.P[i];
@@ -3065,7 +3065,7 @@ checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, b
         this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
     }
     else { //this.P[idx].type == TYPE_MARK;
-        this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+        this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
     }
 
 }
@@ -3117,7 +3117,7 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         //this.P[idx].type = TYPE_MARK;
         //this.P[idx].text = text;
         //this.refreshMarkLine(idx);
-        //this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+        //this.printPointB(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
         //this.refreshMarkArrow(idx);
     }
 
@@ -3195,11 +3195,11 @@ checkerBoard.prototype.refreshCheckerBoard = function() {
                 txt = parseInt(txt) < 1 ? "" : txt;
                 txt = this.isShowNum ? txt : "";
             }
-            this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, null, true);
+            this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, undefined, true);
             //console.log(this.P[idx].type)
         }
         else if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
-            this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+            this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
             //console.log(this.P[idx].type)
         }
     }
@@ -3395,7 +3395,7 @@ checkerBoard.prototype.saveAsImage = function(type) {
         save_link.href = URL.createObjectURL(blob);
         save_link.download = filename;
         let event = document.createEvent("MouseEvents");
-        event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, undefined);
         save_link.dispatchEvent(event);
         URL.revokeObjectURL(save_link.href);
         */
@@ -3415,7 +3415,7 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
         return;
     }
 
-    //msg("创建PDF文档......", null, null, null, null, null, null, null, null, null, 0);
+    //msg("创建PDF文档......", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0);
 
     //新建文档
     let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
@@ -3445,7 +3445,7 @@ checkerBoard.prototype.saveAsSVG = function(type) {
     /*
     //console.log("checkerBoard.saveAsSVG Download" );
     let event = document.createEvent("MouseEvents");
-    event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, undefined);
     save_link.dispatchEvent(event);
     //URL.revokeObjectURL(save_link.href);
     */
@@ -3910,7 +3910,7 @@ checkerBoard.prototype.showFoul = function(display, notChange) {
                     this.P[idx].type = TYPE_MARK_FOUL;
                     this.P[idx].text = "❌";
                     this.refreshMarkLine(idx);
-                    this.printPointB(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+                    this.printPointB(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
                     this.refreshMarkArrow(idx);
                 }
             }
@@ -4020,7 +4020,7 @@ checkerBoard.prototype.showNum = function() {
         //从设定的手数开始显示序号
         txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
         txt = parseInt(txt) < 1 ? "" : txt;
-        this.printPoint(this.MS[i], txt, color, TYPE_NUMBER, true, null, true);
+        this.printPoint(this.MS[i], txt, color, TYPE_NUMBER, true, undefined, true);
         this.refreshMarkArrow(this.MS[i]);
     }
     this.showLastNum(true);
@@ -4396,7 +4396,7 @@ checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
     this.P[idx].type = backgroundColor ? TYPE_MOVE : TYPE_MARK;
     this.P[idx].text = text;
     //this.refreshMarkLine(idx);
-    this.printPoint(idx, this.P[idx].text, this.P[idx].color, null, null, this.P[idx].bkColor);
+    this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
     this.refreshMarkArrow(idx);
     //autoShow = autoShow == undefined ? true : autoShow;
     //if (autoShow) this.showAutoLine(this.isShowAutoLine);
