@@ -1,9 +1,33 @@
 "use strict";
+const EMOJI_FOUL = "❌";
+const EMOJI_FOUL_THREE = EMOJI_FOUL + EMOJI_FOUL + EMOJI_FOUL;
+const EMOJI_QUESTION = "❓"
+const EMOJI_SEARCH = "🔍"
+const EMOJI_STOP = "🚫"
+const EMOJI_STAR = "☆"
+const EMOJI_STAR_BLACK = "★"
+const EMOJI_SCISSORSN = "✄"
+const EMOJI_PEN = "✎"
+const EMOJI_FORK = "✖"
+const EMOJI_TRIANGLE_BLACK = "▲"
+const EMOJI_ROUND = "○"
+const EMOJI_ROUND_DOUBLE = "◎"
+const EMOJI_SQUARE_BLACK = "■"
+const EMOJI_ROUND_BLACK_WHITE = "◐"
+const EMOJI_ROUND_BLACK = "●"
+const EMOJI_ROUND_ONE = "❶"
+const EMOJI_ROUND_TWO = "②"
+const EMOJI_ROUND_THREE = "③"
+const EMOJI_ROUND_FOUR = "④"
+const EMOJI_ROUND_FIVE = "⑤"
+
+
 const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
 const ONLY_VCF = 1; // 只找做VCF点
 const ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
+
 
 let generator;
 let workerIdx = 0;
@@ -201,10 +225,10 @@ Node.prototype.removeChild = function(child) {
 onmessage = function(e) {
     let p = e.data.parameter;
     const CMD = {
-        "setWorkerIdx": function() {workerIdx=p.workerIdx},
+        "setWorkerIdx": function() { workerIdx = p.workerIdx },
         "getLevelB": function() {
             let level = getLevelB(p.arr, p.color, p.timeout, p.depth, p.num);
-            post("getLevelB_End", {level:level});
+            post("getLevelB_End", { level: level });
         },
         "vctSelectPoint": function() {
             findLevelThreePoint(p.arr, p.color, p.newarr, undefined, undefined, false);
@@ -212,8 +236,8 @@ onmessage = function(e) {
             continueFour(p.arr, p.color, 1, fMoves, getArr([]));
             if (fMoves) {
                 for (let i = fMoves.length - 1; i >= 0; i--) {
-                    post("wLb", {idx:fMoves[i][0], text:"④", color:"black"});
-                    post("addThreePoint", {idx:fMoves[i][0], point:{ txt: "④", txtColor: "black", moves: [fMoves[i][1]] }});
+                    post("wLb", { idx: fMoves[i][0], text: "④", color: "black" });
+                    post("addThreePoint", { idx: fMoves[i][0], point: { txt: "④", txtColor: "black", moves: [fMoves[i][1]] } });
                 }
             }
             post("vctSelectPoint_End");
@@ -229,15 +253,20 @@ onmessage = function(e) {
                 findVCT(p.arr, p.color, p.node, p.count, p.depth, p.backstage);
                 vctNode = vctNode.childNode.length ? vctNode : null;
             }
-            post("findVCT_End", {node:vctNode});
+            post("findVCT_End", { node: vctNode });
         },
         "findVCF": function() {
             findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
-            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
+            post("findVCF_End", { winMoves: vcfWinMoves, color: vcfColor, seconds: (new Date().getTime() - vcfStartTimer) / 1000, initialArr: vcfInitial });
         },
         "findLevelThreePoint": function() {
             let sPoint = findLevelThreePoint(p.arr, p.color, p.newarr, p.ftype, p.idx, p.backstage, p.num, p.depth);
             post("findLevelThreePoint_End");
+        },
+        "findFoulNode": function(){
+            let node = findFoulNode(p.arr);
+            if (node.childNode.length) post("addTree",{node: node});
+            post("findFoulNode_End");
         },
         "cancelFind": function() { cancelFind(); },
         "isTwoVCF": function() {
@@ -262,7 +291,7 @@ onmessage = function(e) {
         },
         "blockCatchFoul": function() {
             let rt = blockCatchFoul(p.arr);
-            post("blockCatchFoul_End", {value:rt});
+            post("blockCatchFoul_End", { value: rt });
         },
         "isBlockVCF": function() {
             isBlockVCF(p.idx, p.color, p.arr);
@@ -270,44 +299,44 @@ onmessage = function(e) {
         },
         "isBlockVCFPath": function() {
             let paths = isBlockVCFPath(p.path, p.color, p.arr, p.backstage, p.speed);
-            post("end", {paths:paths});
+            post("end", { paths: paths });
 
         },
         "selectPoint": function() {
             let newarr = selectPoint(p.arr, p.color, p.newarr, p.timeout, p.depth, p.backstage, p.level, p.allColor, p.num, p.selFour);
-            post("selectPoint_End", {newarr:newarr});
+            post("selectPoint_End", { newarr: newarr });
         },
         "getBlockVCF": function() {
             let sPoint = [];
             findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
-            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
+            post("findVCF_End", { winMoves: vcfWinMoves, color: vcfColor, seconds: (new Date().getTime() - vcfStartTimer) / 1000, initialArr: vcfInitial });
             if (vcfWinMoves.length) {
                 sPoint = getBlockVCF(vcfWinMoves, p.color, p.arr);
             }
-            post("getBlockVCF_End", {points:sPoint});
+            post("getBlockVCF_End", { points: sPoint });
         },
         "getBlockVCFb": function() {
             let sPoint = [];
             findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
-            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
+            post("findVCF_End", { winMoves: vcfWinMoves, color: vcfColor, seconds: (new Date().getTime() - vcfStartTimer) / 1000, initialArr: vcfInitial });
             if (vcfWinMoves.length) {
                 sPoint = getBlockVCF(vcfWinMoves, p.color, p.arr);
             }
-            post("getBlockVCFb_End", {points:sPoint, color:p.color});
+            post("getBlockVCFb_End", { points: sPoint, color: p.color });
         },
         "getBlockVCFTree": function() {
             let paths = [];
             findVCF(p.arr, p.color, p.count, p.depth, p.timeout, p.backstage);
-            post("findVCF_End", {winMoves:vcfWinMoves, color:vcfColor, seconds:(new Date().getTime() - vcfStartTimer) / 1000, initialArr:vcfInitial});
+            post("findVCF_End", { winMoves: vcfWinMoves, color: vcfColor, seconds: (new Date().getTime() - vcfStartTimer) / 1000, initialArr: vcfInitial });
             if (vcfWinMoves.length) {
                 paths = getBlockVCFPaths(vcfWinMoves, p.color, p.arr);
             }
-            post("getBlockVCFTree_End", {paths:paths, color:p.color});
+            post("getBlockVCFTree_End", { paths: paths, color: p.color });
         },
         "findThreeWin": function() {
             let idx = findThreeWin(p.arr, p.color, p.newarr);
             idx = idx.length ? idx[0] : -1;
-            post("findThreeWin_End", {idx:idx});
+            post("findThreeWin_End", { idx: idx });
         },
 
     };
@@ -439,7 +468,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
                 case 0:
                     //mConsole("vctFinding = 0")
                     vctFinding = continueFindVCT();
-                    if (!backstage) post("printMoves", {winMoves:vctMoves, color:vctColor});
+                    if (!backstage) post("printMoves", { winMoves: vctMoves, color: vctColor });
                     break;
                 case 1:
                     //mConsole("vctFinding = 1")
@@ -449,7 +478,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
                 case -1:
                     //mConsole("vctFinding = -1")
                     //post("findVCT_End", [vctNode]);
-                    if (!backstage) post("cleLb", {idx:"all"});
+                    if (!backstage) post("cleLb", { idx: "all" });
                     vctNode.firstColor = vctColor == 1 ? "black" : "white";
                     return;
                     break;
@@ -1203,7 +1232,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
 
 
 
-function findVCF(arr, color, count=1, depth=225, timeOut=36000000, backstage=true) {
+function findVCF(arr, color, count = 1, depth = 225, timeOut = 36000000, backstage = true) {
     let rt;
     depth = arr.depth ? data.depth : depth;
     count = arr.depth ? data.count : count;
@@ -1213,7 +1242,7 @@ function findVCF(arr, color, count=1, depth=225, timeOut=36000000, backstage=tru
             if (rt) return rt;
         }
     }
-    
+
     rt = findVCFB(arr, color, count, depth, timeOut, backstage);
     return rt;
 }
@@ -1247,7 +1276,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
     vcfWinMoves = data ? data.vcfWinMoves : [];
     vcfnLevel = data ? data.vcfnLevel : null;
 
-    if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
+    if (!backstage) post("findVCF_addVCF", { winMoves: vcfWinMoves, color: vcfColor, seconds: 0, initialArr: vcfInitial });
     vcfStartTimer = new Date().getTime();
 
     vcfActuator(timeOut, depth, count, backstage);
@@ -1276,7 +1305,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                         prvTimer += maxTimer;
                         maxTimer = maxTimer < 60000 ? maxTimer + parseInt((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
                         if (!backstage) {
-                            post("printMoves", {winMoves:vcfMoves, color:vcfColor});
+                            post("printMoves", { winMoves: vcfMoves, color: vcfColor });
                         }
                     }
                     vcfFinding = continueFindVCF(timeOut, depth);
@@ -1351,7 +1380,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                             let wMoves = moves.concat(v);
                             if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
                             if (pushWinMoves(WinMoves, wMoves) && !backstage) {
-                                if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
+                                if (!backstage) post("findVCF_addVCF", { winMoves: vcfWinMoves, color: vcfColor, seconds: 0, initialArr: vcfInitial });
                             };
                             pushFailMoves(FailMoves, moves);
                             backFindVCF();
@@ -1411,7 +1440,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     let wMoves = moves.concat(ty * 15 + tx);
                     if (WinMoves.length == 0) simpleVCF(color, vcfInitial, wMoves);
                     if (pushWinMoves(WinMoves, wMoves) && !backstage) {
-                        if (!backstage) post("findVCF_addVCF", {winMoves:vcfWinMoves, color:vcfColor, seconds:0, initialArr:vcfInitial});
+                        if (!backstage) post("findVCF_addVCF", { winMoves: vcfWinMoves, color: vcfColor, seconds: 0, initialArr: vcfInitial });
                     };
                     pushFailMoves(FailMoves, moves);
                     backFindVCF();
@@ -1781,10 +1810,10 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                 /*
                 nd.childNode[nd.childNode.length] = new Node(idx, nd);
                 nd = nd.childNode[nd.childNode.length-1];
-                nd.txt = "○";
+                nd.txt = EMOJI_ROUND;
                 nd.childNode[0] = new Node(ty * 15 + tx, nd);
                 nd = nd.childNode[0];
-                nd.txt = "○";
+                nd.txt = EMOJI_ROUND;
                 */
             }
         }
@@ -1792,10 +1821,10 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
             /*
             nd.childNode[nd.childNode.length] = new Node(idx, nd);
             nd = nd.childNode[nd.childNode.length-1];
-            nd.txt = "○";
+            nd.txt = EMOJI_ROUND;
             nd.childNode[0] = new Node(ty * 15 + tx, nd);
             nd = nd.childNode[0];
-            nd.txt = "○";
+            nd.txt = EMOJI_ROUND;
             */
         }
 
@@ -1818,15 +1847,15 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                 if (fPoint.length == 0) {
                     isWin = false;
                     nd = node.childNode[node.childNode.length - 1];
-                    nd.txt = "○";
+                    nd.txt = EMOJI_ROUND;
                     nd.childNode[i] = new Node(bPoint[i] * 1, nd);
                     nd = nd.childNode[i];
-                    nd.txt = "○";
+                    nd.txt = EMOJI_ROUND;
                     //console.log(false)
 
                     for (let j = i - 1; j >= 0; j--) {
                         nd = node.childNode[node.childNode.length - 1];
-                        //nd.txt = "○";
+                        //nd.txt = EMOJI_ROUND;
                         nd.childNode[j] = new Node(bPoint[j] * 1, nd);
                         nd = nd.childNode[j];
                         nd.txt = "?";
@@ -1856,9 +1885,9 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
     arr[y][x] = OV;
     //if (isWin && !backstage) {
     if (node && node.childNode.length && !backstage) {
-        post("wLb", {idx:idx, text:node.childNode[node.childNode.length - 1].txt || "W", color:"black"});
+        post("wLb", { idx: idx, text: node.childNode[node.childNode.length - 1].txt || "W", color: "black" });
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", {node:node});
+        post("addTree", { node: node });
     }
     return isWin;
 }
@@ -2011,6 +2040,16 @@ function isFoul_Idx(idx, arr) {
 }
 
 
+function isFoulNode(x, y, arr, node) {
+
+    if (arr[y][x] != 0) return false;
+    if (isSixNode(x, y, arr, node)) return true;
+    if (isFFNode(x, y, arr, node)) return true;
+    if (isTTNode(x, y, arr, node)) return true;
+    return false;
+}
+
+
 
 // 不会验证x,y是否有棋子
 // 判断 x，y是否长连
@@ -2065,6 +2104,67 @@ function isSix_Point(point, color, arr) {
 
 function isSix_Idx(idx, color, arr) {
     return isSix(getX(idx), getY(idx), color, arr);
+}
+
+
+function getLine(idx, color, direction, arr, lineColor = "red") {
+    
+    let start, end;
+    for (start = -1; start > -9; start--) {
+        if (getArrValue_Idx(idx, start, direction, arr) != color) break;
+    }
+    start++;
+    for (end = 1; end < 9; end++) {
+        if (getArrValue_Idx(idx, end, direction, arr) != color) break;
+    }
+    end--;
+    return {
+        start: getArrIndex(getX(idx), getY(idx), start, direction, arr),
+        end: getArrIndex(getX(idx), getY(idx), end, direction, arr),
+        color: lineColor,
+        type: undefined
+    }
+}
+
+
+function isSixNode(x, y, arr, node) {
+
+    let color = 1;
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let count = 0;
+    let nd = node;
+
+    for (let i = 0; i < 4; i++) { // 分别从4个方向判断
+        if (count < 0) break;
+        for (let j = 0; j > -5; j--) { // 分别判断这个点相关的5个 五
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
+            let idx = getArrIndex(x, y, j, DIRECTIONS[i], arr);
+            if (pw > 5) {
+                count = 1;
+                nd.txt = EMOJI_FOUL;
+                nd.lines = [getLine(idx, color, DIRECTIONS[i], arr)];
+                continue;
+            }
+            if (pw == 5) {
+                if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == color) {
+                    count = 1;
+                    nd.txt = EMOJI_FOUL;
+                    nd.lines = [getLine(idx, color, DIRECTIONS[i], arr)];
+                    continue;
+                }
+                else { // 五连 否定长连
+                    count = -1;
+                    nd.txt = EMOJI_ROUND_FIVE;
+                    nd.lines = [getLine(idx, color, DIRECTIONS[i], arr)];
+                    break;
+                }
+            }
+        }
+    }
+    arr[y][x] = ov;
+    
+    return count > 0 ? true : false;
 }
 
 
@@ -2318,6 +2418,58 @@ function isLineFour_Idx(idx, direction, color, arr, free, pass) {
 }
 
 
+function isLineFourNode(x, y, direction, arr, free, pass, node) {
+
+    let color = 1;
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let isf = 0;
+    let nd = node;
+    nd.lines = nd.lines || [];
+    let line;
+
+
+    for (let i = 0; i > -5; i--) {
+        let pw = getPower(x, y, arr, direction, color, i);
+        if (pw == 4 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
+            nd.txt = EMOJI_ROUND_FOUR;
+            let freeFoulStart = getArrIndex(x, y, i - 1, direction, arr);
+            let freeFoulEnd = getArrIndex(x, y, i + 5, direction, arr);
+            line = {
+                start: getArrIndex(x, y, i, direction, arr),
+                end: getArrIndex(x, y, i + 4, direction, arr),
+                color: "blue",
+                type: undefined
+            };
+            if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0 && getArrValue(x, y, i + 6, direction, arr) != color) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0 && getArrValue(x, y, i - 2, direction, arr) != color)) {
+                if (getArrValue(x, y, i, direction, arr) == 0) {
+                    line.end = freeFoulEnd;
+                }
+                else {
+                    line.start = freeFoulStart;
+                }
+                isf += free == false ? 0 : 1;
+            }
+            else {
+                isf += free == true ? 0 : 1;
+            }
+        } // 五连以上否定冲4
+        if (pw > 4) { isf -= 99; break; }
+    }
+    arr[y][x] = ov;
+
+    if (isf && !pass) { //五连，禁手排除4
+        if (isFive(x, y, color, arr)) { isf -= 99; }
+        if (color == 1) {
+            if (isFoulNode(x, y, arr, nd)) { isf -= 99; }
+        }
+    }
+    line.color = isf > 0 ? "red": line.color;
+    nd.txtColor = line.color=="red" ? "red" : undefined;
+    if (nd.lines.length==0 && line) nd.lines.push(line);
+    return isf > 0;
+}
+
 
 function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
 
@@ -2400,8 +2552,8 @@ function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                         }
                         else {
                             isWin = false;
-                            node.childNode[0].txt = "○";
-                            nd.txt = "○";
+                            node.childNode[0].txt = EMOJI_ROUND;
+                            nd.txt = EMOJI_ROUND;
                             //node.childNode = [];
                             arr[ty][tx] = 0;
                             if (true || lvl.level < 3) {
@@ -2432,9 +2584,9 @@ function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
     arr[y][x] = OV;
     //if (isWin && !backstage) {
     if (node.childNode.length && !backstage) {
-        post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
+        post("wLb", { idx: idx, text: node.childNode[0].txt || "W", color: "black" });
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", {node:node});
+        post("addTree", { node: node });
     }
     if (!isWin) node = new Node();
     return isWin;
@@ -2572,6 +2724,59 @@ function isFF_Idx(idx, color, arr) {
 }
 
 
+function isFFNode(x, y, arr, node) {
+
+    let color = 1;
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let count = 0;
+    let nd = node;
+    nd.lines = [];
+
+    for (let j = 0; j < 4; j++) {
+
+        if (count < 0) break; // 五连排除了44，退出
+        let isf = false;
+
+        for (let i = 0; i > -5; i--) {
+            let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
+            if (pw == 4 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color && getArrValue(x, y, i + 5, DIRECTIONS[j], arr) != color) {
+                if (isLineFFNode(x, y, DIRECTIONS[j], arr, nd)) {
+                    count = 2;
+                }
+                else {
+                    nd.txt = EMOJI_FOUL;
+                    nd.lines.push({
+                        start: getArrIndex(x, y, i, DIRECTIONS[j], arr),
+                        end: getArrIndex(x, y, i + 4, DIRECTIONS[j], arr),
+                        color: "red",
+                        type: undefined
+                    });
+                    isf = true;
+                }
+            } // 五连否定冲44
+            if (pw == 5 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color) {
+                count = -2;
+                nd.txt = EMOJI_ROUND_FIVE;
+                nd.lines = [getLine(x+y*15, color, DIRECTIONS[j], arr)];
+                break;
+            }
+        }
+
+        count += isf ? 1 : 0;
+    }
+    arr[y][x] = ov;
+    if (count > 1 || nd.txt == EMOJI_ROUND_FIVE) {
+        
+    }
+    else {
+        nd.txt = undefined;
+        nd.lines = undefined;
+    }
+    return count > 1 ? true : false;
+}
+
+
 
 // 不会验证x,y是否有棋子
 function isThree(x, y, color, arr, free) {
@@ -2673,7 +2878,7 @@ function isTT(x, y, arr) {
 
     let color = 1;
     //五连否定33
-    if (isFive(x, y, color, arr)) return false;
+    //if (isFive(x, y, color, arr)) return false;
 
     let ov = arr[y][x];
     arr[y][x] = color;
@@ -2727,6 +2932,65 @@ function isTT_Point(point, arr) {
 
 function isTT_Idx(idx, arr) {
     return isTT(getX(idx), getY(idx), arr);
+}
+
+
+function isTTNode(x, y, arr, node) {
+
+    let color = 1;
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let count = 0;
+    let nd = node;
+    nd.lines = [];
+    // 先搜索33形状
+    for (let i = 0; i < 4; i++) {
+        if (count < 0) break;
+        for (let j = 0; j > -5; j--) {
+            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j)
+
+            if (pw == 3) {
+                if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
+                    if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
+                        count++;
+                        break;
+                        //continue;
+                    }
+                }
+            } // 五连排除33
+            if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
+                count = -1;
+                nd.txt = EMOJI_ROUND_FIVE;
+                nd.lines.push({
+                    start: getArrIndex(x, y, j, DIRECTIONS[i], arr),
+                    end: getArrIndex(x, y, j + 4, DIRECTIONS[i], arr),
+                    color: "red",
+                    type: undefined
+
+                });
+                break;
+            }
+        }
+    }
+
+    if (count < 2) {
+        arr[y][x] = ov;
+        return false;
+    }
+    else {
+        count = 0; // 确认有了33形状，进一步判断是否是活3，count累计活3个数
+        for (let i = 0; i < 4; i++) {
+            // 从4个方向判断是否活3，是就计数
+            if (isLineThreeNode(x, y, DIRECTIONS[i], arr, true, nd)) {
+                count++;
+            }
+            if (count > 1) break;
+        }
+        arr[y][x] = ov;
+        // 累计够两个活3，确认是33
+        nd.txt = count>1 ? EMOJI_FOUL : EMOJI_ROUND;
+        return count > 1 ? true : false;
+    }
 }
 
 
@@ -2815,6 +3079,87 @@ function isLineThree_Point(point, direction, color, arr, free) {
 
 function isLineThree_Idx(idx, direction, color, arr, free) {
     return isLineThree(getX(idx), getY(idx), direction, color, arr, free);
+}
+
+
+function isLineThreeNode(x, y, direction, arr, free, node) {
+
+    let color = 1;
+    let ov = arr[y][x];
+    arr[y][x] = color;
+    let isf = false;
+    let isfree = false;
+    let nd;
+    let lineIdx = node.lines.length;
+
+    for (let i = 0; i > -5; i--) {
+        let pw = getPower(x, y, arr, direction, color, i);
+        if (pw == 3 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
+            isf = true;
+            let line = {
+                start: getArrIndex(x, y, i, direction, arr),
+                end: getArrIndex(x, y, i+4, direction, arr),
+                color: "blue",
+                type: undefined
+            };
+            if (getArrValue(x, y, i, direction, arr) == 0) {
+                if (getArrValue(x, y, i + 4, direction, arr) == 0) {
+                    let p = getNextEmpty(x, y, arr, direction, 1, i);
+                    nd = new Node(p.x + p.y * 15, node);
+                    node.childNode.push(nd);
+                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
+                        isfree = true;
+                        nd.txt = EMOJI_ROUND_FOUR;
+                        line.color = "red";
+                        node.lines[lineIdx] = line;
+                        break;
+                    }
+                    p = getNextEmpty(x, y, arr, direction, 1, i + 4);
+                    nd = new Node(p.x + p.y * 15, node);
+                    node.childNode.push(nd);
+                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
+                        isfree = true;
+                        nd.txt = EMOJI_ROUND_FOUR;
+                        line.color = "red";
+                        node.lines[lineIdx] = line;
+                        break;
+                    }
+                }
+                else {
+                    let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
+                    nd = new Node(p.x + p.y * 15, node);
+                    node.childNode.push(nd);
+                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
+                        isfree = true;
+                        nd.txt = EMOJI_ROUND_FOUR;
+                        line.color = "red";
+                        node.lines[lineIdx] = line;
+                        break;
+                    }
+                }
+            }
+            else if (getArrValue(x, y, i + 4, direction, arr) == 0) {
+                let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
+                nd = new Node(p.x + p.y * 15, node);
+                node.childNode.push(nd);
+                if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
+                    isfree = true;
+                    nd.txt = EMOJI_ROUND_FOUR;
+                    line.color = "red";
+                    node.lines[lineIdx] = line;
+                    break;
+                }
+            }
+            node.lines[lineIdx] = line;
+        } // 4以上否定活3
+        if (pw >= 4) { isf = false; break; }
+    }
+
+    arr[y][x] = ov;
+
+    
+    return free === true ? (isfree && isf) : (!isfree && isf);
+
 }
 
 
@@ -2992,6 +3337,79 @@ function isLineFF_Point(point, direction, color, arr) {
 function isLineFF_Idx(idx, direction, color, arr) {
     return isLineFF(getX(idx), getY(idx), direction, color, arr);
 }
+
+
+function isLineFFNode(x, y, direction, arr, node) {
+
+    let color = 1;
+    let st = 0;
+    let ed = 0;
+    let i;
+
+    for (i = -1; i > -4; i--) {
+        if (getArrValue(x, y, i, direction, arr) != color) {
+            break;
+        }
+    }
+    st = i + 1;
+
+    for (i = 1; i < 4 + st; i++) {
+        if (getArrValue(x, y, i, direction, arr) != color) {
+            break;
+        }
+    }
+    ed = i - 1;
+    //console.log("st="+ st + "   ed=" + ed)
+    switch (ed - st) {
+        case 0:
+            if (getArrValue(x, y, -4, direction, arr) == color && getArrValue(x, y, 4, direction, arr) == color && getArrValue(x, y, -3, direction, arr) == color && getArrValue(x, y, 3, direction, arr) == color && getArrValue(x, y, -2, direction, arr) == color && getArrValue(x, y, 2, direction, arr) == color && getArrValue(x, y, -1, direction, arr) == 0 && getArrValue(x, y, 1, direction, arr) == 0) {
+                if (getArrValue(x, y, -5, direction, arr) != color && getArrValue(x, y, 5, direction, arr) != color) {
+                    node.txt = EMOJI_FOUL;
+                    node.lines.push({
+                        start: getArrIndex(x, y, -4, direction, arr),
+                        end: getArrIndex(x, y, 4, direction, arr),
+                        color: "red",
+                        type: undefined
+                    });
+                    return true;
+                }
+            }
+            break;
+        case 1:
+            if (getArrValue(x, y, -3 + st, direction, arr) == color && getArrValue(x, y, 3 + ed, direction, arr) == color && getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
+                if (getArrValue(x, y, -4 + st, direction, arr) != color && getArrValue(x, y, 4 + ed, direction, arr) != color) {
+                    node.txt = EMOJI_FOUL;
+                    node.lines.push({
+                        start: getArrIndex(x, y, -3 + st, direction, arr),
+                        end: getArrIndex(x, y, 3 + ed, direction, arr),
+                        color: "red",
+                        type: undefined
+                    });
+                    return true;
+                }
+            }
+            break;
+        case 2:
+            if (getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
+                if (getArrValue(x, y, -3 + st, direction, arr) != color && getArrValue(x, y, 3 + ed, direction, arr) != color) {
+                    node.txt = EMOJI_FOUL;
+                    node.lines.push({
+                        start: getArrIndex(x, y, -2 + st, direction, arr),
+                        end: getArrIndex(x, y, 2 + ed, direction, arr),
+                        color: "red",
+                        type: undefined
+                    });
+                    return true;
+                }
+            }
+            break;
+        case 3:
+
+    }
+
+    return false;
+}
+
 
 
 
@@ -3256,7 +3674,7 @@ function blockCatchFoul(arr) {
     // 找出这些抓的防点，排除先手防
     let bPoint = getBlockVCF(fPoint, 2, arr, true);
     if (bPoint) {
-        post("cleLb", {idx:"all"});
+        post("cleLb", { idx: "all" });
         let fourP = fPoint[0]; // 冲四点
         let x = getX(fourP);
         let y = getY(fourP);
@@ -3285,17 +3703,17 @@ function blockCatchFoul(arr) {
                     x = getX(bPoint[i]);
                     y = getY(bPoint[i]);
                     arr[y][x] = 1; // 反防 : 禁解禁;
-                    s = isFour(getX(foulP), getY(foulP), 1, arr) && (threeP.indexOf(bPoint[i]) > -1) ? "■" : "◎";
+                    s = isFour(getX(foulP), getY(foulP), 1, arr) && (threeP.indexOf(bPoint[i]) > -1) ? EMOJI_SQUARE_BLACK : EMOJI_ROUND_DOUBLE;
                     arr[y][x] = 0;
                 }
                 color = "black";
             }
             else { // 双防点
-                s = "○";
+                s = EMOJI_ROUND;
                 color = "black";
             }
             notBlock = false;
-            post("wLb", {idx:bPoint[i], text:s, color:color});
+            post("wLb", { idx: bPoint[i], text: s, color: color });
             node.childNode.push(new Node(bPoint[i], node));
             node.childNode[node.childNode.length - 1].txt = s;
         }
@@ -3303,18 +3721,18 @@ function blockCatchFoul(arr) {
     else {
         bPoint = []; // 没有防点，bPoint 从false改为空数组
     }
-    
+
     if (!notBlock) {
         node.firstColor = "black";
         post("addTree", { node: node });
     }
 
 
-    post("showLabel", {text:`开始计算 先手防 ......`, timeout:2000});
+    post("showLabel", { text: `开始计算 先手防 ......`, timeout: 2000 });
     let fMoves = []; //  保存先手连续冲四分支
     continueFour(arr, 1, 6, fMoves, getArr([]));
-    movesSort(fMoves,(a,b)=>{return a>=b;})
-    
+    movesSort(fMoves, (a, b) => { return a >= b; })
+
     // 分析先手增加防点，(先手直接解禁&先手用白子解禁,必增加防点)
     const LEN = fMoves.length;
     let x;
@@ -3331,8 +3749,8 @@ function blockCatchFoul(arr) {
         }
 
         // 打印正在计算的点
-        post("printSearchPoint", {workerIdx:workerIdx, idx:fMoves[k][0], text:"⊙", color:"green"});
-        post("showLabel", {text:`${LEN-k}/${LEN} [${moveIndexToName(fMoves[k],20)}]`, timeout:500000});
+        post("printSearchPoint", { workerIdx: workerIdx, idx: fMoves[k][0], text: "⊙", color: "green" });
+        post("showLabel", { text: `${LEN-k}/${LEN} [${moveIndexToName(fMoves[k],20)}]`, timeout: 500000 });
         // 扫描防点
         let lvl = getLevel(arr, 2)
         let blk = [];
@@ -3369,17 +3787,17 @@ function blockCatchFoul(arr) {
                     let nd;
                     idx = fMoves[k][0];
                     //post("printSearchPoint",{workerIdx:workerIdx}); // 清空刚才计算的点
-                    post("wLb", {idx:idx, text:"○", color:"black"});
+                    post("wLb", { idx: idx, text: EMOJI_ROUND, color: "black" });
                     nd = movesToNode(fMoves[k], node);
                     if (nBlk) {
                         nd.childNode.push(new Node(blk[i], nd));
                         nd = nd.childNode[nd.childNode.length - 1];
                     }
-                    nd.txt = "○";
+                    nd.txt = EMOJI_ROUND;
                     let pNode = nd.parentNode;
                     while (pNode && pNode != node) {
                         if (pNode.txt) break;
-                        pNode.txt = "○";
+                        pNode.txt = EMOJI_ROUND;
                         pNode = pNode.parentNode;
                     }
                     i = -1;
@@ -3418,7 +3836,7 @@ function blockCatchFoul(arr) {
 
     }
     //post("printSearchPoint",{workerIdx:workerIdx}); // 清空刚才计算的点
-    
+
     return [notBlock ? 0 : 1];
 
 }
@@ -3447,6 +3865,26 @@ function findFoulPoint(arr, newarr, setnum) {
     }
 
 }
+
+
+
+function findFoulNode(arr) {
+    let node = new Node();
+    node.autoColor = "black";
+    for (let y = 0; y < 15; y++) {
+        for (let x = 0; x < 15; x++) {
+            if (arr[y][x] == 0) {
+                let nd = new Node(x+y*15,node);
+                isFoulNode(x, y, arr, nd);
+                if (nd.txt || nd.lines && nd.lines.length){
+                    node.childNode.push(nd);
+                }
+            }
+        }
+    }
+    return node;
+}
+
 
 
 function findSixPoint(arr, color, newarr, setnum) {
@@ -3821,7 +4259,7 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
         if (!stopFind && newarr[y][x] == 0) {
 
             arr[y][x] = color;
-            if (!backstage) post("printSearchPoint", {workerIdx:workerIdx,idx:pnt.index[i], text:"⊙", color:"green"});
+            if (!backstage) post("printSearchPoint", { workerIdx: workerIdx, idx: pnt.index[i], text: "⊙", color: "green" });
 
             let level = getLevelB(arr, color, undefined, fType == ONLY_SIMPLE_WIN ? 1 : depth, num == 9999 ? 9999 : num - 1);
             let nColor = color == 1 ? 2 : 1;
@@ -3836,9 +4274,9 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
                         if (!backstage) {
                             let txt = isThree(x, y, color, arr, true) ? "③" : "V" + (l < 100 ? String(l) : "++");
                             let txtColor = txt == "③" ? "red" : l <= 3 ? "red" : "black";
-                            post("printSearchPoint",{workerIdx:workerIdx});
-                            post("wLb", {idx:pnt.index[i], text:txt, color:txtColor});
-                            post("addThreePoint", {idx:pnt.index[i], point:{ txt: txt, txtColor: txtColor, moves: level.moves }});
+                            post("printSearchPoint", { workerIdx: workerIdx });
+                            post("wLb", { idx: pnt.index[i], text: txt, color: txtColor });
+                            post("addThreePoint", { idx: pnt.index[i], point: { txt: txt, txtColor: txtColor, moves: level.moves } });
                         }
                         threeP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
                     }
@@ -3848,8 +4286,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
 
                     if (fType == null) {
                         if (!backstage) {
-                            post("printSearchPoint",{workerIdx:workerIdx});
-                            post("wLb", {idx:pnt.index[i], text:"V", color:l > 3 ? "black" : "red"});
+                            post("printSearchPoint", { workerIdx: workerIdx });
+                            post("wLb", { idx: pnt.index[i], text: "V", color: l > 3 ? "black" : "red" });
                         }
                         if (l > 3) {
                             vcfP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
@@ -3861,8 +4299,8 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
                     else { // 进一步判断是否做V
                         if ((fType == ONLY_VCF && l > 3) || (fType == ONLY_SIMPLE_WIN && l == 3)) {
                             if (!backstage) {
-                                post("printSearchPoint",{workerIdx:workerIdx});
-                                post("wLb", {idx:pnt.index[i], text:"V", color:l > 3 ? "black" : "red"});
+                                post("printSearchPoint", { workerIdx: workerIdx });
+                                post("wLb", { idx: pnt.index[i], text: "V", color: l > 3 ? "black" : "red" });
                             }
                             if (l > 3) {
                                 vcfP.splice(0, 0, { idx: pnt.index[i], moves: level.moves });
@@ -3877,11 +4315,11 @@ function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, dep
             arr[y][x] = 0;
         }
         else {
-            if (!backstage) post("cleLb", {idx:pnt.index[i]});
+            if (!backstage) post("cleLb", { idx: pnt.index[i] });
         }
     }
 
-    if (!backstage) post("printSearchPoint",{workerIdx:workerIdx});
+    if (!backstage) post("printSearchPoint", { workerIdx: workerIdx });
 
     return threeP;
     return simpleP.concat(threeP, vcfP);
@@ -3967,8 +4405,8 @@ function isLevelThreePoint(idx, color, arr, fType) {
     arr[y][x] = 0;
 
     function postPoint(idx, txt, txtColor, moves) {
-        post("wLb", {idx:idx, text:txt, color:txtColor});
-        post("addThreePoint", {idx:idx, point:{ txt: txt, txtColor: txtColor, moves: moves }});
+        post("wLb", { idx: idx, text: txt, color: txtColor });
+        post("addThreePoint", { idx: idx, point: { txt: txt, txtColor: txtColor, moves: moves } });
     }
 }
 
@@ -4291,7 +4729,7 @@ function isTwoVCF(idx, color, arr) {
             movesSort(fMoves, (a, b) => { return a <= b; });
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
-                post("showLabel", {text:`${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, timeout:10000});
+                post("showLabel", { text: `${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, timeout: 10000 });
                 // 摆棋
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
                     let x = getX(fMoves[j][k]);
@@ -4304,10 +4742,10 @@ function isTwoVCF(idx, color, arr) {
 
                 notWin = !isTwoWin(arr, color, timeout, depth, nd);
                 if (notWin) {
-                    nd.txt = "○";
+                    nd.txt = EMOJI_ROUND;
                     let pNode = nd.parentNode;
                     while (pNode && pNode != node) {
-                        pNode.txt = "○";
+                        pNode.txt = EMOJI_ROUND;
                         pNode = pNode.parentNode;
                     }
                 }
@@ -4327,14 +4765,14 @@ function isTwoVCF(idx, color, arr) {
     arr[y][x] = 0;
     //console.log(pNum + "--"+idx);
     if (isAddTree) {
-        if (!pNum) node.childNode[0].txt = "○";
-        post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
+        if (!pNum) node.childNode[0].txt = EMOJI_ROUND;
+        post("wLb", { idx: idx, text: node.childNode[0].txt || "W", color: "black" });
         node.firstColor = color == 1 ? "black" : "white";
-        post("addTree", {node:node});
+        post("addTree", { node: node });
 
         if (true || pNum) {
             for (let i = keyMapList.length - 1; i >= 0; i--) {
-                post("addTreeKeyMap", {key:keyMapList[i].key, node:keyMapList[i].node});
+                post("addTreeKeyMap", { key: keyMapList[i].key, node: keyMapList[i].node });
             }
         }
 
@@ -4402,7 +4840,7 @@ function isTwoVCF(idx, color, arr) {
                     if (!(excludeBP(arr, color == 1 ? 2 : 1, bPoint, timeout, depth, node, winMoves))) {
                         //排除失败，双杀不成立
                         notWin = true;
-                        //node.txt = "○";
+                        //node.txt = EMOJI_ROUND;
                     }
                 }
                 return !notWin;
@@ -4520,7 +4958,7 @@ function isTwoVCF(idx, color, arr) {
     arr[y][x] = ov;
 
     if (isAddTree) {
-        if (!isW) node.childNode[0].txt = "○";
+        if (!isW) node.childNode[0].txt = EMOJI_ROUND;
         post("wLb", {idx:idx, text:node.childNode[0].txt || "W", color:"black"});
         node.firstColor = color == 1 ? "black" : "white";
         post("addTree", {node:node});
@@ -4582,10 +5020,10 @@ function isTwoVCF(idx, color, arr) {
                     keyMapList.push({ key: getKey(arr), node: nd });
                     notWin = !isTwoWin(color, arr, nd, moves);
                     if (notWin) {
-                        nd.txt = "○";
+                        nd.txt = EMOJI_ROUND;
                         let pNode = nd.parentNode;
                         while (pNode && pNode != node) {
-                            pNode.txt = "○";
+                            pNode.txt = EMOJI_ROUND;
                             pNode = pNode.parentNode;
                         }
                     }
@@ -4997,7 +5435,7 @@ function excludeBP(arr, color, bPoint, timeout, depth, node = new Node(), winMov
         if (fNum == 0) {
             //node.childNode = [];
             cNode[cNode.length] = new Node(y * 15 + x, node);
-            cNode[cNode.length - 1].txt = "○";
+            cNode[cNode.length - 1].txt = EMOJI_ROUND;
             rt = false;
         }
         else {
@@ -5059,15 +5497,15 @@ function isSimpleWin(idx, color, arr, num, level) {
             let nd = node.childNode[0];
             let winLevel = getWinLevelSimple(arr, color, timeout, 3, 2, nd);
             if (winLevel > 3) {
-                post("wLb", {idx:idx, text:"W", color:"black"});
+                post("wLb", { idx: idx, text: "W", color: "black" });
                 node.firstColor = color == 1 ? "black" : "white";
-                post("addTree", {node:node});
+                post("addTree", { node: node });
             }
             else if (winLevel == 3) {
-                nd.txt = "○";
-                post("wLb", {idx:idx, text:nd.txt, color:"black"});
+                nd.txt = EMOJI_ROUND;
+                post("wLb", { idx: idx, text: nd.txt, color: "black" });
                 node.firstColor = color == 1 ? "black" : "white";
-                post("addTree", {node:node});
+                post("addTree", { node: node });
             }
             arr[y][x] = 0;
         }
@@ -5112,7 +5550,7 @@ function isBlockVCF(idx, color, arr, backstage) {
         return false;
     }
     else {
-        if (!backstage) post("wLb", {idx:idx, text:"◎", color:"black"});
+        if (!backstage) post("wLb", { idx: idx, text: EMOJI_ROUND_DOUBLE, color: "black" });
         return true;
     }
 }
@@ -5124,7 +5562,7 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
     let paths = [];
     let len = path.length;
     let nColor = color == 1 ? 2 : 1;
-    post("showLabel", {text:`${speed} [${moveIndexToName(path,20)}]`, timeout:500000});
+    post("showLabel", { text: `${speed} [${moveIndexToName(path,20)}]`, timeout: 500000 });
     if (len == 1) {
         if (isBlockVCF(path[0], color, arr, true)) {
             paths.push(path.slice(0));
@@ -5166,8 +5604,8 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
         }
     }
     if (paths.length && !backstage) {
-        post("wLb", {idx:paths[0][0], text:"○", color:"black"});
-        post("showLabel", {text:`找到分支  [${moveIndexToName(path,20)}]`, timeout:500000});
+        post("wLb", { idx: paths[0][0], text: EMOJI_ROUND, color: "black" });
+        post("showLabel", { text: `找到分支  [${moveIndexToName(path,20)}]`, timeout: 500000 });
     }
     return paths;
 }
@@ -5176,7 +5614,7 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
 
 // 找VCF(活三级别)防点，返回一个数组,不存在防点返回 false
 // VCF 二维数组保存保存了 n 套color色VCF,
-function getBlockVCF(VCF, color, arr, passFour=false, idx=112) {
+function getBlockVCF(VCF, color, arr, passFour = false, idx = 112) {
     let p = [];
     let pnt = aroundPoint[idx];
     let len = VCF.length;
@@ -5296,7 +5734,7 @@ function getCancelVCF(VCF, color, arr, backstage, passFour, idx) {
                 if (color == 2 || !isFoul(x, y, arr)) {
                     // if color==1 then  blockColor==2
                     p.push(pnt.index[i]);
-                    if (!backstage) post("wLb", {idx:pnt.index[i], text: "◎", color:"black"});
+                    if (!backstage) post("wLb", { idx: pnt.index[i], text: EMOJI_ROUND_DOUBLE, color: "black" });
                 }
             }
         }
@@ -5355,14 +5793,14 @@ function getLevel(arr, color, num) {
         }; // 单冲4
     }
 
-    return num == 1 ?{
-            level: 0,
-            p: null
-        } :
-        {
-            level: 2,
-            p: null
-        };
+    return num == 1 ? {
+        level: 0,
+        p: null
+    } :
+    {
+        level: 2,
+        p: null
+    };
 
 }
 
@@ -5389,14 +5827,14 @@ function getLevelB(arr, color, timeout = 10000, depth = 100, num = 9999) {
     }
     else {
         return num == 2 ?
-            {
-                level: 0,
-                moves: null
-            } :
-            {
-                level: 2,
-                moves: null
-            };
+        {
+            level: 0,
+            moves: null
+        } :
+        {
+            level: 2,
+            moves: null
+        };
     }
 
 }
@@ -5449,12 +5887,12 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
                 /*
                 cNode[cNode.length] = new Node(y * 15 + x, node);
                 let nd = cNode[cNode.length - 1];
-                nd.txt = "○";
+                nd.txt = EMOJI_ROUND;
                 */
                 return 2;
             }
         }
-        
+
         let fNum = findVCF(arr, color, 1, maxNum - 2, timeout);
         if (fNum >= 1) { // 有(一套以上)两套V，判断双杀是否成立
             let notWin = false; //后续计算，如果双杀不成立==true
@@ -5484,10 +5922,10 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
                     winLevel = getWinLevelSimple(arr, color, timeout, maxNum - fMoves[j].length / 2, gDepth - 1, nd);
                     //console.log("_____"+winLevel)
                     if (winLevel < 3.5) {
-                        nd.txt = "○";
+                        nd.txt = EMOJI_ROUND;
                         let pNode = nd.parentNode;
                         while (pNode && pNode != node) {
-                            pNode.txt = "○";
+                            pNode.txt = EMOJI_ROUND;
                             pNode = pNode.parentNode;
                         }
                         notWin = true;
@@ -5588,7 +6026,7 @@ function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstag
     function printNewarr(newarr) {
         for (let y = 0; y < 15; y++) { // 
             for (let x = 0; x < 15; x++) {
-                if (newarr[y][x] == 0) post("wLb", {idx:y * 15 + x, text:"●", color:"#888888"});
+                if (newarr[y][x] == 0) post("wLb", { idx: y * 15 + x, text: EMOJI_ROUND_BLACK, color: "#888888" });
             }
         }
     }
@@ -5804,11 +6242,11 @@ function getArrValue(x, y, move, direction, arr) {
 
 
 
-function getArrValue_Idx(idx, arr) {
+function getArrValue_Idx(idx, move, direction, arr) {
 
     let x = getX(idx);
     let y = getY(idx);
-    return getArrValue(x, y, 0, DIRECTIONS[0], arr);
+    return getArrValue(x, y, move, direction, arr);
 }
 
 

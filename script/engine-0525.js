@@ -20,25 +20,29 @@ let engine = (() => {
     let treeKeyMap = new Map();
     let threePoints = null;
     let oldThreePoints = null;
-    let removeTree = () => {
+
+    function removeTree() {
         oldTree = cBd.oldCode == "" ? null : cBd.tree;
         oldCode = cBd.oldCode;
         cBd.oldCode = "";
         cBd.tree = new cBd.node();
         cBd.cleLb("all");
-    };
-    let addOldTree = (oldTree) => {
+    }
+
+    function addOldTree(oldTree) {
         if (oldTree) {
             cBd.oldCode = oldCode;
             cBd.tree = oldTree;
         }
-    };
-    let cleThreePoints = () => {
+    }
+
+    function cleThreePoints() {
         oldThreePoints = cBd.threePoints;
         cBd.cleThreePoints();
         cBd.cleLb("all");
-    };
-    let addThreePoint = (oldThreePoints) => {
+    }
+
+    function addThreePoint(oldThreePoints) {
         if (oldThreePoints && oldThreePoints.arr) {
             cBd.threePoints = oldThreePoints;
             for (let i = cBd.threePoints.points.length - 1; i >= 0; i--) {
@@ -47,8 +51,9 @@ let engine = (() => {
                 }
             }
         }
-    };
-    let setCmd = () => { //calculate start
+    }
+
+    function setCmd() { //calculate start
         cFP.hide();
         cVCF.hide();
         removeTree();
@@ -65,8 +70,9 @@ let engine = (() => {
         tree = null;
         treeKeyMap = new Map();
         threePoints = null;
-    };
-    let callback = () => { // calculate end
+    }
+
+    function callback() { // calculate end
         if (work && typeof(work.terminate) == "function") {
             work.terminate();
             work = null
@@ -100,27 +106,34 @@ let engine = (() => {
         closeMsg();
         saveContinueData();
         closeNoSleep();
-        if (isShowLabel) showLabel.show("点击标记 展开分支 点击 [<<] 可以退出");
-    };
-    let printMsg = () => {
+        if (isShowLabel) showLabel("点击标记 展开分支 点击 [<<] 可以退出");
+    }
+
+    function printMsg() {
         if (cObjVCF.winMoves.length) {
-            showLabel.show("✔ " + COLOR_TXT[cObjVCF.color] + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
+            showLabel("✔ " + COLOR_TXT[cObjVCF.color] + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
         }
         else {
-            showLabel.show("❌❌❌ " + COLOR_TXT[cObjVCF.color] + " 查找VCF失败了❌❌❌");
+            showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[cObjVCF.color]} 查找VCF失败了 ${EMOJI_FOUL_THREE}`);
         }
-    };
-    let cleLb = (idx) => {
+    }
+
+    function cleLb(idx) {
         cBd.cleLb(idx, false);
     }
-    let wLb = (idx, text, color) => {
+
+    function wLb(idx, text, color) {
         cBd.wLb(idx, text, color, undefined, false);
     }
-    let createWork = (commands, workerIdx = 0) => {
+
+    function createWork(commands, workerIdx = 0) {
 
         let defaultCmd = {
+            "addTree": (p) => {
+                tree = p.node;
+            },
             "showLabel": (p) => {
-                showLabel.show(p.text, p.timeout);
+                showLabel(p.text, p.timeout);
             },
             "vConsole": (p) => { console.log(p) },
             "cleLb": (p) => { cleLb(p.idx); },
@@ -131,8 +144,8 @@ let engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0520.js");
-        wk.postMessage({ cmd: "setWorkerIdx", parameter: {workerIdx: workerIdx} });
+        let wk = new Worker("./script/worker-0525.js");
+        wk.postMessage({ cmd: "setWorkerIdx", parameter: { workerIdx: workerIdx } });
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
             let cmd = e.data.cmd;
@@ -149,17 +162,8 @@ let engine = (() => {
         return wk;
     };
 
-    function label() {
-        this.isShowLabel = true;
-    }
-    label.prototype.show = function(txt, timer) {
-        if (!this.isShowLabel) return;
-        this.isShowLabel = false;
-        msgbox(txt, undefined, undefined, undefined, undefined, 0, timer);
-        let lb = this;
-        setTimeout(() => { lb.isShowLabel = true; }, 1500);
-    };
-    let showLabel = new label();
+
+
 
     return {
         reset: (param) => {
@@ -181,7 +185,7 @@ let engine = (() => {
             let cmdList = {
                 "cancelFind": () => {
                     for (let i = cBd.SLTX * cBd.SLTY - 1; i >= 0; i--) {
-                        if (typeof(cBd.P[i].text) == "number" || cBd.P[i].text == "●" || cBd.P[i].text == "⊙") {
+                        if (typeof(cBd.P[i].text) == "number" || cBd.P[i].text == EMOJI_ROUND_BLACK || cBd.P[i].text == "⊙") {
                             cleLb(i);
                         }
                     }
@@ -198,28 +202,28 @@ let engine = (() => {
                     addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findTTPoint(param.arr, 1, newarr);
-                    cBd.printArray(newarr, "❌", "red");
+                    cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFFPoint": () => {
                     addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFFPoint(param.arr, param.color, newarr);
-                    cBd.printArray(newarr, "❌", "red");
+                    cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findSixPoint": () => {
                     addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findSixPoint(param.arr, param.color, newarr, param.setnum);
-                    cBd.printArray(newarr, "❌", "red");
+                    cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFoulPoint": () => {
                     addThreePoint(oldThreePoints);
                     let newarr = getArr([]);
                     findFoulPoint(param.arr, newarr, param.setnum);
-                    cBd.printArray(newarr, "❌", "red");
+                    cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFivePoint": () => {
@@ -268,12 +272,12 @@ let engine = (() => {
                             findFivePoint(param.arr, param.color, newarr, param.setnum);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            showLabel.show(`${param.color==1?"黑棋" : "白棋"} 有五连点`);
+                            showLabel(`${param.color==1?"黑棋" : "白棋"} 有五连点`);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, param.color);
                             callback();
-                            showLabel.show(`${param.color==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param.color==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param.color==1?"活四":"活四(44,冲4抓)"}`}`);
+                            showLabel(`${param.color==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param.color==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param.color==1?"活四":"活四(44,冲4抓)"}`}`);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
@@ -294,9 +298,6 @@ let engine = (() => {
                 "blockCatchFoul": () => {
                     let lvl;
                     work = createWork({
-                        "addTree": (p) => {
-                            tree = p.node;
-                        },
                         "getLevelB_End": (p) => {
                             lvl = p.level;
                             continuefun();
@@ -304,10 +305,10 @@ let engine = (() => {
                         "blockCatchFoul_End": (p) => {
                             callback();
                             if (p.value == -1) {
-                                showLabel.show("❌❌❌ 没有找到冲四抓禁 ❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE} 没有找到冲四抓禁 ${EMOJI_FOUL_THREE}`);
                             }
                             else if (p.value == 0) {
-                                showLabel.show("❌❌❌ 没有成立的解禁点 ❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE} 没有成立的解禁点 ${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -318,17 +319,25 @@ let engine = (() => {
                             findFivePoint(param.arr, 1, newarr);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            showLabel.show(`${"黑棋"} 有五连点`);
+                            showLabel(`${"黑棋"} 有五连点`);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, 1);
                             callback();
-                            showLabel.show(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`);
+                            showLabel(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
                         }
                     };
+                },
+                "findFoulNode": () => {
+                    work = createWork({
+                        "findFoulNode_End": () => {
+                            callback();
+                        },
+                    });
+                    work.postMessage({ "cmd": cmd, parameter: param });
                 },
                 "findVCF": () => {
                     work = createWork({
@@ -425,13 +434,14 @@ let engine = (() => {
                             let y = pnt.point[i].y;
                             if (newarr[y][x] == 0) {
                                 sPoint.push(y * 15 + x);
-                                wLb(y * 15 + x, "●", "#888888");
+                                wLb(y * 15 + x, EMOJI_ROUND_BLACK, "#888888");
                             }
                             else {
                                 cleLb(y * 15 + x);
                             }
                         }
                         if (sPoint.length == 0) { callback(); return; };
+
                         function ctnPost(workerIdx, idx, cmd, param) {
                             cBd.printSearchPoint(workerIdx, idx, "⊙", "green");
                             param.idx = idx;
@@ -475,7 +485,7 @@ let engine = (() => {
                                             }
                                         }
                                     },
-                                },i);
+                                }, i);
                                 workCount++;
 
                                 let idx = sPoint.splice(0, 1)[0];
@@ -490,12 +500,12 @@ let engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel.show(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 //work.terminate();
                                 callback();
-                                showLabel.show("❌❌❌ " + COLOR_TXT[p.color] + " 没有VCF ❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCF_End": (p) => {
@@ -505,12 +515,12 @@ let engine = (() => {
                             sPoint = p.points;
                             if (sPoint.length) {
                                 for (let i = sPoint.length - 1; i >= 0; i--) {
-                                    cBd.wLb(sPoint[i], "◎", "black");
+                                    cBd.wLb(sPoint[i], EMOJI_ROUND_DOUBLE, "black");
                                 }
                             }
                             else {
                                 callback();
-                                showLabel.show("❌❌❌没有成立的防点❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -523,12 +533,12 @@ let engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel.show(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 //work.terminate();
                                 callback();
-                                showLabel.show("❌❌❌ " + COLOR_TXT[p.color] + " 没有VCF ❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE} ${OR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCFb_End": (p) => {
@@ -536,14 +546,14 @@ let engine = (() => {
                             sPoint = p.points;
                             if (sPoint.length) {
                                 for (let i = 0; i < sPoint.length; i++) {
-                                    wLb(sPoint[i], "●", "#888888");
+                                    wLb(sPoint[i], EMOJI_ROUND_BLACK, "#888888");
                                 }
-                                showLabel.show(COLOR_TXT[p.color-1] + "开始验证防点...... ");
+                                showLabel(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
                                 excludeBP("isBlockVCF");
                             }
                             else {
                                 callback();
-                                showLabel.show("❌❌❌没有成立的防点❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -574,7 +584,7 @@ let engine = (() => {
                                             }
                                         }
                                     },
-                                },i);
+                                }, i);
                                 workCount++;
                                 let idx = sPoint.splice(0, 1)[0];
                                 ctnPost(i, idx, cmd, param);
@@ -589,11 +599,11 @@ let engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel.show(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 callback();
-                                showLabel.show("❌❌❌ " +COLOR_TXT[p.color] + " 没有VCF ❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCFTree_End": (p) => {
@@ -601,14 +611,14 @@ let engine = (() => {
                             paths = p.paths;
                             if (paths.length) {
                                 for (let i = 0; i < paths.length; i++) {
-                                    wLb(paths[i][0], "●", "#888888");
+                                    wLb(paths[i][0], EMOJI_ROUND_BLACK, "#888888");
                                 }
-                                showLabel.show(COLOR_TXT[p.color-1] + "开始验证防点...... ");
+                                showLabel(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
                                 excludePath("isBlockVCFPath");
                             }
                             else {
                                 callback();
-                                showLabel.show("❌❌❌没有成立的防点❌❌❌");
+                                showLabel(`${EMOJI_FOUL_THREE}有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -635,12 +645,12 @@ let engine = (() => {
                                             }
                                             for (let i = p.paths.length - 1; i >= 0; i--) {
                                                 let nd = movesToNode(p.paths[i], tree);
-                                                nd.txt = "○";
+                                                nd.txt = EMOJI_ROUND;
                                                 let pNode = nd.parentNode;
 
                                                 while (pNode && pNode != tree) {
                                                     if (pNode.txt) break;
-                                                    pNode.txt = "○";
+                                                    pNode.txt = EMOJI_ROUND;
                                                     pNode = pNode.parentNode;
                                                 }
                                             }
@@ -657,7 +667,7 @@ let engine = (() => {
                                             }
                                         }
                                     },
-                                },i);
+                                }, i);
                                 workCount++;
                                 let path = paths.splice(0, 1)[0];
                                 ctnPost(i, path, cmd, param);

@@ -183,6 +183,7 @@ function checkerBoard(parentNode, left, top, width, height) {
     this.notShowLastNum = false; // = true ,取消最后一手高亮显示
     this.alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     this.printMovesTimer = 0;
+    this.autoColor = undefined;
 
     this.XL = 0; //棋盘落子范围，左右上下的4条边
     this.XR = 0;
@@ -352,6 +353,8 @@ checkerBoard.prototype.addTree = function(tree) {
     this.oldCode = code; //要放在循环之后，不要改变顺序
     console.log(tree);
     this.tree = tree || new this.node();
+    this.autoColor = this.tree.autoColor;
+    console.log(`addTrue ${this.autoColor}`)
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
 
@@ -699,7 +702,7 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
 
 
 
-// 左右 翻转棋盘90°
+// 左右 翻转棋盘180°
 checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
     if (this.oldCode || this.threePoints.arr) {
@@ -1203,7 +1206,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
         s.zIndex = 0;
         this.startIdx = idx;
         this.drawLine.startPoint.setAttribute("class", "startPoint");
-        
+
         let x = idx % this.SLTX;
         let y = parseInt(idx / this.SLTX);
         let lw = x;
@@ -1252,7 +1255,7 @@ checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
             s.zIndex = 0;
             //console.log(`left=${s.left}, top=${s.top}, width=${s.width}, height=${s.height}`)
         }
-        
+
         this.selectIdx = findIdx(this.ARROWS, idx);
         let mk = null;
         if (this.selectIdx + 1) {
@@ -1406,6 +1409,14 @@ checkerBoard.prototype.flipY = function(arrobj) {
 
 
 
+checkerBoard.prototype.getAutoColor = function(msIndex) {
+    let i = msIndex > -1 ? msIndex : this.MSindex;
+    const AUTOCOLOR = this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
+    return this.autoColor || AUTOCOLOR;
+}
+
+
+
 //判断用户点击了棋盘上面的哪一个点，在返回这个点的index
 checkerBoard.prototype.getPIndex = function(x, y) {
 
@@ -1549,14 +1560,14 @@ checkerBoard.prototype.autoPut = function() {
             idx = i * this.SLTX + j;
             if (Math.abs(arr[i][j] - max) < (wBoard || max > 250 ? 20 : 50)) {
                 //arr[i][j] = 2;
-                this.P[idx].printNb("★", "white", this.gW, this.gH, this.wNumColor);
+                this.P[idx].printNb(EMOJI_STAR_BLACK, "white", this.gW, this.gH, this.wNumColor);
             }
             else if (Math.abs(arr[i][j] - min) < (wBoard || min < 5 ? 30 : 60)) {
                 //arr[i][j] = 1;
-                this.P[idx].printNb("★", "black", this.gW, this.gH, this.bNumColor);
+                this.P[idx].printNb(EMOJI_STAR_BLACK, "black", this.gW, this.gH, this.bNumColor);
             }
             else if (test) {
-                this.P[idx].printNb("▲", "black", this.gW, this.gH, this.bNumColor);
+                this.P[idx].printNb(EMOJI_TRIANGLE_BLACK, "black", this.gW, this.gH, this.bNumColor);
             }
         }
     }
@@ -1893,7 +1904,7 @@ checkerBoard.prototype.getSVG = function() {
             let code = txt.charCodeAt();
             // 再把一位数字排除
             if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                if (txt == "▲" || txt == "■" || txt == "☆" || txt == "◎" || txt == "✖") {
+                if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
                     fontsize = parseInt(w * 1.1);
                 }
                 else if (txt == "◤") {
@@ -2914,7 +2925,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
             let code = txt.charCodeAt();
             // 再把一位数字排除
             if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                if (txt == "▲" || txt == "■" || txt == "☆" || txt == "◎" || txt == "✖") {
+                if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
                     fontsize = w * 1.1;
                 }
                 else if (txt == "◤") {
@@ -2966,7 +2977,7 @@ checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) 
                 break;
 
         }
-        if (txt == "❌") { // 不支持的字符
+        if (txt == EMOJI_FOUL) { // 不支持的字符
             txt = "×";
             doc.setTextColor(255, 0, 0);
         }
@@ -3025,7 +3036,7 @@ checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, ba
         let code = text.charCodeAt();
         // 再把一位数字排除
         if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-            if (text == "▲" || text == "■" || text == "☆" || text == "◎" || text == "✖") {
+            if (text == EMOJI_TRIANGLE_BLACK || text == EMOJI_SQUARE_BLACK || text == EMOJI_STAR || text == EMOJI_ROUND_DOUBLE || text == EMOJI_FORK) {
                 ctx.font = "bolder " + parseInt(w * 1.1) + "px  mHeiTi";
             }
             else { // 把数字和特殊标记排除，其它一位字符统一放大字体
@@ -3062,7 +3073,7 @@ checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, b
             txt = parseInt(txt) < 1 ? "" : txt;
             txt = showNum ? txt : "";
         }
-        this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
+        this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum, undefined, true);
     }
     else { //this.P[idx].type == TYPE_MARK;
         this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
@@ -3086,26 +3097,26 @@ checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
         //this.refreshMarkArrow(this.searchIdx[num]);
         //this.searchPoints[num].innerHTML = "";
         this.searchPoints[num].setAttribute("class", "");
-        if(this.searchPoints[num] && this.searchPoints[num].parentNode) this.searchPoints[num].parentNode.removeChild(this.searchPoints[num])
+        if (this.searchPoints[num] && this.searchPoints[num].parentNode) this.searchPoints[num].parentNode.removeChild(this.searchPoints[num])
     }
     //写入新标记
     if (idx > -1) {
         this.searchIdx[num] = idx;
-        temp = 1.3*((this.gW < this.gH) ? this.gW : this.gH);
+        temp = 1.3 * ((this.gW < this.gH) ? this.gW : this.gH);
         size = parseInt(temp / 9);
         this.searchPoints[num].innerHTML = "";
         this.searchPoints[num].style.fontSize = size + "px";
         this.searchPoints[num].style.color = color;
         this.searchPoints[num].style.position = "absolute";
         this.searchPoints[num].style.backgroundColor = this.backgroundColor;
-        this.searchPoints[num].style.width = temp/9 + "px";
-        this.searchPoints[num].style.height = temp/9 + "px";
-        this.searchPoints[num].style.lineHeight = temp/9 + "px";
+        this.searchPoints[num].style.width = temp / 9 + "px";
+        this.searchPoints[num].style.height = temp / 9 + "px";
+        this.searchPoints[num].style.lineHeight = temp / 9 + "px";
         this.searchPoints[num].style.textAlign = "center";
         this.searchPoints[num].style.padding = "";
         this.searchPoints[num].style.margin = "";
         this.searchPoints[num].style.borderStyle = "solid";
-        this.searchPoints[num].style.borderWidth = temp/9 + "px";
+        this.searchPoints[num].style.borderWidth = temp / 9 + "px";
         this.searchPoints[num].style.borderColor = "green";
         this.searchPoints[num].style.left = this.P[idx].x - parseInt(temp / 6) + this.canvas.offsetLeft + "px";
         this.searchPoints[num].style.top = this.P[idx].y - parseInt(temp / 6) + this.canvas.offsetTop + "px";
@@ -3331,6 +3342,8 @@ checkerBoard.prototype.removeTree = function() {
 
     function removeT() {
         this.firstColor = "black";
+        this.autoColor = undefined;
+        console.log(`removeTrue ${this.autoColor}`)
         this.oldCode = "";
         this.tree = new this.node();
         this.cleLb("all");
@@ -3411,7 +3424,7 @@ checkerBoard.prototype.saveAsPDF = function(fontName) {
 
 
     if (typeof jsPDF != "function") {
-        msgbox("❌❌❌ 缺少 jsPDF 插件", undefined, undefined, undefined, undefined, 0);
+        showLabel(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
         return;
     }
 
@@ -3908,14 +3921,14 @@ checkerBoard.prototype.showFoul = function(display, notChange) {
                     this.P[idx].color = "red";
                     this.P[idx].bkColor = null;
                     this.P[idx].type = TYPE_MARK_FOUL;
-                    this.P[idx].text = "❌";
+                    this.P[idx].text = EMOJI_FOUL
                     this.refreshMarkLine(idx);
                     this.printPointB(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
                     this.refreshMarkArrow(idx);
                 }
             }
         }
-        //cBoard.printArray(newarr, "❌", "red");
+        //cBoard.printArray(newarr, EMOJI_FOUL "red");
     }
     if (!notChange) cBoard.isShowFoul = display;
     //}, 100);
@@ -4205,13 +4218,14 @@ checkerBoard.prototype.unpackTree = function() {
         let moveNodes = this.tree.moveNodes;
         let moveNodesIndex = this.tree.moveNodesIndex;
         //this.timerUnpackTree 
-        
+
         this.unpacking = true;
         this.cleLb("all");
+        this.removeMarkLine("all");
         let arr = this.getPointArray(getArr([]));
         let newarr = getArr([]);
         findFoulPoint(arr, newarr);
-        this.printArray(newarr, "❌", "red");
+        if (!this.autoColor) this.printArray(newarr, EMOJI_FOUL, "red");
         let nd;
         let txt = MSindex % 2 ? "W" : "L";
         let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
@@ -4259,7 +4273,7 @@ checkerBoard.prototype.unpackTree = function() {
                     if (lvl.level >= 4 && lvl.p) {
                         //console.log(moveNodes[moveNodes.length - 1])
                         nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
-                        let cNd = getChildNode(moveNodes[moveNodes.length - 1],this.MS[this.MSindex]);
+                        let cNd = getChildNode(moveNodes[moveNodes.length - 1], this.MS[this.MSindex]);
                         txt = cNd ? cNd.txt : "?";
                         nd.childNode[0].txt = txt;
                         printChildNode.call(this, nd, txt);
@@ -4298,10 +4312,12 @@ checkerBoard.prototype.unpackTree = function() {
         this.tree.moveNodesIndex = MSindex;
         this.unpacking = false;
 
+
         function printChildNode(node, txt) {
             //alert("p")
+            printLines.call(this, node.lines);
             for (let i = node.childNode.length - 1; i >= 0; i--) {
-                this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, "black");
+                this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");
             }
             /*
             if (!(MSindex % 2) && lvl.level < 4) {
@@ -4311,24 +4327,30 @@ checkerBoard.prototype.unpackTree = function() {
             }
             */
         }
-        
+
+        function printLines(lines = []) {
+            for (let i = lines.length - 1; i >= 0; i--) {
+                this.createMarkLine(lines[i].start, lines[i].end, lines[i].color);
+            }
+        }
+
         function getTxT(node, idx) {
             let txt;
-            for (let i=node.childNode.length-1; i>=0; i--) {
-                if (node.childNode[i].idx==idx) {
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                if (node.childNode[i].idx == idx) {
                     txt = node.childNode[i].txt;
                     break;
                 }
             }
             return txt;
         }
-        
+
         function getChildNode(node, idx) {
             for (let i = node.childNode.length - 1; i >= 0; i--) {
                 if (node.childNode[i].idx == idx) return node.childNode[i];
             }
         }
-        //}, 100);
+
     }
 }
 
@@ -4411,8 +4433,8 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     if (this.oldCode) {
         if (color != "auto") return;
     }
-    let c = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
-    if (isFoulPoint && c == "black") return;
+    let c = color == "auto" ? this.getAutoColor(i) : color;
+    if (isFoulPoint && c == "black" && !this.autoColor) return;
     this.cletLbMoves();
     if (color == "auto" || type == TYPE_NUMBER) { // 顺序添加棋子
 
@@ -4425,9 +4447,9 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
         this.MS[i] = idx; //顺序添加的棋子 记录下来
 
     }
-    color = color == "black" ? this.bNumColor : color == "white" ? this.wNumColor : color;
-    this.P[idx].color = color != "auto" ? color : this.firstColor == "black" ? ((i % 2) ? this.wNumColor : this.bNumColor) : ((i % 2) ? this.bNumColor : this.wNumColor);
-    this.P[idx].type = type == null ? color == "auto" ? TYPE_NUMBER : color == this.wNumColor ? TYPE_WHITE : TYPE_BLACK : type;
+
+    this.P[idx].color = c == "black" ? this.bNumColor : this.wNumColor;
+    this.P[idx].type = type == null ? color == "auto" ? TYPE_NUMBER : c == this.wNumColor ? TYPE_WHITE : TYPE_BLACK : type;
     this.P[idx].text = this.P[idx].type == TYPE_NUMBER ? String(i + 1) : "";
     let txt = this.P[idx].text;
     if (this.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
@@ -4435,15 +4457,11 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
         txt = parseInt(txt) < 1 ? "" : txt;
         txt = showNum ? txt : "";
     }
-    //this.refreshMarkLine(idx);
+
     this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
     if (this.threePoints.arr) this.cleThreePoints();
     this.refreshMarkArrow(idx);
     this.autoShow();
-    /*
-    this.showFoul(this.isShowFoul);
-    this.unpackTree();
-    */
 };
 
 

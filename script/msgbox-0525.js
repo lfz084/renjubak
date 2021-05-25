@@ -200,3 +200,13 @@
  function closeMsg(timer) {
      msgWindow.closeMsg(timer);
  }
+ 
+ let showLabel = (() => {
+     let isShowLabel = true;
+     return (txt, timer) => {
+         if (!isShowLabel) return;
+         isShowLabel = false;
+         msgbox(txt, undefined, undefined, undefined, undefined, 0, timer);
+         setTimeout(() => { isShowLabel = true; }, 1500);
+     };
+ })();

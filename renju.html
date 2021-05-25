@@ -19,13 +19,13 @@
     <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/viewport0228.js" as="script">
-    <link rel="preload" href="./script/button-0520.js" as="script">
-    <link rel="preload" href="./script/engine-0520.js" as="script">
+    <link rel="preload" href="./script/button-0525.js" as="script">
+    <link rel="preload" href="./script/engine-0525.js" as="script">
     <link rel="preload" href="./script/appData-0109.js" as="script">
-    <link rel="preload" href="./script/control-0520.js" as="script">
-    <link rel="preload" href="./script/msgbox-0521.js" as="script">
-    <link rel="preload" href="./script/checkerBoard-0520.js" as="script">
-    <link rel="preload" href="./script/worker-0520.js" as="script">
+    <link rel="preload" href="./script/control-0525.js" as="script">
+    <link rel="preload" href="./script/msgbox-0525.js" as="script">
+    <link rel="preload" href="./script/checkerBoard-0525.js" as="script">
+    <link rel="preload" href="./script/worker-0525.js" as="script">
     <link rel="preload" href="./script/jsPDF/jspdf.umd_01.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCMedium.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCHeavy.js" as="script">
@@ -35,13 +35,13 @@
 
 <body>
     <script src="./script/viewport0228.js"></script>
-    <script src="./script/button-0520.js"></script>
-    <script src="./script/engine-0520.js"></script>
+    <script src="./script/button-0525.js"></script>
+    <script src="./script/engine-0525.js"></script>
     <script src="./script/appData-0109.js"></script>
-    <script src="./script/control-0520.js"></script>
-    <script src="./script/msgbox-0521.js"></script>
-    <script src="./script/checkerBoard-0520.js"></script>
-    <script src="./script/worker-0520.js"></script>
+    <script src="./script/control-0525.js"></script>
+    <script src="./script/msgbox-0525.js"></script>
+    <script src="./script/checkerBoard-0525.js"></script>
+    <script src="./script/worker-0525.js"></script>
     <script src="./script/NoSleep.min.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
     <script src="./script/jsPDF/jspdf.umd_01.js"></script>
@@ -536,7 +536,7 @@
                     cBoard.P[idx].cle();
                 }
                 else {
-                    cBoard.P[idx].printNb("★", color, cBoard.gW, cBoard.gH, color == "white" ? cBoard.wNumColor : cBoard.bNumColor);
+                    cBoard.P[idx].printNb(EMOJI_STAR_BLACK, color, cBoard.gW, cBoard.gH, color == "white" ? cBoard.wNumColor : cBoard.bNumColor);
                 }
             }
         }
@@ -544,7 +544,7 @@
 
         function canvasDblClick(x, y) {
 
-            if (control.getPlayModel() == control.renjuModel) {
+            if (control.getPlayModel() != control.imgModel) {
                 if (event.type == "dblclick") {
                     control.renjuDblClick(event.pageX, event.pageY);
                 }

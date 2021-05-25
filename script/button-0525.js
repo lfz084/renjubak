@@ -1,4 +1,5 @@
   "use strict";
+  
   const ANIMATION_TIMEOUT = 300;
   // 定制按钮，button，file，Radio，select。
   function button(parentNode, type, left, top, width, height) {
