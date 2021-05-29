@@ -357,6 +357,8 @@ checkerBoard.prototype.addTree = function(tree) {
     console.log(`addTrue ${this.autoColor}`)
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
+    let exWindow = control.getEXWindow();
+    exWindow.openWindow();
 
     /*
       this.tree.childNode.push({ idx: 1, node: new node() });
@@ -1864,6 +1866,9 @@ checkerBoard.prototype.getSVG = function() {
         }
     }
 
+    svgText += getDrawLines.call(this, this.LINES);
+    svgText += getDrawLines.call(this, this.autoLines);
+
     // 打印棋子，和标记
     for (let i = 0; i < this.SLTY * this.SLTX; i++) {
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
@@ -1922,8 +1927,50 @@ checkerBoard.prototype.getSVG = function() {
         svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
     }
 
+    svgText += getDrawArrow.call(this, this.ARROWS);
+
     svgText += "</svg>";
     return svgText;
+
+    function getDrawLines(lines) {
+        if (!lines) return;
+        let x1, x2, y1, y2;
+        let rtTxt = "";
+        let lineWidth = this.gW / 8 * size;
+        for (let i = 0; i < lines.length; i++) {
+            let points = this.getMarkLinePoints(lines[i]);
+            x1 = points.line[0].x * size;
+            x2 = points.line[1].x * size;
+            y1 = points.line[0].y * size;
+            y2 = points.line[1].y * size;
+            rtTxt += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lines[i].color}" stroke-width="${lineWidth}" />`;
+            //` <polygon points="${points.line[0].x},${points.line[0].y} ${points.line[1].x},${points.line[1].y}" style="fill:${lines[i].color}"/>`;
+        }
+        return rtTxt;
+    }
+
+    function getDrawArrow(arrows) {
+        if (!arrows) return;
+        let x1, x2, x3, y1, y2, y3;
+        let rtTxt = "";
+        let lineWidth = this.gW / 8 * size;
+        for (let i = 0; i < arrows.length; i++) {
+            let points = this.getMarkArrowPoints(arrows[i]);
+            x1 = points.line[0].x * size;
+            x2 = points.line[1].x * size;
+            y1 = points.line[0].y * size;
+            y2 = points.line[1].y * size;
+            rtTxt += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${arrows[i].color}" stroke-width="${lineWidth}" />`;
+            x1 = points.arrow[0].x * size;
+            x2 = points.arrow[1].x * size;
+            x3 = points.arrow[2].x * size;
+            y1 = points.arrow[0].y * size;
+            y2 = points.arrow[1].y * size;
+            y3 = points.arrow[2].y * size;
+            rtTxt += ` <polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3}" style="fill:${arrows[i].color}"/>`;
+        }
+        return rtTxt;
+    }
 };
 
 
@@ -2166,24 +2213,21 @@ checkerBoard.prototype.printThreePointMoves = function(idx) {
 
 
 
-checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
+checkerBoard.prototype.getMarkArrowPoints = function(markArrow, idx, cleArrow) {
 
     const SIN45 = 0.707105;
-    let ctx = this.canvas.getContext("2d");
-    ctx.strokeStyle = markArrow.color;
-    ctx.lineWidth = this.gW / 8;
-    ctx.lineWidth *= cleArrow ? 1.6 : 1;
-    ctx.beginPath();
     let x = this.P[markArrow.P[0]].x;
     let y = this.P[markArrow.P[0]].y;
     let w = this.gW * 1.07 / 2;
     let h = this.gH * 1.07 / 2;
+    let points = {
+        line: [],
+        arrow: [],
+    };
     if (idx == undefined || idx == null) {
-        //console.log(`x=${x}, y=${y}`)
-        ctx.moveTo(x, y);
+        points.line.push({ x: x, y: y });
         x = this.P[markArrow.P[markArrow.P.length - 1]].x;
         y = this.P[markArrow.P[markArrow.P.length - 1]].y;
-        //console.log(`x=${x}, y=${y}`)
         switch (markArrow.direction) {
             case 1:
                 x += w;
@@ -2214,9 +2258,8 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
                 y -= h;
                 break;
         }
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        pArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
+        points.line.push({ x: x, y: y });
+        points.arrow = getArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
     }
     else {
         if (markArrow.P.indexOf(idx) == -1) return;
@@ -2338,23 +2381,24 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
                 y2 = y - h - 1;
             }
         }
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        if (idx == markArrow.P[markArrow.P.length - 1]) pArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
+        points.line.push({ x: x1, y: y1 });
+        points.line.push({ x: x2, y: y2 });
+        if (idx == markArrow.P[markArrow.P.length - 1]) points.arrow = getArrow(this, markArrow.P[markArrow.P.length - 1], markArrow.color, markArrow.direction);
     }
-    ctx.strokeStyle = "black";
+    return points;
 
 
-    function pArrow(cBd, idx, color, direction) {
+    function getArrow(cBd, idx, color, direction) {
 
         let x1, x2, y1, y2;
         let tx, ty;
+        let arrow = [];
+        let lineWidth = cBd.gW / 8;
+        lineWidth *= cleArrow ? 1.6 : 1;
         let arrowWidth = direction % 2 ? cBd.gW * 0.8 * SIN45 : cBd.gW * 0.8;
-        let arrowHeight = direction % 2 ? ctx.lineWidth * 4 * SIN45 : ctx.lineWidth * 4;
+        let arrowHeight = direction % 2 ? lineWidth * 4 * SIN45 : lineWidth * 4;
         arrowWidth += cleArrow ? 1 : 0;
         arrowHeight += cleArrow ? 1 : 0;
-        ctx.beginPath();
         switch (direction) {
             case 0:
                 x1 = x2 = cBd.P[idx].x + arrowWidth;
@@ -2409,45 +2453,52 @@ checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
                 y2 = ty + arrowHeight / 2;
                 break;
         }
-        ctx.moveTo(cBd.P[idx].x, cBd.P[idx].y);
-        ctx.lineTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.lineTo(cBd.P[idx].x, cBd.P[idx].y);
-        ctx.fillStyle = ctx.strokeStyle;
-        ctx.fill();
-        //console.log(`x1=${x1}, y1=${y1}, x2=${x2}, y2${y2}`)
-        //ctx.stroke();
+        arrow.push({ x: cBd.P[idx].x, y: cBd.P[idx].y });
+        arrow.push({ x: x1, y: y1 });
+        arrow.push({ x: x2, y: y2 });
+        return arrow;
     }
 
 }
 
 
 
-checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
-    /*
-    if (idx == undefined || idx == null) {
-        for (let i = markLine.P.length - 1; i >= 0; i--) {
-            //this.clePointB(markLine.P[i]);
-            this.refreshMarkLine(markLine.P[i]);
-        }
-    }
-    else {
-        //this.clePointB(idx);
-    }
-    */
+checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
+
+    let arrowDrawPoints = this.getMarkArrowPoints(markArrow, idx, cleArrow);
     let ctx = this.canvas.getContext("2d");
-    ctx.strokeStyle = markLine.color;
+    ctx.strokeStyle = markArrow.color;
     ctx.lineWidth = this.gW / 8;
-    ctx.lineWidth *= cleLine ? 1.6 : 1;
+    ctx.lineWidth *= cleArrow ? 1.6 : 1;
     ctx.beginPath();
+    ctx.moveTo(arrowDrawPoints.line[0].x, arrowDrawPoints.line[0].y);
+    ctx.lineTo(arrowDrawPoints.line[1].x, arrowDrawPoints.line[1].y);
+    ctx.stroke();
+    if (arrowDrawPoints.arrow.length) {
+        ctx.moveTo(arrowDrawPoints.arrow[0].x, arrowDrawPoints.arrow[0].y);
+        ctx.lineTo(arrowDrawPoints.arrow[1].x, arrowDrawPoints.arrow[1].y);
+        ctx.lineTo(arrowDrawPoints.arrow[2].x, arrowDrawPoints.arrow[2].y);
+        ctx.lineTo(arrowDrawPoints.arrow[0].x, arrowDrawPoints.arrow[0].y);
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.fill();
+    }
+    ctx.strokeStyle = "black";
+}
+
+
+
+checkerBoard.prototype.getMarkLinePoints = function(markLine, idx, cleLine) {
+
+    let points = {
+        line: [],
+    }
     let x = this.P[markLine.P[0]].x;
     let y = this.P[markLine.P[0]].y;
     if (idx == undefined || idx == null) {
-        ctx.moveTo(x, y);
+        points.line.push({ x: x, y: y });
         x = this.P[markLine.P[markLine.P.length - 1]].x;
         y = this.P[markLine.P[markLine.P.length - 1]].y;
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        points.line.push({ x: x, y: y });
     }
     else {
         if (markLine.P.indexOf(idx) == -1) return;
@@ -2558,10 +2609,28 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
                 y2 = y - h - 1;
             }
         }
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+        points.line.push({ x: x1, y: y1 });
+        points.line.push({ x: x2, y: y2 });
     }
+    return points;
+
+}
+
+
+
+checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
+
+    let lineDrawPoints = this.getMarkLinePoints(markLine, idx, cleLine);
+    let ctx = this.canvas.getContext("2d");
+    ctx.strokeStyle = markLine.color;
+    ctx.lineWidth = this.gW / 8;
+    ctx.lineWidth *= cleLine ? 1.6 : 1;
+    ctx.beginPath();
+
+    ctx.moveTo(lineDrawPoints.line[0].x, lineDrawPoints.line[0].y);
+    ctx.lineTo(lineDrawPoints.line[1].x, lineDrawPoints.line[1].y);
+    ctx.stroke();
+
     ctx.strokeStyle = "black";
     if (idx == undefined || idx == null) {
         if (cleLine) return;
@@ -2573,11 +2642,6 @@ checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
     else {
         if (cleLine) return;
         refreshIdx.call(this, idx);
-        /*
-        let txt = "";
-        if (this.P[idx].text) txt = this.P[idx].text;
-        this.printPointB(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
-        */
     }
 
     function refreshIdx(idx) {
@@ -3252,7 +3316,7 @@ checkerBoard.prototype.refreshMarkArrow = function(idx) {
     else {
         for (let i = 0; i < this.ARROWS.length; i++) {
             if (this.ARROWS[i].P.indexOf(idx) + 1) {
-                this.printMarkArrow(this.ARROWS[i], idx);
+                this.printMarkArrow(this.ARROWS[i]);
             }
         }
     }
@@ -3343,10 +3407,11 @@ checkerBoard.prototype.removeTree = function() {
     function removeT() {
         this.firstColor = "black";
         this.autoColor = undefined;
-        console.log(`removeTrue ${this.autoColor}`)
         this.oldCode = "";
         this.tree = new this.node();
         this.cleLb("all");
+        let exWindow = control.getEXWindow();
+        exWindow.close();
     }
 }
 
@@ -4230,11 +4295,12 @@ checkerBoard.prototype.unpackTree = function() {
         let txt = MSindex % 2 ? "W" : "L";
         let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
         //if (this.tree.keyMap.has(getKey(arr))) alert("has")
+        /*
         if (MSindex == moveNodesIndex) {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
-            printChildNode.call(this, nd, txt);
+            //printChildNode.call(this, nd, txt);
         }
-        else if (MSindex - 1 == moveNodesIndex) {
+        else*/if (MSindex - 1 == moveNodesIndex) {
             //let i = 0; //unpackTree
             //for (i = 0; i <= MSindex; i++) {
             nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
@@ -4266,7 +4332,7 @@ checkerBoard.prototype.unpackTree = function() {
             //}
 
             if (nd) { // print points
-                printChildNode.call(this, nd, txt);
+                //printChildNode.call(this, nd, txt);
             }
             else {
                 if (MSindex % 2) {
@@ -4276,7 +4342,7 @@ checkerBoard.prototype.unpackTree = function() {
                         let cNd = getChildNode(moveNodes[moveNodes.length - 1], this.MS[this.MSindex]);
                         txt = cNd ? cNd.txt : "?";
                         nd.childNode[0].txt = txt;
-                        printChildNode.call(this, nd, txt);
+                        //printChildNode.call(this, nd, txt);
                         nd.childNode = [];
                     }
                     else {
@@ -4287,7 +4353,7 @@ checkerBoard.prototype.unpackTree = function() {
                 else {
                     if (this.tree.keyMap.has(getKey(arr))) {
                         nd = this.tree.keyMap.get(getKey(arr));
-                        printChildNode.call(this, nd, txt);
+                        //printChildNode.call(this, nd, txt);
                     }
                     else {
                         //alert("else 2")
@@ -4299,22 +4365,31 @@ checkerBoard.prototype.unpackTree = function() {
             moveNodes.length = this.MS.length;
             moveNodes[MSindex] = nd;
         }
+        /*
         else if (MSindex < moveNodesIndex) {
             moveNodes.length = this.MS.length;
             nd = MSindex == -1 ? this.tree : moveNodes[MSindex];
-            printChildNode.call(this, nd, txt);
+            //printChildNode.call(this, nd, txt);
         }
         else if (MSindex - 2 >= moveNodesIndex) {
             for (let i = MSindex - moveNodesIndex; i >= 1; i--) {
                 moveNodes.push(new Node());
             }
+            
         }
+        */
+        
         this.tree.moveNodesIndex = MSindex;
+        printChildNode.call(this, moveNodes[MSindex] || this.tree, txt);
         this.unpacking = false;
+        
+
 
 
         function printChildNode(node, txt) {
-            //alert("p")
+            
+            let exWindow = control.getEXWindow();
+            exWindow.innerHTML(node.innerHTML || "");
             printLines.call(this, node.lines);
             for (let i = node.childNode.length - 1; i >= 0; i--) {
                 this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");

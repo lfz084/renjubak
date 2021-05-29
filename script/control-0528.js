@@ -90,6 +90,7 @@ let control = (() => {
     let cShareWhite = null;
     let cCleLb = null;
     let cHelp = null;
+    let exWindow;
     let lbTime = new function() {
         this.prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止
         this.div = document.createElement("div");
@@ -155,15 +156,15 @@ let control = (() => {
         }
         return false;
     }
-    
-    
+
+
     function cSelChecked(chk) {
         cSelBlack.setChecked(0);
         cSelWhite.setChecked(0);
         chk.setChecked(1);
     }
-    
-    
+
+
     function nSetChecked(chk) {
         cLba.setChecked(0);
         cLbb.setChecked(0);
@@ -179,8 +180,8 @@ let control = (() => {
             cBd.drawLineEnd();
         }
     }
-    
-    
+
+
     function newGame() {
         let h1 = parseInt(cBd.width);
         let h2 = parseInt(cBd.canvas.height);
@@ -1302,10 +1303,50 @@ let control = (() => {
 
         t = t + h * 1.5;
 
+        exWindow = (() => {
+
+            const IFRAME = document.createElement("div");
+            const FONT_SIZE = sw / 30 + "px";
+            const IFRAME_LEFT = parseInt(cFlipY.left) + "px";
+            const IFRAME_TOP = parseInt(cFlipY.top) + "px";
+            const IFRAME_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
+            const IFRAME_HEIGHT = h * 1.5 * 7 + h + "px";
+
+            function resetStyle() {
+                let s = IFRAME.style;
+                s.overflow = "scroll";
+                s.position = "absolute";
+                s.left = IFRAME_LEFT;
+                s.top = IFRAME_TOP;
+                s.width = IFRAME_WIDTH;
+                s.height = IFRAME_HEIGHT;
+                s.fontSize = FONT_SIZE;
+                s.borderStyle = "solid";
+                s.borderWidth = `${sw/260}px`;
+                s.borderColor = "black";
+                s.background = "white";
+                s.fontWeight = "normal";
+                s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
+                s.zIndex = 9999;
+            }
+
+            function openWindow() {
+                if (IFRAME.parentNode) return;
+                resetStyle();
+                renjuCmddiv.appendChild(IFRAME);
+            }
+            return {
+                "innerHTML": (iHtml) => {
+                    IFRAME.innerHTML = iHtml;
+                },
+                "openWindow": openWindow,
+                "close": () => {
+                    IFRAME.innerHTML = undefined;
+                    if (IFRAME.parentNode) IFRAME.parentNode.removeChild(IFRAME);
+                },
+            }
+        })();
         createContextMenu(undefined, undefined, menuWidth, undefined, menuFontSize);
-
-
-        
 
 
 
@@ -1660,7 +1701,7 @@ let control = (() => {
                         txt = continueLabel[lbIdx];
                         return { type: TYPE_MARK, cmd: txt, showNum: isShow };
                     case 6:
-                        return { type: TYPE_MARK, cmd: EMOJI_STAR , showNum: isShow };
+                        return { type: TYPE_MARK, cmd: EMOJI_STAR, showNum: isShow };
                     case 7:
                         return { type: TYPE_MARK, cmd: EMOJI_FOUL, showNum: isShow };
 
@@ -2074,6 +2115,7 @@ let control = (() => {
             createRenjuCmdDiv(param[0], param[1], param[2], param[3], param[4]);
             createImgCmdDiv(param[0], param[1], param[2], param[3], param[4]);
         },
+        "getEXWindow": () => { return exWindow },
         //"showContextMenu": ()=>{cMenu.showMenu();},
     };
 })();

@@ -32,7 +32,7 @@ button {
 
 div {
     font-family: mHeiTi, SimHei;
-    font-weight: bolder;
+    /*font-weight: bolder;*/
     -webkit-user-select: none;
     /* Chrome/Safari/Opera */
 }

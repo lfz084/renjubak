@@ -263,9 +263,9 @@ onmessage = function(e) {
             let sPoint = findLevelThreePoint(p.arr, p.color, p.newarr, p.ftype, p.idx, p.backstage, p.num, p.depth);
             post("findLevelThreePoint_End");
         },
-        "findFoulNode": function(){
+        "findFoulNode": function() {
             let node = findFoulNode(p.arr);
-            if (node.childNode.length) post("addTree",{node: node});
+            if (node.childNode.length) post("addTree", { node: node });
             post("findFoulNode_End");
         },
         "cancelFind": function() { cancelFind(); },
@@ -2108,7 +2108,7 @@ function isSix_Idx(idx, color, arr) {
 
 
 function getLine(idx, color, direction, arr, lineColor = "red") {
-    
+
     let start, end;
     for (start = -1; start > -9; start--) {
         if (getArrValue_Idx(idx, start, direction, arr) != color) break;
@@ -2118,11 +2118,13 @@ function getLine(idx, color, direction, arr, lineColor = "red") {
         if (getArrValue_Idx(idx, end, direction, arr) != color) break;
     }
     end--;
+    const LINE_LEN = end - start + 1;
     return {
         start: getArrIndex(getX(idx), getY(idx), start, direction, arr),
         end: getArrIndex(getX(idx), getY(idx), end, direction, arr),
         color: lineColor,
-        type: undefined
+        type: LINE_LEN > 5 ? "six" : LINE_LEN == 5 ? "five" : "freeFour",
+        direction: direction,
     }
 }
 
@@ -2163,7 +2165,7 @@ function isSixNode(x, y, arr, node) {
         }
     }
     arr[y][x] = ov;
-    
+
     return count > 0 ? true : false;
 }
 
@@ -2439,7 +2441,9 @@ function isLineFourNode(x, y, direction, arr, free, pass, node) {
                 start: getArrIndex(x, y, i, direction, arr),
                 end: getArrIndex(x, y, i + 4, direction, arr),
                 color: "blue",
-                type: undefined
+                type: "four",
+                direction: direction,
+
             };
             if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0 && getArrValue(x, y, i + 6, direction, arr) != color) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0 && getArrValue(x, y, i - 2, direction, arr) != color)) {
                 if (getArrValue(x, y, i, direction, arr) == 0) {
@@ -2464,9 +2468,10 @@ function isLineFourNode(x, y, direction, arr, free, pass, node) {
             if (isFoulNode(x, y, arr, nd)) { isf -= 99; }
         }
     }
-    line.color = isf > 0 ? "red": line.color;
-    nd.txtColor = line.color=="red" ? "red" : undefined;
-    if (nd.lines.length==0 && line) nd.lines.push(line);
+    line.color = isf > 0 ? "red" : line.color;
+    line.type = isf > 0 ? "freeFour" : "four";
+    nd.txtColor = line.color == "red" ? "red" : undefined;
+    if (nd.lines.length == 0 && line) nd.lines.push(line);
     return isf > 0;
 }
 
@@ -2734,40 +2739,41 @@ function isFFNode(x, y, arr, node) {
     nd.lines = [];
 
     for (let j = 0; j < 4; j++) {
-
+        const LINEIDX = nd.lines.length;
         if (count < 0) break; // 五连排除了44，退出
         let isf = false;
-
+        let line;
         for (let i = 0; i > -5; i--) {
             let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
             if (pw == 4 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color && getArrValue(x, y, i + 5, DIRECTIONS[j], arr) != color) {
-                if (isLineFFNode(x, y, DIRECTIONS[j], arr, nd)) {
+                if (isLineFFNode(x, y, DIRECTIONS[j], arr, nd, LINEIDX)) {
                     count = 2;
                 }
                 else {
                     nd.txt = EMOJI_FOUL;
-                    nd.lines.push({
+                    nd.lines[LINEIDX] = {
                         start: getArrIndex(x, y, i, DIRECTIONS[j], arr),
                         end: getArrIndex(x, y, i + 4, DIRECTIONS[j], arr),
                         color: "red",
-                        type: undefined
-                    });
+                        type: isLineFour(x, y, DIRECTIONS[j], 1, arr, true) ?
+                            "freeFour" : "four",
+                        direction: DIRECTIONS[j],
+                    };
                     isf = true;
                 }
             } // 五连否定冲44
             if (pw == 5 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color) {
                 count = -2;
                 nd.txt = EMOJI_ROUND_FIVE;
-                nd.lines = [getLine(x+y*15, color, DIRECTIONS[j], arr)];
+                nd.lines = [getLine(x + y * 15, color, DIRECTIONS[j], arr)];
                 break;
             }
         }
-
         count += isf ? 1 : 0;
     }
     arr[y][x] = ov;
     if (count > 1 || nd.txt == EMOJI_ROUND_FIVE) {
-        
+
     }
     else {
         nd.txt = undefined;
@@ -2965,7 +2971,8 @@ function isTTNode(x, y, arr, node) {
                     start: getArrIndex(x, y, j, DIRECTIONS[i], arr),
                     end: getArrIndex(x, y, j + 4, DIRECTIONS[i], arr),
                     color: "red",
-                    type: undefined
+                    type: "five",
+                    direction: DIRECTIONS[i],
 
                 });
                 break;
@@ -2988,7 +2995,7 @@ function isTTNode(x, y, arr, node) {
         }
         arr[y][x] = ov;
         // 累计够两个活3，确认是33
-        nd.txt = count>1 ? EMOJI_FOUL : EMOJI_ROUND;
+        nd.txt = count > 1 ? EMOJI_FOUL : EMOJI_ROUND;
         return count > 1 ? true : false;
     }
 }
@@ -3090,7 +3097,7 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
     let isf = false;
     let isfree = false;
     let nd;
-    let lineIdx = node.lines.length;
+    let LINEIDX = node.lines.length;
 
     for (let i = 0; i > -5; i--) {
         let pw = getPower(x, y, arr, direction, color, i);
@@ -3098,9 +3105,10 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
             isf = true;
             let line = {
                 start: getArrIndex(x, y, i, direction, arr),
-                end: getArrIndex(x, y, i+4, direction, arr),
+                end: getArrIndex(x, y, i + 4, direction, arr),
                 color: "blue",
-                type: undefined
+                type: "three",
+                direction: direction,
             };
             if (getArrValue(x, y, i, direction, arr) == 0) {
                 if (getArrValue(x, y, i + 4, direction, arr) == 0) {
@@ -3111,7 +3119,8 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
                         isfree = true;
                         nd.txt = EMOJI_ROUND_FOUR;
                         line.color = "red";
-                        node.lines[lineIdx] = line;
+                        line.type = "freeThree",
+                            node.lines[LINEIDX] = line;
                         break;
                     }
                     p = getNextEmpty(x, y, arr, direction, 1, i + 4);
@@ -3121,7 +3130,8 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
                         isfree = true;
                         nd.txt = EMOJI_ROUND_FOUR;
                         line.color = "red";
-                        node.lines[lineIdx] = line;
+                        line.type = "freeThree",
+                            node.lines[LINEIDX] = line;
                         break;
                     }
                 }
@@ -3133,7 +3143,8 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
                         isfree = true;
                         nd.txt = EMOJI_ROUND_FOUR;
                         line.color = "red";
-                        node.lines[lineIdx] = line;
+                        line.type = "freeThree",
+                            node.lines[LINEIDX] = line;
                         break;
                     }
                 }
@@ -3146,18 +3157,19 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
                     isfree = true;
                     nd.txt = EMOJI_ROUND_FOUR;
                     line.color = "red";
-                    node.lines[lineIdx] = line;
+                    line.type = "freeThree",
+                        node.lines[LINEIDX] = line;
                     break;
                 }
             }
-            node.lines[lineIdx] = line;
+            node.lines[LINEIDX] = line;
         } // 4以上否定活3
         if (pw >= 4) { isf = false; break; }
     }
 
     arr[y][x] = ov;
 
-    
+
     return free === true ? (isfree && isf) : (!isfree && isf);
 
 }
@@ -3339,7 +3351,7 @@ function isLineFF_Idx(idx, direction, color, arr) {
 }
 
 
-function isLineFFNode(x, y, direction, arr, node) {
+function isLineFFNode(x, y, direction, arr, node, LINEIDX) {
 
     let color = 1;
     let st = 0;
@@ -3365,12 +3377,13 @@ function isLineFFNode(x, y, direction, arr, node) {
             if (getArrValue(x, y, -4, direction, arr) == color && getArrValue(x, y, 4, direction, arr) == color && getArrValue(x, y, -3, direction, arr) == color && getArrValue(x, y, 3, direction, arr) == color && getArrValue(x, y, -2, direction, arr) == color && getArrValue(x, y, 2, direction, arr) == color && getArrValue(x, y, -1, direction, arr) == 0 && getArrValue(x, y, 1, direction, arr) == 0) {
                 if (getArrValue(x, y, -5, direction, arr) != color && getArrValue(x, y, 5, direction, arr) != color) {
                     node.txt = EMOJI_FOUL;
-                    node.lines.push({
+                    node.lines[LINEIDX] = {
                         start: getArrIndex(x, y, -4, direction, arr),
                         end: getArrIndex(x, y, 4, direction, arr),
                         color: "red",
-                        type: undefined
-                    });
+                        type: "lineFF",
+                        direction: direction,
+                    };
                     return true;
                 }
             }
@@ -3379,12 +3392,13 @@ function isLineFFNode(x, y, direction, arr, node) {
             if (getArrValue(x, y, -3 + st, direction, arr) == color && getArrValue(x, y, 3 + ed, direction, arr) == color && getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
                 if (getArrValue(x, y, -4 + st, direction, arr) != color && getArrValue(x, y, 4 + ed, direction, arr) != color) {
                     node.txt = EMOJI_FOUL;
-                    node.lines.push({
+                    node.lines[LINEIDX] = {
                         start: getArrIndex(x, y, -3 + st, direction, arr),
                         end: getArrIndex(x, y, 3 + ed, direction, arr),
                         color: "red",
-                        type: undefined
-                    });
+                        type: "lineFF",
+                        direction: direction,
+                    };
                     return true;
                 }
             }
@@ -3393,12 +3407,13 @@ function isLineFFNode(x, y, direction, arr, node) {
             if (getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
                 if (getArrValue(x, y, -3 + st, direction, arr) != color && getArrValue(x, y, 3 + ed, direction, arr) != color) {
                     node.txt = EMOJI_FOUL;
-                    node.lines.push({
+                    node.lines[LINEIDX] = {
                         start: getArrIndex(x, y, -2 + st, direction, arr),
                         end: getArrIndex(x, y, 2 + ed, direction, arr),
                         color: "red",
-                        type: undefined
-                    });
+                        type: "lineFF",
+                        direction: direction,
+                    };
                     return true;
                 }
             }
@@ -3874,15 +3889,130 @@ function findFoulNode(arr) {
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             if (arr[y][x] == 0) {
-                let nd = new Node(x+y*15,node);
+                let nd = new Node(x + y * 15, node);
                 isFoulNode(x, y, arr, nd);
-                if (nd.txt || nd.lines && nd.lines.length){
+                if (nd.txt) {
                     node.childNode.push(nd);
+                    autoSetInnerHTML(nd);
                 }
             }
         }
     }
     return node;
+
+    function autoSetInnerHTML(node, depth = 0) {
+        function getLineTypeStr(line) {
+            switch (line.type) {
+                case "six":
+                    return "长连";
+                    break;
+                case "five":
+                    return "五连";
+                    break;
+                case "four":
+                    return "冲四";
+                    break;
+                case "freeFour":
+                    return "活四";
+                    break;
+                case "lineFF":
+                    return "四四";
+                    break;
+                case "three":
+                    return "眠三";
+                    break;
+                case "freeThree":
+                    return "活三";
+                    break;
+            }
+        }
+        depth++;
+        const NUM_TXT = `第${depth}手[${indexToName(node.idx)}]`;
+        const ISFOUL = depth == 1 ?
+            node.txt == EMOJI_FOUL ?
+            `是禁手` :
+            `不是禁手` :
+            undefined;
+        const ISFREEFOUR = node.txt == EMOJI_ROUND_FOUR ?
+            node.txtColor == "red" ?
+            `是活四` : `不是活四，是冲四` :
+            node.txt == EMOJI_ROUND_FIVE ?
+            `五连否定活四` :
+            `禁手否定活四`;
+        const ISFIVE = node.lines && node.lines[0].type == "five" ?
+            `是五连` :
+            `不是五连`;
+        const CONCLUSION = ISFOUL || ISFREEFOUR;
+        const ISFREEFOUR_2 = node.lines && node.lines[0].type == "five" ?
+            `五连否定禁手，否定活四` :
+            CONCLUSION;
+        let isSixStr = "没有长连禁手";
+        let isFFStr = "没有四四禁手";
+        let isTTStr = "没有三三禁手";
+        let tempStr = `<ul>`;
+        if (node.lines) {
+            const DIR = { x: "↔", y: "↕", d: "↘", u: "↗" };
+            for (let i = 0; i < node.lines.length; i++) {
+                let line = node.lines[i];
+                tempStr += `<li>${DIR[line.direction]} 线是 ${getLineTypeStr(line)}</li>`;
+            }
+            tempStr += `</ul>`;
+            if (node.lines.length == 1) {
+                if (node.lines[0].type == "six") {
+                    isSixStr = "是长连禁手";
+                    isFFStr = "不再判断";
+                    isTTStr = "不再判断";
+                }
+                else if (node.lines[0].type == "lineFF") {
+                    isFFStr = tempStr;
+                    isFFStr += "是四四禁手";
+                    isTTStr = "不再判断";
+                }
+
+            }
+            else if (node.lines.length > 1) {
+
+                if (node.lines[0].type == "four" || node.lines[0].type == "freeFour" || node.lines[0].type == "lineFF") {
+                    isFFStr = tempStr;
+                    isFFStr += "是四四禁手";
+                    isTTStr = "不再判断";
+                }
+                else {
+                    isTTStr = tempStr;
+                    isTTStr += node.txt == EMOJI_FOUL ?
+                        "是三三禁手" :
+                        "没有三三禁手";
+                }
+
+            }
+        }
+
+
+
+        let iHTML = `
+        <p><b>${depth==1 ? `判断${NUM_TXT}是不是禁手` : `判断${NUM_TXT}是不是活四点`}</b>
+        </br>结论：${CONCLUSION}</p>
+        <p><b>判断过程</b></p>
+        <p>判断${NUM_TXT}是否五连：
+            <ul>
+                <li>${ISFIVE}</li>
+            </ul>
+            判断${NUM_TXT}是否禁手：
+            <ul>
+                <li>判断是否长连</li>
+                ${isSixStr}
+                <li>判断是否四四</li>
+                ${isFFStr}
+                <li>判断是否三三</li>
+                ${isTTStr}
+            </ul>
+        </p>
+        `;
+        node.innerHTML = iHTML;
+        for (let i = node.childNode.length - 1; i >= 0; i--) {
+            autoSetInnerHTML(node.childNode[i], depth);
+        }
+    }
 }
 
 

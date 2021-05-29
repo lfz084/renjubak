@@ -7,15 +7,47 @@
     <title>404 err</title>
 </head>
 
-<body >
-与服务器断开了连接，尝试刷新一下
-  <button type="button" id="btn" onclick="window.open('./renju.html','_self');">刷新</button>
-<button type="button" id="btn" onclick="n()"></button>
+<body>
+    与服务器断开了连接，尝试刷新一下
+    <button type="button" id="btn" onclick="window.open('./renju.html','_self');">刷新</button>
+    <button type="button" id="btn" onclick="n()"></button>
+    <a target="iWindow" href="https://baidu.com/#1">nnnnn</a>
 </body>
 <script>
     function n() {
-        document.body.innerHTML = `1${""}2${" "}3${"&nbsp;"}456`
+        IFRAME.URL = "hello world";
+        //document.body.innerHTML = `1${""}2${" "}3${"&nbsp;"}456`
     }
+    const IFRAME = document.createElement("iframe");
+    IFRAME.setAttribute("name", "iWindow");
+    document.body.appendChild(IFRAME);
+
+    //window.frames[0].window.location.hash='edit'
+
+    // 选择需要观察变动的节点
+    const targetNode = IFRAME;
+    
+    // 观察器的配置（需要观察什么变动）
+    const config = { attributes: true,attributeOldValue: true };
+    IFRAME.hash = "undefind"
+    console.log(IFRAME)
+    IFRAME.onhashchange = () => {
+        console.log("hash")
+    }
+    // 当观察到变动时执行的回调函数
+    const callback = function(mutationsList, observer) {
+        alert("change")
+    };
+
+    // 创建一个观察器实例并传入回调函数
+    const observer = new MutationObserver(callback);
+
+    // 以上述配置开始观察目标节点
+    observer.observe(targetNode, config);
+    
+setInterval(()=>{console.log(IFRAME.src)},5000)
+    // 之后，可停止观察
+    //observer.disconnect();
 </script>
 
 </html>

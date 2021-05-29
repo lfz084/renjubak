@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+</head>
+
+<body>
+    <p>
+        <mark>后面讲到的棋子都是指同色棋子</mark>
+    </p>
+    <p>
+        <b>五</b>
+        <ul>
+            <li>五连：在一条线上面刚刚好连成五颗棋子。</li>
+            <li>五连点：能够形成五连的点</li>
+            <mark>PS：五连否定禁手，否定活四...五连出现棋局结束，其它没有成五的子力都被否定。</mark>
+        </ul>
+        <img width=80% style="position: relative;left:10%" src="power/five.svg" />
+    </p>
+    <p>
+        <b>四</b>
+        <ul>
+            <li>活四：在一条线上面连成四颗棋子，在四颗棋子相连的两端各有一个五连点。</li>
+            <li>活四点：能够形成活四的点</li>
+            <li>冲四：在一条线上 相连的五个格子内有四颗同色棋子，剩下一个空格是这四颗棋子相关的唯一五连点。</li>
+            <li>冲四点：能够形成冲四的点</li>
+        </ul>
+        <img width=80% style="position: relative;left:10%" src="power/four.svg" />
+    </p>
+    <p>
+        <b>三</b>
+        <ul>
+            <li>活三：能够成为活四的三。
+                <ul>
+                    <li>连活三</li>
+                    <li>跳活三</li>
+                </ul>
+            </li>
+            <li>活三点：能够形成活三的点</li>
+            <li>眠三：只能够成为冲4的三。</li>
+            <li>眠三点：能够形成眠三的点</li>
+        </ul>
+        <img width=80% style="position: relative;left:10%" src="power/three.svg" />
+    </p>
+    <p>
+        <b>二</b>
+        <ul>
+            <li>活二：能够成为活三的二
+                <ul>
+                    <li>连活二</li>
+                    <li>跳活二</li>
+                    <li>大跳活二</li>
+                </ul>
+            </li>
+            <li>活二点：能够形成活二的点</li>
+            <li>眠二：只能够成为眠三的二</li>
+            <li>眠二点：能够形成眠二的点</li>
+        </ul>
+        <img width=80% style="position: relative;left:10%" src="power/two.svg" />
+    </p>
+    <p>
+        <b>一</b>
+        <ul>
+            <li>活一</li>
+            <li>眠一</li>
+        </ul>
+        <img width=80% style="position: relative;left:10%" src="power/one.svg" />
+    </p>
+    <p>
+        <b>简单禁手</b>
+        <ul>
+            <li>长连禁手：黑棋一子落下,在一条线上面相连棋子在六颗以上（包括六颗), 这手棋就是长连禁手</li>
+            <li>四四禁手：黑棋一子落下,在棋盘上面增加了两个(或更多)冲四或活四,这手棋就是四四禁手</li>
+            <li>三三禁手：黑棋一子落下,在棋盘上面增加了两个(或更多)与这手棋相交的活三,这手棋就是三三禁手</li>
+            <mark>PS:只有黑棋才有禁手,白棋没有禁手。禁手之间不否认，禁手出现棋局结束，否认冲四...其它没有五连的子力</mark>
+        </ul>
+           <img width=80% style="position: relative;left:10%" src="power/simplefoul.svg" />
+    </p>
+    <p>
+        <b>复杂禁手</b>
+        <ul>
+            <li>三三禁手：在判断三三禁手的过程中，出现了禁手否定活四点(或者五连否定活四点)的禁手</li>
+            <b>三三禁手的判断顺序</b>
+            <ol>
+                <li>四个方向逐个搜索活三</li>
+                <ol>
+                    <li>找活三的形状</li>
+                    <li>找活三形的理论活四点</li>
+                    <li>从理论活四点中找活四点</li>
+                    <ol>
+                        <li>找够两个五连点</li>
+                        <li>排除五连，禁手</li>
+                        <li>满足前两个条件才是活四点</li>
+                    </ol>
+                    <li>找够一个活四点，是活三</li>
+                    <li>不够一个活四点，不是活三</li>
+                </ol>
+                <li>找够两个活三，是三三禁手</li>
+                <li>不够两个活三，不是三三禁手</li>
+            </ol>
+            <mark>PS:只有三三禁手,才有复杂禁手</mark>
+        </ul>
+           <img width=80% style="position: relative;left:10%" src="power/foul.svg" />
+    </p>
+    <p></p>
+    <p></p>
+    <p></p>
+</body>
+
+</html>
