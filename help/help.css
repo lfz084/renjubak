@@ -1,0 +1,7 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    font-family: mHeiTi, SimHei;
+    scroll-behavior: smooth;
+    -webkit-user-select: none;
+}

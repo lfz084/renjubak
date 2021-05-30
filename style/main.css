@@ -45,12 +45,13 @@ h1 {
 }
 
 
-body {
+html, body {
     height: 100%;
     width: 100%;
     font-family: mHeiTi, SimHei;
     scroll-behavior: smooth;
     -webkit-user-select: none;
+    scroll-behavior:smooth;
     /*background-color: #303030*/
     /* Chrome/Safari/Opera */
 }
