@@ -91,6 +91,17 @@ let control = (() => {
     let cCleLb = null;
     let cHelp = null;
     let exWindow;
+    const setTop = (()=>{
+        let topMark = document.createElement("div");
+        document.body.appendChild(topMark);
+        topMark.setAttribute("id", "top");
+        return (top)=>{
+            let s = topMark.style;
+            s.position = "absolute";
+            s.top = top + "px";
+            s.zIndex = -100;
+        }
+    })();
     let lbTime = new function() {
         this.prePostTimer = 0; //记录上次post事件时间，配合lbTime 监控后台是否停止
         this.div = document.createElement("div");
@@ -1258,6 +1269,10 @@ let control = (() => {
         t = t + h * 1.5;
         if (dw < dh) {
             t = 0 - cBd.width - h * 2.5;
+            setTop(parentNode.offsetTop+t)
+        }
+        else {
+            setTop(parentNode.offsetTop);
         }
 
         cShareWhite = new button(renjuCmddiv, "button", w * 0, t, w, h);

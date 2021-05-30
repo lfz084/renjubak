@@ -3884,6 +3884,13 @@ function findFoulPoint(arr, newarr, setnum) {
 
 
 
+function getHelpLink(str, htmlName, id) {
+    const LINK = `<a href="help/renjuhelp/${htmlName}#${id}" target="helpWindow">${str}</a>`;
+    return LINK;
+}
+
+
+
 function findFoulNode(arr) {
     let node = new Node();
     node.autoColor = "black";
@@ -3905,25 +3912,25 @@ function findFoulNode(arr) {
         function getLineTypeStr(line) {
             switch (line.type) {
                 case "six":
-                    return "长连";
+                    return getHelpLink("长连","power.html","isSix");
                     break;
                 case "five":
-                    return "五连";
+                    return getHelpLink("五连","power.html","isFive");
                     break;
                 case "four":
-                    return "冲四";
+                    return getHelpLink("冲四","power.html","isFour");
                     break;
                 case "freeFour":
-                    return "活四";
+                    return getHelpLink("活四","power.html","isFour");
                     break;
                 case "lineFF":
-                    return "四四";
+                    return getHelpLink("四四","power.html","isFF");
                     break;
                 case "three":
-                    return "眠三";
+                    return getHelpLink("眠三","power.html","isThree");
                     break;
                 case "freeThree":
-                    return "活三";
+                    return getHelpLink("活三","power.html","isThree");
                     break;
             }
         }
@@ -3991,20 +3998,26 @@ function findFoulNode(arr) {
 
 
         let iHTML = `
-        <p><b>${depth==1 ? `判断${NUM_TXT}是不是禁手` : `判断${NUM_TXT}是不是活四点`}</b>
-        </br>结论：${CONCLUSION}</p>
+        <p><b>${depth==1 ? 
+                getHelpLink(`判断${NUM_TXT}是不是禁手`, "power.html", "isSix") : 
+                getHelpLink(`判断${NUM_TXT}是不是活四点`, "power.html", "isFreeFourPoint")
+            }:</b>
+            <ul>
+                <li>${CONCLUSION}</li>
+            </ul>
+        </p>
         <p><b>判断过程</b></p>
-        <p>判断${NUM_TXT}是否五连：
+        <p>${getHelpLink(`判断${NUM_TXT}是否五连`,"power.html","isFive")}：
             <ul>
                 <li>${ISFIVE}</li>
             </ul>
-            判断${NUM_TXT}是否禁手：
+            ${getHelpLink(`判断${NUM_TXT}是否禁手`, "power.html", "isSix")}：
             <ul>
-                <li>判断是否长连</li>
+                <li>${getHelpLink("判断是否长连","power.html","isSix")}</li>
                 ${isSixStr}
-                <li>判断是否四四</li>
+                <li>${getHelpLink("判断是否四四","power.html","isFF")}</li>
                 ${isFFStr}
-                <li>判断是否三三</li>
+                <li>${getHelpLink("判断是否三三","power.html","isTT")}</li>
                 ${isTTStr}
             </ul>
         </p>

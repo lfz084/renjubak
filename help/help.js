@@ -45,9 +45,40 @@ const elemClick = (() => {
 
 })();
 
+
+
+window.onhashchange = function() {
+
+    const HASH = window.location.hash;
+    if (HASH!="#1") {
+        setTimeout(() => {
+            let node;
+            const ID = HASH.slice(1);
+            console.log(ID)
+            const ELEM = document.getElementById(ID);
+            console.log(ELEM)
+            for (let i in ELEM) {
+                if (ELEM[i]) {
+                    const NODE_NAME = ELEM[i].nodeName;
+                    if (NODE_NAME == "LI") {
+                        node = ELEM[i];
+                        break;
+                    }
+                }
+            }
+
+            if (node && node.style.display == "none") {
+                elemClick(ELEM, 1, true);
+            }
+            window.location.hash = "1";
+        }, 1500);
+    }
+}
+
 document.body.onload = function() {
 
     mapUL(document.body);
+    setTimeout(()=>{window.onhashchange()},500);
 
     function mapUL(elem, depth = 0) {
         const CHILD_NODES = elem.childNodes;
