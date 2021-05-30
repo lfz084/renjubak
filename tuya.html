@@ -7,15 +7,15 @@
     <link rel="preload" href="./style/font/PFSCMedium1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport0228.js" as="script">
+    <link rel="preload" href="./script/viewport0229.js" as="script">
     <link rel="preload" href="./script/button-0525.js" as="script">
     <link rel="preload" href="./script/msgbox-0525.js" as="script">
     <title>五子棋涂鸦</title>
 </head>
 
-<body onload="resetPage()" >
+<body onload="resetPage()">
     <script src="./script/button-0525.js"></script>
-    <script src="./script/viewport0228.js"></script>
+    <script src="./script/viewport0229.js"></script>
     <script src="./script/msgbox-0525.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
     <script>
@@ -129,15 +129,15 @@
             }
 
         }
-        
-        window.confirm = function (name) {
-        const IFRAME = document.createElement('IFRAME');
-        IFRAME.style.display = 'none';
-        IFRAME.setAttribute('src', 'data:text/plain,');
-        document.documentElement.appendChild(IFRAME);
-        let rt = window.frames[0].window.confirm(name);
-        IFRAME.parentNode.removeChild(IFRAME);
-        return rt;
+
+        window.confirm = function(name) {
+            const IFRAME = document.createElement('IFRAME');
+            IFRAME.style.display = 'none';
+            IFRAME.setAttribute('src', 'data:text/plain,');
+            document.documentElement.appendChild(IFRAME);
+            let rt = window.frames[0].window.confirm(name);
+            IFRAME.parentNode.removeChild(IFRAME);
+            return rt;
         };
 
 
@@ -326,8 +326,10 @@
                         generator = n();
                         generator.next();
                     }, 50);
-                }, function() { resetMDiv();
-                    loadEnd(); });
+                }, function() {
+                    resetMDiv();
+                    loadEnd();
+                });
             }, 50);
         }
 
@@ -635,7 +637,7 @@
         let cW = sw / 5;
         let cH = sw / 9 / 1.5;
         let cT = 0;
-        
+
         let bodyDiv = document.createElement("div");
         document.body.appendChild(bodyDiv);
         bodyDiv.style.position = "absolute";
@@ -692,6 +694,23 @@
         });
 
         cT -= cH * 1.8;
+        const setTop = (() => {
+            let topMark = document.createElement("div");
+            document.body.appendChild(topMark);
+            topMark.setAttribute("id", "top");
+            return (top) => {
+                let s = topMark.style;
+                s.position = "absolute";
+                s.top = top + "px";
+                s.zIndex = -100;
+            }
+        })();
+        if (dw<dh) {
+            setTop(fileDiv.offsetTop+cT);
+        }
+        else{
+            setTop(0);
+        }
 
         let cRefresh = new button(fileDiv, "button", cW * 0, cT, cW, cH);
         cRefresh.show();
@@ -1808,17 +1827,17 @@
                 //测试脚本是否加载成功;
                 if (!button || !view) { location.reload(); return; }
                 if (String(window.location).indexOf("http://localhost") == 0) {
-                let vConsole;
-                if (vConsole == null) vConsole = new VConsole();
+                    let vConsole;
+                    if (vConsole == null) vConsole = new VConsole();
                 }
                 //alert('resetPage');
-                document.body.addEventListener("click",Click,true);
-                document.body.addEventListener("contextmenu",keepTouch,true);
-                document.body.addEventListener("touchstart",touchstart,true);
-                document.body.addEventListener("touchend",touchend,true);
-                document.body.addEventListener("touchmove",touchmove,true);
-                document.body.addEventListener("touchcancel",touchcancel,true);
-                bodyDiv.addEventListener("touchmove",touchmove,true);
+                document.body.addEventListener("click", Click, true);
+                document.body.addEventListener("contextmenu", keepTouch, true);
+                document.body.addEventListener("touchstart", touchstart, true);
+                document.body.addEventListener("touchend", touchend, true);
+                document.body.addEventListener("touchmove", touchmove, true);
+                document.body.addEventListener("touchcancel", touchcancel, true);
+                bodyDiv.addEventListener("touchmove", touchmove, true);
                 let i;
                 for (i = 0; i < 225; i++)
                 {
@@ -1858,7 +1877,7 @@
             }
 
             n.style.position = "absolute";
-            n.style.top = dw > dh ? parseInt(fileDiv.style.top) + cH*1.8 : YB + parseInt(dw / 19 * 2 + dw / 19 * 17 / 9);
+            n.style.top = dw > dh ? parseInt(fileDiv.style.top) + cH * 1.8 : YB + parseInt(dw / 19 * 2 + dw / 19 * 17 / 9);
 
         }
 
@@ -2267,7 +2286,7 @@
         function shareClose() {
 
             shareWindow.setAttribute("class", "hide");
-            setTimeout(()=>{shareWindow.parentNode.removeChild(shareWindow)},ANIMATION_TIMEOUT);
+            setTimeout(() => { shareWindow.parentNode.removeChild(shareWindow) }, ANIMATION_TIMEOUT);
             timerShareClose = setTimeout("sharing = false", 1000);
 
         }
