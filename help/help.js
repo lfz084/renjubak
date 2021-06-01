@@ -274,7 +274,7 @@ const hashControl = (() => {
 
 
 window.onhashchange = function(event) {
-    
+    alert(window.location.href)
     hashControl();
 }
 
