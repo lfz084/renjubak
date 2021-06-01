@@ -14,7 +14,19 @@
 </head>
 
 <body>
-<iframe src="renjuhelp/power.html"></iframe>
+    <iframe id="iframe" src="renjuhelp/power.html"></iframe>
+    <script>
+    alert(window.onhashchange)
+        window.onhashchange = () => {
+            alert("top")
+        }
+        window.location.hash = "#1"
+        const IFREAM = window.frames[0];
+        
+        IFREAM.window.onhashchange = () => {
+            console.log("iframe")
+        }
+    </script>
 </body>
 
 </html>
