@@ -2,49 +2,71 @@
 
 const elemClick = (() => {
 
-    let seting = false;
+    let busy = false;
 
-    function listClick(elem, depth) {
+    return (elem, depth, fast) => {
+        
+        if (! fast && busy) return;
+        busy = !fast;
+        const NODE_NAME = elem.nodeName;
+        if (NODE_NAME == "UL" || NODE_NAME == "OL") {
+            listClick(elem, depth, fast);
+        }
+        if (busy) setTimeout(() => {
+            busy = false;
+        }, 1000);
+    }
 
+})();
+
+
+const listClick = (() => {
+
+    let busy = false;
+    return (elem, depth, fast) => {
+
+        if (!fast && busy) return;
+        busy = !fast;
         if (getFirstChildNode(elem, undefined, 1).style.display == "none") {
-            focusElement(elem);
             showList(elem, depth);
+            if (!fast) {
+                scrollToElement(getTopNode(elem));
+                focusElement(elem);
+            }
         }
         else {
             hideList(elem, depth);
-            focusElement(elem);
+            if (!fast) focusElement(elem);
         }
+        if (busy) setTimeout(() => {
+            busy = false;
+        }, 1000);
     }
-    return (elem, depth, fast) => {
-        if (!fast && seting) return;
-        seting = true;
-        const NODE_NAME = elem.nodeName;
-        if (NODE_NAME == "UL" || NODE_NAME == "OL") {
-            listClick(elem, depth);
-        }
-        setTimeout(() => { seting = false; }, 500);
-    }
-
 })();
 
 
 const focusElement = (() => {
     let busy = false;
     let focusDiv = document.createElement("div");
-
+    let focusDiv1 = document.createElement("div");
     let s = focusDiv.style;
-    s.position = "relative";
-    s.top = "0px";
-    s.width = "750px";
-    s.height = "100px";
+    let s1 = focusDiv1.style;
+    s.position = s1.position = "relative";
+    s.top = s1.top = "0px";
+    //s.width = s1.width = "750px";
+    //s.height = s1.height = "100px";
     return (elem) => {
         if (busy) return;
         busy = true;
         if (elem && elem.childNodes) {
+            //alert("focus")
             focusDiv.setAttribute("class", "hideFocus");
+            focusDiv1.setAttribute("class", "hideFocus");
             elem.insertBefore(focusDiv, elem.childNodes[0]);
+            elem.appendChild(focusDiv1);
             setTimeout(() => {
                 focusDiv.parentNode.removeChild(focusDiv);
+                focusDiv1.parentNode.removeChild(focusDiv1);
             }, 700);
         }
         setTimeout(() => {
@@ -55,10 +77,43 @@ const focusElement = (() => {
 })();
 
 
+const scrollToElement = (() => {
+    
+    let busy = false;
+    /*
+    function link(id) {
+        console.log("link")
+        const LINK = document.createElement("a");
+        LINK.href = id;
+        LINK.target = "_self";
+        document.body.appendChild(LINK);
+        LINK.click();
+        LINK.parentNode.removeChild(LINK);
+    }
+    */
+    return (elem, fast) => {
+        console.log(`scrollToElement 1 `)
+        if (!fast && busy) return;
+        busy = !fast;
+        if (elem && elem.nodeType == 1) {
+            console.log(`scrollToElement 2 `)
+            const ID = elem.getAttribute("id");
+            elem.setAttribute("id", "1");
+            //link("#1")
+            window.location.hash = "#1";
+            elem.setAttribute("id", ID);
+            window.location.hash = "#0";
+        }
+        if (busy) setTimeout(() => {
+            busy = false;
+        }, 1000);
+    };
+})();
+
+
 
 function showList(elem, depth) {
 
-    console.log("showlist-" + depth);
     if (!elem) return;
     const CHILD_NODES = elem.childNodes;
     const UL_LIST_STYLE = ["none", "disc", "circle", "square", "disc", "circle", "square"];
@@ -83,13 +138,13 @@ function showList(elem, depth) {
                 TOHIDE_TXT : CHILD_NODES[i].nodeValue;
         }
     }
+    
 }
 
 
 
 function hideList(elem, depth) {
 
-    console.log("hide")
     if (!elem) return;
     const CHILD_NODES = elem.childNodes;
     for (let i in CHILD_NODES) {
@@ -113,6 +168,7 @@ function hideList(elem, depth) {
 
 function getFirstChildNode(parentNode, nodeNameList = ["###defoult###defoult###"], nodeType = "defoult") {
 
+    if (!parentNode) return;
     const CHILD_NODES = parentNode.childNodes;
     for (let i in CHILD_NODES) {
         if (CHILD_NODES[i]) {
@@ -126,6 +182,18 @@ function getFirstChildNode(parentNode, nodeNameList = ["###defoult###defoult###"
 }
 
 
+function getTopNode(elem) {
+    let depth = 10;
+    while (depth--) {
+        const CLASS_NANE = elem.parentNode.getAttribute("class");
+        if (CLASS_NANE=="bodyDiv") {
+            return elem;
+        }
+        elem = elem.parentNode;
+    }
+}
+
+
 
 const hashControl = (() => {
     let busy = false;
@@ -134,7 +202,7 @@ const hashControl = (() => {
         busy = true;
         const HASH = window.location.hash;
         console.log(HASH)
-        if (HASH != "#1" && HASH) {
+        if (HASH != "#1" && HASH!= "#0" && HASH) {
 
             const ID = HASH.slice(1);
             const ELEM = document.getElementById(ID);
@@ -144,9 +212,8 @@ const hashControl = (() => {
             if (node && node.style.display == "none") {
                 elemClick(node.parentNode, 1, true);
             }
-            ELEM.setAttribute("id", "1");
-            window.location.hash = "#1";
-            ELEM.setAttribute("id", ID);
+
+            scrollToElement(ELEM);
             focusElement(FIRST_LIST);
         }
         setTimeout(() => {
@@ -164,8 +231,51 @@ window.onhashchange = function() {
 document.body.onload = function() {
 
     setView();
-    mapUL(document.body);
-    window.onhashchange();
+    const iHTML = document.body.innerHTML;
+    document.body.innerHTML = "";
+    createTop();
+    createBody(iHTML);
+    createButtom();
+    setTimeout(() => {
+        window.onhashchange();
+    }, 1000);
+
+}
+
+
+function setView(width = 800) {
+
+    const ELEM_LIST = document.getElementsByName("viewport");
+    const VIEW = ELEM_LIST ? ELEM_LIST[0] : document.createElement("meta");
+    let dw = document.documentElement.clientWidth;
+    let dh = document.documentElement.clientHeight;
+    let sw = window.screen.width;
+    let sh = window.screen.height;
+    let max = sw > sh ? sw : sh;
+    let min = sw < sh ? sw : sh;
+    let scale = (dw > dh ? max : min) / width;
+    document.head.appendChild(VIEW);
+    VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
+    VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
+}
+
+
+function createTop() {
+
+    const TOP_DIV = document.createElement("div");
+    TOP_DIV.setAttribute("class", "topDiv");
+    TOP_DIV.innerHTML = "";
+    document.body.appendChild(TOP_DIV);
+}
+
+
+function createBody(iHTML) {
+
+    const BODY_DIV = document.createElement("div");
+    BODY_DIV.setAttribute("class", "bodyDiv");
+    BODY_DIV.innerHTML = iHTML;
+    mapUL(BODY_DIV);
+    document.body.appendChild(BODY_DIV);
 
     function mapUL(elem, depth = 0) {
         const CHILD_NODES = elem.childNodes;
@@ -223,16 +333,10 @@ document.body.onload = function() {
     }
 }
 
-function setView(width = 800) {
-    const ELEM_LIST = document.getElementsByName("viewport");
-    const VIEW = ELEM_LIST ? ELEM_LIST[0] : document.createElement("meta");
-    let dw = document.documentElement.clientWidth;
-    let dh = document.documentElement.clientHeight;
-    let sw = window.screen.width;
-    let sh = window.screen.height;
-    let max = sw > sh ? sw : sh;
-    let min = sw < sh ? sw : sh;
-    let scale = (dw > dh ? max : min) / width;
-    document.head.appendChild(VIEW);
-    VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
+
+function createButtom() {
+    const BUTTOM_DIV = document.createElement("div");
+    BUTTOM_DIV.setAttribute("class", "buttomDiv");
+    BUTTOM_DIV.innerHTML = "";
+    document.body.appendChild(BUTTOM_DIV);
 }

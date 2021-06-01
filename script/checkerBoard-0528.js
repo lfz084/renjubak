@@ -3601,7 +3601,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
         }
         else { // download file;
-            let save_link = document.createElement("a");
+            lsave_link = document.createElement("a");
             save_link.href = URL.createObjectURL(blob);
             save_link.download = filename;
             save_link.target = "_blank";
