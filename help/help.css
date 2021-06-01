@@ -7,17 +7,16 @@ body {
     /*viewport width=800*/
     font-size: 28px;
     font-family: mHeiTi, SimHei;
-    line-height: 1.8;
+    line-height: 2;
     scroll-behavior: smooth;
     -webkit-user-select: none;
 }
 
 .topDiv,
 .buttomDiv {
-    background-color: #aaa;
-    width: 750px;
+    width: 770px;
     height: 200px;
-    margin: 25px 25px;
+    margin: 15px 15px;
 }
 
 .bodyDiv {
@@ -29,17 +28,96 @@ a {
     color: #663366;
 }
 
+
 h4 {
     font-size: 30px;
     font-weight: bold;
+    line-height: 1.5;
+    margin: 10px 10px;
 }
+
+h4.cancelFocus {
+    
+    -webkit-animation: cancelFocus 700ms ease-in;
+    -moz-animation: cancelFocus 700ms ease-in;
+    animation: cancelFocus 700ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes cancelFocus {
+    0% {
+        background-color: #ccc;
+    }
+    100% {
+        background-color: #dddddd;
+    }
+}
+
+@-moz-keyframes cancelFocus {
+    0% {
+        background-color: #ccc;
+    }
+    100% {
+        background-color: #dddddd;
+    }
+}
+
+@keyframes cancelFocus {
+    0% {
+        background-color: #ccc;
+    }
+    100% {
+        background-color: #dddddd;
+    }
+}
+
+
+h4.focus {
+    
+    -webkit-animation: focus 700ms ease-in;
+    -moz-animation: focus 700ms ease-in;
+    animation: focus 700ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes focus {
+    0% {
+        background-color: #dddddd;
+    }
+    100% {
+        background-color: #ccc;
+    }
+}
+
+@-moz-keyframes focus {
+    0% {
+        background-color: #dddddd;
+    }
+    100% {
+        background-color: #ccc;
+    }
+}
+
+@keyframes focus {
+    0% {
+        background-color: #dddddd;
+    }
+    100% {
+        background-color: #ccc;
+    }
+}
+
 
 ul,
 ol {
     color: #222222;
     font-size: 28px;
     font-weight: normal;
-    line-height: 1.8;
+    line-height: 2;
 }
 
 li {
@@ -47,11 +125,11 @@ li {
 }
 
 img {
-    opacity: 0.75;
+    opacity: 0.72;
 }
 
 mark {
-    background-color: #aaaa00;
+    background-color: #dddd88;
 }
 
 
@@ -106,7 +184,7 @@ mark {
 
 @-webkit-keyframes hideFocus {
     0% {
-        opacity: 0.2;
+        opacity: 0;
         height: 100px;
     }
 
@@ -118,7 +196,7 @@ mark {
 
 @-moz-keyframes hideFocus {
     0% {
-        opacity: 0.2;
+        opacity: 0;
         height: 100px;
     }
 
@@ -130,7 +208,7 @@ mark {
 
 @keyframes hideFocus {
     0% {
-        opacity: 0.2;
+        opacity: 0;
         height: 100px;
     }
 
@@ -184,6 +262,7 @@ mark {
 }
 
 .showList {
+    
     -webkit-animation: showList 500ms ease-in;
     -moz-animation: showList 500ms ease-in;
     animation: showList 500ms ease-in;
@@ -199,7 +278,7 @@ mark {
     }
 
     100% {
-        opacity: 0;
+        opacity: 1;
     }
 }
 
@@ -209,7 +288,7 @@ mark {
     }
 
     100% {
-        opacity: 0;
+        opacity: 1;
     }
 }
 
@@ -219,7 +298,7 @@ mark {
     }
 
     100% {
-        opacity: 0;
+        opacity: 1;
     }
 }
 

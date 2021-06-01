@@ -5,8 +5,8 @@ const elemClick = (() => {
     let busy = false;
 
     return (elem, depth, fast) => {
-        
-        if (! fast && busy) return;
+
+        if (!fast && busy) return;
         busy = !fast;
         const NODE_NAME = elem.nodeName;
         if (NODE_NAME == "UL" || NODE_NAME == "OL") {
@@ -36,7 +36,10 @@ const listClick = (() => {
         }
         else {
             hideList(elem, depth);
-            if (!fast) focusElement(elem);
+            if (!fast) {
+                focusElement(elem);
+                setFocus();
+            }
         }
         if (busy) setTimeout(() => {
             busy = false;
@@ -78,36 +81,61 @@ const focusElement = (() => {
 
 
 const scrollToElement = (() => {
-    
+
     let busy = false;
-    /*
+    const LINK = document.createElement("a");
+    document.body.appendChild(LINK);
+
     function link(id) {
-        console.log("link")
-        const LINK = document.createElement("a");
+
         LINK.href = id;
         LINK.target = "_self";
-        document.body.appendChild(LINK);
         LINK.click();
-        LINK.parentNode.removeChild(LINK);
     }
-    */
+
     return (elem, fast) => {
-        console.log(`scrollToElement 1 `)
+
         if (!fast && busy) return;
         busy = !fast;
         if (elem && elem.nodeType == 1) {
-            console.log(`scrollToElement 2 `)
             const ID = elem.getAttribute("id");
             elem.setAttribute("id", "1");
-            //link("#1")
-            window.location.hash = "#1";
+            link("#1")
+            //window.location.hash = "#1";
             elem.setAttribute("id", ID);
-            window.location.hash = "#0";
+            //window.location.hash = "#0";
+            setFocus(elem);
         }
         if (busy) setTimeout(() => {
             busy = false;
         }, 1000);
     };
+})();
+
+
+
+const setFocus = (() => {
+    let busy = false;
+    let focusH = document.createElement("H4");
+    return (elem) => {
+        if (busy) return;
+        busy = true;
+        if (elem && elem.nodeType == 1) {
+            focusH.setAttribute("class", "cancelFocus");
+            focusH = elem;
+            focusH.setAttribute("class", "focus");
+        }
+        else {
+            const firstUL = getFirstChildNode(focusH, ["UL","OL"]);
+            const firstLI = getFirstChildNode(firstUL, ["LI"]);
+            if (firstLI && firstLI.style.display == "none") {
+                focusH.setAttribute("class", "cancelFocus");
+            }
+        }
+        setTimeout(() => {
+            busy = false;
+        }, 1000);
+    }
 })();
 
 
@@ -138,7 +166,10 @@ function showList(elem, depth) {
                 TOHIDE_TXT : CHILD_NODES[i].nodeValue;
         }
     }
-    
+    if (["UL","OL"].indexOf(elem.nodeName)+1) {
+        elem.setAttribute("class", "showList");
+    }
+
 }
 
 
@@ -161,6 +192,9 @@ function hideList(elem, depth) {
             CHILD_NODES[i].nodeValue = ISTOHIDE ?
                 TOSHOW_TXT : CHILD_NODES[i].nodeValue;
         }
+    }
+    if (["UL", "OL"].indexOf(elem.nodeName) + 1) {
+        elem.setAttribute("class", "hideList");
     }
 }
 
@@ -186,7 +220,7 @@ function getTopNode(elem) {
     let depth = 10;
     while (depth--) {
         const CLASS_NANE = elem.parentNode.getAttribute("class");
-        if (CLASS_NANE=="bodyDiv") {
+        if (CLASS_NANE == "bodyDiv") {
             return elem;
         }
         elem = elem.parentNode;
@@ -202,7 +236,7 @@ const hashControl = (() => {
         busy = true;
         const HASH = window.location.hash;
         console.log(HASH)
-        if (HASH != "#1" && HASH!= "#0" && HASH) {
+        if (HASH != "#1" && HASH != "#0" && HASH) {
 
             const ID = HASH.slice(1);
             const ELEM = document.getElementById(ID);
