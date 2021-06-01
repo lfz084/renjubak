@@ -104,6 +104,9 @@ const scrollToElement = (() => {
             //window.location.hash = "#1";
             elem.setAttribute("id", ID);
             //window.location.hash = "#0";
+            console.log(`scrollHeight = ${elem.scrollHeight}`)
+            const p = getAbsolutePos(elem);
+            console.log(`x=${p.x}, p.y=${p.y}`)
             setFocus(elem);
         }
         if (busy) setTimeout(() => {
@@ -137,6 +140,18 @@ const setFocus = (() => {
         }, 1000);
     }
 })();
+
+
+
+function getAbsolutePos(el) {
+    var r = { x: el.offsetLeft, y: el.offsetTop };
+    if (el.offsetParent) {
+        var tmp = getAbsolutePos(el.offsetParent);
+        r.x += tmp.x;
+        r.y += tmp.y;
+    }
+    return r;
+}
 
 
 
@@ -258,7 +273,8 @@ const hashControl = (() => {
 
 
 
-window.onhashchange = function() {
+window.onhashchange = function(event) {
+    
     hashControl();
 }
 
@@ -325,13 +341,14 @@ function createBody(iHTML) {
 
     function mapLI(elem, depth) {
         const ELEM_NAME = elem.nodeName;
-        if (
-            ELEM_NAME == "UL" ||
-            ELEM_NAME == "OL" ||
-            ELEM_NAME == "A"
-        ) {
+        if (["UL","OL","A"].indexOf(ELEM_NAME)+1) {
             elem.onclick = () => { // if not ListClick to cancel 
                 elemClick(elem, depth);
+            }
+        }
+        else if(ELEM_NAME == "A"){
+            elem.onclick = () => { 
+                event.preventDefault();
             }
         }
 

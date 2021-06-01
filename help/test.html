@@ -10,11 +10,20 @@
             width: 800px;
             height: 1200px;
         }
+        
+        .wrapper {
+            width: 800px;
+            height: 1200px;
+        -webkit-overflow-scrolling:touch;
+        overflow-y:auto;
+        }
     </style>
 </head>
 
 <body>
+    <div class="wrapper">
     <iframe id="iframe" src="renjuhelp/power.html"></iframe>
+    </div>
     <script>
     alert(window.onhashchange)
         window.onhashchange = () => {
