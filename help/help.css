@@ -1,7 +1,221 @@
 html, body {
+    color: #111111;
+    background-color: #dddddd;
     height: 100%;
-    width: 100%;
+    width: 720px; /*viewport width=800*/
+    font-size: 28px;
     font-family: mHeiTi, SimHei;
-    scroll-behavior: smooth;
+    line-height: 0;
+    padding: 25px 25px 25px 25px;
+    scroll-behavior: auto;
     -webkit-user-select: none;
+}
+
+h4 {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+ul, ol {
+    color: #222222;
+    font-size: 28px;
+    font-weight: normal;
+    line-height: 1.8;
+}
+
+li {
+    font-weight: bold;
+}
+
+img {
+    opacity: 0.75;
+}
+
+mark {
+    background-color: #aaaa00
+}
+
+
+@-webkit-keyframes showFocus {
+    0% {
+        opacity: 0.2;
+        height: 0px;
+    }
+
+    100% {
+        opacity: 0;
+        height: 100px;
+    }
+}
+
+@-moz-keyframes showFocus {
+    0% {
+        opacity: 0.2;
+        height: 0px;
+    }
+
+    100% {
+        opacity: 0;
+        height: 100px;
+    }
+}
+
+@keyframes showFocus {
+    0% {
+        opacity: 0.2;
+        height: 0px;
+    }
+
+    100% {
+        opacity: 0;
+        height: 100px;
+    }
+}
+
+
+.showFocus {
+    background-color: black;
+    width: 100%;
+    -webkit-animation: showFocus 700ms ease-in;
+    -moz-animation: showFocus 700ms ease-in;
+    animation: showFocus 700ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+
+@-webkit-keyframes hideFocus {
+    0% {
+        opacity: 0.2;
+        height: 100px;
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        height: 0px;
+        display: none;
+    }
+}
+
+@-moz-keyframes hideFocus {
+    0% {
+        opacity: 0.2;
+        height: 100px;
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        height: 0px;
+        display: none;
+    }
+}
+
+@keyframes hideFocus {
+    0% {
+        opacity: 0.2;
+        height: 100px;
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        height: 0px;
+        display: none;
+    }
+}
+
+
+.hideFocus {
+    background-color: black;
+    width : 100%;
+    -webkit-animation: hideFocus 700ms ease-in;
+    -moz-animation: hideFocus 700ms ease-in;
+    animation: hideFocus 700ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+
+@-webkit-keyframes showList {
+    0% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes showList {
+    0% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes showList {
+    0% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.showList {
+    -webkit-animation: showList 500ms ease-in;
+    -moz-animation: showList 500ms ease-in;
+    animation: showList 500ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+
+@-webkit-keyframes hideList {
+    0% {
+        opacity: 0.9;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@-moz-keyframes hideList {
+    0% {
+        opacity: 0.9;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes hideList {
+    0% {
+        opacity: 0.9;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.hideList {
+
+    -webkit-animation: hideList 500ms ease-in;
+    -moz-animation: hideList 500ms ease-in;
+    animation: hideList 500ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
 }
