@@ -5,6 +5,8 @@
     <title>test</title>
     <meta content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0" name="viewport">
     <style type="text/css">
+        
+        
         #root {
             position: relative;
         }
@@ -25,12 +27,32 @@
             position: fixed;
             left: 0px;
             top: 0px;
+            z-index: 0;
+        }
+        
+        button{
+            font-size: 30px;
+            position: relative;
+            width: 100px;
+            height: 50px;
+            top: 80px;
         }
     </style>
 </head>
 
 <body>
-        <iframe src="test1.html"></iframe>
+        <iframe id="iframe" src="test1.html"></iframe>
+        <button onclick="focusElement('#one')">one</button>
+        <button onclick="focusElement('#two')">two</button>
+        <button onclick="focusElement('#three')">three</button>
+        <button onclick="focusElement('#top')">top</button>
+        <script>
+            function focusElement(id){
+                const IFRAME = document.getElementById("iframe");
+                IFRAME.setAttribute("src","test1.html" + id);
+                console.log("test1.html" + id)
+            }
+        </script>
 </body>
 
 </html>

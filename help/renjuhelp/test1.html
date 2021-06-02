@@ -6,6 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
     <style type="text/css">
+        html,
+        body {
+            color: #111111;
+            background-color: #dddddd;
+            height: 100%;
+            width: 800px;
+            /*viewport width=800*/
+            font-size: 28px;
+            font-family: mHeiTi, SimHei;
+            line-height: 2;
+            scroll-behavior: smooth;
+            -webkit-user-select: none;
+        }
+
         div {
             background-color: red;
             width: 100px;
@@ -24,11 +38,11 @@
     <a href="#two">222</a>
     <a href="#three">333</a>
     <div>top</div>
-    <a id="one" href="#top">top</a>
+    <a id="one" href="#top" onclick="alert()">top</a>
     <div>one</div>
-    <a id="two" href="#top">top</a>
+    <a id="two" href="#top" onclick="alert()">top</a>
     <div>two</div>
-    <a id="three" href="#top">top</a>
+    <a id="three" href="#top" onclick="alert()">top</a>
     <div>three</div>
 </body>
 
