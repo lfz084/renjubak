@@ -91,10 +91,10 @@ const scrollToElement = (() => {
         if (elem && elem.nodeType == 1) {
             const ID = elem.getAttribute("id");
             elem.setAttribute("id", "1");
-            linkTo("#1");
-            //window.location.hash = "#1";
+            //linkTo("#1");
+            window.location.hash = "#1";
             elem.setAttribute("id", ID);
-            //window.location.hash = "#0";
+            window.location.hash = "#0";
             console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
             console.log(`x=${p.x}, p.y=${p.y}`)
