@@ -9,9 +9,9 @@
         }
 
         #wrapper {
-            background-color: red;
+            background-color: #dddddd;
             width: 800px;
-            height: 800px;
+            height: 1200px;
             overflow-x: hidden;
             overflow-y: scroll;
             position: absolute;
@@ -29,8 +29,8 @@
             overflow: scroll;
             background-color: white;
             border-width: 0px;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            height: 3000px;
             position: absolute;
             left: 0px;
             top: 0px;
@@ -75,9 +75,9 @@
     <button class="three" onclick="focusElement('#three')">three</button>
     <button class="top" onclick="focusElement('#top')">top</button>
     
-    <div id="wrapper"></div>
+    <div id="wrapper">
         <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
-    
+    </div>
     
     <script>
         const focusElement = (() => {
