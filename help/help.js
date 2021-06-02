@@ -83,15 +83,6 @@ const focusElement = (() => {
 const scrollToElement = (() => {
 
     let busy = false;
-    const LINK = document.createElement("a");
-    document.body.appendChild(LINK);
-
-    function link(id) {
-
-        LINK.href = id;
-        LINK.target = "_self";
-        LINK.click();
-    }
 
     return (elem, fast) => {
 
@@ -100,7 +91,7 @@ const scrollToElement = (() => {
         if (elem && elem.nodeType == 1) {
             const ID = elem.getAttribute("id");
             elem.setAttribute("id", "1");
-            link("#1")
+            linkTo("#1");
             //window.location.hash = "#1";
             elem.setAttribute("id", ID);
             //window.location.hash = "#0";
@@ -129,12 +120,36 @@ const setFocus = (() => {
             focusH.setAttribute("class", "focus");
         }
         else {
-            const firstUL = getFirstChildNode(focusH, ["UL","OL"]);
+            const firstUL = getFirstChildNode(focusH, ["UL", "OL"]);
             const firstLI = getFirstChildNode(firstUL, ["LI"]);
             if (firstLI && firstLI.style.display == "none") {
                 focusH.setAttribute("class", "cancelFocus");
             }
         }
+        setTimeout(() => {
+            busy = false;
+        }, 1000);
+    }
+})();
+
+
+
+const linkTo = (() => {
+
+    let busy = false;
+    const LINK = document.createElement("a");
+    document.body.appendChild(LINK);
+
+    function link(url="#", target = "_self") {
+        
+        LINK.href = url;
+        LINK.target = target;
+        LINK.click();
+    }
+    return (url, target) => {
+        if (busy) return;
+        busy = true;
+        link(url, target);
         setTimeout(() => {
             busy = false;
         }, 1000);
@@ -181,7 +196,7 @@ function showList(elem, depth) {
                 TOHIDE_TXT : CHILD_NODES[i].nodeValue;
         }
     }
-    if (["UL","OL"].indexOf(elem.nodeName)+1) {
+    if (["UL", "OL"].indexOf(elem.nodeName) + 1) {
         elem.setAttribute("class", "showList");
     }
 
@@ -274,7 +289,7 @@ const hashControl = (() => {
 
 
 window.onhashchange = function(event) {
-    
+
     hashControl();
 }
 
@@ -343,14 +358,19 @@ function createBody(iHTML) {
 
     function mapLI(elem, depth) {
         const ELEM_NAME = elem.nodeName;
-        if (["UL","OL","A"].indexOf(ELEM_NAME)+1) {
-            elem.onclick = () => { // if not ListClick to cancel 
+        if (["UL", "OL"].indexOf(ELEM_NAME) + 1) {
+            elem.onclick = () => { // if not ListClick to cancel
                 elemClick(elem, depth);
             }
         }
-        else if(ELEM_NAME == "A"){
-            elem.onclick = () => { 
-                event.preventDefault();
+        else if (ELEM_NAME == "A") {
+            const ID = elem.getAttribute("href");
+            elem.removeAttribute("href")
+            elem.onclick = () => {
+                //event.preventDefault();
+                alert(ID)
+                elemClick(elem, depth); //cancel parentNode click 
+                linkTo(ID);
             }
         }
 
