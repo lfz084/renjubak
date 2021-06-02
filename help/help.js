@@ -274,7 +274,7 @@ const hashControl = (() => {
 
 
 window.onhashchange = function(event) {
-    alert(window.location.href)
+    
     hashControl();
 }
 
@@ -291,6 +291,7 @@ document.body.onload = function() {
     }, 1000);
 
 }
+
 
 
 function setView(width = 800) {

@@ -10,28 +10,27 @@
         }
 
         #wrapper {
+            background-color: red;
             height: 800px;
             width: 1200px;
             overflow-x: hidden;
             overflow-y: scroll;
-            position: relative;
+            position: absolute;
             -webkit-overflow-scrolling: touch;
         }
 
         iframe {
-            width: 100%;
+            width: 800px;
             height: 100%;
+            position: fixed;
+            left: 0px;
+            top: 0px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Why won't this iframe scroll to where I want?</h1>
-    <div id="root">
-        <div id="wrapper">
-            <iframe src="power.html"></iframe>
-        </div>
-    </div>
+        <iframe src="test1.html"></iframe>
 </body>
 
 </html>
