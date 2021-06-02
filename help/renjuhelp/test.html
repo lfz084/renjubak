@@ -3,7 +3,6 @@
 
 <head>
     <title>test</title>
-    
     <style type="text/css">
         #root {
             position: relative;
@@ -11,13 +10,13 @@
 
         #wrapper {
             background-color: red;
-            height: 1200px;
             width: 800px;
+            height: 1000px;
             overflow-x: hidden;
             overflow-y: scroll;
-            position: relative;
+            position: fixed;
             left: 0px;
-            top: 0px;
+            top: 150px;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -27,9 +26,11 @@
         }
 
         iframe {
-            width: 800px;
+            background-color: white;
+            border-width: 0px;
+            width: 100%;
             height: 100%;
-            position: relative;
+            position: absolute;
             left: 0px;
             top: 0px;
             z-index: 0;
@@ -70,7 +71,7 @@
     <button class="one" onclick="focusElement('#one')">one</button>
     <button class="two" onclick="focusElement('#two')">two</button>
     <button class="three" onclick="focusElement('#three')">three</button>
-    <button class="top"onclick="focusElement('#top')">top</button>
+    <button class="top" onclick="focusElement('#top')">top</button>
     <div id="wrapper">
         <iframe name="_help" id="iframe" namsrc="test1.html/#"></iframe>
     </div>
@@ -85,6 +86,28 @@
                 LINK.click();
             }
         })();
+        document.body.onload =()=>{
+            setView();
+            focusElement('#top')
+        }
+        function setView(width = 800) {
+
+            const ELEM_LIST = document.getElementsByName("viewport");
+            console.log(ELEM_LIST)
+            const VIEW = ELEM_LIST[0] || document.createElement("meta");
+            console.log(VIEW)
+            let dw = document.documentElement.clientWidth;
+            let dh = document.documentElement.clientHeight;
+            let sw = window.screen.width;
+            let sh = window.screen.height;
+            let max = sw > sh ? sw : sh;
+            let min = sw < sh ? sw : sh;
+            let scale = (dw > dh ? max : min) / width;
+            document.head.appendChild(VIEW);
+            VIEW.setAttribute("name", "viewport");
+            VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
+            VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
+        }
     </script>
 </body>
 

@@ -297,7 +297,7 @@ document.body.onload = function() {
 function setView(width = 800) {
 
     const ELEM_LIST = document.getElementsByName("viewport");
-    const VIEW = ELEM_LIST ? ELEM_LIST[0] : document.createElement("meta");
+    const VIEW = ELEM_LIST[0] || document.createElement("meta");
     let dw = document.documentElement.clientWidth;
     let dh = document.documentElement.clientHeight;
     let sw = window.screen.width;
@@ -306,6 +306,7 @@ function setView(width = 800) {
     let min = sw < sh ? sw : sh;
     let scale = (dw > dh ? max : min) / width;
     document.head.appendChild(VIEW);
+    VIEW.setAttribute("name", "viewport");
     VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
     VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
 }
