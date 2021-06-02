@@ -3,7 +3,7 @@
 
 <head>
     <title>test</title>
-    <meta content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0" name="viewport">
+    
     <style type="text/css">
         #root {
             position: relative;
@@ -11,8 +11,8 @@
 
         #wrapper {
             background-color: red;
-            height: 800px;
-            width: 1200px;
+            height: 1200px;
+            width: 800px;
             overflow-x: hidden;
             overflow-y: scroll;
             position: relative;
@@ -20,7 +20,7 @@
             top: 0px;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         div {
             height: 300px;
             position: relative;
@@ -38,31 +38,53 @@
         button {
             font-size: 30px;
             position: fixed;
-            width: 100px;
+            width: 80px;
             height: 50px;
-            top : 300px;
             z-index: 1;
+        }
+
+        button.one {
+            top: 300px;
+            left: 0px;
+        }
+
+        button.two {
+            top: 300px;
+            left: 100px;
+        }
+
+        button.three {
+            top: 300px;
+            left: 200px;
+        }
+
+        button.top {
+            top: 300px;
+            left: 300px;
         }
     </style>
 </head>
 
 <body>
     <div></div>
-        <button onclick="focusElement('#one')">one</button>
-    <button onclick="focusElement('#two')" style="left: 120px">two</button>
-    <button onclick="focusElement('#three')" style="left: 240px">three</button>
-    <button onclick="focusElement('#top')" style="left: 360px">top</button>
- 
+    <button class="one" onclick="focusElement('#one')">one</button>
+    <button class="two" onclick="focusElement('#two')">two</button>
+    <button class="three" onclick="focusElement('#three')">three</button>
+    <button class="top"onclick="focusElement('#top')">top</button>
     <div id="wrapper">
-        <iframe id="iframe" src="test1.html"></iframe>
+        <iframe name="_help" id="iframe" namsrc="test1.html/#"></iframe>
     </div>
     <div></div>
-   <script>
-        function focusElement(id) {
-            const IFRAME = document.getElementById("iframe");
-            IFRAME.setAttribute("src", "test1.html" + id);
-            console.log("test1.html" + id)
-        }
+    <script>
+        const focusElement = (() => {
+            const LINK = document.createElement("a");
+            document.body.appendChild(LINK);
+            return (id) => {
+                LINK.href = "test1.html" + id;
+                LINK.target = "_help";
+                LINK.click();
+            }
+        })();
     </script>
 </body>
 
