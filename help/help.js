@@ -360,6 +360,7 @@ function createBody(iHTML) {
         const ELEM_NAME = elem.nodeName;
         if (["UL", "OL"].indexOf(ELEM_NAME) + 1) {
             elem.onclick = () => { // if not ListClick to cancel
+                alert(elem)
                 elemClick(elem, depth);
             }
         }
