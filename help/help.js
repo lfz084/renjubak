@@ -140,8 +140,8 @@ const linkTo = (() => {
     const LINK = document.createElement("a");
     document.body.appendChild(LINK);
 
-    function link(url="#", target = "_self") {
-        
+    function link(url = "#", target = "_self") {
+
         LINK.href = url;
         LINK.target = target;
         LINK.click();
@@ -365,13 +365,17 @@ function createBody(iHTML) {
             }
         }
         else if (ELEM_NAME == "A") {
-            const ID = elem.getAttribute("href");
+            const ID = elem.getAttribute("href").slice(1);
             elem.removeAttribute("href")
             elem.onclick = () => {
                 //event.preventDefault();
                 alert(ID)
-                elemClick(elem, depth); //cancel parentNode click 
-                linkTo(ID);
+                const TARGET_ELEM = document.getElementById(ID);
+                const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
+                elemClick(elem, depth); //cancel parentNode click event
+                showList(FIRST_NODE, 1);
+                scrollToElement(getTopNode(TARGET_ELEM));
+                focusElement(FIRST_NODE);
             }
         }
 
@@ -385,11 +389,7 @@ function createBody(iHTML) {
                 else if (NODE_NAME == "UL" || NODE_NAME == "OL") {
                     mapLI(CHILD_NODES[i], ELEM_NAME == NODE_NAME ? depth + 1 : depth);
                 }
-                else if (NODE_NAME == "A" ||
-                    NODE_NAME == "IMG" ||
-                    NODE_NAME == "MARK" ||
-                    NODE_NAME == "PS"
-                ) {
+                else if (["A","IMG","MARK","PS"].indexOf(NODE_NAME)+1) {
                     mapLI(CHILD_NODES[i], depth);
                 }
                 else if (i == 0 && NODE_NAME == "#text") {
