@@ -360,7 +360,7 @@ function createBody(iHTML) {
         const ELEM_NAME = elem.nodeName;
         if (["UL", "OL"].indexOf(ELEM_NAME) + 1) {
             elem.onclick = () => { // if not ListClick to cancel
-                alert(elem)
+                console.log(elem)
                 elemClick(elem, depth);
             }
         }
@@ -369,7 +369,7 @@ function createBody(iHTML) {
             elem.removeAttribute("href")
             elem.onclick = () => {
                 //event.preventDefault();
-                alert(ID)
+                console.log(ID)
                 const TARGET_ELEM = document.getElementById(ID);
                 const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
                 elemClick(elem, depth); //cancel parentNode click event
