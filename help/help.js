@@ -267,7 +267,6 @@ function setScrollY(top) {
 
 
 
-
 function showList(elem, depth) {
 
     if (!elem) return;
@@ -402,6 +401,28 @@ document.body.onload = function() {
     setTimeout(() => {
         window.onhashchange();
     }, 1000);
+            
+            (() => { // test scrollHeight
+                const CONSOLE = document.createElement("div");
+                let s = CONSOLE.style;
+                s.color = "black";
+                s.backgroundColor = "#eeeeee";
+                s.position = "fixed";
+                s.top = "200px";
+                s.width = "800px";
+                s.height = "100px";
+                s.fontSize = "25px";
+                s.lineHeight = 1.1;
+                document.body.appendChild(CONSOLE);
+                setInterval(() => {
+                    CONSOLE.innerText = `
+                body.scrollHeight = ${document.body.scrollTop}\n
+                documentElement.scrollTop = ${document.documentElement.scrollTop}\n
+                window.pageYOffset = ${window.pageYOffset}
+                `
+                }, 500)
+            })();
+            
 
 }
 
