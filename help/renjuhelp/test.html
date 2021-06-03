@@ -84,6 +84,8 @@
     </div>
     <script>
         const IFREAM_DIV = document.getElementById("wrapper")
+        const IFREAM = document.getElementById("iframe")
+        const CHILD_WINDOW = IFREAM.contentWindow;
         const focusElement = (() => {
             const LINK = document.createElement("a");
             document.body.appendChild(LINK);
@@ -98,6 +100,7 @@
         document.body.onload = () => {
 
             setView();
+            CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
         }
 
 
@@ -164,18 +167,28 @@
 
             return (top) => {
 
+                console.log("parent animationFrameScroll")
                 cancelAnima();
-                targetScrollTop = 3000;
-                tempScrollTop = 0;
+                targetScrollTop = top;
+                tempScrollTop = IFREAM_DIV.scrollTop;
                 moves = getScrollPoints(targetScrollTop-tempScrollTop);
                 scrollTo();
             }
         })();
 
-        setInterval(() => {
-            scrollToAnimation();
+        /*
+        setTimeout(() => {
+            alert(IFREAM.contentWindow.scrollToAnimation)
+            IFREAM.contentWindow.scrollToAnimation = scrollToAnimation;
+            alert(IFREAM.contentWindow.scrollToAnimation)
+            scrollToAnimation(3000);
+            setTimeout(()=>{
+                scrollToAnimation(0);
+            },2000);
             console.log(`.......${IFREAM_DIV.scrollTop},...${IFREAM_DIV.scrollHeight}`)
+            
         }, 5000)
+        */
 
 
         function getScrollY() {
@@ -185,7 +198,7 @@
 
 
         function setScrollY(top) {
-            console.log(`${IFREAM_DIV}, ${top}`)
+            //console.log(`${IFREAM_DIV}, ${top}`)
             IFREAM_DIV.scrollTop = top;
         }
 
