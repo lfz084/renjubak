@@ -20,6 +20,7 @@ const elemClick = (() => {
 })();
 
 
+
 const listClick = (() => {
 
     let busy = false;
@@ -48,7 +49,9 @@ const listClick = (() => {
 })();
 
 
+
 const focusElement = (() => {
+    
     let busy = false;
     let focusDiv = document.createElement("div");
     let focusDiv1 = document.createElement("div");
@@ -56,13 +59,12 @@ const focusElement = (() => {
     let s1 = focusDiv1.style;
     s.position = s1.position = "relative";
     s.top = s1.top = "0px";
-    //s.width = s1.width = "750px";
-    //s.height = s1.height = "100px";
+    
     return (elem) => {
+        
         if (busy) return;
         busy = true;
         if (elem && elem.childNodes) {
-            //alert("focus")
             focusDiv.setAttribute("class", "hideFocus");
             focusDiv1.setAttribute("class", "hideFocus");
             elem.insertBefore(focusDiv, elem.childNodes[0]);
@@ -194,7 +196,7 @@ const linkTo = (() => {
 
 
 
-function getAbsolutePos(el) {
+window.getAbsolutePos = (el)=> {
     var r = { x: el.offsetLeft, y: el.offsetTop };
     if (el.offsetParent) {
         var tmp = getAbsolutePos(el.offsetParent);
