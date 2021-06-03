@@ -90,20 +90,71 @@ const scrollToElement = (() => {
         busy = !fast;
         if (elem && elem.nodeType == 1) {
             const ID = elem.getAttribute("id");
-            elem.setAttribute("id", "1");
+            //elem.setAttribute("id", "1");
             //linkTo("#1");
-            window.location.hash = "#1";
-            elem.setAttribute("id", ID);
-            window.location.hash = "#0";
+            //window.location.hash = "#1";
+            //elem.setAttribute("id", ID);
+            //window.location.hash = "#0";
+
             console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
             console.log(`x=${p.x}, p.y=${p.y}`)
+            scrollToAnimation(p.y-15)
             setFocus(elem);
         }
         if (busy) setTimeout(() => {
             busy = false;
         }, 1000);
     };
+})();
+
+
+
+const scrollToAnimation = (() => {
+    let animationFrameScroll = null;
+    let targetScrollTop = 0
+    let tempScrollTop = 0;
+
+    function scrollTo() {
+        const MAX_MOVE = 200;
+        const MIN_MOVE = 15;
+        let scl = Math.abs(parseInt((targetScrollTop - tempScrollTop) / 30))+MIN_MOVE;
+        scl = scl > MAX_MOVE ? MAX_MOVE : scl;
+        //console.log(`scl=${scl}`)
+        if ((scl>MIN_MOVE) && (tempScrollTop > targetScrollTop)) {
+            tempScrollTop -= scl;
+        }
+        else if ((scl>MIN_MOVE) && (tempScrollTop < targetScrollTop)) {
+            tempScrollTop += scl;
+        }
+        else { //  to cancelAnimationFrame
+            tempScrollTop = targetScrollTop;
+        }
+        setScrollY(tempScrollTop);
+        //console.log(`animationFrameScroll  ${tempScrollTop},  targetScrollTop=${ targetScrollTop}`)
+        animationFrameScroll = requestAnimationFrame(scrollTo);
+        if (tempScrollTop == targetScrollTop) {
+            cancelAnima();
+        }
+    }
+
+    function cancelAnima() {
+        cancelAnimationFrame(animationFrameScroll);
+        animationFrameScroll = null;
+        targetScrollTop = 0
+        tempScrollTop = 0;
+    }
+
+    return (top) => {
+        if (animationFrameScroll) {
+            cancelAnima();
+        }
+        else {
+            targetScrollTop = top;
+            tempScrollTop = getScrollY();
+            scrollTo();
+        }
+    }
 })();
 
 
@@ -167,6 +218,28 @@ function getAbsolutePos(el) {
     }
     return r;
 }
+
+
+function getScrollY() {
+    return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
+
+
+function setScrollY(top) {
+    console.log(`window.pageYOffset=${window.pageYOffset!==undefined}, 
+    document.documentElement.scrollTop=${document.documentElement.scrollTop!==undefined}, 
+    document.body.scrollTop=${document.body.scrollTop!==undefined}`)
+    if (window.pageYOffset !== undefined) {
+        window.pageYOffset = top;
+    }
+    if (document.documentElement.scrollTop !== undefined) {
+        document.documentElement.scrollTop = top;
+    }
+    if (document.body.scrollTop !== undefined) {
+        document.body.scrollTop = top;
+    }
+}
+
 
 
 
@@ -389,7 +462,7 @@ function createBody(iHTML) {
                 else if (NODE_NAME == "UL" || NODE_NAME == "OL") {
                     mapLI(CHILD_NODES[i], ELEM_NAME == NODE_NAME ? depth + 1 : depth);
                 }
-                else if (["A","IMG","MARK","PS"].indexOf(NODE_NAME)+1) {
+                else if (["A", "IMG", "MARK", "PS"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i], depth);
                 }
                 else if (i == 0 && NODE_NAME == "#text") {

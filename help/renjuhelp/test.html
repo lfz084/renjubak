@@ -16,7 +16,7 @@
             overflow-y: scroll;
             position: absolute;
             left: 0px;
-            top: 0px;
+            top: 100px;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -25,12 +25,17 @@
             position: relative;
         }
 
+        #console {
+            position: fixed;
+            z-index: 99;
+        }
+
         iframe {
             overflow: scroll;
             background-color: white;
             border-width: 0px;
-            width: 100%;
-            height: 3000px;
+            width: 800px;
+            height: 100%;
             position: absolute;
             left: 0px;
             top: 0px;
@@ -42,7 +47,7 @@
             position: fixed;
             width: 80px;
             height: 50px;
-            top:30px;
+            top: 30px;
             z-index: 1;
         }
 
@@ -52,33 +57,31 @@
         }
 
         button.two {
-        
+
             left: 100px;
         }
 
         button.three {
-        
+
             left: 200px;
         }
 
         button.top {
-        
+
             left: 300px;
         }
     </style>
 </head>
 
 <body>
-    
+    <div id="console"></div>
     <button class="one" onclick="focusElement('#one')">one</button>
     <button class="two" onclick="focusElement('#two')">two</button>
     <button class="three" onclick="focusElement('#three')">three</button>
     <button class="top" onclick="focusElement('#top')">top</button>
-    
     <div id="wrapper">
         <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
     </div>
-    
     <script>
         const focusElement = (() => {
             const LINK = document.createElement("a");
@@ -89,10 +92,13 @@
                 LINK.click();
             }
         })();
-        document.body.onload =()=>{
+
+
+        document.body.onload = () => {
             setView();
-            focusElement('#top')
         }
+
+        
         function setView(width = 800) {
 
             const ELEM_LIST = document.getElementsByName("viewport");
@@ -108,8 +114,6 @@
             let scale = (dw > dh ? max : min) / width;
             document.head.appendChild(VIEW);
             VIEW.setAttribute("name", "viewport");
-            VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
-            VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
         }
     </script>
 </body>

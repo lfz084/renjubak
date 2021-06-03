@@ -8,7 +8,7 @@ body {
     font-size: 28px;
     font-family: mHeiTi, SimHei;
     line-height: 2;
-    scroll-behavior: smooth;
+    scroll-behavior: auto; /*smooth;*/
     -webkit-user-select: none;
 }
 
