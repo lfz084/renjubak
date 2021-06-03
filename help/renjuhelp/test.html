@@ -34,9 +34,9 @@
             overflow: scroll;
             background-color: white;
             border-width: 0px;
-            width: 800px;
+            width: 100%;
             height: 100%;
-            position: absolute;
+            position: relative;
             left: 0px;
             top: 0px;
             z-index: 0;
@@ -83,6 +83,7 @@
         <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
     </div>
     <script>
+        const IFREAM_DIV = document.getElementById("wrapper")
         const focusElement = (() => {
             const LINK = document.createElement("a");
             document.body.appendChild(LINK);
@@ -95,10 +96,100 @@
 
 
         document.body.onload = () => {
+
             setView();
         }
 
-        
+
+        function getScrollPoints(move) {
+
+            const PAR = 1.5;
+            const MAX_MOVE = 210;
+            const HALF = move / 2;
+            let sum = Math.abs(HALF);
+            let tempMove = 0;
+            let tempMoves = [];
+            while (sum) {
+                tempMove = tempMove * PAR || PAR;
+                tempMove = tempMove > MAX_MOVE ? MAX_MOVE : tempMove;
+                tempMoves.push(tempMove);
+                sum -= tempMove;
+                if (sum < tempMove) {
+                    tempMoves[tempMoves.length - 1] = tempMoves[tempMoves.length - 1] + sum;
+                    sum = 0;
+                }
+            }
+            let rtHs = [];
+            for (let i = 0; i < tempMoves.length; i++) {
+                rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
+            }
+            for (let i = tempMoves.length - 1; i >= 0; i--) {
+                rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
+            }
+            console.log(rtHs)
+            return rtHs;
+        }
+
+
+        const scrollToAnimation = (() => {
+
+            let moves = [];
+            let animationFrameScroll = null;
+            let targetScrollTop = 0
+            let tempScrollTop = 0;
+
+            function scrollTo() {
+
+                let IFREAM = document.getElementById("iframe");
+                let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
+                IFREAM.style.height = iDoc.body.scrollHeight+"px";
+                tempScrollTop += moves.splice(0, 1)[0];
+                setScrollY(tempScrollTop);
+                if (moves.length) {
+                    animationFrameScroll = requestAnimationFrame(scrollTo);
+                }
+                else {
+                    cancelAnima();
+                }
+            }
+
+            function cancelAnima() {
+
+                cancelAnimationFrame(animationFrameScroll);
+                moves = [];
+                animationFrameScroll = null;
+                targetScrollTop = 0
+                tempScrollTop = 0;
+            }
+
+            return (top) => {
+
+                cancelAnima();
+                targetScrollTop = 3000;
+                tempScrollTop = 0;
+                moves = getScrollPoints(targetScrollTop-tempScrollTop);
+                scrollTo();
+            }
+        })();
+
+        setInterval(() => {
+            scrollToAnimation();
+            console.log(`.......${IFREAM_DIV.scrollTop},...${IFREAM_DIV.scrollHeight}`)
+        }, 5000)
+
+
+        function getScrollY() {
+
+            return IFREAM_DIV.scrollTop;
+        }
+
+
+        function setScrollY(top) {
+            console.log(`${IFREAM_DIV}, ${top}`)
+            IFREAM_DIV.scrollTop = top;
+        }
+
+
         function setView(width = 800) {
 
             const ELEM_LIST = document.getElementsByName("viewport");

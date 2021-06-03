@@ -89,12 +89,6 @@ const scrollToElement = (() => {
         if (!fast && busy) return;
         busy = !fast;
         if (elem && elem.nodeType == 1) {
-            const ID = elem.getAttribute("id");
-            //elem.setAttribute("id", "1");
-            //linkTo("#1");
-            //window.location.hash = "#1";
-            //elem.setAttribute("id", ID);
-            //window.location.hash = "#0";
 
             console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
@@ -241,23 +235,15 @@ function getScrollPoints(move) {
 
 
 function getScrollY() {
-    return document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop || 0;
+    return document.documentElement.scrollTop || document.body.scrollTop || 0;
 }
 
 
 function setScrollY(top) {
-    /*
-    console.log(`window.pageYOffset=${window.pageYOffset!==undefined}, 
-    document.documentElement.scrollTop=${document.documentElement.scrollTop!==undefined}, 
-    document.body.scrollTop=${document.body.scrollTop!==undefined}`)
-    */
+
     let t = document.documentElement.scrollTop;
     if (t !== undefined && t != top) {
         document.documentElement.scrollTop = top;
-    }
-    t = window.pageYOffset;
-    if (t !== undefined && t != top) {
-        window.pageYOffset = top;
     }
     t = document.body.scrollTop;
     if (t !== undefined && t != top) {
@@ -401,28 +387,29 @@ document.body.onload = function() {
     setTimeout(() => {
         window.onhashchange();
     }, 1000);
-            
-            (() => { // test scrollHeight
-                const CONSOLE = document.createElement("div");
-                let s = CONSOLE.style;
-                s.color = "black";
-                s.backgroundColor = "#eeeeee";
-                s.position = "fixed";
-                s.top = "200px";
-                s.width = "800px";
-                s.height = "100px";
-                s.fontSize = "25px";
-                s.lineHeight = 1.1;
-                document.body.appendChild(CONSOLE);
-                setInterval(() => {
-                    CONSOLE.innerText = `
-                body.scrollHeight = ${document.body.scrollTop}\n
+
+    (() => { // test scrollHeight
+        const CONSOLE = document.createElement("div");
+        let s = CONSOLE.style;
+        s.color = "black";
+        s.backgroundColor = "#eeeeee";
+        s.position = "fixed";
+        s.top = "200px";
+        s.width = "800px";
+        s.height = "100px";
+        s.fontSize = "25px";
+        s.lineHeight = 1.1;
+        document.body.appendChild(CONSOLE);
+        setInterval(() => {
+            CONSOLE.innerText = `
+                body.scrollHeight = ${document.body.scrollHeight}\n
+                body.scrollTop = ${document.body.scrollTop}\n
                 documentElement.scrollTop = ${document.documentElement.scrollTop}\n
                 window.pageYOffset = ${window.pageYOffset}
                 `
-                }, 500)
-            })();
-            
+        }, 500)
+    })();
+
 
 }
 
