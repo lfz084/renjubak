@@ -14,10 +14,10 @@
             height: 1200px;
             overflow-x: hidden;
             overflow-y: scroll;
-            position: absolute;
+            position: fixed;
             left: 0px;
-            top: 100px;
-            -webkit-overflow-scrolling: touch;
+            top: 50px;
+            /*-webkit-overflow-scrolling: touch;*/
         }
 
         div {
@@ -74,11 +74,6 @@
 </head>
 
 <body>
-    <div id="console"></div>
-    <button class="one" onclick="focusElement('#one')">one</button>
-    <button class="two" onclick="focusElement('#two')">two</button>
-    <button class="three" onclick="focusElement('#three')">three</button>
-    <button class="top" onclick="focusElement('#top')">top</button>
     <div id="wrapper">
         <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
     </div>
@@ -87,7 +82,8 @@
         const IFREAM = document.getElementById("iframe")
         const CHILD_WINDOW = IFREAM.contentWindow;
         let getDocumentHeight = ()=>{};
-        
+        let getScrollPoints = ()=>{};
+    
         const focusElement = (() => {
             const LINK = document.createElement("a");
             document.body.appendChild(LINK);
@@ -102,49 +98,23 @@
         document.body.onload = () => {
 
             setView();
-            getDocumentHeight = (()=>{
-                
+            
+            getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
+
                 let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
                 const MARK_END = iDoc.createElement("a");
                 iDoc.body.appendChild(MARK_END);
-                return ()=> {
+                return () => {
                     return CHILD_WINDOW.getAbsolutePos(MARK_END).y;
                 }
             })();
+
+            getScrollPoints = CHILD_WINDOW.getScrollPoints;
             CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
         }
 
 
-        function getScrollPoints(move) {
-
-            const PAR = 1.5;
-            const MAX_MOVE = 210;
-            const HALF = move / 2;
-            let sum = Math.abs(HALF);
-            let tempMove = 0;
-            let tempMoves = [];
-            while (sum) {
-                tempMove = tempMove * PAR || PAR;
-                tempMove = tempMove > MAX_MOVE ? MAX_MOVE : tempMove;
-                tempMoves.push(tempMove);
-                sum -= tempMove;
-                if (sum < tempMove) {
-                    tempMoves[tempMoves.length - 1] = tempMoves[tempMoves.length - 1] + sum;
-                    sum = 0;
-                }
-            }
-            let rtHs = [];
-            for (let i = 0; i < tempMoves.length; i++) {
-                rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
-            }
-            for (let i = tempMoves.length - 1; i >= 0; i--) {
-                rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
-            }
-            console.log(rtHs)
-            return rtHs;
-        }
-
-
+        
         const scrollToAnimation = (() => {
 
             let moves = [];
@@ -156,8 +126,8 @@
 
                 let IFREAM = document.getElementById("iframe");
                 let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
-                IFREAM.style.height = getDocumentHeight() +"px";
-                alert(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
+                IFREAM.style.height = getDocumentHeight() + "px";
+                console.log(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
                 tempScrollTop += moves.splice(0, 1)[0];
                 setScrollY(tempScrollTop);
                 if (moves.length) {
@@ -183,24 +153,11 @@
                 cancelAnima();
                 targetScrollTop = top;
                 tempScrollTop = IFREAM_DIV.scrollTop;
-                moves = getScrollPoints(targetScrollTop-tempScrollTop);
+                moves = getScrollPoints(targetScrollTop - tempScrollTop);
                 scrollTo();
-            }
+            };
         })();
-
-        /*
-        setTimeout(() => {
-            alert(IFREAM.contentWindow.scrollToAnimation)
-            IFREAM.contentWindow.scrollToAnimation = scrollToAnimation;
-            alert(IFREAM.contentWindow.scrollToAnimation)
-            scrollToAnimation(3000);
-            setTimeout(()=>{
-                scrollToAnimation(0);
-            },2000);
-            console.log(`.......${IFREAM_DIV.scrollTop},...${IFREAM_DIV.scrollHeight}`)
-            
-        }, 5000)
-        */
+    
 
 
         function getScrollY() {

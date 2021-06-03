@@ -207,7 +207,7 @@ window.getAbsolutePos = (el)=> {
 }
 
 
-function getScrollPoints(move) {
+window.getScrollPoints = (move)=> {
 
     const PAR = 1.5;
     const MAX_MOVE = 210;
@@ -241,7 +241,7 @@ function getScrollY() {
 }
 
 
-function setScrollY(top) {
+window.setScrollY = (top)=> {
 
     let t = document.documentElement.scrollTop;
     if (t !== undefined && t != top) {
