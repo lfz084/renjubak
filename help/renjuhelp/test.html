@@ -81,9 +81,9 @@
         const IFREAM_DIV = document.getElementById("wrapper")
         const IFREAM = document.getElementById("iframe")
         const CHILD_WINDOW = IFREAM.contentWindow;
-        let getDocumentHeight = ()=>{};
-        let getScrollPoints = ()=>{};
-    
+        let getDocumentHeight = () => {};
+        let getScrollPoints = () => {};
+
         const focusElement = (() => {
             const LINK = document.createElement("a");
             document.body.appendChild(LINK);
@@ -98,7 +98,7 @@
         document.body.onload = () => {
 
             setView();
-            
+
             getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
                 let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
@@ -110,11 +110,13 @@
             })();
 
             getScrollPoints = CHILD_WINDOW.getScrollPoints;
-            CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
+            if (navigator.userAgent.indexOf("iPhone") + 1) {
+                CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
+            }
         }
 
 
-        
+
         const scrollToAnimation = (() => {
 
             let moves = [];
@@ -126,8 +128,7 @@
 
                 let IFREAM = document.getElementById("iframe");
                 let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
-                IFREAM.style.height = getDocumentHeight() + "px";
-                console.log(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
+                //console.log(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
                 tempScrollTop += moves.splice(0, 1)[0];
                 setScrollY(tempScrollTop);
                 if (moves.length) {
@@ -150,6 +151,7 @@
             return (top) => {
 
                 console.log("parent animationFrameScroll")
+                IFREAM.style.height = getDocumentHeight() + "px";
                 cancelAnima();
                 targetScrollTop = top;
                 tempScrollTop = IFREAM_DIV.scrollTop;
@@ -157,7 +159,7 @@
                 scrollTo();
             };
         })();
-    
+
 
 
         function getScrollY() {
