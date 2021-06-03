@@ -99,7 +99,7 @@ const scrollToElement = (() => {
             console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
             console.log(`x=${p.x}, p.y=${p.y}`)
-            scrollToAnimation(p.y-15)
+            scrollToAnimation(p.y - 15)
             setFocus(elem);
         }
         if (busy) setTimeout(() => {
@@ -111,20 +111,19 @@ const scrollToElement = (() => {
 
 
 const scrollToAnimation = (() => {
+    const MAX_MOVE = 300;
+    const MIN_MOVE = 30;
+    const SPEED = 1/50;
     let animationFrameScroll = null;
     let targetScrollTop = 0
     let tempScrollTop = 0;
 
-    function scrollTo() {
-        const MAX_MOVE = 200;
-        const MIN_MOVE = 15;
-        let scl = Math.abs(parseInt((targetScrollTop - tempScrollTop) / 30))+MIN_MOVE;
+    function scrollDown() {
+
+        let scl = Math.abs((targetScrollTop - tempScrollTop) * SPEED) + MIN_MOVE;
         scl = scl > MAX_MOVE ? MAX_MOVE : scl;
-        //console.log(`scl=${scl}`)
-        if ((scl>MIN_MOVE) && (tempScrollTop > targetScrollTop)) {
-            tempScrollTop -= scl;
-        }
-        else if ((scl>MIN_MOVE) && (tempScrollTop < targetScrollTop)) {
+        console.log(`scrollDown=${scl}`)
+        if (tempScrollTop < targetScrollTop) {
             tempScrollTop += scl;
         }
         else { //  to cancelAnimationFrame
@@ -132,28 +131,49 @@ const scrollToAnimation = (() => {
         }
         setScrollY(tempScrollTop);
         //console.log(`animationFrameScroll  ${tempScrollTop},  targetScrollTop=${ targetScrollTop}`)
-        animationFrameScroll = requestAnimationFrame(scrollTo);
+        animationFrameScroll = requestAnimationFrame(scrollDown);
         if (tempScrollTop == targetScrollTop) {
             cancelAnima();
         }
     }
 
+    function scrollUp() {
+
+        let scl = Math.abs((targetScrollTop - tempScrollTop) * SPEED) + MIN_MOVE;
+        scl = scl > MAX_MOVE ? MAX_MOVE : scl;
+        console.log(`scrollUp=${scl}`)
+        if (tempScrollTop > targetScrollTop) {
+            tempScrollTop -= scl;
+        }
+        else { //  to cancelAnimationFrame
+            tempScrollTop = targetScrollTop;
+        }
+        setScrollY(tempScrollTop);
+        //console.log(`animationFrameScroll  ${tempScrollTop},  targetScrollTop=${ targetScrollTop}`)
+        animationFrameScroll = requestAnimationFrame(scrollUp);
+        if (tempScrollTop == targetScrollTop) {
+            cancelAnima();
+        }
+    }
+
+
     function cancelAnima() {
         cancelAnimationFrame(animationFrameScroll);
         animationFrameScroll = null;
-        targetScrollTop = 0
-        tempScrollTop = 0;
     }
 
     return (top) => {
-        if (animationFrameScroll) {
             cancelAnima();
+        targetScrollTop = top;
+        tempScrollTop = getScrollY();
+        
+        if (targetScrollTop > tempScrollTop) {
+            scrollDown();
         }
         else {
-            targetScrollTop = top;
-            tempScrollTop = getScrollY();
-            scrollTo();
+            scrollUp();
         }
+        //setTimeout(cancelAnima, 1500);
     }
 })();
 
@@ -221,19 +241,21 @@ function getAbsolutePos(el) {
 
 
 function getScrollY() {
-    return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    return document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop || 0;
 }
 
 
 function setScrollY(top) {
+    /*
     console.log(`window.pageYOffset=${window.pageYOffset!==undefined}, 
     document.documentElement.scrollTop=${document.documentElement.scrollTop!==undefined}, 
     document.body.scrollTop=${document.body.scrollTop!==undefined}`)
-    if (window.pageYOffset !== undefined) {
-        window.pageYOffset = top;
-    }
+    */
     if (document.documentElement.scrollTop !== undefined) {
         document.documentElement.scrollTop = top;
+    }
+    if (window.pageYOffset !== undefined) {
+        window.pageYOffset = top;
     }
     if (document.body.scrollTop !== undefined) {
         document.body.scrollTop = top;
