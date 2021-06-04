@@ -393,7 +393,7 @@ document.body.onload = function() {
     setTimeout(() => {
         window.onhashchange();
     }, 1000);
-    
+    /*
     (() => { // test scrollHeight
         const CONSOLE = document.createElement("div");
         let s = CONSOLE.style;
@@ -415,7 +415,7 @@ document.body.onload = function() {
                 `
         }, 500)
     })();
-    
+    */
 
 }
 
