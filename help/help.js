@@ -139,6 +139,7 @@ window.scrollToAnimation = (() => {
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
+        console.log("getScrollY="+tempScrollTop)
         moves = getScrollPoints(targetScrollTop - tempScrollTop);
         scrollTo();
     }
@@ -214,7 +215,7 @@ window.getScrollPoints = (move)=> {
     const HALF = move / 2;
     let sum = Math.abs(HALF);
     let tempMove = 0;
-    let tempMoves = [];
+    let tempMoves = [0]; //保证最少有一个
     while (sum) {
         tempMove = tempMove * PAR || PAR;
         tempMove = tempMove > MAX_MOVE ? MAX_MOVE : tempMove;
@@ -225,6 +226,7 @@ window.getScrollPoints = (move)=> {
             sum = 0;
         }
     }
+    
     let rtHs = [];
     for (let i = 0; i < tempMoves.length; i++) {
         rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
@@ -232,11 +234,13 @@ window.getScrollPoints = (move)=> {
     for (let i = tempMoves.length - 1; i >= 0; i--) {
         rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
     }
+    console.log(String(rtHs))
     return rtHs;
 }
 
 
 function getScrollY() {
+    console.log("doc.h"+document.documentElement.scrollTop +"\nbody.scH=" +document.body.scrollTop);
     return document.documentElement.scrollTop || document.body.scrollTop || 0;
 }
 
@@ -389,11 +393,11 @@ document.body.onload = function() {
     setTimeout(() => {
         window.onhashchange();
     }, 1000);
-    /*
+    
     (() => { // test scrollHeight
         const CONSOLE = document.createElement("div");
         let s = CONSOLE.style;
-        s.color = "black";
+        s.color = "red";
         s.backgroundColor = "#eeeeee";
         s.position = "fixed";
         s.top = "200px";
@@ -411,7 +415,7 @@ document.body.onload = function() {
                 `
         }, 500)
     })();
-    */
+    
 
 }
 
@@ -431,7 +435,7 @@ function setView(width = 800) {
     document.head.appendChild(VIEW);
     VIEW.setAttribute("name", "viewport");
     VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
-    VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=${"no"}`);
+    VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale*3}, user-scalable=${"yes"}`);
 }
 
 
