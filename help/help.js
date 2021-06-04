@@ -210,14 +210,15 @@ window.getAbsolutePos = (el)=> {
 
 window.getScrollPoints = (move)=> {
 
-    const PAR = 1.5;
-    const MAX_MOVE = 210;
+    const PAR = 1.38;
+    const PAR2 = move<0 ? 2 : 1;
+    const MAX_MOVE = 2000;
     const HALF = move / 2;
     let sum = Math.abs(HALF);
     let tempMove = 0;
     let tempMoves = [0]; //保证最少有一个
     while (sum) {
-        tempMove = tempMove * PAR || PAR;
+        tempMove = Math.pow(tempMove,PAR)*PAR2 || 2;
         tempMove = tempMove > MAX_MOVE ? MAX_MOVE : tempMove;
         tempMoves.push(tempMove);
         sum -= tempMove;
@@ -229,11 +230,12 @@ window.getScrollPoints = (move)=> {
     
     let rtHs = [];
     for (let i = 0; i < tempMoves.length; i++) {
-        rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
+        rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1)*10)/10);
     }
     for (let i = tempMoves.length - 1; i >= 0; i--) {
-        rtHs.push(tempMoves[i] * (move < 0 ? -1 : 1));
+        rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1)*10)/10);
     }
+
     console.log(String(rtHs))
     return rtHs;
 }

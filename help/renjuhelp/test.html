@@ -111,12 +111,19 @@
 
             getScrollPoints = CHILD_WINDOW.getScrollPoints;
             if (navigator.userAgent.indexOf("iPhone") + 1) {
-                CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
+                //CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
+                CHILD_WINDOW.setScrollY = setScrollY;
+                const temp = CHILD_WINDOW.scrollToAnimation;
+                CHILD_WINDOW.scrollToAnimation = (top)=>{
+                    console.log(">>>parent animationFrameScroll")
+                    IFREAM.style.height = getDocumentHeight() + "px";
+                    temp(top);
+                }
             }
         }
 
 
-
+/*
         const scrollToAnimation = (() => {
 
             let moves = [];
@@ -166,10 +173,10 @@
 
             return IFREAM_DIV.scrollTop;
         }
-
+*/
 
         function setScrollY(top) {
-            //console.log(`${IFREAM_DIV}, ${top}`)
+            console.log(`IFREAM_DIV setScrollY, ${top}`)
             IFREAM_DIV.scrollTop = top;
         }
 
