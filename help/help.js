@@ -241,7 +241,7 @@ window.getScrollPoints = (move)=> {
 }
 
 
-function getScrollY() {
+window.getScrollY = ()=> {
     console.log("doc.h"+document.documentElement.scrollTop +"\nbody.scH=" +document.body.scrollTop);
     return document.documentElement.scrollTop || document.body.scrollTop || 0;
 }
