@@ -19,6 +19,10 @@
             top: 50px;
             -webkit-overflow-scrolling: touch;
         }
+        
+        body.loading {
+            opacity: 0;
+        }
 
         div {
             height: 0px;
@@ -73,7 +77,7 @@
     </style>
 </head>
 
-<body>
+<body class="loading">
     <div id="wrapper">
         <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
     </div>
@@ -97,7 +101,7 @@
 
         document.body.onload = () => {
 
-            setView();
+            CHILD_WINDOW.setView(document);
 
             getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
@@ -115,7 +119,7 @@
                 CHILD_WINDOW.setScrollY = setScrollY;
                 CHILD_WINDOW.getScrollY = getScrollY;
                 const temp = CHILD_WINDOW.scrollToAnimation;
-                CHILD_WINDOW.scrollToAnimation = (top)=>{
+                CHILD_WINDOW.scrollToAnimation = (top) => {
                     console.log(">>>parent animationFrameScroll")
                     IFREAM.style.height = getDocumentHeight() + "px";
                     temp(top);
@@ -124,50 +128,50 @@
         }
 
 
-/*
-        const scrollToAnimation = (() => {
+        /*
+                const scrollToAnimation = (() => {
 
-            let moves = [];
-            let animationFrameScroll = null;
-            let targetScrollTop = 0
-            let tempScrollTop = 0;
+                    let moves = [];
+                    let animationFrameScroll = null;
+                    let targetScrollTop = 0
+                    let tempScrollTop = 0;
 
-            function scrollTo() {
+                    function scrollTo() {
 
-                let IFREAM = document.getElementById("iframe");
-                let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
-                //console.log(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
-                tempScrollTop += moves.splice(0, 1)[0];
-                setScrollY(tempScrollTop);
-                if (moves.length) {
-                    animationFrameScroll = requestAnimationFrame(scrollTo);
-                }
-                else {
-                    cancelAnima();
-                }
-            }
+                        let IFREAM = document.getElementById("iframe");
+                        let iDoc = IFREAM.Document || IFREAM.contentWindow.document;
+                        //console.log(`scrollHeight=${iDoc.body.scrollHeight},\ndocumentHeight=${getDocumentHeight()}`)
+                        tempScrollTop += moves.splice(0, 1)[0];
+                        setScrollY(tempScrollTop);
+                        if (moves.length) {
+                            animationFrameScroll = requestAnimationFrame(scrollTo);
+                        }
+                        else {
+                            cancelAnima();
+                        }
+                    }
 
-            function cancelAnima() {
+                    function cancelAnima() {
 
-                cancelAnimationFrame(animationFrameScroll);
-                moves = [];
-                animationFrameScroll = null;
-                targetScrollTop = 0
-                tempScrollTop = 0;
-            }
+                        cancelAnimationFrame(animationFrameScroll);
+                        moves = [];
+                        animationFrameScroll = null;
+                        targetScrollTop = 0
+                        tempScrollTop = 0;
+                    }
 
-            return (top) => {
+                    return (top) => {
 
-                console.log("parent animationFrameScroll")
-                IFREAM.style.height = getDocumentHeight() + "px";
-                cancelAnima();
-                targetScrollTop = top;
-                tempScrollTop = IFREAM_DIV.scrollTop;
-                moves = getScrollPoints(targetScrollTop - tempScrollTop);
-                scrollTo();
-            };
-        })();
-*/
+                        console.log("parent animationFrameScroll")
+                        IFREAM.style.height = getDocumentHeight() + "px";
+                        cancelAnima();
+                        targetScrollTop = top;
+                        tempScrollTop = IFREAM_DIV.scrollTop;
+                        moves = getScrollPoints(targetScrollTop - tempScrollTop);
+                        scrollTo();
+                    };
+                })();
+        */
 
 
         function getScrollY() {
@@ -181,13 +185,11 @@
             IFREAM_DIV.scrollTop = top;
         }
 
-
+/*
         function setView(width = 800) {
 
             const ELEM_LIST = document.getElementsByName("viewport");
-            console.log(ELEM_LIST)
             const VIEW = ELEM_LIST[0] || document.createElement("meta");
-            console.log(VIEW)
             let dw = document.documentElement.clientWidth;
             let dh = document.documentElement.clientHeight;
             let sw = window.screen.width;
@@ -197,7 +199,10 @@
             let scale = (dw > dh ? max : min) / width;
             document.head.appendChild(VIEW);
             VIEW.setAttribute("name", "viewport");
+            VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
+            VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale*3}, user-scalable=${"yes"}`);
         }
+        */
     </script>
 </body>
 

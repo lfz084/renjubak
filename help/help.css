@@ -8,9 +8,85 @@ body {
     font-size: 28px;
     font-family: mHeiTi, SimHei;
     line-height: 2;
-    scroll-behavior: auto; /*smooth;*/
+    scroll-behavior: auto;
+    /*smooth;*/
     -webkit-user-select: none;
 }
+
+body.loading {
+    opacity: 0;
+}
+
+body.finish {
+    opacity: 1;
+      -webkit-animation: show 1500ms ease-in;
+      -moz-animation: show 1500ms ease-in;
+      animation: show 1500ms ease-in;
+      -webkit-animation-fill-mode: both;
+      -moz-animation-fill-mode: both;
+      animation-fill-mode: both;
+}
+@-webkit-keyframes show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+@-webkit-keyframes loading {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.8;
+    }
+}
+
+@-moz-keyframes loading {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes loading {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.8;
+    }
+}
+
 
 .topDiv,
 .buttomDiv {
@@ -60,7 +136,7 @@ h4 {
 }
 
 h4.cancelFocus {
-    
+
     -webkit-animation: cancelFocus 700ms ease-in;
     -moz-animation: cancelFocus 700ms ease-in;
     animation: cancelFocus 700ms ease-in;
@@ -73,6 +149,7 @@ h4.cancelFocus {
     0% {
         background-color: #ccc;
     }
+
     100% {
         background-color: #dddddd;
     }
@@ -82,6 +159,7 @@ h4.cancelFocus {
     0% {
         background-color: #ccc;
     }
+
     100% {
         background-color: #dddddd;
     }
@@ -91,6 +169,7 @@ h4.cancelFocus {
     0% {
         background-color: #ccc;
     }
+
     100% {
         background-color: #dddddd;
     }
@@ -98,7 +177,7 @@ h4.cancelFocus {
 
 
 h4.focus {
-    
+
     -webkit-animation: focus 700ms ease-in;
     -moz-animation: focus 700ms ease-in;
     animation: focus 700ms ease-in;
@@ -111,6 +190,7 @@ h4.focus {
     0% {
         background-color: #dddddd;
     }
+
     100% {
         background-color: #ccc;
     }
@@ -120,6 +200,7 @@ h4.focus {
     0% {
         background-color: #dddddd;
     }
+
     100% {
         background-color: #ccc;
     }
@@ -129,6 +210,7 @@ h4.focus {
     0% {
         background-color: #dddddd;
     }
+
     100% {
         background-color: #ccc;
     }
@@ -285,7 +367,7 @@ mark {
 }
 
 .showList {
-    
+
     -webkit-animation: showList 500ms ease-in;
     -moz-animation: showList 500ms ease-in;
     animation: showList 500ms ease-in;

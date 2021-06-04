@@ -210,9 +210,9 @@ window.getAbsolutePos = (el)=> {
 
 window.getScrollPoints = (move)=> {
 
-    const PAR = 1.38;
+    const PAR = 1.28;
     const PAR2 = move<0 ? 2 : 1;
-    const MAX_MOVE = 2000;
+    const MAX_MOVE = 5000;
     const HALF = move / 2;
     let sum = Math.abs(HALF);
     let tempMove = 0;
@@ -384,6 +384,7 @@ window.onhashchange = function(event) {
     hashControl();
 }
 
+
 document.body.onload = function() {
 
     setView();
@@ -423,21 +424,22 @@ document.body.onload = function() {
 
 
 
-function setView(width = 800) {
+window.setView = (doc = document, width = 800)=> {
 
-    const ELEM_LIST = document.getElementsByName("viewport");
-    const VIEW = ELEM_LIST[0] || document.createElement("meta");
-    let dw = document.documentElement.clientWidth;
-    let dh = document.documentElement.clientHeight;
+    const ELEM_LIST = doc.getElementsByName("viewport");
+    const VIEW = ELEM_LIST[0] || doc.createElement("meta");
+    let dw = doc.documentElement.clientWidth;
+    let dh = doc.documentElement.clientHeight;
     let sw = window.screen.width;
     let sh = window.screen.height;
     let max = sw > sh ? sw : sh;
     let min = sw < sh ? sw : sh;
     let scale = (dw > dh ? max : min) / width;
-    document.head.appendChild(VIEW);
+    doc.head.appendChild(VIEW);
     VIEW.setAttribute("name", "viewport");
     VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
     VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale*3}, user-scalable=${"yes"}`);
+    doc.body.setAttribute("class", "finish");
 }
 
 
