@@ -42,3 +42,4 @@ view.prototype.scrollTop = function(){
     link.click();
     link.parentNode.removeChild(link);
 }
+

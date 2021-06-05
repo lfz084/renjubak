@@ -5,7 +5,7 @@ body {
     height: 100%;
     width: 800px;
     /*viewport width=800*/
-    font-size: 28px;
+    font-size: 30px;
     font-family: mHeiTi, SimHei;
     line-height: 2;
     scroll-behavior: auto;
@@ -129,7 +129,7 @@ a:active {
 
 
 h4 {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: bold;
     line-height: 1.5;
     margin: 10px 10px;
@@ -220,7 +220,7 @@ h4.focus {
 ul,
 ol {
     color: #222222;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: normal;
     line-height: 2;
 }

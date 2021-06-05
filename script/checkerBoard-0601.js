@@ -551,10 +551,10 @@ checkerBoard.prototype.boardCW = function(isShowNum) {
             this.toNext(isShowNum);
         }
         for (let i = 0; i < wMS.length; i++) {
-            this.wNb(wMS[i], this.wNumColor);
+            this.wNb(wMS[i], `white`);
         }
         for (let i = 0; i < bMS.length; i++) {
-            this.wNb(bMS[i], this.bNumColor);
+            this.wNb(bMS[i], `black`);
         }
         this.autoShow("now");
     }
@@ -624,10 +624,10 @@ checkerBoard.prototype.boardCCW = function(isShowNum) {
         this.toNext(isShowNum);
     }
     for (let i = 0; i < wMS.length; i++) {
-        this.wNb(wMS[i], this.wNumColor);
+        this.wNb(wMS[i], `white`);
     }
     for (let i = 0; i < bMS.length; i++) {
-        this.wNb(bMS[i], this.bNumColor);
+        this.wNb(bMS[i], `black`);
     }
 
 };
@@ -694,10 +694,10 @@ checkerBoard.prototype.boardFlipX = function(isShowNum) {
         this.toNext(isShowNum);
     }
     for (let i = 0; i < wMS.length; i++) {
-        this.wNb(wMS[i], this.wNumColor);
+        this.wNb(wMS[i], `white`);
     }
     for (let i = 0; i < bMS.length; i++) {
-        this.wNb(bMS[i], this.bNumColor);
+        this.wNb(bMS[i], `black`);
     }
 
 };
@@ -776,10 +776,10 @@ checkerBoard.prototype.boardFlipY = function(isShowNum) {
             this.toNext(isShowNum);
         }
         for (let i = 0; i < wMS.length; i++) {
-            this.wNb(wMS[i], this.wNumColor);
+            this.wNb(wMS[i], `white`);
         }
         for (let i = 0; i < bMS.length; i++) {
-            this.wNb(bMS[i], this.bNumColor);
+            this.wNb(bMS[i], `black`);
         }
         this.autoShow("now");
     }
