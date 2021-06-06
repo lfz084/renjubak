@@ -1,21 +1,21 @@
 
 @font-face {
     font-family: mHeiTi;
-    src: url('../style/font/PingFang-Regular.woff') format('woff'),
+    src: url('../style/font/PingFang-Regular-subfont.woff') format('woff'),
     url('../style/font/PingFang Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: mHeiTi;
-    src: url('../style/font/PingFang-Medium.woff') format('woff'),
+    src: url('../style/font/PingFang-Medium-subfont.woff') format('woff'),
     url('../style/font/PingFang Medium.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
 @font-face {
     font-family: mHeiTi;
-    src: url('../style/font/PingFang-Bold.woff') format('woff'),
+    src: url('../style/font/PingFang-Bold-subfont.woff') format('woff'),
     url('../style/font/PingFang Bold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
@@ -23,7 +23,7 @@
 
 @font-face {
     font-family: mHeiTi;
-    src: url('../style/font/PingFang-Heavy.woff') format('woff'),
+    src: url('../style/font/PingFang-Heavy-subfont.woff') format('woff'),
     url('../style/font/PingFang Heavy.ttf') format('truetype');
     font-weight: 900;
     font-style: normal;
@@ -37,7 +37,7 @@ body {
     width: 800px;
     /*viewport width=800*/
     font-size: 30px;
-    font-family: mHeiT;
+    font-family: mHeiTi, SimHei;
     font-weight:300;
     line-height: 2;
     scroll-behavior: auto;
