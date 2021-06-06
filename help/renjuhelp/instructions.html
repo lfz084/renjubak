@@ -6,96 +6,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>使用说明</title>
     <link href="../help.css" rel="stylesheet" type="text/css">
-
 </head>
 
-<body>
-        <script src="../help.js"></script>
-    <h3>棋盘支持的操作</h3>
-    <b>触摸操作方式</b>
-    <ul>...
-        <li>单击</li>
+<body class="loading">
+    <script src="../help.js"></script>
+    <h4>棋盘支持的操作
         <ul>...
-            <li>添加棋子，标记...</li>
-            <li>点击棋子，标记 可以删除棋子，标记...</li>
+            <text>
+                <li><b>触摸操作方式</b></li>
+                <ul>...
+                    <li>单击</li>
+                    <ul>...
+                        <li>添加棋子，标记...</li>
+                        <li>点击棋子，标记 可以删除棋子，标记...</li>
+                    </ul>
+                    <li>双击</li>
+                    <ul>...
+                        <li>双击棋子，快速悔棋</li>
+                        <li>弹出添加标记窗口</li>
+                    </ul>
+                    <li>长按</li>
+                    <ul>...
+                        <li>弹出菜单</li>
+                        <li>触发拖动操作</li>
+                        <li>更改最后一手棋的显示方式</li>
+                    </ul>
+                    <li>拖动</li>
+                    <ul>...
+                        <li>加载棋盘图片时，对齐棋盘格子</li>
+                    </ul>
+                </ul>
+            </text>
+            <text>
+                <li><b>键盘操作方式</b></li>
+                <ul>...
+                    <li>左键单击 = 触摸单击</li>
+                    <li>左键双击 = 触摸双击</li>
+                    <li>右键单击 = 触摸长按</li>
+                </ul>
+            </text>
         </ul>
-        <li>双击</li>
+    </h4>
+    <h4>按钮功能的介绍
         <ul>...
-            <li>双击棋子，快速悔棋</li>
-            <li>弹出添加标记窗口</li>
+            <li>分享图片, 分享原图</li>
+            <text>可以利用浏览器的分享功能把棋盘图片分享到社交软件</text>
+            <li>清空标记</li>
+            <text>清除棋盘上面的标记</text>
+            <li>帮助</li>
+            <text>打开帮助文档</text>
+            <li>||<< , <<,>>, >>||</li>
+            <text>前进，后退按钮</text>
+            <li>❶</li>
+            <ul>...
+                <li>显示手数</li>
+                <li>显示禁手</li>
+                <li>显示线路</li>
+                <mark>PS：显示活三，冲四的线路</mark>
+            </ul>
+            <li>新棋局</li>
+            <li>↔180°， ↗90°</li>
+            <text>翻转棋盘，会清除掉所有标记</text>
+            <li>←，→，↑，↓</li>
+            <text>移动棋盘，只会清除掉线段，箭头标记</text>
+            <li>黑先，白先</li>
+            <text>设置计算时的先手方</text>
+            <li>找点</li>
+            <li>解题</li>
+            <li>⇨VCF</li>
+            <text>切换VCF线路</text>
+            <li> ◐</li>
+            <text>设置轮流添加棋子</text>
+            <li>●,○</li>
+            <text>单独添加棋子，没有手数</text>
+            <li>■, ◎, ▲, ✖,</li>
+            <text>设置添加的标记符号</text>
+            <li>←箭头...</li>
+            <text>添加更多的标记</text>
+            <ul>...
+                <li>箭头和线条标记</li>
+                <ul>...
+                    <li>添加箭头，线条</li>
+                    <ol>...
+                        <li>点击棋盘交叉线，选择起点</li>
+                        <li>在米字线与棋盘坐标交叉点上面点击，确认结束点</li>
+                        <img width=80% style="position: relative;left:0%" src="instructions/createLine.jpg" />
+                    </ol>
+                    <li>选择和删除</li>
+                    <ol>...
+                        <li>点击线条与棋盘坐标的交叉点，选择线条。有重合的优先选择最上层。</li>
+                        <li>在选定的线条与棋盘坐标交叉点上面，点击删除。</li>
+                        <img width=80% style="position: relative;left:0%" src="instructions/deleteLine.jpg" />
+                    </ol>
+                    <mark>PS：箭头标记, 字符标记，棋子，线条标记的图层关系是从上到下的关系，即箭头在最上层。在同一图层的标记当中，后添加的覆盖在上面。</mark>
+                </ul>
+                <li>ABC...， abc...， 123...</li>
+                <text>连续输入字母，数字标记</text>
+                <li>自定义标记</li>
+                <text>连续输入编辑好的标记</text>
+                <li>❌, ☆ </li>
+                <img width=80% style="position: relative;left:0%" src="instructions/mark.svg" />
+            </ul>
+            <li>下手为❶</li>
+            <text>忽略前面的手数，下一手棋开始为第一手</text>
+            <ul>...
+                <img width=80% style="position: relative;left:0%" src="instructions/nextOne.svg" />
+            </ul>
+            <li>重置手数</li>
+            <text>恢复最开始的手数</text>
+            <ul>...
+                <img width=80% style="position: relative;left:0%" src="instructions/resetNum.svg" />
+            </ul>
+            <li>输入代码</li>
+            <text>输入棋局的代码，字母不分大小写。输入代码过程中，程序会自动过滤代码中的无意义字符。比如输入“五子棋h8五子棋h9五子棋” = “h8H9” = “H8H9”)</text>
+            <li>输出代码</li>
+            <text>输出的代码分三部分[标准代码部分+{自由添加的黑子坐标}+{自由添加的白子坐标}]</text>
+            <ul>...
+                <img width=80% style="position: relative;left:0%" src="instructions/code.jpg" />
+            </ul>
+            <li>输入图片</li>
+            <text>把棋局截图输入棋盘。</text>
+            <ol>...
+                <li>校准图片上面的坐标</li>
+                <ol>...
+                    <li>设置行数，列数。</li>
+                    <text>根据棋盘图片可视区域的行数，列数设置。</text>
+                    <li>校准棋盘坐标</li>
+                    <text>长按棋盘，触发拖动操作。使虚线框对齐棋盘，虚线圆圈尽可能对准过棋盘棋子。</text>
+                    <mark>PS：只要对准棋盘两个对角，就可以快速对齐棋盘。点击虚线框边角，可以微调整。有的棋盘图片 棋子不是正对棋盘交叉线，以虚线圆圈对正棋子为准。</mark>
+                    <img width=80% style="position: relative;left:0%" src="instructions/selectBoard.jpg" />
+                </ol>
+                <li>自动识别棋子</li>
+                <ol>...
+                    <li>点击自动识别</li>
+                    <mark>PS：自动识别原理 是通过计算棋子坐标附近的 平均颜色来实现的。所以前面校准棋盘很重要，如果颜色太过丰富的棋盘 是很难识别成功的。</mark>
+                    <li>验证棋子是否准确</li>
+                    <text>自动识别的棋子可能会有误差，这个时候就可以手动编辑一下棋子</text>
+                    <li>●：添加，删除黑子</li>
+                    <li>○：添加，删除白子</li>
+                    <img width=80% style="position: relative;left:0%" src="instructions/putBoard.jpg" />
+                </ol>
+                <li>摆入棋子</li>
+                <text>如果不是标准的15路棋盘，需要定位天元点。长按(或鼠标右键点击)图片上面的天元点 进行定位。</text>
+            </ol>
+            <li>截图</li>
+            <text>快速截图</text>
         </ul>
-        <li>长按</li>
+    </h4>
+    <h4>菜单的操作
         <ul>...
-            <li>弹出菜单</li>
-            <li>触发拖动操作</li>
-            <li>更改最后一手棋的显示方式</li>
+            <li>触摸上下滑动</li>
+            <li>点击按钮︾，︽滚动菜单</li>
         </ul>
-        <li>拖动</li>
-        <ul>...
-            <li>加载棋盘图片时，对齐棋盘格子</li>
-        </ul>
-    </ul>
-    <b>键盘操作方式</b>
-    <ul>...
-        <li>左键单击 = 触摸单击</li>
-        <li>左键双击 = 触摸双击</li>
-        <li>右键单击 = 触摸长按</li>
-    </ul>
-    <h3>按钮功能的介绍</h3>
-    <ul>...
-        <li>分享图片, 分享原图</li>
-        <ps>可以利用浏览器的分享功能把棋盘图片分享到社交软件</ps>
-        <li>清空标记</li>
-        <ps>清除棋盘上面的标记</ps>
-        <li>帮助</li>
-        <li>||<< , <<,>>, >>||</li>
-        <ps>前进，后退按钮</ps>
-        <li>❶</li>
-        <ul>...
-            <li>显示手数</li>
-            <li>显示禁手</li>
-            <li>显示线路</li>
-            <ps>显示活三，冲四的线路</ps>
-        </ul>
-        <li>新棋局</li>
-        <li>↔180°， ↗90°</li>
-        <ps>翻转棋盘，会清除掉所有标记</ps>
-        <li>←，→，↑，↓</li>
-        <ps>移动棋盘，只会清除掉线段，箭头标记</ps>
-        <li>黑先，白先</li>
-        <ps>设置计算时的先手方</ps>
-        <li>找点</li>
-        <li>解题</li>
-        <li>⇨VCF</li>
-        <ps>切换VCF线路</ps>
-        <li> ◐</li>
-        <ps>设置轮流添加棋子</ps>
-        <li>●,○</li>
-        <ps>单独添加棋子，没有手数</ps>
-        <li>■,◎,▲,✖,</li>
-        <ps>设置添加的标记符号</ps>
-        <li>←箭头</li>
-        <li>下手为❶</li>
-        <ps>忽略前面的手数，下一手棋开始为第一手</ps>
-        <li>重置手数</li>
-        <ps>恢复最开始的手数</ps>
-        <li>输入代码</li>
-        <li>输出代码</li>
-        <li>输入图片</li>
-        <li>截图</li>
-        <ps>快速截图</ps>
-    </ul>
-    <h3>菜单的操作</h3>
-    <ul>...
-        <li>菜单的操作</li>
-        <li>菜单的操作</li>
-        <li>菜单的操作</li>
-        <li>菜单的操作</li>
-        <li>菜单的操作</li>
-    </ul>
-
+    </h4>
 </body>
-
-    
 
 </html>

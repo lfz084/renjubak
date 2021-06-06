@@ -1,0 +1,205 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <titcle>
+        </title>
+        <style type="text/css">
+            .awlist1 {
+                counter-reset: awlistcounter1 2;
+                list-style-type: none
+            }
+
+            .awlist1 li:before {
+                content: "1."counter(awlistcounter1);
+                counter-increment: awlistcounter1
+            }
+        </style>
+</head>
+
+<body>
+    <script>
+    document.body.onload = ()=> {
+        
+        let d = document;
+        d.body.style.backgroundColor = "#333333";
+        let s = d.body.innerHTML;
+        d.body.innerHTML = "";
+        let dw = d.documentElement.clientWidth;
+        let dh = d.documentElement.clientHeight;
+        dw = dw>dh ? 1000 : 650;
+        let div = d.createElement("div");
+        div.style.position = "absolute";
+        div.style.margin = "0px 0px 0px 0px";
+        div.style.padding = "25px 25px 25px 25px";
+        div.style.width = "600px";
+        div.style.left = (dw-parseInt(div.style.width)-50)/2 + "px";
+        div.style.top = "0px";
+        div.style.backgroundColor = "#cceeee";
+        div.innerHTML = s;
+        d.body.appendChild(div);
+        
+        let scale = window.screen.width / dw;
+        //console.log("scale="+scale);
+        let viewport = document.createElement("meta");
+        viewport.setAttribute("name", "viewport");
+        document.head.appendChild(viewport);
+        viewport.setAttribute("content", `initial-scale=${scale+0.01} `);
+        viewport.setAttribute("content", `width=${dw}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale}, user-scalable=no`);
+    }
+    </script>
+    <div>
+        <a href = "../../renju.html" target="_self" style="font-family:等线; font-size:20pt;color:red">返回</a>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">  </span><span style="font-family:等线; font-size:20pt">摆棋工具使用说明</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.001.jpeg" width="470" height="835" alt="" style="-aw-left-pos:59.2pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:32.45pt; -aw-wrap-type:topbottom" /><br /><span style="font-family:等线; font-size:20pt">.</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">建议</span><span style="font-family:等线; font-size:20pt">使用</span><span style="font-family:等线; font-size:20pt">opera ，chrome浏览器</span><span style="font-family:等线; font-size:20pt">打开，兼容性更好</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">按钮</span><span style="font-family:等线; font-size:20pt">功能说明</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.003.jpeg" width="480" height="77" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /><span style="font-family:等线; font-size:20pt">从左</span><span style="font-family:等线; font-size:20pt">到有依次编号</span></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">退到第一手</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">退一手</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">前进一手</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">前进</span><span style="font-family:等线; font-size:20pt">到</span><span style="font-family:等线; font-size:20pt">最后一手</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">显示，隐藏手数</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">清空棋</span><span style="font-family:等线; font-size:20pt">盘</span><img src="499accad-b0e5-46c4-a199-af7c826d45df.004.jpeg" width="480" height="67" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /></li>
+        </ol>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">左右翻转</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">顺时针旋转90</span><span style="font-family:等线; font-size:20pt">°</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">左移一列</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">右</span><span style="font-family:等线; font-size:20pt">移</span><span style="font-family:等线; font-size:20pt">一</span><span style="font-family:等线; font-size:20pt">列</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">上移一行</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">下移一行</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.005.jpeg" width="480" height="67" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 41pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">计算黑子</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 41pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">计算白子</span><span style="font-family:等线; font-size:20pt">3-4</span><span style="font-family:等线; font-size:20pt">.计算功能</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.006.jpeg" width="480" height="182" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.3pt; -aw-wrap-type:topbottom" /><br /></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">轮流</span><span style="font-family:等线; font-size:20pt">添加棋子</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">单独添加黑子</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">单独添加白</span><span style="font-family:等线; font-size:20pt">子</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">4-8 添加</span><span style="font-family:等线; font-size:20pt">各种标记</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">9.选择</span><span style="font-family:等线; font-size:20pt">标记的颜色</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.007.jpeg" width="316" height="141" alt="" style="-aw-left-pos:0.25pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:30.85pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 42pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">找到多套VCF时选择显示</span><span style="font-family:等线; font-size:20pt">VCF</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.008.jpeg" width="259" height="160" alt="" style="-aw-left-pos:-14.15pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:0pt; -aw-wrap-type:topbottom" /><br /><span style="font-family:等线; font-size:20pt">1.取消前面的手</span><span style="font-family:等线; font-size:20pt">数，</span><span style="font-family:等线; font-size:20pt">下一手</span><span style="font-family:等线; font-size:20pt">开始为第一手</span></p>
+        <ol start="2" type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">恢复正常手数。</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.009.jpeg" width="554" height="77" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:30.8pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">1</span><span style="font-family:等线; font-size:20pt">-2</span><span style="font-family:等线; font-size:20pt">.</span><span style="font-family:等线; font-size:20pt">输入-输出代码</span></p>
+        <ol start="3" type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">加载图片</span><span style="font-family:等线; font-size:20pt">(快速把一张图片的棋子摆入棋盘)</span></li>
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">截图保存</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt; font-weight:normal">加载图片模式</span><span style="font-family:等线; font-size:20pt; font-weight:normal">下的按钮</span><img src="499accad-b0e5-46c4-a199-af7c826d45df.010.jpeg" width="554" height="113" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:29.3pt; -aw-wrap-type:topbottom" /><br /></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">选定棋盘，开始摆棋</span>
+                <ol start="3" type="1" class="awlist1" style="margin:0pt; padding-left:0pt">
+                    <li style="font-family:等线; font-size:20pt; list-style-position:inside; margin:0pt 0pt 0pt 15pt; orphans:0; text-align:justify; text-indent:-36pt; widows:0"><span style="font:7.0pt 'Times New Roman'">&#xa0;&#xa0; </span><span style="font-family:等线; font-size:20pt">添加黑棋</span><span style="font-family:等线; font-size:20pt">，白棋</span></li>
+                </ol>
+            </li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">4.</span><span style="font-family:等线; font-size:20pt">把</span><span style="font-family:等线; font-size:20pt">添加</span><span style="font-family:等线; font-size:20pt">的棋子，自动</span><span style="font-family:等线; font-size:20pt">摆入15路棋盘</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">5-6.设置棋盘大小</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.011.jpeg" width="445" height="378" alt="" style="-aw-left-pos:0.25pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.3pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">代码说明，第一行</span><span style="color:#ff0000; font-family:等线; font-size:12pt">标准代码，</span><span style="color:#ff0000; font-family:等线; font-size:12pt">按照</span><span style="color:#ff0000; font-family:等线; font-size:12pt">坐标</span><span style="color:#ff0000; font-family:等线; font-size:12pt">顺序对应黑白棋子</span><span style="color:#ff0000; font-family:等线; font-size:12pt">，会显示手数</span><span style="color:#ff0000; font-family:等线; font-size:12pt">。</span><span style="color:#ff0000; font-family:等线; font-size:12pt">后面第一个</span><span style="color:#ff0000; font-family:等线; font-size:12pt">{}</span><span style="color:#ff0000; font-family:等线; font-size:12pt">内是</span><span style="color:#ff0000; font-family:等线; font-size:12pt">黑子坐标，第二个{}内是白子</span><span style="color:#ff0000; font-family:等线; font-size:12pt">坐标。不显示手数</span><span style="color:#ff0000; font-family:等线; font-size:12pt">。输入代码时软件会</span><span style="color:#ff0000; font-family:等线; font-size:12pt">自动忽略无意义字符 </span><span style="color:#ff0000; font-family:等线; font-size:12pt">“</span><span style="color:#ff0000; font-family:等线; font-size:12pt">h8</span><span style="color:#ff0000; font-family:等线; font-size:12pt">jjk8</span><span style="color:#ff0000; font-family:等线; font-size:12pt">”</span><span style="color:#ff0000; font-family:等线; font-size:12pt"> = </span><span style="color:#ff0000; font-family:等线; font-size:12pt">“</span><span style="color:#ff0000; font-family:等线; font-size:12pt">h8</span><span style="color:#ff0000; font-family:等线; font-size:12pt">k8</span><span style="color:#ff0000; font-family:等线; font-size:12pt">”</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">棋盘的基本操作</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">    棋盘</span><span style="color:#ff0000; font-family:等线; font-size:12pt">会根据用户选择的按钮</span><span style="color:#ff0000; font-family:等线; font-size:12pt">分别</span><span style="color:#ff0000; font-family:等线; font-size:12pt">处于3</span><span style="color:#ff0000; font-family:等线; font-size:12pt">种模式</span><span style="color:#ff0000; font-family:等线; font-size:12pt">。</span><span style="color:#ff0000; font-family:等线; font-size:12pt">1</span><span style="color:#ff0000; font-family:等线; font-size:12pt">-轮流添加棋子模式。2-</span><span style="color:#ff0000; font-family:等线; font-size:12pt">单色添加棋子模式。3，添加标记模式。</span><span style="color:#ff0000; font-family:等线; font-size:12pt">在不同模式</span><span style="color:#ff0000; font-family:等线; font-size:12pt">下点击棋盘会有不同效果。</span></p>
+        <ol type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">单击   (添加或删除 棋子，标记)</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; text-indent:39.95pt; widows:0"><span style="color:#70ad47; font-family:等线; font-size:16pt">选择好</span><span style="color:#70ad47; font-family:等线; font-size:16pt">对应的棋子，标记按钮后，在棋盘落子</span><span style="color:#70ad47; font-family:等线; font-size:16pt">点单击，可以添加对应的棋子，标记。</span><span style="color:#70ad47; font-family:等线; font-size:16pt">再点击一次是删除。</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#c00000; font-family:等线; font-size:16pt">如果要一次性</span><span style="color:#c00000; font-family:等线; font-size:16pt">删除所有标记，同时保留棋子，</span><span style="color:#c00000; font-family:等线; font-size:16pt">可以翻转棋盘</span></p>
+        <ol start="2" type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">双击   (快速悔棋，手动输入标记)</span></li>
+        </ol>
+        <p style="margin:0pt 0pt 0pt 21pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">  </span><span style="color:#70ad47; font-family:等线; font-size:16pt">快速悔棋，</span><span style="color:#70ad47; font-family:等线; font-size:16pt">在轮流添加棋子模式下，要从</span><span style="color:#70ad47; font-family:等线; font-size:16pt">第n手悔棋到第k手，只要双击</span><span style="color:#70ad47; font-family:等线; font-size:16pt">第k手棋。</span></p>
+        <p style="margin:0pt 0pt 0pt 21pt; orphans:0; text-align:justify; widows:0"><span style="color:#70ad47; font-family:等线; font-size:16pt">  手动输入</span><span style="color:#70ad47; font-family:等线; font-size:16pt">标记，在棋盘空</span><span style="color:#70ad47; font-family:等线; font-size:16pt">子出或者标记上面双击触发。</span></p>
+        <ol start="3" type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">长按 (取消最后一手红色显示，手动输入标记)</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; text-indent:36pt; widows:0"><span style="color:#70ad47; font-family:等线; font-size:16pt">在最后一手棋上面长按，可以</span><span style="color:#70ad47; font-family:等线; font-size:16pt">取消/恢复 红色显示</span></p>
+        <p style="margin:0pt 0pt 0pt 21pt; orphans:0; text-align:justify; widows:0"><span style="color:#70ad47; font-family:等线; font-size:16pt">手动输入标记，在棋盘空子出或者标记上面长按触发。</span></p>
+        <ol start="4" type="1" style="margin:0pt; padding-left:0pt">
+            <li style="font-family:等线; font-size:20pt; margin:0pt 0pt 0pt 20pt; orphans:0; padding-left:1pt; text-align:justify; text-indent:0pt; widows:0"><span style="font-family:等线; font-size:20pt">拖动  (加载图片时，拖动虚线框对齐棋盘)</span></li>
+        </ol>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.012.jpeg" width="480" height="480" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.2pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#ff0000; font-family:等线; font-size:12pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:26pt">加载图片功能</span><span style="font-family:等线; font-size:26pt">(快速把一张图片的棋子</span><span style="font-family:等线; font-size:26pt">摆入棋盘</span><span style="font-family:等线; font-size:26pt">)</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">点击</span><span style="font-family:等线; font-size:20pt">加载图片按钮</span><img src="499accad-b0e5-46c4-a199-af7c826d45df.013.jpeg" width="480" height="472" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.2pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">打开一张图片</span><span style="color:#538135; font-family:等线; font-size:20pt">，会显示虚线框</span><span style="color:#538135; font-family:等线; font-size:20pt">。点击图片的两个对角</span><span style="color:#538135; font-family:等线; font-size:20pt">初步对齐棋盘边框</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.014.jpeg" width="380" height="369" alt="" style="-aw-left-pos:0.25pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">在棋盘的对角附近</span><span style="color:#538135; font-family:等线; font-size:20pt">点击，可以进行微调</span><span style="color:#538135; font-family:等线; font-size:20pt">，精准对齐棋盘。</span></p>
+        <p style="margin:0pt 0pt 0pt 30pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.015.jpeg" width="343" height="336" alt="" style="-aw-left-pos:59.85pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:75.7pt; -aw-wrap-type:topbottom" /><br /><span style="color:#538135; font-family:等线; font-size:20pt">还</span><span style="color:#538135; font-family:等线; font-size:20pt">支持</span><span style="color:#538135; font-family:等线; font-size:20pt">拖动对齐</span><span style="color:#538135; font-family:等线; font-size:20pt">边框(先</span><span style="color:#538135; font-family:等线; font-size:20pt">在棋盘上点击一下，在</span><span style="color:#538135; font-family:等线; font-size:20pt">点击完0.5秒内</span><span style="color:#538135; font-family:等线; font-size:20pt">单指按住棋盘</span><span style="color:#538135; font-family:等线; font-size:20pt">触发</span><span style="color:#538135; font-family:等线; font-size:20pt">拖动</span><span style="color:#538135; font-family:等线; font-size:20pt">)</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="color:#538135; font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 21pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt 0pt 0pt 21pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">对齐棋盘</span><span style="font-family:等线; font-size:20pt">后，点击选定棋盘按钮</span><span style="font-family:等线; font-size:20pt">。开始摆棋子</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.016.jpeg" width="554" height="113" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.2pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.017.jpeg" width="480" height="472" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.2pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">分别把黑白棋子</span><span style="font-family:等线; font-size:20pt">对好，如上图</span><span style="font-family:等线; font-size:20pt">。再点击摆入棋盘</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.018.jpeg" width="480" height="480" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">成功摆好棋子</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">有</span><span style="font-family:等线; font-size:20pt">时候</span><span style="font-family:等线; font-size:20pt">有的图片</span><span style="font-family:等线; font-size:20pt">不能</span><span style="font-family:等线; font-size:20pt">完整的</span><span style="font-family:等线; font-size:20pt">显示</span><span style="font-family:等线; font-size:20pt">15路棋盘</span><span style="font-family:等线; font-size:20pt">图片。就要</span><span style="font-family:等线; font-size:20pt">选择行数，和列数。</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">下面</span><span style="font-family:等线; font-size:20pt">举个例子</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.019.jpeg" width="480" height="602" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.25pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">这个棋盘选择9行，9列</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.020.jpeg" width="485" height="151" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.2pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">对好棋盘后</span><span style="font-family:等线; font-size:20pt">选定棋盘</span><img src="499accad-b0e5-46c4-a199-af7c826d45df.021.jpeg" width="397" height="414" alt="" style="-aw-left-pos:0.25pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:31.35pt; -aw-wrap-type:topbottom" /><br /></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">&#xa0;</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><span style="font-family:等线; font-size:20pt">摆好</span><span style="font-family:等线; font-size:20pt">棋子</span><span style="font-family:等线; font-size:20pt">后</span><span style="font-family:等线; font-size:20pt">，</span><span style="font-family:等线; font-size:20pt">长按图片上面的</span><span style="font-family:等线; font-size:20pt">H8点</span><span style="font-family:等线; font-size:20pt">摆入棋盘</span><span style="font-family:等线; font-size:20pt">。</span></p>
+        <p style="margin:0pt; orphans:0; text-align:justify; widows:0"><img src="499accad-b0e5-46c4-a199-af7c826d45df.022.jpeg" width="351" height="352" alt="" style="-aw-left-pos:98.9pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:29.4pt; -aw-wrap-type:topbottom" /><br /></p>
+        <a href = "../../renju.html" target="_self" style="font-family:等线; font-size:20pt;color:red">返回</a>
+    </div>
+    <div class="cnzz" style="display: none;">
+    </div>
+</body>
+
+</html>

@@ -1,3 +1,30 @@
+
+@font-face {
+    font-family: mHeiTi;
+    src: url('../style/font/PingFang Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: mHeiTi;
+    src: url('../style/font/PingFang Medium.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: mHeiTi;
+    src: url('../style/font/PingFang Bold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: mHeiTi;
+    src: url('../style/font/PingFang Heavy.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
 html,
 body {
     color: #111111;
@@ -6,26 +33,21 @@ body {
     width: 800px;
     /*viewport width=800*/
     font-size: 30px;
-    font-family: mHeiTi, SimHei;
+    font-family: mHeiT;
+    font-weight:300;
     line-height: 2;
     scroll-behavior: auto;
     /*smooth;*/
     -webkit-user-select: none;
 }
-
 body.loading {
     opacity: 0;
 }
 
 body.finish {
     opacity: 1;
-      -webkit-animation: show 1500ms ease-in;
-      -moz-animation: show 1500ms ease-in;
-      animation: show 1500ms ease-in;
-      -webkit-animation-fill-mode: both;
-      -moz-animation-fill-mode: both;
-      animation-fill-mode: both;
 }
+
 @-webkit-keyframes show {
     0% {
         opacity: 0;
@@ -88,21 +110,27 @@ body.finish {
 }
 
 
-.topDiv,
-.buttomDiv {
+div.topDiv,
+div.buttomDiv {
     width: 770px;
     height: 200px;
     margin: 15px 15px;
+    font-size: 30px;
+    font-family: mHeiTi;
+    font-weight:300;
 }
 
-.bodyDiv {
+div.bodyDiv{
     width: 750px;
     margin: 25px 25px;
+    font-size: 30px;
+    font-family: mHeiTi;
+    font-weight:300;
 }
 
 a {
     color: #663366;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 /* 未被访问的链接 */
@@ -128,14 +156,26 @@ a:active {
 }
 
 
-h4 {
-    font-size: 32px;
-    font-weight: bold;
+h3 {
+    font-size: 36px;
+    font-family: mHeiTi;
+    font-weight: 600;
     line-height: 1.5;
     margin: 10px 10px;
 }
 
-h4.cancelFocus {
+
+
+h4 {
+    font-size: 32px;
+    font-family: mHeiTi;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 10px 10px;
+}
+
+
+.cancelFocus {
 
     -webkit-animation: cancelFocus 700ms ease-in;
     -moz-animation: cancelFocus 700ms ease-in;
@@ -176,7 +216,7 @@ h4.cancelFocus {
 }
 
 
-h4.focus {
+.focus {
 
     -webkit-animation: focus 700ms ease-in;
     -moz-animation: focus 700ms ease-in;
@@ -221,12 +261,13 @@ ul,
 ol {
     color: #222222;
     font-size: 30px;
-    font-weight: normal;
+    font-family: mHeiTi;
+    font-weight:300;
     line-height: 2;
 }
 
 li {
-    font-weight: normal;
+    font-weight:300;
 }
 
 img {
@@ -235,6 +276,8 @@ img {
 
 mark {
     background-color: #dddd88;
+    font-size: 30px;
+    font-weight:300;
 }
 
 
