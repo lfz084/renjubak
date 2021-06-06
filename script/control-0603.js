@@ -1311,7 +1311,7 @@ let control = (() => {
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
             if (busy()) return;
-            window.open("./help/renjuhelp/renjuhelp.html", "_self");
+            window.open("./help/renjuhelp/renjuhelp.html", "helpWindow");
         });
 
 
