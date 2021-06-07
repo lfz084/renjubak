@@ -1,5 +1,61 @@
 "use strict";
 
+const topImage = (() => {
+
+    let topDocument, topDiv, topImg;
+
+    function resetTopImage() {
+        topDocument = window.top.document;
+        topDiv = topDocument.createElement("div");
+        topImg = topDocument.createElement("img");
+        topDocument.body.appendChild(topDiv);
+        topDiv.appendChild(topImg);
+        topDiv.onclick = () => {
+            close();
+        }
+    }
+
+    function close() {
+
+        topDiv.setAttribute("class", "hide");
+        setTimeout(()=>{
+            topDiv.style.zIndex = -99999;
+        },1000)
+    }
+    return (img) => {
+        if (!topDocument) {
+            resetTopImage();
+        }
+        let padding = img.width>img.height ? img.width :img.height;
+        let dw = topDocument.documentElement.clientWidth;
+        let dh = topDocument.documentElement.clientHeight;
+        let scaleWidth = dw / img.width;
+        let scaleHeight = dh / img.height;
+        let minScale = scaleWidth < scaleHeight ? scaleWidth : scaleHeight;
+
+        let s = topDiv.style;
+        s.position = "fixed";
+        s.left = -padding + "px";
+        s.top = -padding + "px";
+        s.width = dw + padding * 2 + "px";
+        s.height = dh + padding * 2 + "px";
+        s.backgroundColor = "black";
+        s.zIndex = 99999;
+
+        s = topImg.style;
+        s.position = "absolute";
+        s.left = (dw - img.width * minScale) / 2 + padding + "px";
+        s.top = (dh - img.height * minScale) / 2 + padding + "px";
+        s.width = img.width * minScale + "px";
+        s.height = img.height * minScale + "px";
+        topImg.src = img.src;
+        
+        topDiv.setAttribute("class", "show");
+
+    }
+})();
+
+
 const elemClick = (() => {
 
     let busy = false;
@@ -127,6 +183,7 @@ window.scrollToAnimation = (() => {
 
     function cancelAnima() {
 
+        console.log(`cancel \n getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
         cancelAnimationFrame(animationFrameScroll);
         moves = [];
         animationFrameScroll = null;
@@ -139,7 +196,7 @@ window.scrollToAnimation = (() => {
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
-        console.log("getScrollY=" + tempScrollTop)
+        console.log(`getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
         moves = getScrollPoints(targetScrollTop - tempScrollTop);
         scrollTo();
     }
@@ -588,6 +645,12 @@ function createBody(iHTML, parentNode = document.body) {
                     scrollToElement(TARGET_ELEM);
                     focusElement(TARGET_ELEM);
                 }
+            }
+        }
+        else if (ELEM_NAME == "IMG") {
+            elem.onclick = () => { // if not ListClick to cancel
+                elemClick(elem);
+                topImage(elem);
             }
         }
 

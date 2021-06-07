@@ -1,22 +1,23 @@
-
 @font-face {
     font-family: mHeiTi;
     src: url('../style/font/PingFang-Regular-subfont.woff') format('woff'),
-    url('../style/font/PingFang Regular.ttf') format('truetype');
+        url('../style/font/PingFang Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
+
 @font-face {
     font-family: mHeiTi;
     src: url('../style/font/PingFang-Medium-subfont.woff') format('woff'),
-    url('../style/font/PingFang Medium.ttf') format('truetype');
+        url('../style/font/PingFang Medium.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
+
 @font-face {
     font-family: mHeiTi;
     src: url('../style/font/PingFang-Bold-subfont.woff') format('woff'),
-    url('../style/font/PingFang Bold.ttf') format('truetype');
+        url('../style/font/PingFang Bold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
 }
@@ -24,7 +25,7 @@
 @font-face {
     font-family: mHeiTi;
     src: url('../style/font/PingFang-Heavy-subfont.woff') format('woff'),
-    url('../style/font/PingFang Heavy.ttf') format('truetype');
+        url('../style/font/PingFang Heavy.ttf') format('truetype');
     font-weight: 900;
     font-style: normal;
 }
@@ -38,21 +39,28 @@ body {
     /*viewport width=800*/
     font-size: 30px;
     font-family: mHeiTi, SimHei;
-    font-weight:300;
+    font-weight: 300;
     line-height: 2;
     scroll-behavior: auto;
     /*smooth;*/
     -webkit-user-select: none;
 }
+
 body.loading {
     opacity: 0;
 }
 
 body.finish {
     opacity: 1;
+    -webkit-animation: finish 1000ms ease-in;
+    -moz-animation: finish 1000ms ease-in;
+    animation: finish 1000ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
 }
 
-@-webkit-keyframes show {
+@-webkit-keyframes finish {
     0% {
         opacity: 0;
     }
@@ -62,7 +70,7 @@ body.finish {
     }
 }
 
-@-moz-keyframes show {
+@-moz-keyframes finish {
     0% {
         opacity: 0;
     }
@@ -72,7 +80,7 @@ body.finish {
     }
 }
 
-@keyframes show {
+@keyframes finish {
     0% {
         opacity: 0;
     }
@@ -121,15 +129,15 @@ div.buttomDiv {
     margin: 15px 15px;
     font-size: 30px;
     font-family: mHeiTi;
-    font-weight:300;
+    font-weight: 300;
 }
 
-div.bodyDiv{
+div.bodyDiv {
     width: 750px;
     margin: 25px 25px;
     font-size: 30px;
     font-family: mHeiTi;
-    font-weight:300;
+    font-weight: 300;
 }
 
 a {
@@ -266,12 +274,12 @@ ol {
     color: #222222;
     font-size: 30px;
     font-family: mHeiTi;
-    font-weight:300;
+    font-weight: 300;
     line-height: 2;
 }
 
 li {
-    font-weight:300;
+    font-weight: 300;
 }
 
 img {
@@ -281,7 +289,7 @@ img {
 mark {
     background-color: #dddd88;
     font-size: 30px;
-    font-weight:300;
+    font-weight: 300;
 }
 
 
@@ -459,6 +467,155 @@ mark {
     -webkit-animation: hideList 500ms ease-in;
     -moz-animation: hideList 500ms ease-in;
     animation: hideList 500ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+
+@-webkit-keyframes show {
+    0% {
+        opacity: 0;
+        display: block;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+
+    }
+
+    100% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: none;
+    }
+}
+
+@-moz-keyframes show {
+    0% {
+        opacity: 0;
+        display: block;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+
+    }
+
+    100% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: none;
+    }
+}
+
+@keyframes show {
+    0% {
+        opacity: 0;
+        display: block;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+
+    }
+
+    100% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: none;
+    }
+}
+
+
+@-webkit-keyframes hide {
+    0% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+        display: none;
+    
+    }
+}
+
+@-moz-keyframes hide {
+    0% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+        display: none;
+
+    }
+}
+
+@keyframes hide {
+    0% {
+        opacity: 0.937;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        display: block;
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(0.6);
+        -moz-transform: scale(0.6);
+        -ms-transform: scale(0.6);
+        transform: scale(0.6);
+        display: none;
+        
+    }
+}
+
+.show {
+    
+    background-color: red;
+    -webkit-animation: show 300ms ease-in;
+    -moz-animation: show 300ms ease-in;
+    animation: show 300ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.hide {
+    
+    -webkit-animation: hide 300ms ease-in;
+    -moz-animation: hide 300ms ease-in;
+    animation: hide 300ms ease-in;
     -webkit-animation-fill-mode: both;
     -moz-animation-fill-mode: both;
     animation-fill-mode: both;
