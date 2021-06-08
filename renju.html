@@ -18,30 +18,31 @@
     <link rel="preload" href="./style/font/PFSCMedium1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport0229.js" as="script">
-    <link rel="preload" href="./script/button-0525.js" as="script">
-    <link rel="preload" href="./script/engine-0525.js" as="script">
-    <link rel="preload" href="./script/appData-0109.js" as="script">
-    <link rel="preload" href="./script/control-0603.js" as="script">
-    <link rel="preload" href="./script/msgbox-0525.js" as="script">
-    <link rel="preload" href="./script/checkerBoard-0603.js" as="script">
-    <link rel="preload" href="./script/worker-0528.js" as="script">
+    <link rel="preload" href="./script/viewport.js" as="script">
+    <link rel="preload" href="./script/button.js" as="script">
+    <link rel="preload" href="./script/engine.js" as="script">
+    <link rel="preload" href="./script/appData.js" as="script">
+    <link rel="preload" href="./script/control.js" as="script">
+    <link rel="preload" href="./script/msgbox.js" as="script">
+    <link rel="preload" href="./script/checkerBoard.js" as="script">
+    <link rel="preload" href="./script/worker.js" as="script">
     <link rel="preload" href="./script/jsPDF/jspdf.umd_01.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCMedium.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCHeavy.js" as="script">
     
-    <title> 摆棋小工具</title>  
+    <title> 摆棋小工具</title>
 </head>
 
 <body>
-    <script src="./script/viewport0229.js"></script>
-    <script src="./script/button-0525.js"></script>
-    <script src="./script/engine-0525.js"></script>
-    <script src="./script/appData-0109.js"></script>
-    <script src="./script/control-0603.js"></script>
-    <script src="./script/msgbox-0525.js"></script>
-    <script src="./script/checkerBoard-0603.js"></script>
-    <script src="./script/worker-0528.js"></script>
+     <script src="./registerSW.js"></script>
+    <script src="./script/viewport.js"></script>
+    <script src="./script/button.js"></script>
+    <script src="./script/engine.js"></script>
+    <script src="./script/appData.js"></script>
+    <script src="./script/control.js"></script>
+    <script src="./script/msgbox.js"></script>
+    <script src="./script/checkerBoard.js"></script>
+    <script src="./script/worker.js"></script>
     <script src="./script/NoSleep.min.js"></script>
     <script src="./script/vConsole/vconsole.min.js"></script>
     <script src="./script/jsPDF/jspdf.umd_01.js"></script>
@@ -49,7 +50,7 @@
     <script src="./script/jsPDF/PFSCHeavy.js"></script>
     <script language="javascript">
         "use strict";
-        
+
         let vConsole = null;
         let d = document;
         let dw = d.documentElement.clientWidth;
@@ -87,15 +88,15 @@
             //closeMsg();
             isNoSleep = false;
         };
-        
-        
-        window.alert = function (name) {
-        const IFRAME = document.createElement('IFRAME');
-        IFRAME.style.display = 'none';
-        IFRAME.setAttribute('src', 'data:text/plain,');
-        document.documentElement.appendChild(IFRAME);
-        window.frames[0].window.alert(name);
-        IFRAME.parentNode.removeChild(IFRAME);
+
+
+        window.alert = function(name) {
+            const IFRAME = document.createElement('IFRAME');
+            IFRAME.style.display = 'none';
+            IFRAME.setAttribute('src', 'data:text/plain,');
+            document.documentElement.appendChild(IFRAME);
+            window.frames[0].window.alert(name);
+            IFRAME.parentNode.removeChild(IFRAME);
         };
 
         //用来保存跟踪正在发送的触摸事件
@@ -117,17 +118,17 @@
         var { jsPDF } = window.jspdf;
         document.body.onload = function() {
             try {
+
                 //测试脚本是否加载成功;
                 if (!button || !checkerBoard || !msg || !findVCF || !view || !NoSleep) {
-                    setTimeout(() => { location.reload(); }, 100);
+                    setTimeout(() => { location.reload(); }, 1000);
                     return;
                 }
                 if (String(window.location).indexOf("http://localhost") == 0) {
                     if (vConsole == null) vConsole = new VConsole();
                 }
-                
-                
-                
+
+
                 let bodyDiv = d.createElement("div");
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";
@@ -141,7 +142,7 @@
                 upDiv.style.width = "10%";
                 upDiv.style.height = 50 + "px";
                 upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
-                upDiv.style.top = dw > dh ? (dh-cWidth)/2 + "px" : cWidth + "px";
+                upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
                 let downDiv = d.createElement("div");
                 d.body.appendChild(downDiv);
                 downDiv.style.position = "absolute";
@@ -150,38 +151,19 @@
                 downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
                 downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
 
-                setTimeout(() => { scrollTo(0, dw<dh?cWidth * 9 / 10:0); }, 5);
+                setTimeout(() => { scrollTo(0, dw < dh ? cWidth * 9 / 10 : 0); }, 5);
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
                 setCheckerBoardEvent(cBoard.canvas);
 
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth]);
                 appData.renjuLoad(cBoard);
-
-                /*
-                navigator.serviceWorker.register('./sw.js',{scope: './'})
-                    .then(function(registration) {
-                        // 注册成功
-                        console.log('ServiceWorker registration successful with scope: ' + registration.scope)
-                        if (registration.installing) {
-                            console.log('Service worker installing');
-                        } else if (registration.waiting) {
-                            console.log('Service worker installed');
-                        } else if (registration.active) {
-                            console.log('Service worker active');
-                        }
-                    })
-                    .catch(function(err) {
-                        // 注册失败:(
-                        console.log('ServiceWorker registration failed: ' + err)
-                    })
-             
-*/
+                registerSW();
 
             }
             catch (err) {
-                //console.log ("reLoad");
-                setTimeout(()=>{location.reload()},1000);
+                console.log (err);
+                setTimeout(() => { location.reload() }, 1000);
             }
 
         }
