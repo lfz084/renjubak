@@ -3,7 +3,12 @@ var VERSION = 'v1';
 // 缓存
 self.addEventListener('install', function(event) {
     event.waitUntil(
-        
+        caches.open(VERSION).then(function(cache) {
+            return cache.addAll([
+                    './',
+                    './index.html'
+                  ]);
+        })
     );
 });
 
@@ -25,15 +30,14 @@ self.addEventListener('activate', function(event) {
 
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
-
     event.respondWith(
         fetch(event.request)
         .then(response => {
             let cloneRes = response.clone();
             caches.open(VERSION).then(cache => {
-                cache.put(event.request, cloneRes);
+                cache.put(event.request, responseh);
             });
-            return responseh;
+            return cloneRes;
         })
         .catch(err => {
             return caches.match(event.request);

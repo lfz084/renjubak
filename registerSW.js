@@ -1,10 +1,5 @@
 var registerSW = () => {
     
-    const isSupport = document.getElementById("isSupport");
-    const isSuccess = document.getElementById("isSuccess");
-    const state = document.getElementById("state");
-    const swState = document.getElementById("swState");
-    
     if ('serviceWorker' in navigator) {
 
         // 开始注册service workers
