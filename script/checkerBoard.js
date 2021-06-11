@@ -4509,7 +4509,10 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
         if (color != "auto") return;
     }
     let c = color == "auto" ? this.getAutoColor(i) : color;
-    if (isFoulPoint && c == "black" && !this.autoColor) return;
+    if (isFoulPoint && c == "black" && !this.autoColor) {
+        showLabel(EMOJI_FOUL_THREE+"禁手不能落子"+EMOJI_FOUL_THREE)
+        return;
+    }
     this.cletLbMoves();
     if (color == "auto" || type == TYPE_NUMBER) { // 顺序添加棋子
 
