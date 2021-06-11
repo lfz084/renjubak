@@ -61,7 +61,7 @@ self.addEventListener('fetch', function(event) {
                     }
                 })
                 .catch(err=>{
-                    throw err;
+                    reject();
                 })
         })
     }
