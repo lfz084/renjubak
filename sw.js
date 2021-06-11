@@ -31,7 +31,22 @@ self.addEventListener('activate', function(event) {
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
     event.respondWith(
-        caches.match(event.request).then(res => {
+        caches.match(event.request).then(response => {
+            if (response.ok) {
+                getFetch()
+                return response;
+            }
+            else {
+                return getFetch();
+            }
+        })
+        .catch(err => {
+            return getFetch();
+        })
+    )
+
+    function getFetch() {
+        return new Promise((resolve, reject) => {
             fetch(event.request)
                 .then(response => {
                     if (response.ok) {
@@ -39,23 +54,16 @@ self.addEventListener('fetch', function(event) {
                         caches.open(VERSION).then(cache => {
                             cache.put(event.request, cloneRes);
                         });
-                        return response
+                        resolve(response);
+                    }
+                    else {
+                        reject();
                     }
                 })
-            return res;
-        })
-        .catch(err => {
-            return fetch(event.request)
-                .then(response => {
-                    if (response.ok) {
-                        let cloneRes = response.clone();
-                        caches.open(VERSION).then(cache => {
-                            cache.put(event.request, cloneRes);
-                        });
-                        return response
-                    }
+                .catch(err=>{
+                    throw err;
                 })
         })
-    )
+    }
 
 });
