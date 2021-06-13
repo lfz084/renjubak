@@ -1639,54 +1639,22 @@ let control = (() => {
         let scale = cBd.width / 800;
         const FULL_DIV = document.createElement("div");
         document.body.appendChild(FULL_DIV);
-        let s = FULL_DIV.style;
-        s.backgroundColor = "black";
-        s.position = "fixed";
-        s.left = -padding + "px";
-        s.top = -padding + "px";
-        s.width = dw + padding * 2 + "px";
-        s.height = dh + padding * 2 + "px";
-        s.zIndex = -99999;
-        s.display = "none";
+        FULL_DIV.style.zIndex = -99999;
+        FULL_DIV.style.display = "none";
 
         const IFRAME_DIV = document.createElement("div");
         IFRAME_DIV.setAttribute("id", "wrapper");
         FULL_DIV.appendChild(IFRAME_DIV);
-        s = IFRAME_DIV.style;
-        //s.backgroundColor = "blue";
-        s.position = "absolute";
-        s.left = padding + "px";
-        s.top = padding + "px";
-        s.width = 800 + "px";
-        s.height = 800 * dh / dw + "px";
-        s.transform = "scale(" + scale + ")";
-        s.transformOrigin = "0px 0px";
 
         const IFRAME = document.createElement("iframe");
         IFRAME.setAttribute("id", "helpWindow");
         IFRAME.setAttribute("name", "helpWindow");
         IFRAME_DIV.appendChild(IFRAME);
-        s = IFRAME.style;
-        //s.backgroundColor = "red";
-        s.position = "absolute";
-        s.left = 0 + "px";
-        s.top = 0 + "px";
-        s.width = "100%";
-        s.height = "100%";
 
         const ICO_CLOSE = document.createElement("img");
         FULL_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "../pic/close.svg";
-        s = ICO_CLOSE.style;
-        s.backgroundColor = "#ccc";
-        s.position = "fixed";
-        s.left = (dw - 50) / 2 + "px";
-        s.top = (dh - 50 * (dw < dh ? 2 : 1.2)) + "px";
-        s.width = "50px";
-        s.height = "50px";
-        s.opacity = "0.5";
-        s.transform = "scale(" + scale + ")";
-        s.transformOrigin = "25px 50px";
+
         let startX = 0,
             startY = 0;
         ICO_CLOSE.onclick = () => {
@@ -1725,7 +1693,17 @@ let control = (() => {
 
         function openHelpWindow() {
             sharing = true;
+
+            let s = FULL_DIV.style;
+            s.backgroundColor = "black";
+            s.position = "fixed";
+            s.left = -padding + "px";
+            s.top = -padding + "px";
+            s.width = dw + padding * 2 + "px";
+            s.height = dh + padding * 2 + "px";
+
             s = IFRAME_DIV.style;
+            //s.backgroundColor = "blue";
             s.position = "absolute";
             s.left = padding + (dw - 800) / 2 + "px";
             s.top = padding + "px";
@@ -1733,6 +1711,26 @@ let control = (() => {
             s.height = dh / scale + "px";
             s.transform = "scale(" + scale + ")";
             s.transformOrigin = "center top";
+
+            s = IFRAME.style;
+            //s.backgroundColor = "red";
+            s.position = "absolute";
+            s.left = 0 + "px";
+            s.top = 0 + "px";
+            s.width = "100%";
+            s.height = "100%";
+
+            s = ICO_CLOSE.style;
+            s.backgroundColor = "#ccc";
+            s.position = "fixed";
+            s.left = (dw - 50) / 2 + "px";
+            s.top = (dh - 50 * (dw < dh ? 2 : 1.2)) + "px";
+            s.width = "50px";
+            s.height = "50px";
+            s.opacity = "0.5";
+            s.transform = "scale(" + scale + ")";
+            s.transformOrigin = "25px 50px";
+
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
         }
@@ -1781,6 +1779,17 @@ let control = (() => {
             }
 
         }
+
+        window.open = (url, target) => {
+            if (target == "helpWindow") {
+                IFRAME.src = url;
+                openHelpWindow();
+            }
+            else {
+                window.open(url, target);
+            }
+        }
+
 
     }
 
