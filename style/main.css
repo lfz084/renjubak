@@ -96,9 +96,7 @@ hr {
 #helpWindow {
     overflow: scroll;
     background-color: white;
-            width
     border-width: 0px;
-    z-index: 0;
 }
 
 

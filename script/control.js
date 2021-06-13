@@ -1673,6 +1673,21 @@ let control = (() => {
         s.top = 0 + "px";
         s.width = "100%";
         s.height = "100%";
+        
+        const ICO_CLOSE = document.createElement("img");
+        IFRAME_DIV.appendChild(ICO_CLOSE);
+        ICO_CLOSE.src="../pic/close.svg";
+        s = ICO_CLOSE.style;
+        s.backgroundColor = "red";
+        s.position = "absolute";
+        s.left = 375 + "px";
+        s.top = 0 + "px";
+        s.width = "50px";
+        s.height = "50px";
+        s.opacity = "0.5";
+        ICO_CLOSE.onclick = ()=>{
+            closeHelpWindow();
+        }
 
         const CHILD_WINDOW = IFRAME.contentWindow;
         let getDocumentHeight = () => {};
@@ -1708,6 +1723,7 @@ let control = (() => {
         function closeHelpWindow() {
             FULL_DIV.style.zIndex = -99999;
             FULL_DIV.style.display = "none";
+            IFRAME.src = "about:blank";
         }
 
 
@@ -1732,12 +1748,11 @@ let control = (() => {
 
                 getScrollPoints = CHILD_WINDOW.getScrollPoints;
                 if (navigator.userAgent.indexOf("iPhone") + 1) {
-                    //CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
                     CHILD_WINDOW.setScrollY = setScrollY;
                     CHILD_WINDOW.getScrollY = getScrollY;
                     const temp = CHILD_WINDOW.scrollToAnimation;
                     CHILD_WINDOW.scrollToAnimation = (top) => {
-                        alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
+                        //alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
                         IFRAME.style.height = getDocumentHeight() + "px";
                         temp(top);
                     }

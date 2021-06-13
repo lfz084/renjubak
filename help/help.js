@@ -10,7 +10,7 @@ const topImage = (() => {
         topImg = topDocument.createElement("img");
         topDocument.body.appendChild(topDiv);
         topDiv.appendChild(topImg);
-        topImg.onclick = topDiv.onclick = () => {
+        topDiv.onclick = () => {
             close();
         }
     }
@@ -40,7 +40,7 @@ const topImage = (() => {
         s.width = dw + padding * 2 + "px";
         s.height = dh + padding * 2 + "px";
         s.backgroundColor = "black";
-        s.zIndex = 100000;
+        s.zIndex = 99999;
 
         s = topImg.style;
         s.position = "absolute";
@@ -51,6 +51,7 @@ const topImage = (() => {
         topImg.src = img.src;
 
         topDiv.setAttribute("class", "show");
+        topDiv.focus();
 
     }
 })();
