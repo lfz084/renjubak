@@ -1638,6 +1638,7 @@ let control = (() => {
         let padding = dw > dh ? dw : dh;
         let scale = cBd.width / 800;
         const FULL_DIV = document.createElement("div");
+        document.body.appendChild(FULL_DIV);
         let s = FULL_DIV.style;
         s.backgroundColor = "black";
         s.position = "fixed";
@@ -1647,10 +1648,10 @@ let control = (() => {
         s.height = dh + padding * 2 + "px";
         s.zIndex = -99999;
         s.display = "none";
-        document.body.appendChild(FULL_DIV);
 
         const IFRAME_DIV = document.createElement("div");
-        FULL_DIV.setAttribute("id", "wrapper");
+        IFRAME_DIV.setAttribute("id", "wrapper");
+        FULL_DIV.appendChild(IFRAME_DIV);
         s = IFRAME_DIV.style;
         s.backgroundColor = "blue";
         s.position = "absolute";
@@ -1660,11 +1661,11 @@ let control = (() => {
         s.height = 800 * dh / dw + "px";
         s.transform = "scale(" + scale + ")";
         s.transformOrigin = "0px 0px";
-        FULL_DIV.appendChild(IFRAME_DIV);
 
         const IFRAME = document.createElement("iframe");
         IFRAME.setAttribute("id", "helpWindow");
         IFRAME.setAttribute("name", "helpWindow");
+        IFRAME_DIV.appendChild(IFRAME);
         s = IFRAME.style;
         s.backgroundColor = "red";
         s.position = "absolute";
@@ -1672,7 +1673,6 @@ let control = (() => {
         s.top = 0 + "px";
         s.width = "100%";
         s.height = "100%";
-        IFRAME_DIV.appendChild(IFRAME);
 
         const CHILD_WINDOW = IFRAME.contentWindow;
         let getDocumentHeight = () => {};
@@ -1712,7 +1712,7 @@ let control = (() => {
 
 
         IFRAME.onload = () => {
-            alert("iframe onload")
+            
             const SRC = IFRAME.contentWindow.location.href;
             if (SRC == "about:blank") {
                 closeHelpWindow();
@@ -1731,13 +1731,13 @@ let control = (() => {
                 })();
 
                 getScrollPoints = CHILD_WINDOW.getScrollPoints;
-                if (true || navigator.userAgent.indexOf("iPhone") + 1) {
+                if (navigator.userAgent.indexOf("iPhone") + 1) {
                     //CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
                     CHILD_WINDOW.setScrollY = setScrollY;
                     CHILD_WINDOW.getScrollY = getScrollY;
                     const temp = CHILD_WINDOW.scrollToAnimation;
                     CHILD_WINDOW.scrollToAnimation = (top) => {
-                        alert(`>>>parent animationFrameScroll ${getDocumentHeight}`)
+                        alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
                         IFRAME.style.height = getDocumentHeight() + "px";
                         temp(top);
                     }
