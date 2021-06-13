@@ -1675,16 +1675,18 @@ let control = (() => {
         s.height = "100%";
 
         const ICO_CLOSE = document.createElement("img");
-        IFRAME_DIV.appendChild(ICO_CLOSE);
+        FULL_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "../pic/close.svg";
         s = ICO_CLOSE.style;
         s.backgroundColor = "#ccc";
-        s.position = "absolute";
-        s.left = 375 + "px";
-        s.top = 50 + "px";
+        s.position = "fixed";
+        s.left = (dw-50) /2 + "px";
+        s.top = (dh - 50*1.5) + "px";
         s.width = "50px";
         s.height = "50px";
         s.opacity = "0.5";
+        s.transform = "scale(" + scale + ")";
+        s.transformOrigin = "25px 50px";
         let startX = 0,
             startY = 0;
         ICO_CLOSE.onclick = () => {
