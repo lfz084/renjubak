@@ -45,7 +45,8 @@ h1 {
 }
 
 
-html, body {
+html,
+body {
     height: 100%;
     width: 100%;
     font-family: mHeiTi, SimHei;
@@ -84,6 +85,20 @@ html, body {
 hr {
     height: 3px;
     margin: 0 0 0 0;
+}
+
+#wrapper {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+#helpWindow {
+    overflow: scroll;
+    background-color: white;
+            width
+    border-width: 0px;
+    z-index: 0;
 }
 
 
@@ -226,6 +241,7 @@ hr {
     0% {
         opacity: 0.75;
     }
+
     100% {
         opacity: 0.75;
     }
@@ -235,6 +251,7 @@ hr {
     0% {
         opacity: 0.75;
     }
+
     100% {
         opacity: 0.75;
     }
@@ -244,6 +261,7 @@ hr {
     0% {
         opacity: 0.75;
     }
+
     100% {
         opacity: 0.75;
     }

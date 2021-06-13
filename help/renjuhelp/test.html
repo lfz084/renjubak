@@ -147,7 +147,7 @@
                         tempScrollTop += moves.splice(0, 1)[0];
                         setScrollY(tempScrollTop);
                         if (moves.length) {
-                            animationFrameScroll = requestAnimationFrame(scrollTo);
+                            animationFrameScroll = =(scrollTo);
                         }
                         else {
                             cancelAnima();

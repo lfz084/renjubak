@@ -10,7 +10,7 @@ const topImage = (() => {
         topImg = topDocument.createElement("img");
         topDocument.body.appendChild(topDiv);
         topDiv.appendChild(topImg);
-        topDiv.onclick = () => {
+        topImg.onclick = topDiv.onclick = () => {
             close();
         }
     }
@@ -18,15 +18,15 @@ const topImage = (() => {
     function close() {
 
         topDiv.setAttribute("class", "hide");
-        setTimeout(()=>{
+        setTimeout(() => {
             topDiv.style.zIndex = -99999;
-        },1000)
+        }, 1000)
     }
     return (img) => {
         if (!topDocument) {
             resetTopImage();
         }
-        let padding = img.width>img.height ? img.width :img.height;
+        let padding = img.width > img.height ? img.width : img.height;
         let dw = topDocument.documentElement.clientWidth;
         let dh = topDocument.documentElement.clientHeight;
         let scaleWidth = dw / img.width;
@@ -40,7 +40,7 @@ const topImage = (() => {
         s.width = dw + padding * 2 + "px";
         s.height = dh + padding * 2 + "px";
         s.backgroundColor = "black";
-        s.zIndex = 99999;
+        s.zIndex = 100000;
 
         s = topImg.style;
         s.position = "absolute";
@@ -49,7 +49,7 @@ const topImage = (() => {
         s.width = img.width * minScale + "px";
         s.height = img.height * minScale + "px";
         topImg.src = img.src;
-        
+
         topDiv.setAttribute("class", "show");
 
     }
@@ -695,9 +695,11 @@ function createButtom(parentNode = document.body) {
 
 function center(elem) {
 
-    const DW = document.documentElement.clientWidth;
-    const ELEM_WIDTH = 800;
-    elem.style.position = "absolute";
-    elem.style.left = (DW - ELEM_WIDTH) / 2 + `px`;
+    if (window.parent == window.self) {
+        const DW = document.documentElement.clientWidth;
+        const ELEM_WIDTH = 800;
+        elem.style.position = "absolute";
+        elem.style.left = (DW - ELEM_WIDTH) / 2 + `px`;
+    }
 
 }
