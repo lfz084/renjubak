@@ -1695,7 +1695,7 @@ let control = (() => {
             sharing = true;
 
             let s = FULL_DIV.style;
-            s.backgroundColor = "black";
+            s.backgroundColor = "#ddd";
             s.position = "fixed";
             s.left = -padding + "px";
             s.top = -padding + "px";
@@ -1703,7 +1703,7 @@ let control = (() => {
             s.height = dh + padding * 2 + "px";
 
             s = IFRAME_DIV.style;
-            //s.backgroundColor = "blue";
+            s.backgroundColor = "#ddd";
             s.position = "absolute";
             s.left = padding + (dw - 800) / 2 + "px";
             s.top = padding + "px";
@@ -1713,7 +1713,7 @@ let control = (() => {
             s.transformOrigin = "center top";
 
             s = IFRAME.style;
-            //s.backgroundColor = "red";
+            s.backgroundColor = "#ddd";
             s.position = "absolute";
             s.left = 0 + "px";
             s.top = 0 + "px";
@@ -1744,16 +1744,13 @@ let control = (() => {
             sharing = false;
         }
 
-
+        
         IFRAME.onload = () => {
-
+            
+            if (navigator.userAgent.indexOf("iPhone") < 0) return;
             const SRC = IFRAME.contentWindow.location.href;
-            if (SRC == "about:blank") {
-                closeHelpWindow();
-            }
-            else {
-                openHelpWindow();
-
+            if (SRC != "about:blank") {
+            
                 getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
                     let iDoc = IFRAME.Document || IFRAME.contentWindow.document;
@@ -1779,11 +1776,12 @@ let control = (() => {
             }
 
         }
+        
 
         window.open = (url, target) => {
             if (target == "helpWindow") {
-                IFRAME.src = url;
                 openHelpWindow();
+                IFRAME.src = url;
             }
             else {
                 window.open(url, target);
