@@ -3,6 +3,8 @@
 const topImage = (() => {
 
     let topDocument, topDiv, topImg;
+    let startX = 0,
+        startY = 0;
 
     function resetTopImage() {
         topDocument = window.top.document;
@@ -10,6 +12,20 @@ const topImage = (() => {
         topImg = topDocument.createElement("img");
         topDocument.body.appendChild(topDiv);
         topDiv.appendChild(topImg);
+        
+        topDiv.addEventListener("touchstart", (event) => {
+            startX = event.changedTouches[0].pageX;
+            startY = event.changedTouches[0].pageY;
+        }, true);
+        
+        topDiv.addEventListener("touchend", (event) => {
+            let tX = event.changedTouches[0].pageX;
+            let tY = event.changedTouches[0].pageY;
+            if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
+                close();
+            }
+        }, true);
+
         topDiv.onclick = () => {
             close();
         }

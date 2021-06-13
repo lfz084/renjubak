@@ -1653,7 +1653,7 @@ let control = (() => {
         IFRAME_DIV.setAttribute("id", "wrapper");
         FULL_DIV.appendChild(IFRAME_DIV);
         s = IFRAME_DIV.style;
-        s.backgroundColor = "blue";
+        //s.backgroundColor = "blue";
         s.position = "absolute";
         s.left = padding + "px";
         s.top = padding + "px";
@@ -1667,27 +1667,42 @@ let control = (() => {
         IFRAME.setAttribute("name", "helpWindow");
         IFRAME_DIV.appendChild(IFRAME);
         s = IFRAME.style;
-        s.backgroundColor = "red";
+        //s.backgroundColor = "red";
         s.position = "absolute";
         s.left = 0 + "px";
         s.top = 0 + "px";
         s.width = "100%";
         s.height = "100%";
-        
+
         const ICO_CLOSE = document.createElement("img");
         IFRAME_DIV.appendChild(ICO_CLOSE);
-        ICO_CLOSE.src="../pic/close.svg";
+        ICO_CLOSE.src = "../pic/close.svg";
         s = ICO_CLOSE.style;
-        s.backgroundColor = "red";
+        s.backgroundColor = "#ccc";
         s.position = "absolute";
         s.left = 375 + "px";
-        s.top = 0 + "px";
+        s.top = 50 + "px";
         s.width = "50px";
         s.height = "50px";
         s.opacity = "0.5";
-        ICO_CLOSE.onclick = ()=>{
+        let startX = 0,
+            startY = 0;
+        ICO_CLOSE.onclick = () => {
             closeHelpWindow();
         }
+        ICO_CLOSE.addEventListener("touchstart", (event) => {
+            startX = event.changedTouches[0].pageX;
+            startY = event.changedTouches[0].pageY;
+        }, true);
+
+        ICO_CLOSE.addEventListener("touchend", (event) => {
+            let tX = event.changedTouches[0].pageX;
+            let tY = event.changedTouches[0].pageY;
+            if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
+                ICO_CLOSE.onclick();
+            }
+        }, true);
+
 
         const CHILD_WINDOW = IFRAME.contentWindow;
         let getDocumentHeight = () => {};
@@ -1707,9 +1722,10 @@ let control = (() => {
 
 
         function openHelpWindow() {
+            sharing = true;
             s = IFRAME_DIV.style;
             s.position = "absolute";
-            s.left = padding + (dw-800)/2 + "px";
+            s.left = padding + (dw - 800) / 2 + "px";
             s.top = padding + "px";
             s.width = 800 + "px";
             s.height = dh / scale + "px";
@@ -1724,11 +1740,12 @@ let control = (() => {
             FULL_DIV.style.zIndex = -99999;
             FULL_DIV.style.display = "none";
             IFRAME.src = "about:blank";
+            sharing = false;
         }
 
 
         IFRAME.onload = () => {
-            
+
             const SRC = IFRAME.contentWindow.location.href;
             if (SRC == "about:blank") {
                 closeHelpWindow();
