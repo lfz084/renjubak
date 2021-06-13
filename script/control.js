@@ -2248,7 +2248,7 @@ let control = (() => {
             parentNode = param[0];
             createRenjuCmdDiv(param[0], param[1], param[2], param[3], param[4]);
             createImgCmdDiv(param[0], param[1], param[2], param[3], param[4]);
-            //createHelpWindow();
+            createHelpWindow();
         },
         "getEXWindow": () => { return exWindow },
         //"showContextMenu": ()=>{cMenu.showMenu();},
