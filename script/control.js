@@ -1731,13 +1731,13 @@ let control = (() => {
                 })();
 
                 getScrollPoints = CHILD_WINDOW.getScrollPoints;
-                if (navigator.userAgent.indexOf("iPhone") + 1) {
+                if (true || navigator.userAgent.indexOf("iPhone") + 1) {
                     //CHILD_WINDOW.scrollToAnimation = scrollToAnimation;
                     CHILD_WINDOW.setScrollY = setScrollY;
                     CHILD_WINDOW.getScrollY = getScrollY;
                     const temp = CHILD_WINDOW.scrollToAnimation;
                     CHILD_WINDOW.scrollToAnimation = (top) => {
-                        console.log(">>>parent animationFrameScroll")
+                        alert(`>>>parent animationFrameScroll ${getDocumentHeight}`)
                         IFRAME.style.height = getDocumentHeight() + "px";
                         temp(top);
                     }
