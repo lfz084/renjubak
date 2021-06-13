@@ -3885,7 +3885,7 @@ function findFoulPoint(arr, newarr, setnum) {
 
 
 function getHelpLink(str, htmlName, id) {
-    const LINK = `<a href="help/renjuhelp/${htmlName}#${id}" target="helpWindow">${str}</a>`;
+    const LINK = `<a onclick='window.open("help/renjuhelp/${htmlName}#${id}", "helpWindow")'>${str}</a>`;
     return LINK;
 }
 

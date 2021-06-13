@@ -1680,8 +1680,8 @@ let control = (() => {
         s = ICO_CLOSE.style;
         s.backgroundColor = "#ccc";
         s.position = "fixed";
-        s.left = (dw-50) /2 + "px";
-        s.top = (dh - 50*1.5) + "px";
+        s.left = (dw - 50) / 2 + "px";
+        s.top = (dh - 50 * (dw < dh ? 2 : 1.2)) + "px";
         s.width = "50px";
         s.height = "50px";
         s.opacity = "0.5";
@@ -1739,6 +1739,7 @@ let control = (() => {
 
 
         function closeHelpWindow() {
+            IFRAME_DIV.scrollTop = 0;
             FULL_DIV.style.zIndex = -99999;
             FULL_DIV.style.display = "none";
             IFRAME.src = "about:blank";
