@@ -1712,7 +1712,7 @@ let control = (() => {
 
 
         IFRAME.onload = () => {
-
+            alert("iframe onload")
             const SRC = IFRAME.contentWindow.location.href;
             if (SRC == "about:blank") {
                 closeHelpWindow();
