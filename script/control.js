@@ -1706,9 +1706,12 @@ let control = (() => {
             s.backgroundColor = "#ddd";
             s.position = "absolute";
             s.left = padding + (dw - 800) / 2 + "px";
-            s.top = padding + "px";
+            s.top = padding + 5 + "px";
             s.width = 800 + "px";
-            s.height = dh / scale + "px";
+            s.height = dh / scale - 10 + "px";
+            s.borderStyle = "solid";
+            s.borderColor = "black";
+            s.borderWidth = "1px";
             s.transform = "scale(" + scale + ")";
             s.transformOrigin = "center top";
 
