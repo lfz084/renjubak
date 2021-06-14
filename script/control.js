@@ -1712,7 +1712,7 @@ let control = (() => {
             s.borderStyle = "solid";
             s.borderColor = "#aaa";
             s.borderWidth = "5px";
-            s.borderRadius = dw / 16 + "px";
+            //s.borderRadius = dw / 16 + "px";
             s.transform = "scale(" + scale + ")";
             s.transformOrigin = "center top";
 
