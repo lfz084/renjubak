@@ -1653,7 +1653,7 @@ let control = (() => {
 
         const ICO_CLOSE = document.createElement("img");
         FULL_DIV.appendChild(ICO_CLOSE);
-        ICO_CLOSE.src = "../pic/close.svg";
+        ICO_CLOSE.src = "./pic/close.svg";
 
         let startX = 0,
             startY = 0;
@@ -1734,7 +1734,7 @@ let control = (() => {
             s.opacity = "0.5";
             s.transform = "scale(" + scale + ")";
             s.transformOrigin = "35px 70px";
-            ICO_CLOSE.src = "../pic/close.svg";
+            ICO_CLOSE.src = "./pic/close.svg";
 
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
