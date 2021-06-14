@@ -1708,10 +1708,11 @@ let control = (() => {
             s.left = padding + (dw - 800) / 2 + "px";
             s.top = padding + 5 + "px";
             s.width = 800 + "px";
-            s.height = dh / scale - 10 + "px";
+            s.height = (dh - 15) / scale + "px";
             s.borderStyle = "solid";
-            s.borderColor = "black";
-            s.borderWidth = "1px";
+            s.borderColor = "#aaa";
+            s.borderWidth = "5px";
+            s.borderRadius = dw / 16 + "px";
             s.transform = "scale(" + scale + ")";
             s.transformOrigin = "center top";
 
@@ -1726,34 +1727,39 @@ let control = (() => {
             s = ICO_CLOSE.style;
             s.backgroundColor = "#ccc";
             s.position = "fixed";
-            s.left = (dw - 50) / 2 + "px";
-            s.top = (dh - 50 * (dw < dh ? 2 : 1.2)) + "px";
-            s.width = "50px";
-            s.height = "50px";
+            s.left = (dw - 70) / 2 + "px";
+            s.top = (dh - 70 * (dw < dh ? 2 : 1.2)) + "px";
+            s.width = "70px";
+            s.height = "70px";
             s.opacity = "0.5";
             s.transform = "scale(" + scale + ")";
-            s.transformOrigin = "25px 50px";
+            s.transformOrigin = "35px 70px";
+            ICO_CLOSE.src = "../pic/close.svg";
 
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
+            FULL_DIV.setAttribute("class", "showHelpWindow");
         }
 
 
         function closeHelpWindow() {
             IFRAME_DIV.scrollTop = 0;
-            FULL_DIV.style.zIndex = -99999;
-            FULL_DIV.style.display = "none";
-            IFRAME.src = "about:blank";
-            sharing = false;
+            FULL_DIV.setAttribute("class", "hideHelpWindow");
+            setTimeout(() => {
+                FULL_DIV.style.zIndex = -99999;
+                FULL_DIV.style.display = "none";
+                //IFRAME.src = "about:blank";
+                sharing = false;
+            }, 1000);
         }
 
-        
+
         IFRAME.onload = () => {
-            
+
             if (navigator.userAgent.indexOf("iPhone") < 0) return;
             const SRC = IFRAME.contentWindow.location.href;
-            if (SRC != "about:blank") {
-            
+            //if (SRC != "about:blank") {
+
                 getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
                     let iDoc = IFRAME.Document || IFRAME.contentWindow.document;
@@ -1776,10 +1782,10 @@ let control = (() => {
                     }
                 }
 
-            }
+            //}
 
         }
-        
+
 
         window.open = (url, target) => {
             if (target == "helpWindow") {
