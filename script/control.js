@@ -1739,6 +1739,9 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
             FULL_DIV.setAttribute("class", "showHelpWindow");
+            setTimeout(()=>{
+                IFRAME.contentWindow.onhashchange();
+            },0);
         }
 
 
