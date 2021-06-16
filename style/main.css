@@ -131,7 +131,12 @@ hr {
     background-color: white;
     border-width: 0px;
 }
-
+#exWindow {
+    overflow-x: scroll;
+    overflow-y: scroll;
+    background-color: red;
+    -webkit-overflow-scrolling: touch;
+}
 .showHelpWindow {
     -webkit-animation: showHelpWindow 500ms ease-in;
     -moz-animation: showHelpWindow 500ms ease-in;

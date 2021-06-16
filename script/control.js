@@ -1348,6 +1348,7 @@ let control = (() => {
                 s.fontWeight = "normal";
                 s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
                 s.zIndex = 9999;
+                IFRAME.setAttribute("id", "exWindow");
             }
 
             function openWindow() {
