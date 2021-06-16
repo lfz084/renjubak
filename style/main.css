@@ -134,7 +134,6 @@ hr {
 #exWindow {
     overflow-x: scroll;
     overflow-y: scroll;
-    background-color: red;
     -webkit-overflow-scrolling: touch;
 }
 .showHelpWindow {
