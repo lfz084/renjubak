@@ -1755,11 +1755,12 @@ let control = (() => {
 
 
         function closeHelpWindow() {
-            IFRAME_DIV.scrollTop = 0;
+            
             FULL_DIV.setAttribute("class", "hideHelpWindow");
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
+                IFRAME_DIV.scrollTop = 0;
                 //IFRAME.src = "about:blank";
                 sharing = false;
             }, 1000);
