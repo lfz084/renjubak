@@ -625,7 +625,7 @@ function createTop(parentNode = document.body) {
 
     const TOP_DIV = document.createElement("div");
     TOP_DIV.setAttribute("class", "topDiv");
-    TOP_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
+    //TOP_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
     parentNode.appendChild(TOP_DIV);
 }
 
@@ -721,7 +721,7 @@ function createBody(iHTML, parentNode = document.body) {
 function createButtom(parentNode = document.body) {
     const BUTTOM_DIV = document.createElement("div");
     BUTTOM_DIV.setAttribute("class", "buttomDiv");
-    BUTTOM_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
+    //BUTTOM_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
     parentNode.appendChild(BUTTOM_DIV);
 }
 

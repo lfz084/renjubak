@@ -324,8 +324,8 @@ let control = (() => {
                     break;
                 case 16:
                     window.location.reload();
-                break;
-                    
+                    break;
+
 
 
             }
@@ -1326,6 +1326,7 @@ let control = (() => {
         exWindow = (() => {
 
             const IFRAME = document.createElement("div");
+            IFRAME.setAttribute("id", "exWindow");
             const FONT_SIZE = sw / 30 + "px";
             const IFRAME_LEFT = parseInt(cFlipY.left) + "px";
             const IFRAME_TOP = parseInt(cFlipY.top) + "px";
@@ -1334,7 +1335,6 @@ let control = (() => {
 
             function resetStyle() {
                 let s = IFRAME.style;
-                s.overflow = "scroll";
                 s.position = "absolute";
                 s.left = IFRAME_LEFT;
                 s.top = IFRAME_TOP;
@@ -1348,7 +1348,6 @@ let control = (() => {
                 s.fontWeight = "normal";
                 s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
                 s.zIndex = 9999;
-                IFRAME.setAttribute("id", "exWindow");
             }
 
             function openWindow() {
@@ -1657,27 +1656,41 @@ let control = (() => {
         IFRAME.setAttribute("name", "helpWindow");
         IFRAME_DIV.appendChild(IFRAME);
 
+        const BUT_DIV = document.createElement("div");
+        FULL_DIV.appendChild(BUT_DIV);
+
+        const ICO_BACK = document.createElement("img");
+        BUT_DIV.appendChild(ICO_BACK);
+        ICO_BACK.src = "./pic/chevron-left.svg";
+        setClick(ICO_BACK, ()=>{
+            IFRAME.src = "./help/renjuhelp/renjuhelp.html";
+        });
+
         const ICO_CLOSE = document.createElement("img");
-        FULL_DIV.appendChild(ICO_CLOSE);
+        BUT_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "./pic/close.svg";
+        setClick(ICO_CLOSE, closeHelpWindow);
 
-        let startX = 0,
-            startY = 0;
-        ICO_CLOSE.onclick = () => {
-            closeHelpWindow();
-        }
-        ICO_CLOSE.addEventListener("touchstart", (event) => {
-            startX = event.changedTouches[0].pageX;
-            startY = event.changedTouches[0].pageY;
-        }, true);
 
-        ICO_CLOSE.addEventListener("touchend", (event) => {
-            let tX = event.changedTouches[0].pageX;
-            let tY = event.changedTouches[0].pageY;
-            if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
-                ICO_CLOSE.onclick();
+        function setClick(elem, callbak = () => {}) {
+            let startX = 0,
+                startY = 0;
+            elem.onclick = () => {
+                callbak();
             }
-        }, true);
+            elem.addEventListener("touchstart", (event) => {
+                startX = event.changedTouches[0].pageX;
+                startY = event.changedTouches[0].pageY;
+            }, true);
+
+            elem.addEventListener("touchend", (event) => {
+                let tX = event.changedTouches[0].pageX;
+                let tY = event.changedTouches[0].pageY;
+                if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
+                    elem.onclick();
+                }
+            }, true);
+        }
 
 
         const CHILD_WINDOW = IFRAME.contentWindow;
@@ -1730,25 +1743,45 @@ let control = (() => {
             s.width = "800px";
             s.height = "100%";
 
-            s = ICO_CLOSE.style;
-            s.backgroundColor = "#c0c0c0";
+            s = BUT_DIV.style;
             s.position = "fixed";
-            s.left = (dw - 78) / 2 + "px";
+            s.left = (dw - 197) / 2 + "px";
             s.top = (dh - 78 * (dw < dh ? 1.5 : 1.2)) + "px";
-            s.width = "78px";
+            s.width = "197px";
             s.height = "78px";
             s.borderStyle = "solid";
             s.borderColor = "#fff";
             s.borderWidth = "0px";
             s.opacity = "0.5";
             s.transform = "scale(" + scale + ")";
-            s.transformOrigin = "39px 78px";
-            ICO_CLOSE.src = "./pic/close.svg";
+            s.transformOrigin = "98.5px 78px";
+
+            s = ICO_BACK.style;
+            s.backgroundColor = "#c0c0c0";
+            s.position = "absolute";
+            s.left = 0 + "px";
+            s.top = 0 + "px";
+            s.width = "78px";
+            s.height = "78px";
+            s.borderStyle = "solid";
+            s.borderColor = "#fff";
+            s.borderWidth = "0px";
+
+            s = ICO_CLOSE.style;
+            s.backgroundColor = "#c0c0c0";
+            s.position = "absolute";
+            s.left = 117 + "px";
+            s.top = 0 + "px";
+            s.width = "78px";
+            s.height = "78px";
+            s.borderStyle = "solid";
+            s.borderColor = "#fff";
+            s.borderWidth = "0px";
 
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
             FULL_DIV.setAttribute("class", "showHelpWindow");
-            
+
             if (IFRAME.contentWindow && IFRAME.contentWindow.onhashchange) {
                 IFRAME.contentWindow.onhashchange();
             }
@@ -1756,7 +1789,7 @@ let control = (() => {
 
 
         function closeHelpWindow() {
-            
+
             FULL_DIV.setAttribute("class", "hideHelpWindow");
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
@@ -1774,27 +1807,27 @@ let control = (() => {
             const SRC = IFRAME.contentWindow.location.href;
             //if (SRC != "about:blank") {
 
-                getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
+            getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
-                    let iDoc = IFRAME.Document || IFRAME.contentWindow.document;
-                    const MARK_END = iDoc.createElement("a");
-                    iDoc.body.appendChild(MARK_END);
-                    return () => {
-                        return CHILD_WINDOW.getAbsolutePos(MARK_END).y;
-                    }
-                })();
-
-                getScrollPoints = CHILD_WINDOW.getScrollPoints;
-                if (navigator.userAgent.indexOf("iPhone") + 1) {
-                    CHILD_WINDOW.setScrollY = setScrollY;
-                    CHILD_WINDOW.getScrollY = getScrollY;
-                    const temp = CHILD_WINDOW.scrollToAnimation;
-                    CHILD_WINDOW.scrollToAnimation = (top) => {
-                        //alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
-                        IFRAME.style.height = getDocumentHeight() + "px";
-                        temp(top);
-                    }
+                let iDoc = IFRAME.Document || IFRAME.contentWindow.document;
+                const MARK_END = iDoc.createElement("a");
+                iDoc.body.appendChild(MARK_END);
+                return () => {
+                    return CHILD_WINDOW.getAbsolutePos(MARK_END).y;
                 }
+            })();
+
+            getScrollPoints = CHILD_WINDOW.getScrollPoints;
+            if (navigator.userAgent.indexOf("iPhone") + 1) {
+                CHILD_WINDOW.setScrollY = setScrollY;
+                CHILD_WINDOW.getScrollY = getScrollY;
+                const temp = CHILD_WINDOW.scrollToAnimation;
+                CHILD_WINDOW.scrollToAnimation = (top) => {
+                    //alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
+                    IFRAME.style.height = getDocumentHeight() + "px";
+                    temp(top);
+                }
+            }
 
             //}
 

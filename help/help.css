@@ -129,9 +129,11 @@ div.topDiv {
     font-size: 30px;
     font-family: mHeiTi, SimHei;
     font-weight: 300;
+    /*
     border-bottom: 5px outset #ccc;
     display: table-cell;
     vertical-align: bottom;
+    */
 }
 div.buttomDiv {
     width: 770px;
@@ -140,9 +142,11 @@ div.buttomDiv {
     font-size: 30px;
     font-family: mHeiTi, SimHei;
     font-weight: 300;
+    /*
     border-top: 5px inset #ccc;
     display: table-cell;
     vertical-align: top;
+    */
 }
 
 div.bodyDiv {
