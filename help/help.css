@@ -122,21 +122,34 @@ body.finish {
 }
 
 
-div.topDiv,
+div.topDiv {
+    width: 770px;
+    height: 200px;
+    margin: 15px 15px;
+    font-size: 30px;
+    font-family: mHeiTi, SimHei;
+    font-weight: 300;
+    border-bottom: 5px outset #ccc;
+    display: table-cell;
+    vertical-align: bottom;
+}
 div.buttomDiv {
     width: 770px;
     height: 200px;
     margin: 15px 15px;
     font-size: 30px;
-    font-family: mHeiTi;
+    font-family: mHeiTi, SimHei;
     font-weight: 300;
+    border-top: 5px inset #ccc;
+    display: table-cell;
+    vertical-align: top;
 }
 
 div.bodyDiv {
     width: 750px;
     margin: 25px 25px;
     font-size: 30px;
-    font-family: mHeiTi;
+    font-family: mHeiTi, SimHei;
     font-weight: 300;
 }
 
@@ -170,7 +183,7 @@ a:active {
 
 h3 {
     font-size: 36px;
-    font-family: mHeiTi;
+    font-family: mHeiTi, SimHei;
     font-weight: 600;
     line-height: 1.5;
     margin: 10px 10px;
@@ -180,7 +193,7 @@ h3 {
 
 h4 {
     font-size: 32px;
-    font-family: mHeiTi;
+    font-family: mHeiTi, SimHei;
     font-weight: 600;
     line-height: 1.5;
     margin: 10px 10px;
@@ -273,13 +286,16 @@ ul,
 ol {
     color: #222222;
     font-size: 30px;
-    font-family: mHeiTi;
+    font-family: mHeiTi, SimHei;
     font-weight: 300;
     line-height: 2;
 }
 
 li {
+    font-size: 30px;
+    font-family: mHeiTi, SimHei;
     font-weight: 300;
+    line-height: 2;
 }
 
 img {
@@ -289,7 +305,9 @@ img {
 mark {
     background-color: #dddd88;
     font-size: 30px;
+    font-family: mHeiTi, SimHei;
     font-weight: 300;
+    line-height: 2;
 }
 
 

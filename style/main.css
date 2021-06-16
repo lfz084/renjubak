@@ -88,13 +88,15 @@ a:active {
 }
 
 .menu {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
     /*
     width: 300px;
     left: 300px;
     top: 100px;
     height: 300px;
     border-radius: 30px;
-    overflow: scroll;
     background: #ccc;
     */
 }
@@ -124,7 +126,8 @@ hr {
 }
 
 #helpWindow {
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
     background-color: white;
     border-width: 0px;
 }

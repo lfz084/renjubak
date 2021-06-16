@@ -263,6 +263,7 @@ let control = (() => {
         cMenu.addOption(13, "输出代码");
         cMenu.addOption(14, "输入图片");
         cMenu.addOption(15, `${EMOJI_SCISSORSN} 截图`);
+        cMenu.addOption(16, `🔄 刷新页面`);
 
         cMenu.setonchange(function(but) {
             if (busy()) return;
@@ -321,6 +322,10 @@ let control = (() => {
                 case 15:
                     cCutImage.showMenu(x, y);
                     break;
+                case 16:
+                    window.location.reload();
+                break;
+                    
 
 
             }
@@ -1710,7 +1715,7 @@ let control = (() => {
             s.width = 800 + "px";
             s.height = (dh - 15) / scale + "px";
             s.borderStyle = "solid";
-            s.borderColor = "#aaa";
+            s.borderColor = "#ccc";
             s.borderWidth = "5px";
             //s.borderRadius = dw / 16 + "px";
             s.transform = "scale(" + scale + ")";
@@ -1721,27 +1726,31 @@ let control = (() => {
             s.position = "absolute";
             s.left = 0 + "px";
             s.top = 0 + "px";
-            s.width = "100%";
+            s.width = "800px";
             s.height = "100%";
 
             s = ICO_CLOSE.style;
-            s.backgroundColor = "#ccc";
+            s.backgroundColor = "#c0c0c0";
             s.position = "fixed";
-            s.left = (dw - 70) / 2 + "px";
-            s.top = (dh - 70 * (dw < dh ? 2 : 1.2)) + "px";
-            s.width = "70px";
-            s.height = "70px";
+            s.left = (dw - 78) / 2 + "px";
+            s.top = (dh - 78 * (dw < dh ? 1.5 : 1.2)) + "px";
+            s.width = "78px";
+            s.height = "78px";
+            s.borderStyle = "solid";
+            s.borderColor = "#fff";
+            s.borderWidth = "0px";
             s.opacity = "0.5";
             s.transform = "scale(" + scale + ")";
-            s.transformOrigin = "35px 70px";
+            s.transformOrigin = "39px 78px";
             ICO_CLOSE.src = "./pic/close.svg";
 
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
             FULL_DIV.setAttribute("class", "showHelpWindow");
-            setTimeout(()=>{
+            
+            if (IFRAME.contentWindow && IFRAME.contentWindow.onhashchange) {
                 IFRAME.contentWindow.onhashchange();
-            },0);
+            }
         }
 
 

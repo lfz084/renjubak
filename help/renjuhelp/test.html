@@ -3,7 +3,6 @@
 
 <head>
     <title>test</title>
-        <link href="../help.css" rel="stylesheet" type="text/css">
     <style type="text/css">
         #root {
             position: relative;
@@ -39,7 +38,7 @@
             overflow: scroll;
             background-color: white;
             border-width: 0px;
-            width: 100%;
+            width: 800px;
             height: 100%;
             position: relative;
             left: 0px;
@@ -78,9 +77,9 @@
     </style>
 </head>
 
-<body class="loading">
+<body>
     <div id="wrapper">
-        <iframe name="helpWindow" id="iframe" src="power.html"></iframe>
+        <iframe name="helpWindow" id="iframe" src="test1.html"></iframe>
     </div>
     <script>
         const IFREAM_DIV = document.getElementById("wrapper")
@@ -89,22 +88,13 @@
         let getDocumentHeight = () => {};
         let getScrollPoints = () => {};
 
-        const focusElement = (() => {
-            const LINK = document.createElement("a");
-            document.body.appendChild(LINK);
-            return (id) => {
-                LINK.href = "power.html" + id;
-                LINK.target = "helpWindow";
-                LINK.click();
-            }
-        })();
 
 
         document.body.onload = () => {
 
             CHILD_WINDOW.setView(document);
 
-            centerAndScale(document.getElementById(`wrapper`))
+            //centerAndScale(document.getElementById(`wrapper`))
 
             getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 

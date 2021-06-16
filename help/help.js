@@ -2,6 +2,7 @@
 
 const topImage = (() => {
 
+    let busy = false;
     let topDocument, topDiv, topImg;
     let startX = 0,
         startY = 0;
@@ -12,12 +13,12 @@ const topImage = (() => {
         topImg = topDocument.createElement("img");
         topDocument.body.appendChild(topDiv);
         topDiv.appendChild(topImg);
-        
+
         topDiv.addEventListener("touchstart", (event) => {
             startX = event.changedTouches[0].pageX;
             startY = event.changedTouches[0].pageY;
         }, true);
-        
+
         topDiv.addEventListener("touchend", (event) => {
             let tX = event.changedTouches[0].pageX;
             let tY = event.changedTouches[0].pageY;
@@ -36,9 +37,12 @@ const topImage = (() => {
         topDiv.setAttribute("class", "hide");
         setTimeout(() => {
             topDiv.style.zIndex = -99999;
+            busy = false;
         }, 1000)
     }
     return (img) => {
+        if (busy) return;
+        busy = true;
         if (!topDocument) {
             resetTopImage();
         }
@@ -540,7 +544,8 @@ window.onhashchange = function(event) {
 
 document.body.onload = function() {
 
-    setView();
+    //if (window.parent == window.self) setView();
+    document.body.setAttribute("class", "finish");
     const iHTML = document.body.innerHTML;
     document.body.innerHTML = "";
     let dDiv = createDocumentDiv();
@@ -550,7 +555,8 @@ document.body.onload = function() {
     setTimeout(() => {
         window.onhashchange();
     }, 1000);
-    console.log(`parentWindow=${window.parent==window.sel}`)
+    //alert(`${document.documentElement.clientWidth}, ${document.documentElement.clientHeight}`)
+    console.log(`parentWindow=${window.parent==window.self}`)
     /*
     (() => { // test scrollHeight
         const CONSOLE = document.createElement("div");
@@ -594,7 +600,7 @@ window.setView = (doc = document, width = 800) => {
     VIEW.setAttribute("name", "viewport");
     VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
     VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale*3}, user-scalable=${"yes"}`);
-    doc.body.setAttribute("class", "finish");
+    
 }
 
 
@@ -613,6 +619,7 @@ function createTop(parentNode = document.body) {
 
     const TOP_DIV = document.createElement("div");
     TOP_DIV.setAttribute("class", "topDiv");
+    TOP_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
     parentNode.appendChild(TOP_DIV);
 }
 
@@ -620,10 +627,12 @@ function createTop(parentNode = document.body) {
 function createBody(iHTML, parentNode = document.body) {
 
     const BODY_DIV = document.createElement("div");
+    const DEFOULT_HEIGHT = 
     BODY_DIV.setAttribute("class", "bodyDiv");
     BODY_DIV.innerHTML = iHTML;
     mapUL(BODY_DIV);
     parentNode.appendChild(BODY_DIV);
+    console.log(`BODY_DIV.height=${BODY_DIV.scrollHeight}`);
 
     function mapUL(elem) {
         const CHILD_NODES = elem.childNodes;
@@ -633,7 +642,7 @@ function createBody(iHTML, parentNode = document.body) {
                 if (["OL", "UL"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i], NODE_NAME);
                 }
-                else if (["B", "H4", "DIV"].indexOf(NODE_NAME) + 1) {
+                else if (["B", "H4", "H3","DIV"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i]);
                 }
 
@@ -706,6 +715,7 @@ function createBody(iHTML, parentNode = document.body) {
 function createButtom(parentNode = document.body) {
     const BUTTOM_DIV = document.createElement("div");
     BUTTOM_DIV.setAttribute("class", "buttomDiv");
+    BUTTOM_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
     parentNode.appendChild(BUTTOM_DIV);
 }
 
