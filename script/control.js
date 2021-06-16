@@ -1835,9 +1835,10 @@ let control = (() => {
 
 
         window.open = (url, target) => {
+            //alert(`url=${url}, target=${target}`)
             if (target == "helpWindow") {
-                openHelpWindow();
                 IFRAME.src = url;
+                openHelpWindow();
             }
             else {
                 window.open(url, target);
