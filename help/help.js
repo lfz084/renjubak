@@ -514,19 +514,25 @@ const hashControl = (() => {
         busy = true;
         const HASH = window.location.hash;
         console.log(HASH)
-        if (HASH != "#1" && HASH != "#0" && HASH) {
+        if (HASH != "#1" && HASH != "#0") {
 
-            const ID = HASH.slice(1);
-            const ELEM = document.getElementById(ID);
-            const FIRST_LIST = getFirstChildNode(ELEM, ["UL", "OL"]);
+            if (HASH) {
+                const ID = HASH.slice(1);
+                const ELEM = document.getElementById(ID);
+                const FIRST_LIST = getFirstChildNode(ELEM, ["UL", "OL"]);
 
-            let node = getFirstChildNode(FIRST_LIST, ["LI"]);
-            if (node && node.style.display == "none") {
-                elemClick(node.parentNode, true);
+                let node = getFirstChildNode(FIRST_LIST, ["LI"]);
+                if (node && node.style.display == "none") {
+                    elemClick(node.parentNode, true);
+                }
+
+                scrollToElement(ELEM);
+                focusElement(ELEM);
             }
-
-            scrollToElement(ELEM);
-            focusElement(ELEM);
+            else {
+                const FIRST_NODE = getFirstChildNode(document.body, undefined, 1);
+                scrollToElement(FIRST_NODE);
+            }
         }
         setTimeout(() => {
             busy = false;
@@ -600,7 +606,7 @@ window.setView = (doc = document, width = 800) => {
     VIEW.setAttribute("name", "viewport");
     VIEW.setAttribute("content", `initial-scale=${self.scale+0.01} `);
     VIEW.setAttribute("content", `width=${width}, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale =${scale*3}, user-scalable=${"yes"}`);
-    
+
 }
 
 
@@ -627,8 +633,8 @@ function createTop(parentNode = document.body) {
 function createBody(iHTML, parentNode = document.body) {
 
     const BODY_DIV = document.createElement("div");
-    const DEFOULT_HEIGHT = 
-    BODY_DIV.setAttribute("class", "bodyDiv");
+    const DEFOULT_HEIGHT =
+        BODY_DIV.setAttribute("class", "bodyDiv");
     BODY_DIV.innerHTML = iHTML;
     mapUL(BODY_DIV);
     parentNode.appendChild(BODY_DIV);
@@ -642,7 +648,7 @@ function createBody(iHTML, parentNode = document.body) {
                 if (["OL", "UL"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i], NODE_NAME);
                 }
-                else if (["B", "H4", "H3","DIV"].indexOf(NODE_NAME) + 1) {
+                else if (["B", "H4", "H3", "DIV"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i]);
                 }
 
