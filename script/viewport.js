@@ -82,7 +82,7 @@ window.setScrollY = (top) => {
 }
 
 window.getScrollPoints = (move) => {
-    const PAR = 1.05;
+    const PAR = 1.5;
     const PAR2 = move < 0 ? 1 : 1;
     const MAX_MOVE = 5000;
     const HALF = move / 2;
@@ -106,6 +106,7 @@ window.getScrollPoints = (move) => {
     for (let i = tempMoves.length - 1; i >= 0; i--) {
         rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1) * 10) / 10);
     }
+    //console.log(rtHs)
     return rtHs;
 }
 
