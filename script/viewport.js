@@ -83,7 +83,7 @@ window.setScrollY = (top) => {
 
 window.getScrollPoints = (move) => {
     const PAR = 1.05;
-    const PAR2 = move < 0 ? 2 : 1;
+    const PAR2 = move < 0 ? 1 : 1;
     const MAX_MOVE = 5000;
     const HALF = move / 2;
     let sum = Math.abs(HALF);
