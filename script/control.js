@@ -1826,10 +1826,13 @@ let control = (() => {
                 const temp = CHILD_WINDOW.scrollToAnimation;
                 CHILD_WINDOW.scrollToAnimation = (top) => {
                     //alert(`>>>parent animationFrameScroll ${getDocumentHeight()}`)
-                    IFRAME.style.height = getDocumentHeight() + "px";
                     temp(top);
                 }
-            }
+            };
+            
+            CHILD_WINDOW.setScrollHeight = ()=>{
+                IFRAME.style.height = getDocumentHeight() + "px";
+            };
 
         }
 

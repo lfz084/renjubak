@@ -340,6 +340,10 @@ window.setScrollY = (top) => {
 
 
 
+window.setScrollHeight = ()=>{}; // ios set iframe Height
+
+
+
 function showList(elem) {
 
     if (!elem) return;
@@ -356,6 +360,7 @@ function showList(elem) {
     if (["UL", "OL"].indexOf(elem.nodeName) + 1) {
         elem.setAttribute("class", "showList");
     }
+    setScrollHeight();
 
     function showNode(node, depth) {
 
@@ -426,6 +431,7 @@ function hideList(elem) {
     if (["UL", "OL"].indexOf(elem.nodeName) + 1) {
         elem.setAttribute("class", "hideList");
     }
+    setScrollHeight();
 }
 
 
