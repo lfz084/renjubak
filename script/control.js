@@ -1662,7 +1662,7 @@ let control = (() => {
         const ICO_BACK = document.createElement("img");
         BUT_DIV.appendChild(ICO_BACK);
         ICO_BACK.src = "./pic/chevron-left.svg";
-        setClick(ICO_BACK, ()=>{
+        setClick(ICO_BACK, () => {
             IFRAME.src = "./help/renjuhelp/renjuhelp.html";
         });
 
@@ -1705,16 +1705,16 @@ let control = (() => {
 
 
         function setScrollY(top) {
-            console.log(`IFRAME_DIV setScrollY, ${top}`)
+            //console.log(`IFRAME_DIV setScrollY, ${top}`)
             IFRAME_DIV.scrollTop = top;
         }
 
 
-        function openHelpWindow() {
+        function openHelpWindow(url) {
             sharing = true;
 
             let s = FULL_DIV.style;
-            s.backgroundColor = "#ddd";
+            //s.backgroundColor = "#ddd";
             s.position = "fixed";
             s.left = -padding + "px";
             s.top = -padding + "px";
@@ -1727,9 +1727,9 @@ let control = (() => {
             s.left = padding + (dw - 800) / 2 + "px";
             s.top = padding + 5 + "px";
             s.width = 800 + "px";
-            s.height = (dh - 15) / scale + "px";
+            s.height = (dh - 10) / scale + "px";
             s.borderStyle = "solid";
-            s.borderColor = "#ccc";
+            s.borderColor = "#666";
             s.borderWidth = "5px";
             //s.borderRadius = dw / 16 + "px";
             s.transform = "scale(" + scale + ")";
@@ -1742,11 +1742,12 @@ let control = (() => {
             s.top = 0 + "px";
             s.width = "800px";
             s.height = "100%";
+            s.zIndex = -1;
 
             s = BUT_DIV.style;
-            s.position = "fixed";
-            s.left = (dw - 197) / 2 + "px";
-            s.top = (dh - 78 * (dw < dh ? 1.5 : 1.2)) + "px";
+            s.position = "absolute";
+            s.left = padding + (dw- 197)/2 + "px";
+            s.top = padding + dh - 78*0.5 - 78*scale + "px";
             s.width = "197px";
             s.height = "78px";
             s.borderStyle = "solid";
@@ -1780,22 +1781,24 @@ let control = (() => {
 
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.style.display = "block";
-            FULL_DIV.setAttribute("class", "showHelpWindow");
+            FULL_DIV.setAttribute("class", "show");
 
-            if (IFRAME.contentWindow && IFRAME.contentWindow.onhashchange) {
+            if (IFRAME.src.indexOf(url) + 1) {
                 IFRAME.contentWindow.onhashchange();
+            }
+            else {
+                IFRAME.src = url;
             }
         }
 
 
         function closeHelpWindow() {
 
-            FULL_DIV.setAttribute("class", "hideHelpWindow");
+            FULL_DIV.setAttribute("class", "hide");
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
                 IFRAME_DIV.scrollTop = 0;
-                //IFRAME.src = "about:blank";
                 sharing = false;
             }, 1000);
         }
@@ -1805,7 +1808,6 @@ let control = (() => {
 
             if (navigator.userAgent.indexOf("iPhone") < 0) return;
             const SRC = IFRAME.contentWindow.location.href;
-            //if (SRC != "about:blank") {
 
             getDocumentHeight = (() => { //添加结束标记，准确判断文档高度
 
@@ -1829,16 +1831,13 @@ let control = (() => {
                 }
             }
 
-            //}
-
         }
 
 
         window.open = (url, target) => {
             //alert(`url=${url}, target=${target}`)
             if (target == "helpWindow") {
-                IFRAME.src = url;
-                openHelpWindow();
+                openHelpWindow(url);
             }
             else {
                 window.open(url, target);

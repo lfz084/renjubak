@@ -164,7 +164,7 @@ const scrollToElement = (() => {
     let busy = false;
 
     return (elem, fast) => {
-
+        //console.log(`scrollToElement`)
         if (!fast && busy) return;
         busy = !fast;
         if (elem && elem.nodeType == 1) {
@@ -172,7 +172,7 @@ const scrollToElement = (() => {
             //console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
             //console.log(`x=${p.x}, p.y=${p.y}`)
-            scrollToAnimation(p.y - 15)
+            scrollToAnimation(p.y - 15);
             setFocus(elem);
         }
         if (busy) setTimeout(() => {
@@ -204,7 +204,7 @@ window.scrollToAnimation = (() => {
 
     function cancelAnima() {
 
-        console.log(`cancel \n getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
+        //console.log(`cancel \n getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
         cancelAnimationFrame(animationFrameScroll);
         moves = [];
         animationFrameScroll = null;
@@ -217,7 +217,7 @@ window.scrollToAnimation = (() => {
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
-        console.log(`getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
+        //console.log(`getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
         moves = getScrollPoints(targetScrollTop - tempScrollTop);
         scrollTo();
     }
@@ -315,13 +315,13 @@ window.getScrollPoints = (move) => {
         rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1) * 10) / 10);
     }
 
-    console.log(String(rtHs))
+    //console.log(String(rtHs))
     return rtHs;
 }
 
 
 window.getScrollY = () => {
-    console.log("doc.h" + document.documentElement.scrollTop + "\nbody.scH=" + document.body.scrollTop);
+    //console.log("doc.h" + document.documentElement.scrollTop + "\nbody.scH=" + document.body.scrollTop);
     return document.documentElement.scrollTop || document.body.scrollTop || 0;
 }
 
@@ -543,7 +543,7 @@ const hashControl = (() => {
 
 
 window.onhashchange = function(event) {
-
+    //console.log(`onhashchang`)
     hashControl();
 }
 
@@ -638,7 +638,7 @@ function createBody(iHTML, parentNode = document.body) {
     BODY_DIV.innerHTML = iHTML;
     mapUL(BODY_DIV);
     parentNode.appendChild(BODY_DIV);
-    console.log(`BODY_DIV.height=${BODY_DIV.scrollHeight}`);
+    //console.log(`BODY_DIV.height=${BODY_DIV.scrollHeight}`);
 
     function mapUL(elem) {
         const CHILD_NODES = elem.childNodes;
