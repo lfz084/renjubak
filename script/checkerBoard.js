@@ -3552,7 +3552,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
                 popup.location = url;
             }
             else {
-                window.open(url, "download");
+                window.open(url, "helpWindow");
             }
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
             console.log("open downloading...");
