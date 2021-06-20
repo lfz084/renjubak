@@ -3541,10 +3541,8 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     }
     else {
         // if iphone open file;
-        if (true || navigator.userAgent.indexOf("iPhone") + 1) {
-            alert("ios")
-            let popup = window.open("./404.html", "download");
-            alert(popup)
+        if (navigator.userAgent.indexOf("iPhone") + 1) {
+            let popup = window.open("", "download");
             if (popup) {
                 popup.document.title = popup.document.body.innerText =
                     "downloading...";
@@ -3554,13 +3552,12 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
                 popup.location = url;
             }
             else {
-                location.href = url;
+                window.open(url, "download");
             }
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
             console.log("open downloading...")
         }
         else { // download file;
-            alert("click")
             let save_link = document.createElement("a");
             save_link.href = URL.createObjectURL(blob);
             save_link.download = filename;
