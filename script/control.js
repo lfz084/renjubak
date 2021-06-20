@@ -1638,18 +1638,22 @@ let control = (() => {
 
     function createHelpWindow() {
 
+        let busy = false;
         let dw = document.documentElement.clientWidth;
         let dh = document.documentElement.clientHeight;
         let padding = dw > dh ? dw : dh;
-        let scale = cBd.width / 800;
+        let scale = cBd.width / 820;
         const FULL_DIV = document.createElement("div");
         document.body.appendChild(FULL_DIV);
         FULL_DIV.style.zIndex = -99999;
         FULL_DIV.style.display = "none";
 
+        const WIN_DIV = document.createElement("div");
+        FULL_DIV.appendChild(WIN_DIV);
+
         const IFRAME_DIV = document.createElement("div");
         IFRAME_DIV.setAttribute("id", "wrapper");
-        FULL_DIV.appendChild(IFRAME_DIV);
+        WIN_DIV.appendChild(IFRAME_DIV);
 
         const IFRAME = document.createElement("iframe");
         IFRAME.setAttribute("id", "helpWindow");
@@ -1657,7 +1661,7 @@ let control = (() => {
         IFRAME_DIV.appendChild(IFRAME);
 
         const BUT_DIV = document.createElement("div");
-        FULL_DIV.appendChild(BUT_DIV);
+        WIN_DIV.appendChild(BUT_DIV);
 
         const ICO_BACK = document.createElement("img");
         BUT_DIV.appendChild(ICO_BACK);
@@ -1711,29 +1715,33 @@ let control = (() => {
 
 
         function openHelpWindow(url) {
-            sharing = true;
-
+            if (busy) return;
+            busy = true;
             let s = FULL_DIV.style;
-            //s.backgroundColor = "#ddd";
             s.position = "fixed";
             s.left = -padding + "px";
             s.top = -padding + "px";
             s.width = dw + padding * 2 + "px";
             s.height = dh + padding * 2 + "px";
 
+            s = WIN_DIV.style;
+            s.backgroundColor = "#666";
+            s.position = "absolute";
+            s.left = padding + (dw - 820) / 2 + "px";
+            s.top = padding + 5 + "px";
+            s.width = 820 + "px";
+            s.height = (dh - 15) / scale + "px";
+            s.transform = "scale(" + scale + ")";
+            s.transformOrigin = "center top";
+
             s = IFRAME_DIV.style;
             s.backgroundColor = "#ddd";
             s.position = "absolute";
-            s.left = padding + (dw - 800) / 2 + "px";
-            s.top = padding + 5 + "px";
+            s.left = 10 + "px";
+            s.top = 10 + "px";
             s.width = 800 + "px";
-            s.height = (dh - 10) / scale + "px";
-            s.borderStyle = "solid";
-            s.borderColor = "#666";
-            s.borderWidth = "5px";
-            //s.borderRadius = dw / 16 + "px";
-            s.transform = "scale(" + scale + ")";
-            s.transformOrigin = "center top";
+            s.height = parseInt(WIN_DIV.style.height) - 20 + "px";
+            s.zIndex = -1;
 
             s = IFRAME.style;
             s.backgroundColor = "#ddd";
@@ -1742,20 +1750,16 @@ let control = (() => {
             s.top = 0 + "px";
             s.width = "800px";
             s.height = "100%";
-            s.zIndex = -1;
+            
 
             s = BUT_DIV.style;
             s.position = "absolute";
-            s.left = padding + (dw- 197)/2 + "px";
-            s.top = padding + dh - 78*0.5 - 78*scale + "px";
+            s.left = (820 - 197) / 2 + "px";
+            s.top = parseInt(WIN_DIV.style.height) - 78 * 1.5 + "px";
             s.width = "197px";
             s.height = "78px";
-            s.borderStyle = "solid";
-            s.borderColor = "#fff";
-            s.borderWidth = "0px";
             s.opacity = "0.5";
-            s.transform = "scale(" + scale + ")";
-            s.transformOrigin = "98.5px 78px";
+            s.zIndex = 1;
 
             s = ICO_BACK.style;
             s.backgroundColor = "#c0c0c0";
@@ -1799,7 +1803,7 @@ let control = (() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
                 IFRAME_DIV.scrollTop = 0;
-                sharing = false;
+                busy = false;
             }, 1000);
         }
 
@@ -1829,8 +1833,8 @@ let control = (() => {
                     temp(top);
                 }
             };
-            
-            CHILD_WINDOW.setScrollHeight = ()=>{
+
+            CHILD_WINDOW.setScrollHeight = () => {
                 IFRAME.style.height = getDocumentHeight() + "px";
             };
 
