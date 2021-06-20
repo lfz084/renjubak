@@ -3537,7 +3537,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 
         navigator.msSaveOrOpenBlob(blob, filename);
-        console.log("msSaveOrOpenBlob...")
+        console.log("msSaveOrOpenBlob...");
     }
     else {
         // if iphone open file;
@@ -3555,7 +3555,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
                 window.open(url, "download");
             }
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
-            console.log("open downloading...")
+            console.log("open downloading...");
         }
         else { // download file;
             let save_link = document.createElement("a");
@@ -3566,7 +3566,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
             save_link.click();
             save_link.parentNode.removeChild(save_link);
             setTimeout(() => { URL.revokeObjectURL(save_link.href); }, 1000 * 60);
-            console.log("click downloading...")
+            console.log("click downloading...");
         }
     }
 
