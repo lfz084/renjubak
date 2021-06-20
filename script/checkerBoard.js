@@ -3541,8 +3541,8 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     }
     else {
         // if iphone open file;
-        if (navigator.userAgent.indexOf("iPhone") + 1) {
-            let popup = window.open("", "download");
+        if (false && navigator.userAgent.indexOf("iPhone") + 1) {
+            let popup = window.open("", "helpWindow");
             if (popup) {
                 popup.document.title = popup.document.body.innerText =
                     "downloading...";
