@@ -1841,13 +1841,14 @@ let control = (() => {
         }
 
 
+        let tempF = window.open;
         window.open = (url, target) => {
             //alert(`url=${url}, target=${target}`)
             if (target == "helpWindow") {
                 openHelpWindow(url);
             }
             else {
-                window.open(url, target);
+                tempF(url, target);
             }
         }
 
