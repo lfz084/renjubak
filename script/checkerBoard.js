@@ -3541,19 +3541,9 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     }
     else {
         // if iphone open file;
-        if (false && navigator.userAgent.indexOf("iPhone") + 1) {
-            let popup = window.open("", "helpWindow");
-            if (popup) {
-                popup.document.title = popup.document.body.innerText =
-                    "downloading...";
-            }
+        if (navigator.userAgent.indexOf("iPhone") + 1) {
             let url = URL.createObjectURL(blob);
-            if (popup) {
-                popup.location = url;
-            }
-            else {
-                window.open(url, "helpWindow");
-            }
+            window.open(url, "download");
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
             console.log("open downloading...");
         }
@@ -4258,7 +4248,8 @@ checkerBoard.prototype.unpackTree = function() {
             nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
             //printChildNode.call(this, nd, txt);
         }
-        else*/if (MSindex - 1 == moveNodesIndex) {
+        else*/
+        if (MSindex - 1 == moveNodesIndex) {
             //let i = 0; //unpackTree
             //for (i = 0; i <= MSindex; i++) {
             nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
@@ -4336,16 +4327,16 @@ checkerBoard.prototype.unpackTree = function() {
             
         }
         */
-        
+
         this.tree.moveNodesIndex = MSindex;
         printChildNode.call(this, moveNodes[MSindex] || this.tree, txt);
         this.unpacking = false;
-        
+
 
 
 
         function printChildNode(node, txt) {
-            
+
             let exWindow = control.getEXWindow();
             exWindow.innerHTML(node.innerHTML || "");
             printLines.call(this, node.lines);
@@ -4468,7 +4459,7 @@ checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
     }
     let c = color == "auto" ? this.getAutoColor(i) : color;
     if (isFoulPoint && c == "black" && !this.autoColor) {
-        showLabel(EMOJI_FOUL_THREE+"禁手不能落子"+EMOJI_FOUL_THREE)
+        showLabel(EMOJI_FOUL_THREE + "禁手不能落子" + EMOJI_FOUL_THREE)
         return;
     }
     this.cletLbMoves();
