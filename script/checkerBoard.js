@@ -3542,6 +3542,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     else {
         // if iphone open file;
         if (navigator.userAgent.indexOf("iPhone") + 1) {
+            alert("ios")
             let popup = open("", "download");
             if (popup) {
                 popup.document.title = popup.document.body.innerText =
@@ -3554,6 +3555,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
             console.log("open downloading...")
         }
         else { // download file;
+            alert("click")
             let save_link = document.createElement("a");
             save_link.href = URL.createObjectURL(blob);
             save_link.download = filename;
