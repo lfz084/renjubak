@@ -1841,9 +1841,9 @@ let control = (() => {
         }
 
 
-        let tempF = window.open;
+        const tempF = window.open;
         window.open = (url, target) => {
-            //alert(`url=${url}, target=${target}`)
+            console.log(`url=${url}, target=${target}`)
             if (target == "helpWindow") {
                 openHelpWindow(url);
             }
