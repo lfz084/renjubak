@@ -3541,16 +3541,21 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
     }
     else {
         // if iphone open file;
-        if (navigator.userAgent.indexOf("iPhone") + 1) {
+        if (true || navigator.userAgent.indexOf("iPhone") + 1) {
             alert("ios")
-            let popup = open("", "download");
+            let popup = window.open("./404.html", "download");
+            alert(popup)
             if (popup) {
                 popup.document.title = popup.document.body.innerText =
                     "downloading...";
             }
             let url = URL.createObjectURL(blob);
-            if (popup) popup.location = url;
-            else location.href = url;
+            if (popup) {
+                popup.location = url;
+            }
+            else {
+                location.href = url;
+            }
             setTimeout(() => { URL.revokeObjectURL(url); }, 1000 * 60);
             console.log("open downloading...")
         }
