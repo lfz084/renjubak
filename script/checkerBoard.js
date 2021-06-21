@@ -3543,7 +3543,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
         // if iphone open file;
         if (navigator.userAgent.indexOf("iPhone") + 1) {
             let url = URL.createObjectURL(blob);
-            window.open("about:blank", "helpWindow");
+            window.open(url, "helpWindow");
             setTimeout(() => {
                 URL.revokeObjectURL(url);
             }, 1000 * 60);
