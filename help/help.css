@@ -160,6 +160,7 @@ div.bodyDiv {
 a {
     color: #663366;
     font-weight: 600;
+    cursor: pointer;
 }
 
 /* 未被访问的链接 */

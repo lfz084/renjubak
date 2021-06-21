@@ -711,7 +711,7 @@ function createBody(iHTML, parentNode = document.body) {
                 else if (i == 0 && NODE_NAME == "#text") {
                     const TOHIDE_TXT = "...";
                     const NEW_TOSHOW_TXT = "⇦ ... . . . .";
-                    const NODE_VALUE = CHILD_NODES[i].nodeValue;
+                    const NODE_VALUE = CHILD_NODES[i].nodeValue.replace(/^\s*/g,"");
                     const ISTOHIDE = NODE_VALUE.indexOf(TOHIDE_TXT) == 0;
                     CHILD_NODES[i].nodeValue = ISTOHIDE ? NEW_TOSHOW_TXT : NODE_VALUE;
                 }

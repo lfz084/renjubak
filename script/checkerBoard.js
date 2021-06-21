@@ -3543,10 +3543,7 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
         // if iphone open file;
         if (navigator.userAgent.indexOf("iPhone") + 1) {
             let url = URL.createObjectURL(blob);
-            window.open("about:blank", "download");
-            setTimeout(() => {
-                window.open(url, "download");
-            }, 1000);
+            window.open("about:blank", "helpWindow");
             setTimeout(() => {
                 URL.revokeObjectURL(url);
             }, 1000 * 60);
@@ -3564,8 +3561,6 @@ checkerBoard.prototype.saveAs = function(blob, filename) {
             console.log("click downloading...");
         }
     }
-
-
 }
 
 

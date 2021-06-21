@@ -1666,6 +1666,10 @@ let control = (() => {
         const ICO_BACK = document.createElement("img");
         BUT_DIV.appendChild(ICO_BACK);
         ICO_BACK.src = "./pic/chevron-left.svg";
+        ICO_BACK.setAttribute("class","button");
+        ICO_BACK.oncontextmenu = (event)=>{
+            event.preventDefault();
+        };
         setClick(ICO_BACK, () => {
             IFRAME.src = "./help/renjuhelp/renjuhelp.html";
         });
@@ -1673,6 +1677,10 @@ let control = (() => {
         const ICO_CLOSE = document.createElement("img");
         BUT_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "./pic/close.svg";
+        ICO_CLOSE.setAttribute("class","button");
+        ICO_CLOSE.oncontextmenu = (event) => {
+            event.preventDefault();
+        }
         setClick(ICO_CLOSE, closeHelpWindow);
 
 
@@ -1717,8 +1725,10 @@ let control = (() => {
         function openHelpWindow(url) {
             if (busy) return;
             busy = true;
+            sharing = true;
             let s = FULL_DIV.style;
             s.position = "fixed";
+            s.backgroundColor = "#666";
             s.left = -padding + "px";
             s.top = -padding + "px";
             s.width = dw + padding * 2 + "px";
@@ -1751,7 +1761,6 @@ let control = (() => {
             s.width = "800px";
             s.height = "100%";
             
-
             s = BUT_DIV.style;
             s.position = "absolute";
             s.left = (820 - 197) / 2 + "px";
@@ -1759,7 +1768,7 @@ let control = (() => {
             s.width = "197px";
             s.height = "78px";
             s.opacity = "0.5";
-            s.zIndex = 1;
+            s.zIndex = 99999;
 
             s = ICO_BACK.style;
             s.backgroundColor = "#c0c0c0";
@@ -1771,7 +1780,7 @@ let control = (() => {
             s.borderStyle = "solid";
             s.borderColor = "#fff";
             s.borderWidth = "0px";
-
+            
             s = ICO_CLOSE.style;
             s.backgroundColor = "#c0c0c0";
             s.position = "absolute";
@@ -1782,9 +1791,9 @@ let control = (() => {
             s.borderStyle = "solid";
             s.borderColor = "#fff";
             s.borderWidth = "0px";
-
-            FULL_DIV.style.zIndex = 99999;
+            
             FULL_DIV.style.display = "block";
+            FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
             if (IFRAME.src.indexOf(url) + 1) {
@@ -1804,6 +1813,7 @@ let control = (() => {
                 FULL_DIV.style.display = "none";
                 IFRAME_DIV.scrollTop = 0;
                 busy = false;
+                sharing = false;
             }, 1000);
         }
 
