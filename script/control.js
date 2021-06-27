@@ -1811,10 +1811,10 @@ let control = (() => {
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
-                IFRAME_DIV.scrollTop = 0;
+                //IFRAME_DIV.scrollTop = 0;
                 busy = false;
                 sharing = false;
-            }, 1000);
+            }, 500);
         }
 
 

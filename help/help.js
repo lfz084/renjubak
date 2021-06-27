@@ -566,6 +566,7 @@ document.body.onload = function() {
     createButtom(dDiv);
     setTimeout(() => {
         window.onhashchange();
+        setScrollHeight();
     }, 1000);
     //alert(`${document.documentElement.clientWidth}, ${document.documentElement.clientHeight}`)
     console.log(`parentWindow=${window.parent==window.self}`)
