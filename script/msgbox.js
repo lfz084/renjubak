@@ -176,7 +176,6 @@
                  msgTextarea.value = "";
                  MsgBoxobj.setAttribute("class", "");
                  MsgBoxobj.ontouchend = MsgBoxobj.click = function() {};
-                 if (navigator.userAgent.indexOf("iPhone") + 1) viewport.resize();
              }, ANIMATION_TIMEOUT);
          }, timer);
      }

@@ -574,6 +574,7 @@ let control = (() => {
                 but.input.value = 0;
                 return;
             }
+            viewport.resize();
             let arr = [];
             cBd.getPointArray(arr);
             let newarr = getArr([]);
@@ -719,6 +720,7 @@ let control = (() => {
                 but.input.value = 0;
                 return;
             }
+            viewport.resize();
             let arr = [];
             cBd.getPointArray(arr);
             switch (but.input.value * 1) {
@@ -1325,21 +1327,41 @@ let control = (() => {
 
         exWindow = (() => {
 
+            const EX_WINDOW = document.createElement("div");
+            
             const IFRAME = document.createElement("div");
             IFRAME.setAttribute("id", "exWindow");
+            EX_WINDOW.appendChild(IFRAME);
+            
+            const CLOSE_BUTTON = document.createElement("img");
+            CLOSE_BUTTON.src = "./pic/close.svg";
+            CLOSE_BUTTON.setAttribute("class", "button");
+            CLOSE_BUTTON.oncontextmenu = (event) => {
+                event.preventDefault();
+            }
+            setClick(CLOSE_BUTTON, closeWindow);
+            EX_WINDOW.appendChild(CLOSE_BUTTON);
+            
             const FONT_SIZE = sw / 30 + "px";
-            const IFRAME_LEFT = parseInt(cFlipY.left) + "px";
-            const IFRAME_TOP = parseInt(cFlipY.top) + "px";
-            const IFRAME_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
-            const IFRAME_HEIGHT = h * 1.5 * 7 + h + "px";
+            const EX_WINDOW_LEFT = parseInt(cFlipY.left) + "px";
+            const EX_WINDOW_TOP = parseInt(cFlipY.top) + "px";
+            const EX_WINDOW_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
+            const EX_WINDOW_HEIGHT = h * 1.5 * 7 + h + "px";
 
             function resetStyle() {
-                let s = IFRAME.style;
+                let s = EX_WINDOW.style;
                 s.position = "absolute";
-                s.left = IFRAME_LEFT;
-                s.top = IFRAME_TOP;
-                s.width = IFRAME_WIDTH;
-                s.height = IFRAME_HEIGHT;
+                s.left = EX_WINDOW_LEFT;
+                s.top = EX_WINDOW_TOP;
+                s.width = EX_WINDOW_WIDTH;
+                s.height = EX_WINDOW_HEIGHT;
+                s.zIndex = 9999;
+                s = IFRAME.style;
+                s.position = "absolute";
+                s.left = 0;
+                s.top = 0;
+                s.width = EX_WINDOW_WIDTH;
+                s.height = EX_WINDOW_HEIGHT;
                 s.fontSize = FONT_SIZE;
                 s.borderStyle = "solid";
                 s.borderWidth = `${sw/260}px`;
@@ -1347,23 +1369,35 @@ let control = (() => {
                 s.background = "white";
                 s.fontWeight = "normal";
                 s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
-                s.zIndex = 9999;
+                s = CLOSE_BUTTON.style;
+                let sz = parseInt(EX_WINDOW_WIDTH) / 10 + "px";
+                s.position = "absolute";
+                s.left = (parseInt(EX_WINDOW_WIDTH) - parseInt(sz)) / 2 + "px";
+                s.top = "0px";
+                s.width = sz;
+                s.height = sz;
+                s.opacity = "0.5";
+                s.backgroundColor = "#c0c0c0";
             }
 
             function openWindow() {
-                if (IFRAME.parentNode) return;
+                if (EX_WINDOW.parentNode) return;
                 resetStyle();
-                renjuCmddiv.appendChild(IFRAME);
+                renjuCmddiv.appendChild(EX_WINDOW);
+            }
+
+            function closeWindow() {
+                IFRAME.innerHTML = undefined;
+                if (EX_WINDOW.parentNode) EX_WINDOW.parentNode.removeChild(EX_WINDOW);
+            }
+
+            function setHTML(iHtml) {
+                IFRAME.innerHTML = iHtml;
             }
             return {
-                "innerHTML": (iHtml) => {
-                    IFRAME.innerHTML = iHtml;
-                },
+                "innerHTML": setHTML,
                 "openWindow": openWindow,
-                "close": () => {
-                    IFRAME.innerHTML = undefined;
-                    if (IFRAME.parentNode) IFRAME.parentNode.removeChild(IFRAME);
-                },
+                "close": closeWindow
             }
         })();
         createContextMenu(undefined, undefined, menuWidth, undefined, menuFontSize);
@@ -1666,8 +1700,8 @@ let control = (() => {
         const ICO_BACK = document.createElement("img");
         BUT_DIV.appendChild(ICO_BACK);
         ICO_BACK.src = "./pic/chevron-left.svg";
-        ICO_BACK.setAttribute("class","button");
-        ICO_BACK.oncontextmenu = (event)=>{
+        ICO_BACK.setAttribute("class", "button");
+        ICO_BACK.oncontextmenu = (event) => {
             event.preventDefault();
         };
         setClick(ICO_BACK, () => {
@@ -1677,32 +1711,12 @@ let control = (() => {
         const ICO_CLOSE = document.createElement("img");
         BUT_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "./pic/close.svg";
-        ICO_CLOSE.setAttribute("class","button");
+        ICO_CLOSE.setAttribute("class", "button");
         ICO_CLOSE.oncontextmenu = (event) => {
             event.preventDefault();
         }
         setClick(ICO_CLOSE, closeHelpWindow);
 
-
-        function setClick(elem, callbak = () => {}) {
-            let startX = 0,
-                startY = 0;
-            elem.onclick = () => {
-                callbak();
-            }
-            elem.addEventListener("touchstart", (event) => {
-                startX = event.changedTouches[0].pageX;
-                startY = event.changedTouches[0].pageY;
-            }, true);
-
-            elem.addEventListener("touchend", (event) => {
-                let tX = event.changedTouches[0].pageX;
-                let tY = event.changedTouches[0].pageY;
-                if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
-                    elem.onclick();
-                }
-            }, true);
-        }
 
 
         const CHILD_WINDOW = IFRAME.contentWindow;
@@ -1760,7 +1774,7 @@ let control = (() => {
             s.top = 0 + "px";
             s.width = "800px";
             s.height = "100%";
-            
+
             s = BUT_DIV.style;
             s.position = "absolute";
             s.left = (820 - 197) / 2 + "px";
@@ -1780,7 +1794,7 @@ let control = (() => {
             s.borderStyle = "solid";
             s.borderColor = "#fff";
             s.borderWidth = "0px";
-            
+
             s = ICO_CLOSE.style;
             s.backgroundColor = "#c0c0c0";
             s.position = "absolute";
@@ -1791,7 +1805,7 @@ let control = (() => {
             s.borderStyle = "solid";
             s.borderColor = "#fff";
             s.borderWidth = "0px";
-            
+
             FULL_DIV.style.display = "block";
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
@@ -1864,6 +1878,28 @@ let control = (() => {
 
 
     }
+
+
+    function setClick(elem, callbak = () => {}) {
+        let startX = 0,
+            startY = 0;
+        elem.onclick = () => {
+            callbak();
+        }
+        elem.addEventListener("touchstart", (event) => {
+            startX = event.changedTouches[0].pageX;
+            startY = event.changedTouches[0].pageY;
+        }, true);
+
+        elem.addEventListener("touchend", (event) => {
+            let tX = event.changedTouches[0].pageX;
+            let tY = event.changedTouches[0].pageY;
+            if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
+                elem.onclick();
+            }
+        }, true);
+    }
+
 
 
 

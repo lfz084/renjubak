@@ -1611,7 +1611,7 @@
         timeZoneString
       ].join("");
       return result;
-    });
+    }); 
 
     var convertPDFDateToDate = (API.__private__.convertPDFDateToDate = function(
       parmPDFDate

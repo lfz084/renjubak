@@ -521,7 +521,7 @@ const hashControl = (() => {
         const HASH = window.location.hash;
         console.log(HASH)
         if (HASH != "#1" && HASH != "#0") {
-            
+        
             if (HASH) {
                 const ID = HASH.slice(1);
                 const ELEM = document.getElementById(ID);
@@ -531,7 +531,7 @@ const hashControl = (() => {
                 if (node && node.style.display == "none") {
                     elemClick(node.parentNode, true);
                 }
-
+                
                 scrollToElement(ELEM);
                 focusElement(ELEM);
             }
