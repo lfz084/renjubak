@@ -187,7 +187,7 @@ window.scrollToAnimation = (() => {
 
     let moves = [];
     let animationFrameScroll = null;
-    let targetScrollTop = 0
+    let targetScrollTop = 0;
     let tempScrollTop = 0;
 
     function scrollTo() {
@@ -208,7 +208,7 @@ window.scrollToAnimation = (() => {
         cancelAnimationFrame(animationFrameScroll);
         moves = [];
         animationFrameScroll = null;
-        targetScrollTop = 0
+        targetScrollTop = 0;
         tempScrollTop = 0;
     }
 
