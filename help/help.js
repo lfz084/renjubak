@@ -231,7 +231,7 @@ const setFocus = (() => {
     return (elem) => {
         if (busy) return;
         busy = true;
-        if (elem && elem.nodeType == 1) {
+        if (elem && elem.nodeType == 1 && elem != focusH) {
 
             focusH.removeAttribute("class", "cancelFocus");
             focusH = elem;
