@@ -69,23 +69,20 @@
             setInterval(function() {
                 if (isNoSleep) {
                     noSleep.enable();
+                    //console.log("noSleep.enable()")
                 }
                 else {
                     noSleep.disable();
+                    //console.log("noSleep.disable()")
                 }
             }, 15 * 1000);
         }
         let openNoSleep = function() {
-            return;
             if (noSleep) {
-                //msg("计算时,不锁屏", , undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0);
-                //closeMsg(2000);
                 isNoSleep = true;
             }
         };
         let closeNoSleep = function() {
-            return;
-            //closeMsg();
             isNoSleep = false;
         };
 

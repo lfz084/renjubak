@@ -358,7 +358,7 @@ checkerBoard.prototype.addTree = function(tree) {
     this.tree.moveNodes = [];
     this.tree.moveNodesIndex = -1;
     let exWindow = control.getEXWindow();
-    exWindow.openWindow();
+    //exWindow.openWindow();
 
     /*
       this.tree.childNode.push({ idx: 1, node: new node() });
@@ -4338,8 +4338,8 @@ checkerBoard.prototype.unpackTree = function() {
         function printChildNode(node, txt) {
 
             let exWindow = control.getEXWindow();
-            exWindow.openWindow();
             exWindow.innerHTML(node.innerHTML || "");
+            if(node.innerHTML) exWindow.openWindow();
             printLines.call(this, node.lines);
             for (let i = node.childNode.length - 1; i >= 0; i--) {
                 this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");

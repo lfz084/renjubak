@@ -697,7 +697,7 @@ let control = (() => {
             cFindVCF.addOption(6, "四手五连");
             cFindVCF.addOption(7, "禁手线路分析");
             cFindVCF.addOption(8, "防 冲四抓禁");
-            cFindVCF.addOption(9, "找  VCF防点");
+            //cFindVCF.addOption(9, "找  VCF防点");
             cFindVCF.addOption(10, "找  VCF防点(深度+1)");
             cFindVCF.addOption(11, "找  VCF防点(深度+∞)");
             cFindVCF.addOption(12, "坂田三手胜(测试)");
@@ -1884,13 +1884,14 @@ let control = (() => {
         let startX = 0,
             startY = 0;
         elem.onclick = () => {
-            callbak();
+            setTimeout(callbak, 300);  //避免某些浏览器触发窗口下一层elem的click事件。
         }
+        
+        //屏蔽body click事件
         elem.addEventListener("touchstart", (event) => {
             startX = event.changedTouches[0].pageX;
             startY = event.changedTouches[0].pageY;
         }, true);
-
         elem.addEventListener("touchend", (event) => {
             let tX = event.changedTouches[0].pageX;
             let tY = event.changedTouches[0].pageY;

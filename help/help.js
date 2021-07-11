@@ -340,7 +340,7 @@ window.setScrollY = (top) => {
 
 
 
-window.setScrollHeight = ()=>{}; // ios set iframe Height
+window.setScrollHeight = () => {}; // ios set iframe Height
 
 
 
@@ -521,7 +521,7 @@ const hashControl = (() => {
         const HASH = window.location.hash;
         console.log(HASH)
         if (HASH != "#1" && HASH != "#0") {
-        
+
             if (HASH) {
                 const ID = HASH.slice(1);
                 const ELEM = document.getElementById(ID);
@@ -531,7 +531,7 @@ const hashControl = (() => {
                 if (node && node.style.display == "none") {
                     elemClick(node.parentNode, true);
                 }
-                
+
                 scrollToElement(ELEM);
                 focusElement(ELEM);
             }
@@ -550,7 +550,7 @@ const hashControl = (() => {
 
 window.onhashchange = function(event) {
     //console.log(`onhashchang`)
-    hashControl();
+    setTimeout(hashControl, 1000);
 }
 
 
@@ -564,35 +564,9 @@ document.body.onload = function() {
     createTop(dDiv);
     createBody(iHTML, dDiv);
     createButtom(dDiv);
-    setTimeout(() => {
-        window.onhashchange();
-        setScrollHeight();
-    }, 1000);
+    window.onhashchange();
     //alert(`${document.documentElement.clientWidth}, ${document.documentElement.clientHeight}`)
-    console.log(`parentWindow=${window.parent==window.self}`)
-    /*
-    (() => { // test scrollHeight
-        const CONSOLE = document.createElement("div");
-        let s = CONSOLE.style;
-        s.color = "red";
-        s.backgroundColor = "#eeeeee";
-        s.position = "fixed";
-        s.top = "200px";
-        s.width = "800px";
-        s.height = "100px";
-        s.fontSize = "25px";
-        s.lineHeight = 1.1;
-        document.body.appendChild(CONSOLE);
-        setInterval(() => {
-            CONSOLE.innerText = `
-                body.scrollHeight = ${document.body.scrollHeight}\n
-                body.scrollTop = ${document.body.scrollTop}\n
-                documentElement.scrollTop = ${document.documentElement.scrollTop}\n
-                window.pageYOffset = ${window.pageYOffset}
-                `
-        }, 500)
-    })();
-    */
+    console.log(`parentWindow=${window.parent==window.self}`);
 
 }
 
@@ -712,7 +686,7 @@ function createBody(iHTML, parentNode = document.body) {
                 else if (i == 0 && NODE_NAME == "#text") {
                     const TOHIDE_TXT = "...";
                     const NEW_TOSHOW_TXT = "⇦ ... . . . .";
-                    const NODE_VALUE = CHILD_NODES[i].nodeValue.replace(/^\s*/g,"");
+                    const NODE_VALUE = CHILD_NODES[i].nodeValue.replace(/^\s*/g, "");
                     const ISTOHIDE = NODE_VALUE.indexOf(TOHIDE_TXT) == 0;
                     CHILD_NODES[i].nodeValue = ISTOHIDE ? NEW_TOSHOW_TXT : NODE_VALUE;
                 }

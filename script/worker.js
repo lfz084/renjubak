@@ -294,7 +294,7 @@ onmessage = function(e) {
             post("blockCatchFoul_End", { value: rt });
         },
         "isBlockVCF": function() {
-            isBlockVCF(p.idx, p.color, p.arr);
+            isBlockVCF(p.idx, p.color, p.arr, undefined, 300*1000);
             post("end");
         },
         "isBlockVCFPath": function() {
@@ -847,7 +847,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
     function isVCTNode(point, color, arr, node) {
 
         let nColor = color == 1 ? 2 : 1;
-        let timeout = 30000;
+        let timeout = 300 * 1000;
         let depth = 1000;
         let x = getX(point.idx);
         let y = getY(point.idx);
@@ -3666,6 +3666,23 @@ function blockCatchFoul(arr) {
     let FOULP = [];
     let notBlock = true; // 假设没有防点
     let node = new Node();
+    let iHtml = `
+        <p><b>防白棋冲四抓禁手</b></p>
+        <p><b>
+            <ul>
+                <li>A 直接防点</li>
+                <li>✖ 六腐防点</li>
+                <li>■ 反防点</li>
+                <li>◎ 利用多层禁手的防点</li>
+                <li>○ 
+                    <ol>
+                        <li>先手防</li>
+                        <li>共防点</li>
+                    </ol>
+                </li>
+            </ul>
+        </b></p>
+        `;
     node.firstColor = "black";
     for (let y = 0; y < 15; y++) { // 找出所有冲四抓
         for (let x = 0; x < 15; x++) {
@@ -3732,12 +3749,16 @@ function blockCatchFoul(arr) {
             post("wLb", { idx: bPoint[i], text: s, color: color });
             node.childNode.push(new Node(bPoint[i], node));
             node.childNode[node.childNode.length - 1].txt = s;
+            node.childNode[node.childNode.length - 1].innerHTML  = `
+                    <p><b>白棋没有了冲四抓禁手</b></p>
+                    `;
+            
         }
     }
     else {
         bPoint = []; // 没有防点，bPoint 从false改为空数组
     }
-
+    node.innerHTML = iHtml;
     if (!notBlock) {
         node.firstColor = "black";
         post("addTree", { node: node });
@@ -4823,11 +4844,12 @@ let test;
 
 // 找VCF 级别双杀点
 function isTwoVCF(idx, color, arr) {
+    
 
     //test = idx == 172;
     let pNum = 0; //双杀点计数
-    let timeout = 30000;
-    let depth = 1000;
+    let timeout = 300*1000;
+    let depth = 1000;   
     let x = getX(idx);
     let y = getY(idx);
     let oldVCFMoves = new vcfList([]);
@@ -5683,12 +5705,12 @@ function getBlockFour(x, y, arr) {
 
 
 //判断idx 是否可以防住 color色的所有VCF
-function isBlockVCF(idx, color, arr, backstage) {
+function isBlockVCF(idx, color, arr, backstage, timeout = 300*1000) {
     let x = getX(idx);
     let y = getY(idx);
     arr[y][x] = color == 1 ? 2 : 1;
     // 确保没有新的VCF
-    let fNum = findVCF(arr, color, 1, undefined, 60000);
+    let fNum = findVCF(arr, color, 1, undefined, timeout);
     arr[y][x] = 0;
     if (fNum) {
         return false;
@@ -5706,9 +5728,11 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
     let paths = [];
     let len = path.length;
     let nColor = color == 1 ? 2 : 1;
+    let timeOut = 300 * 1000;
+    let depth = 1000;
     post("showLabel", { text: `${speed} [${moveIndexToName(path,20)}]`, timeout: 500000 });
     if (len == 1) {
-        if (isBlockVCF(path[0], color, arr, true)) {
+        if (isBlockVCF(path[0], color, arr, true, timeOut)) {
             paths.push(path.slice(0));
         }
     }
@@ -5718,11 +5742,11 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
             let y = getY(path[i]);
             arr[y][x] = i % 2 ? color : nColor;
         }
-        let winLevel = getLevelB(arr, color);
+        let winLevel = getLevelB(arr, color, timeOut, depth);
         if (winLevel.level > 4.5) {}
         else if (winLevel.level == 4) {
             let idx = winLevel.p.x + winLevel.p.y * 15;
-            isB = isBlockVCF(idx, color, arr, true);
+            isB = isBlockVCF(idx, color, arr, true, timeOut);
             if (isB) {
                 paths.push(path.concat(idx))
             }
@@ -5731,7 +5755,7 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
             let bPoint = getBlockVCF([winLevel.moves], color, arr, true);
             bPoint = bPoint || [];
             for (let i = bPoint.length - 1; i >= 0; i--) {
-                isB = isBlockVCF(bPoint[i], color, arr, true);
+                isB = isBlockVCF(bPoint[i], color, arr, true, timeOut);
                 if (isB) {
                     paths.push(path.concat(bPoint[i]))
                     //break;
