@@ -375,8 +375,8 @@ function showList(elem) {
             }
         }
         else if (NODE_TYPE == 3) {
-            const TOHIDE_TXT = "⇦ ... . . . .";
-            const TOSHOW_TXT = ". . . . ... ➪ 点  我";
+            const TOHIDE_TXT = "⇦ ";
+            const TOSHOW_TXT = "➪ 点  我";
             const NODE_VALUE = node.nodeValue;
             const ISTOSHOW = NODE_VALUE.indexOf(TOSHOW_TXT) == 0;
             node.nodeValue = ISTOSHOW ?
@@ -420,8 +420,8 @@ function hideList(elem) {
             CHILD_NODES[i].style.display = "none";
         }
         else if (NODE_TYPE == 3) {
-            const TOHIDE_TXT = "⇦ ... . . . .";
-            const TOSHOW_TXT = ". . . . ... ➪ 点  我";
+            const TOHIDE_TXT = "⇦ ";
+            const TOSHOW_TXT = "➪ 点  我";
             const NODE_VALUE = CHILD_NODES[i].nodeValue;
             const ISTOHIDE = NODE_VALUE.indexOf(TOHIDE_TXT) == 0;
             CHILD_NODES[i].nodeValue = ISTOHIDE ?
@@ -685,7 +685,7 @@ function createBody(iHTML, parentNode = document.body) {
                 }
                 else if (i == 0 && NODE_NAME == "#text") {
                     const TOHIDE_TXT = "...";
-                    const NEW_TOSHOW_TXT = "⇦ ... . . . .";
+                    const NEW_TOSHOW_TXT = "⇦ ";
                     const NODE_VALUE = CHILD_NODES[i].nodeValue.replace(/^\s*/g, "");
                     const ISTOHIDE = NODE_VALUE.indexOf(TOHIDE_TXT) == 0;
                     CHILD_NODES[i].nodeValue = ISTOHIDE ? NEW_TOSHOW_TXT : NODE_VALUE;
