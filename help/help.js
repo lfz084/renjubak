@@ -535,8 +535,9 @@ const hashControl = (() => {
                     elemClick(node.parentNode, true);
                 }
 
+                focusElement(ELEM);
                 scrollToElement(ELEM);
-                //focusElement(ELEM);
+                
             }
             else {
                 const FIRST_NODE = getFirstChildNode(document.body, undefined, 1);
