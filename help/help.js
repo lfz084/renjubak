@@ -175,7 +175,7 @@ const scrollToElement = (() => {
             const p = getAbsolutePos(elem);
             //console.log(`x=${p.x}, p.y=${p.y}`)
             scrollToAnimation(p.y - 15);
-            //setFocus(elem);
+            setFocus(elem);
         }
         if (busy) setTimeout(() => {
             busy = false;
@@ -317,7 +317,7 @@ window.getScrollPoints = (move) => {
         rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1) * 10) / 10);
     }
 
-    //console.log(String(rtHs))
+    console.log(String(rtHs))
     return rtHs;
 }
 
@@ -536,7 +536,7 @@ const hashControl = (() => {
                 }
 
                 scrollToElement(ELEM);
-                focusElement(ELEM);
+                //focusElement(ELEM);
             }
             else {
                 const FIRST_NODE = getFirstChildNode(document.body, undefined, 1);
