@@ -215,7 +215,7 @@ window.scrollToAnimation = (() => {
     }
 
     return (top) => {
-        console.log(`scroll animation`)
+        //console.log(`scroll animation`)
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
@@ -317,7 +317,7 @@ window.getScrollPoints = (move) => {
         rtHs.push(parseInt(tempMoves[i] * (move < 0 ? -1 : 1) * 10) / 10);
     }
 
-    console.log(String(rtHs))
+    //console.log(String(rtHs))
     return rtHs;
 }
 
@@ -531,7 +531,7 @@ const hashControl = (() => {
 
                 let node = getFirstChildNode(FIRST_LIST, ["LI"]);
                 if (node && node.style.display == "none") {
-                    console.log(`hashChange elemClick`);
+                    //console.log(`hashChange elemClick`);
                     elemClick(node.parentNode, true);
                 }
 
