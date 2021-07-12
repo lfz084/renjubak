@@ -213,7 +213,7 @@ window.scrollToAnimation = (() => {
     }
 
     return (top) => {
-
+        window.top.console.log(`scroll animation`)
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
