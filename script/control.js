@@ -1811,8 +1811,8 @@ let control = (() => {
             FULL_DIV.setAttribute("class", "show");
 
             if (IFRAME.src.indexOf(url) + 1) {
-                IFRAME.contentWindow.focus();
-                IFRAME.contentWindow.onhashchange();
+                IFRAME.focus();
+                setTimeout(IFRAME.contentWindow.onhashchange,3000);
             }
             else {
                 IFRAME.src = url;
