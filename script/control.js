@@ -1810,16 +1810,13 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
-            
             if (IFRAME.src.indexOf(url) + 1) {
-                if (navigator.userAgent.indexOf("iPhone")+1) {
-                    IFRAME.src = url;
-                }
-                IFRAME.contentWindow.onhashchange();
+                IFRAME.contentWindow.focus();
             }
             else {
                 IFRAME.src = url;
             }
+            
         }
 
 
@@ -1829,6 +1826,7 @@ let control = (() => {
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
+                //IFRAME.src = "";
                 busy = false;
                 sharing = false;
             }, 500);
