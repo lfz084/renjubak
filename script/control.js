@@ -1810,10 +1810,15 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
-            IFRAME.src = url;
-            return;
+            
             if (IFRAME.src.indexOf(url) + 1) {
+                if (navigator.userAgent.indexOf("iPhone")+1) {
+                    IFRAME.src = url;
+                }
                 IFRAME.contentWindow.onhashchange();
+            }
+            else {
+                IFRAME.src = url;
             }
         }
 
