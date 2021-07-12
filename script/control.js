@@ -1812,7 +1812,7 @@ let control = (() => {
 
             if (IFRAME.src.indexOf(url) + 1) {
                 IFRAME.focus();
-                setTimeout(IFRAME.contentWindow.onhashchange,3000);
+                IFRAME.contentWindow.onhashchange();
             }
             else {
                 IFRAME.src = url;

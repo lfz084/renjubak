@@ -1,5 +1,7 @@
 "use strict";
 
+window.console = window.top.console;
+
 const topImage = (() => {
 
     let busy = false;
@@ -173,7 +175,7 @@ const scrollToElement = (() => {
             const p = getAbsolutePos(elem);
             //console.log(`x=${p.x}, p.y=${p.y}`)
             scrollToAnimation(p.y - 15);
-            setFocus(elem);
+            //setFocus(elem);
         }
         if (busy) setTimeout(() => {
             busy = false;
@@ -213,7 +215,7 @@ window.scrollToAnimation = (() => {
     }
 
     return (top) => {
-        window.top.console.log(`scroll animation`)
+        console.log(`scroll animation`)
         cancelAnima();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
@@ -529,6 +531,7 @@ const hashControl = (() => {
 
                 let node = getFirstChildNode(FIRST_LIST, ["LI"]);
                 if (node && node.style.display == "none") {
+                    console.log(`hashChange elemClick`);
                     elemClick(node.parentNode, true);
                 }
 
