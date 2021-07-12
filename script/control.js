@@ -1810,13 +1810,8 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
-            if (IFRAME.src.indexOf(url) + 1) {
-                IFRAME.contentWindow.onhashchange();
-            }
-            else {
-                IFRAME.src = url;
-            }
-            
+            IFRAME.src = url;
+
         }
 
 
@@ -1826,7 +1821,7 @@ let control = (() => {
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
-                //IFRAME.src = "";
+                IFRAME.src = "";
                 busy = false;
                 sharing = false;
             }, 500);
