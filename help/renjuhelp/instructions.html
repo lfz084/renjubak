@@ -100,10 +100,12 @@
                 <li>做V点</li>
                 <ul>...
                     <text>找出符合五子茶馆定义的做V点。</text>
+                    <mark><b>做V点：</b>做一手棋，假设对方不防，下一手就可以VCF的点。(<i>这里的VCF，是指两步以上冲四的VCF。不包括黑棋的四三，白棋的四四等...)</i></mark>
                 </ul>
                 <li>做43杀</li>
                 <ul>...
                     <text>找出做43杀点。包括白棋的做44，做单冲四抓禁手。</text>
+                    <mark><b>做43点：</b>做一手棋，假设对方不防，下一手就可以四三胜的点。</mark>
                 </ul>
                 <li>活三级别</li>
                 <ul>...
@@ -169,7 +171,7 @@
                 <ul>...
                     <text>限制珠题，解题要求是三颗棋子内五连胜。</text>
                     <ul>...
-                        <text>第一手活三级别，第二手活四级别，第三手五连。</text>
+                        <text>第一手活三级别，第二手<a href="#freeFourLevel">活四级别</a>，第三手五连。</text>
                         <p></p>
                         <img width=80% style="position: relative;left:0%" src="instructions/threeWin0.svg" />
                         <p></p>
@@ -179,13 +181,13 @@
                         <p></p>
                         <img width=80% style="position: relative;left:0%" src="instructions/threeWin3.svg" />
                     </ul>
-                    <mark><b>活四级别：</b>指活四，白棋的四四，白棋的单冲四抓禁手。它们距离五连就还差一颗棋子。</mark>
+                    <mark id="freeFourLevel"><b>活四级别：</b>指活四，白棋的四四，白棋的单冲四抓禁手。它们距离五连就还差一颗棋子。</mark>
                 </ul>
                 <li>四手五连</li>
                 <ul>...
                     <text>限制珠题，解题要求是四颗棋子内五连胜。</text>
                     <ul>...
-                        <text>黑先，第一手活三级别，第二手活三级别，第三手活四级别，第四手五连。</text>
+                        <text>黑先，第一手活三级别，第二手活三级别，第三手<a href="#freeFourLevel">活四级别</a>，第四手五连。</text>
                         <p></p>
                         <img width=80% style="position: relative;left:0%" src="instructions/fourWin0.svg" />
                         <p></p>
@@ -196,7 +198,7 @@
                         <img width=80% style="position: relative;left:0%" src="instructions/fourWin3.svg" />
                         <p></p>
                         <img width=80% style="position: relative;left:0%" src="instructions/fourWin4.svg" />
-                        <text>白先，第一手活二级别，第二手活三级别，第三手活四级别，第四手五连。</text>
+                        <text>白先，第一手活二级别，第二手活三级别，第三手<a href="#freeFourLevel">活四级别</a>，第四手五连。</text>
                         <p></p>
                         <img width=80% style="position: relative;left:0%" src="instructions/fourWin5.svg" />
                         <p></p>
@@ -219,7 +221,7 @@
                 </ul>
                 <li>找VCF防点(深度+1)</li>
                 <ul>...
-                    <text>找第一套VCF的防点，只算一手棋。</text>
+                    <text>先找第一套VCF的防点，然后验证下一手棋是否还有VCF，排除还有VCF的防点。</text>
                 </ul>
                 <li>找VCF防点(深度+∞)</li>
                 <ul>...

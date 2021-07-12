@@ -1328,20 +1328,20 @@ let control = (() => {
         exWindow = (() => {
 
             const EX_WINDOW = document.createElement("div");
-            
+
             const IFRAME = document.createElement("div");
             IFRAME.setAttribute("id", "exWindow");
             EX_WINDOW.appendChild(IFRAME);
-            
+
             const CLOSE_BUTTON = document.createElement("img");
             CLOSE_BUTTON.src = "./pic/close.svg";
-            CLOSE_BUTTON.setAttribute("class", "button");
+            //CLOSE_BUTTON.setAttribute("class", "button");
             CLOSE_BUTTON.oncontextmenu = (event) => {
                 event.preventDefault();
             }
-            setClick(CLOSE_BUTTON, closeWindow);
+            setButtonClick(CLOSE_BUTTON, closeWindow);
             EX_WINDOW.appendChild(CLOSE_BUTTON);
-            
+
             const FONT_SIZE = sw / 30 + "px";
             const EX_WINDOW_LEFT = parseInt(cFlipY.left) + "px";
             const EX_WINDOW_TOP = parseInt(cFlipY.top) + "px";
@@ -1700,22 +1700,22 @@ let control = (() => {
         const ICO_BACK = document.createElement("img");
         BUT_DIV.appendChild(ICO_BACK);
         ICO_BACK.src = "./pic/chevron-left.svg";
-        ICO_BACK.setAttribute("class", "button");
+        //ICO_BACK.setAttribute("class", "button");
         ICO_BACK.oncontextmenu = (event) => {
             event.preventDefault();
         };
-        setClick(ICO_BACK, () => {
+        setButtonClick(ICO_BACK, () => {
             IFRAME.src = "./help/renjuhelp/renjuhelp.html";
         });
 
         const ICO_CLOSE = document.createElement("img");
         BUT_DIV.appendChild(ICO_CLOSE);
         ICO_CLOSE.src = "./pic/close.svg";
-        ICO_CLOSE.setAttribute("class", "button");
+        //ICO_CLOSE.setAttribute("class", "button");
         ICO_CLOSE.oncontextmenu = (event) => {
             event.preventDefault();
         }
-        setClick(ICO_CLOSE, closeHelpWindow);
+        setButtonClick(ICO_CLOSE, closeHelpWindow);
 
 
 
@@ -1880,14 +1880,21 @@ let control = (() => {
     }
 
 
-    function setClick(elem, callbak = () => {}) {
+    function setClick(elem, callbak = () => {}, timeout = 300) {
         let startX = 0,
             startY = 0;
-        elem.onclick = () => {
-            setTimeout(callbak, 300);  //避免某些浏览器触发窗口下一层elem的click事件。
-        }
-        
-        //屏蔽body click事件
+        elem.onclick = (() => {
+            let busy = false;
+            return () => {
+                if (busy) return;
+                busy = true;
+                setTimeout(() => { busy = false; }, 300);
+                setTimeout(() => {
+                    callbak();
+                }, timeout); //延迟，避免某些浏览器触发窗口下一层elem的click事件。
+            };
+        })();
+
         elem.addEventListener("touchstart", (event) => {
             startX = event.changedTouches[0].pageX;
             startY = event.changedTouches[0].pageY;
@@ -1899,6 +1906,19 @@ let control = (() => {
                 elem.onclick();
             }
         }, true);
+    }
+
+
+
+    function setButtonClick(elem, callbak = () => {}) {
+        setClick(elem, () => {
+            let bkColor = elem.style.opacity;
+            elem.style.opacity = "0.2";
+            setTimeout(() => {
+                elem.style.opacity = bkColor;
+                callbak();
+            }, 300);
+        }, 0);
     }
 
 

@@ -88,9 +88,6 @@ a:active {
     text-decoration: underline;
 }
 
-.button {
-    cursor: pointer;
-}
 
 .menu {
     overflow-x: hidden;

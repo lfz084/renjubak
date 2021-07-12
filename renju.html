@@ -233,6 +233,12 @@
         function handleCancel(evt) {
             evt.preventDefault();
         }
+        
+        
+        
+        function cancelBodyEvent(){
+            return isMsgShow || isMenuShow;
+        }
 
 
 
@@ -240,7 +246,7 @@
         function bodyTouchStart(evt) {
             //evt.preventDefault();
             //阻止事件的默认行为
-            if (isMsgShow) return;
+            if (cancelBodyEvent()) return;
             // 防止锁屏
             let touches = evt.changedTouches;
             //记录坐标，给continueSetCutDiv使用
@@ -291,7 +297,7 @@
             if (timerContinueSetCutDiv) evt.preventDefault();
             let touches = evt.changedTouches;
 
-            if (isMsgShow) return;
+            if (cancelBodyEvent()) return;
 
             if (timerBodyKeepTouch != null) { //取消长按事件
                 clearTimeout(timerBodyKeepTouch);
@@ -316,7 +322,7 @@
         function bodyTouchEnd(evt) {
 
             //evt.preventDefault();
-            if (isMsgShow) return;
+            if (cancelBodyEvent()) return;
             let cancelClick = false;
 
             let touches = evt.changedTouches;
@@ -491,7 +497,7 @@
         function canvasClick(x, y) {
 
             //console.log(`isMsgShow = ${isMsgShow}`)
-            if (isMsgShow) return; // 针对鼠标事件
+            if (cancelBodyEvent()) return; // 针对鼠标事件
             //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
@@ -546,7 +552,7 @@
 
         function bodyKeepTouch() {
 
-            if (isMsgShow) return;
+            if (cancelBodyEvent()) return;
             if (cancelContextmenu) return;
             clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
             timerBodyKeepTouch = null;

@@ -1,6 +1,7 @@
   "use strict";
-  
+
   const ANIMATION_TIMEOUT = 300;
+  let isMenuShow = false;
   // 定制按钮，button，file，Radio，select。
   function button(parentNode, type, left, top, width, height) {
 
@@ -22,6 +23,7 @@
       if (type != "select" && type != "file") this.div.appendChild(this.input);
       this.menuWindow = null;
       this.menu = null;
+      this._menu = null; // 闭包，控制菜单打开和关闭
 
       this.option = [];
       this.type = type;
@@ -130,16 +132,16 @@
           if (event) event.cancelBubble = true;
           but.defaultontouchmove();
       };
-      
+
       if (type == "select" || type == "file") {
-      
+
           this.button.ontouchstart = this.input.ontouchstart;
           this.button.onmousedown = this.input.onmousedown;
           this.button.ontouchcancel = this.input.ontouchcancel;
           this.button.ontouchend = this.input.ontouchend;
-          this.button.onmouseup = this.input.onmouseup; 
+          this.button.onmouseup = this.input.onmouseup;
           this.button.onclick = this.input.onclick;
-          this.button.onchange =this.input.onchange;
+          this.button.onchange = this.input.onchange;
           this.button.ontouchmove = this.input.ontouchmove;
           if (this.label) {
               this.label.ontouchstart = this.input.ontouchstart;
@@ -151,7 +153,7 @@
               this.label.onchange = this.input.onchange;
               this.label.ontouchmove = this.input.ontouchmove;
           }
-      
+
       }
 
   }
@@ -172,17 +174,10 @@
 
 
   button.prototype.createMenu = function(left, top, width, height, fontSize, closeAnimation) {
+      
       if (this.type != "select" || this.menuWindow) return;
+      
       let but = this;
-      /*
-      this.input.onmousedown = function() {
-          but.input.onmousedown();
-      };
-      this.input.onmouseup = function() {
-          but.isEventMove = false;
-          but.input.onmouseup();
-      };
-      */
       let muWindow = document.createElement("div");
       let menu = document.createElement("div");
       menu.lis = [];
@@ -192,9 +187,7 @@
               event.cancelBubble = true;
               event.preventDefault()
           };
-          muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
-          isMsgShow = false;
-          but.hideMenu(closeAnimation ? 350 : ANIMATION_TIMEOUT);
+          but.hideMenu(closeAnimation ? ANIMATION_TIMEOUT : ANIMATION_TIMEOUT);
       };
 
       this.menuWindow = muWindow;
@@ -213,10 +206,7 @@
       this.menu.menuHeight = height;
       this.menu.menuWidth = width;
       this.menu.fontSize = fontSize;
-      //console.log(`left=${left}, top=${top}, width=${width}, height=${height}, fontSize${fontSize}`);
-
-
-      //alert(this.input.length)
+      
       if (this.input.length && ((this.menu.menuHeight - (fontSize + 3) * 1) < optionsHeight)) {
           let li = document.createElement("li");
           menu.lis["down"] = li;
@@ -237,6 +227,7 @@
 
 
       for (let i = 0; i < this.input.length; i++) {
+          
           let hr = document.createElement("hr");
           menu.appendChild(hr);
           hr.style.height = "1px";
@@ -255,20 +246,18 @@
           menu.appendChild(li);
           //alert(li.innerHTML)
           let input = this.input;
-          
+
           li.onclick = function() {
               if (event) event.cancelBubble = true;
               input.value = i;
-              input.selectedIndex = i;  // input.onchange();
+              input.selectedIndex = i; // input.onchange();
               //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
               if (muWindow.parentNode) {
-                  muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
-                  isMsgShow = false;
-                  if (closeAnimation) input.onchange();
                   but.hideMenu(closeAnimation ? ANIMATION_TIMEOUT : ANIMATION_TIMEOUT, !closeAnimation ? input.onchange : null);
+                  if (closeAnimation) input.onchange();
               }
           };
-          
+
       }
       let hr = document.createElement("hr");
       menu.appendChild(hr);
@@ -296,6 +285,95 @@
           this.menu.menuHeight = optionsHeight + 3;
       }
 
+      this._menu = ((menuObj) => {
+
+          let busy = false;
+          let timerHideMenu = null;
+
+          function show(x, y) {
+              
+              //console.log(`type=${this.type}, menuWindow=${this.menuWindow }, parentNode=${this.menuWindow.parentNode}`)
+              if (this.type != "select" || !this.menuWindow || isMenuShow) return;
+              //this.input.value = -1;
+              //this.input.selectedIndex = -1;
+              let muWindow = this.menuWindow;
+              let s = muWindow.style;
+              s.position = "fixed";
+              s.zIndex = 9999;
+              s.width = document.documentElement.clientWidth + "px";
+              s.height = document.documentElement.clientHeight * 2 + "px";
+              s.top = "0px";
+              s.left = "0px";
+              //s.backgroundColor = "red";
+              //console.log(`x=${x}, y=${y}`)
+              x = !x ? x : x < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (x + this.menu.menuWidth) > (document.documentElement.clientWidth - this.menu.fontSize * 2.5) ? document.documentElement.clientWidth - this.menu.menuWidth - this.menu.fontSize * 2.5 : x;
+              y = !y ? y : y < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (y + this.menu.menuHeight) > (document.documentElement.clientHeight - this.menu.fontSize * 2.5) ? document.documentElement.clientHeight - this.menu.menuHeight - this.menu.fontSize * 2.5 : y;
+
+              //console.log(`x=${x}, y=${y}`)
+              s = this.menu.style;
+              s.position = "absolute";
+              s.left = `${x || this.menu.menuLeft}px`;
+              s.top = `${y || this.menu.menuTop}px`;
+              s.width = this.menu.menuWidth + "px";
+              s.height = this.menu.menuHeight + "px";
+              s.borderRadius = parseInt(this.menu.fontSize) * 1.5 + "px";
+              s.border = `${parseInt(this.menu.fontSize)/3}px solid ${this.selectBackgroundColor}`;
+              s.overflow = "scroll";
+              s.background = this.backgroundColor;
+              s.autofocus = "true";
+              muWindow.setAttribute("class", "show");
+              //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
+              document.body.appendChild(muWindow);
+              isMenuShow = true;  // 设置两次
+              setTimeout(() => { 
+                  if (muWindow.getAttribute("class")=="show") isMenuShow = true; 
+              }, ANIMATION_TIMEOUT);
+              //console.log(`showend`)
+        
+          }
+
+          function hideMenu(ms, callbak) {
+              let muWindow = this.menuWindow;
+              let input = this.input;
+              callbak = callbak || function() {};
+              if (timerHideMenu) {
+                  clearTimeout(timerHideMenu);
+                  timerHideMenu = null;
+              }
+              muWindow.setAttribute("class", `${0?"hideContextMenu":"hide"}`);
+              ms = parseInt(ms);
+              if (ms > 0) {
+                  timerHideMenu = setTimeout(function() {
+                      clearTimeout(timerHideMenu);
+                      timerHideMenu = null;
+                      muWindow.parentNode.removeChild(muWindow);
+                      callbak();
+                  }, ms);
+              }
+              else {
+                  muWindow.parentNode.removeChild(muWindow);
+                  callbak();
+              }
+          }
+
+          return {
+              "showMenu": (x, y) => {
+                  //console.log(`show=${busy}`)
+                  if (busy) return;
+                  busy = true;
+                  setTimeout(() => { busy = false; }, ANIMATION_TIMEOUT);
+                  show.call(menuObj, x, y);
+              },
+              "hideMenu": (ms, callbak) => {
+                  //console.log(`hide=${busy}`)
+                  if (busy) return;
+                  busy = true;
+                  isMenuShow = false;
+                  setTimeout(() => { busy = false; }, ANIMATION_TIMEOUT);
+                  hideMenu.call(menuObj, ms, callbak);
+              }
+          };
+      })(this);
   };
 
 
@@ -344,11 +422,11 @@
 
   button.prototype.defaultontouchstart = function() {
 
-     //console.log(`str t=${this.text}`);
+      //console.log(`str t=${this.text}`);
       if (this.tyle == "select" && event) event.preventDefault();
       this.isEventMove = false;
-     //console.log(`isEventMove=${this.isEventMove}`)
-     //console.log(this)
+      //console.log(`isEventMove=${this.isEventMove}`)
+      //console.log(this)
       this.button.style.opacity = 1;
       this.button.style.fontSize = parseInt(this.fontSize) * 0.9 + "px";
       if (this.backgroundColor != "black") {
@@ -364,7 +442,7 @@
 
   button.prototype.defaultontouchmove = function() {
 
-     //console.log(`mov t=${this.text}`);
+      //console.log(`mov t=${this.text}`);
       this.isEventMove = true; // 取消单击事件
       return true;
   };
@@ -375,8 +453,8 @@
   // 默认事件，
   button.prototype.defaultontouchend = function() {
 
-     //console.log(`typeof event=${typeof event}, isEventMove=${this.isEventMove}`);
-     //console.log(this)
+      //console.log(`typeof event=${typeof event}, isEventMove=${this.isEventMove}`);
+      //console.log(this)
       // select 要弹出菜单不能屏蔽
       //if (this.type != "select") {};
       if (event) event.preventDefault();
@@ -394,7 +472,7 @@
           // 选中的时，按钮外观
           s = this.type == "radio" ? "☞" : this.type == "checkbox" ? "✔" : "";
           s += this.text2 == "" ? this.text : this.text2;
-          
+
           if (this.type == "select") {
               /*
               for (let i = 4 - s.length; i > 0; i--) {
@@ -402,9 +480,9 @@
               }
               s = "&nbsp;" + s + "▼";
               */
-              s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
+              s = s + "&nbsp;" + "&nbsp" + "&nbsp;";
           }
-          
+
           this.button.innerHTML = s;
           this.button.style.fontSize = this.fontSize;
           this.button.style.color = this.notChangeColor ? this.color : this.selectColor;
@@ -420,7 +498,7 @@
           }
           s = this.type == "radio" ? "" : this.type == "checkbox" ? "" : "";
           s += this.text;
-          
+
           if (this.type == "select") {
               /*
               for (let i = 4 - s.length; i > 0; i--) {
@@ -428,9 +506,9 @@
               }
               s = "&nbsp;" + s + "▼";
               */
-              s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
+              s = s + "&nbsp;" + "&nbsp" + "&nbsp;";
           }
-          
+
           this.button.innerHTML = s;
 
           let but = this;
@@ -451,9 +529,9 @@
 
       }
 
-     //console.log(`cancel=${cancel}`);
+      //console.log(`cancel=${cancel}`);
       if (this.type == "file" && !cancel) {
-         //console.log(`cancel=${"click"}`);
+          //console.log(`cancel=${"click"}`);
           this.input.click();
           return false;
       }
@@ -476,7 +554,7 @@
 
   button.prototype.defaultonchange = function() {
 
-     //console.log(`chg t=${this.text}`);
+      //console.log(`chg t=${this.text}`);
       //console.log(`defaultonchange  ,i=${this.input.selectedIndex==-1 ? this.input[1].text : this.input.options[this.input.selectedIndex].text} `);
       if (this.type != "select" || this.input.selectedIndex < 0) return;
       let txt = this.input.options[this.input.selectedIndex].text;
@@ -504,29 +582,8 @@
 
 
 
-  let timerHideMenu = null;
   button.prototype.hideMenu = function(ms, callbak) {
-      let muWindow = this.menuWindow;
-      let input = this.input;
-      callbak = callbak || function() {};
-      if (timerHideMenu) {
-          clearTimeout(timerHideMenu);
-          timerHideMenu = null;
-      }
-      ms = parseInt(ms);
-      if (ms > 0) {
-          timerHideMenu = setTimeout(function() {
-              clearTimeout(timerHideMenu);
-              timerHideMenu = null;
-              muWindow.parentNode.removeChild(muWindow);
-              callbak();
-          }, ms);
-      }
-      else {
-          muWindow.parentNode.removeChild(muWindow);
-          callbak();
-      }
-
+      this._menu.hideMenu(ms, callbak);
   }
 
 
@@ -633,7 +690,7 @@
   button.prototype.setontouchend = function(callbak) {
       let but = this;
       this.input.ontouchend = function() {
-         //console.log(`but ,ontouchend = ${event}`);
+          //console.log(`but ,ontouchend = ${event}`);
           if (this.isEventMove) return; //cancel Mouseclick();
           if (!but.defaultontouchend(but)) return;
           callbak(but);
@@ -692,7 +749,7 @@
               but.button.style.backgroundColor = but.backgroundColor;
           }
       }
-      
+
       if (this.type == "select") {
           /*
           for (let i = 4 - s.length; i > 0; i--) {
@@ -700,9 +757,9 @@
           }
           s = "&nbsp;" + s + "▼";
           */
-          s =  s + "&nbsp;" + "&nbsp" + "&nbsp;";
+          s = s + "&nbsp;" + "&nbsp" + "&nbsp;";
       }
-      
+
       this.button.innerHTML = s;
   };
 
@@ -780,37 +837,5 @@
 
 
   button.prototype.showMenu = function(x, y) {
-      if (this.type != "select" || !this.menuWindow || this.menuWindow.parentNode) return;
-      //this.input.value = -1;
-      //this.input.selectedIndex = -1;
-      let muWindow = this.menuWindow;
-      let s = muWindow.style;
-
-      s.position = "fixed";
-      s.zIndex = 9999;
-      s.width = document.documentElement.clientWidth + "px";
-      s.height = document.documentElement.clientHeight * 2 + "px";
-      s.top = "0px";
-      s.left = "0px";
-      //s.backgroundColor = "red";
-      //console.log(`x=${x}, y=${y}`)
-      x = !x ? x : x < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (x + this.menu.menuWidth) > (document.documentElement.clientWidth - this.menu.fontSize * 2.5) ? document.documentElement.clientWidth - this.menu.menuWidth - this.menu.fontSize * 2.5 : x;
-      y = !y ? y : y < this.menu.fontSize * 2.5 ? this.menu.fontSize * 2.5 : (y + this.menu.menuHeight) > (document.documentElement.clientHeight - this.menu.fontSize * 2.5) ? document.documentElement.clientHeight - this.menu.menuHeight - this.menu.fontSize * 2.5 : y;
-
-      //console.log(`x=${x}, y=${y}`)
-      s = this.menu.style;
-      s.position = "absolute";
-      s.left = `${x || this.menu.menuLeft}px`;
-      s.top = `${y || this.menu.menuTop}px`;
-      s.width = this.menu.menuWidth + "px";
-      s.height = this.menu.menuHeight + "px";
-      s.borderRadius = parseInt(this.menu.fontSize) * 1.5 + "px";
-      s.border = `${parseInt(this.menu.fontSize)/3}px solid ${this.selectBackgroundColor}`;
-      s.overflow = "scroll";
-      s.background = this.backgroundColor;
-      s.autofocus = "true";
-      muWindow.setAttribute("class", "show");
-      //alert(`left=${this.menu.menuLeft}, top=${this.menu.menuTop}, width=${this.menu.menuWidth}, height=${this.menu.menuHeight}`);
-      isMsgShow = true;
-      setTimeout(() => { document.body.appendChild(muWindow); }, 1);
+      this._menu.showMenu(x, y);
   };
