@@ -1773,7 +1773,7 @@ let control = (() => {
             s.left = 0 + "px";
             s.top = 0 + "px";
             s.width = "800px";
-            s.height = s.height || "100%";
+            s.height = s.height || "100%"; //保存旧高度，防止滚到顶部
 
             s = BUT_DIV.style;
             s.position = "absolute";
@@ -1810,7 +1810,13 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
-            IFRAME.src = url;
+            if (IFRAME.src.indexOf(url)+1) {
+                IFRAME.src = url;
+                IFRAME.contentWindow.onhashchange();
+            }
+            else {
+                IFRAME.src = url;
+            }
 
         }
 
@@ -1821,7 +1827,7 @@ let control = (() => {
             setTimeout(() => {
                 FULL_DIV.style.zIndex = -99999;
                 FULL_DIV.style.display = "none";
-                IFRAME.src = "";
+                //IFRAME.src = "";
                 busy = false;
                 sharing = false;
             }, 500);

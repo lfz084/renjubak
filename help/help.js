@@ -217,6 +217,7 @@ window.scrollToAnimation = (() => {
     return (top) => {
         //console.log(`scroll animation`)
         cancelAnima();
+        setScrollHeight();
         targetScrollTop = top;
         tempScrollTop = getScrollY();
         //console.log(`getScrollY= +${tempScrollTop}, targetScrollTop=${targetScrollTop}`)
@@ -535,8 +536,8 @@ const hashControl = (() => {
                     elemClick(node.parentNode, true);
                 }
 
-                focusElement(ELEM);
                 scrollToElement(ELEM);
+                focusElement(ELEM);
                 
             }
             else {
