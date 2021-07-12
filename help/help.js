@@ -558,11 +558,6 @@ window.onhashchange = function(event) {
 }
 
 
-window.onfocus = ()=>{
-    window.onhashchange();
-}
-
-
 document.body.onload = function() {
 
     //if (window.parent == window.self) setView();

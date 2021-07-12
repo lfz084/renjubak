@@ -1773,7 +1773,7 @@ let control = (() => {
             s.left = 0 + "px";
             s.top = 0 + "px";
             s.width = "800px";
-            s.height = "100%";
+            s.height = s.height || "100%";
 
             s = BUT_DIV.style;
             s.position = "absolute";
@@ -1811,7 +1811,7 @@ let control = (() => {
             FULL_DIV.setAttribute("class", "show");
 
             if (IFRAME.src.indexOf(url) + 1) {
-                IFRAME.contentWindow.focus();
+                IFRAME.contentWindow.onhashchange();
             }
             else {
                 IFRAME.src = url;
