@@ -2301,7 +2301,21 @@ let control = (() => {
     let bkCanvas = document.createElement("canvas");
     //imgWindow.appendChild(bkCanvas);
     //取消按钮
-    let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
+    const ICO_DOWNLOAD = document.createElement("img");
+    imgWindow.appendChild(ICO_DOWNLOAD);
+    ICO_DOWNLOAD.src = "./pic/download.svg";
+    ICO_DOWNLOAD.oncontextmenu = (event) => {
+        event.preventDefault();
+    };
+    
+    const ICO_CLOSE = document.createElement("img");
+    imgWindow.appendChild(ICO_CLOSE);
+    ICO_CLOSE.src = "./pic/close-bold.svg";
+    ICO_CLOSE.oncontextmenu = (event) => {
+        event.preventDefault();
+    };
+    
+    
 
     function share(cBoardColor) {
 
@@ -2324,7 +2338,7 @@ let control = (() => {
         s.top = parseInt((dh - imgWidth) / 2) + "px";
         s.left = parseInt((dw - imgWidth) / 2) + "px";
         s.backgroundColor = "#666666";
-        s.border = `0px solid ${butShareCancel.selectBackgroundColor}`;
+        s.border = `0px solid `;
 
         let iWidth = parseInt(imgWidth * 3 / 5);
         shareImg.src = cBd.canvas.toDataURL();
@@ -2345,11 +2359,6 @@ let control = (() => {
             cBd.refreshCheckerBoard();
             shareImg.src = cBd.canvas.toDataURL();
             shareImg.onload = function() {
-                /*
-                cBd.backgroundColor = oldBackgroundColor;
-                cBd.LbBackgroundColor = oldLbBackgroundColor;
-                cBd.refreshCheckerBoard();
-                */
             };
         }
         else {
@@ -2362,7 +2371,7 @@ let control = (() => {
         let l = (imgWidth - w) / 2;
         let t = imgWidth - h - (imgWidth - iWidth) / 8;
 
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:#f0f0f0">长按图片(保存)分享</h1>`;
+        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:#f0f0f0">长按图片分享</h1>`;
         s = shareLabel.style;
         s.position = "absolute";
         s.width = w + "px";
@@ -2370,11 +2379,26 @@ let control = (() => {
         s.top = (imgWidth - iWidth) / 8 + "px";
         s.left = l + "px";
         s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
-
-        butShareCancel.show(l, t, w, h);
-        butShareCancel.div.style.border = `1px solid black`;
-        butShareCancel.setText("关闭分享");
-        butShareCancel.setontouchend(function() {
+    
+        s = ICO_DOWNLOAD.style;
+        s.position = "absolute";
+        s.width = (imgWidth-parseInt(shareImg.style.top)-parseInt(shareImg.style.height))/2 + "px";
+        s.height = s.width;
+        s.top = imgWidth - parseInt(s.width)*1.5 + "px";
+        s.left = imgWidth/2 - parseInt(s.width)*1.5 + "px";
+        s.backgroundColor = "#777";
+        setButtonClick(ICO_DOWNLOAD, () => {
+            cBd.saveAsImage("png");
+        });
+    
+        s = ICO_CLOSE.style;
+        s.position = "absolute";
+        s.width = ICO_DOWNLOAD.style.width;
+        s.height = ICO_DOWNLOAD.style.height;
+        s.top = ICO_DOWNLOAD.style.top;
+        s.left = imgWidth / 2 + parseInt(s.width) * 0.5 + "px";
+        s.backgroundColor = "#777";
+        setButtonClick(ICO_CLOSE, () => {
             shareClose();
             if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
                 cBd.backgroundColor = oldBackgroundColor;
@@ -2382,6 +2406,7 @@ let control = (() => {
                 cBd.refreshCheckerBoard();
             }
         });
+        
         shareWindow.setAttribute("class", "show");
         setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
 
