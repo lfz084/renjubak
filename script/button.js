@@ -193,6 +193,7 @@
       this.menuWindow = muWindow;
       this.menu = menu;
       menu.setAttribute("class", "menu");
+      menu.setAttribute("id", "menu");
       let dh = document.documentElement.clientHeight;
       let dw = document.documentElement.clientWidth;
       let optionsHeight = (fontSize * 2.5 + 3) * this.input.length;

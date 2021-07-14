@@ -68,6 +68,7 @@ body.finish {
     100% {
         opacity: 1;
     }
+
 }
 
 @-moz-keyframes finish {
@@ -135,6 +136,7 @@ div.topDiv {
     vertical-align: bottom;
     */
 }
+
 div.buttomDiv {
     width: 770px;
     height: 200px;
@@ -222,31 +224,31 @@ h4 {
 
 @-webkit-keyframes cancelFocus {
     0% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
     }
 
     100% {
-        background-color: #dddddd;
+        /*background-color: #dddddd;*/
     }
 }
 
 @-moz-keyframes cancelFocus {
     0% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
     }
 
     100% {
-        background-color: #dddddd;
+        /*background-color: #dddddd;*/
     }
 }
 
 @keyframes cancelFocus {
     0% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
     }
 
     100% {
-        background-color: #dddddd;
+        /*background-color: #dddddd;*/
     }
 }
 
@@ -263,31 +265,37 @@ h4 {
 
 @-webkit-keyframes focus {
     0% {
-        background-color: #dddddd;
+        /*border-width: 0px;*/
+        /*background-color: #dddddd;*/
     }
 
     100% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
+        border: 2px solid green;
     }
 }
 
 @-moz-keyframes focus {
     0% {
-        background-color: #dddddd;
+        /*border-width: 0px;*/
+        /*background-color: #dddddd;*/
     }
 
     100% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
+        border: 2px solid green;
     }
 }
 
 @keyframes focus {
     0% {
-        background-color: #dddddd;
+        /*border-width: 0px;*/
+        /*background-color: #dddddd;*/
     }
 
     100% {
-        background-color: #ccc;
+        /*background-color: #ccc;*/
+        border: 2px solid green;
     }
 }
 
@@ -300,6 +308,50 @@ ol {
     font-weight: 300;
     line-height: 2;
 }
+
+ul[colorDepth="0"],
+ol[colorDepth="0"] {
+    background-color: #d8d8d8;
+    border: 5px solid #d5d5d5;
+}
+
+ul[colorDepth="1"],
+ol[colorDepth="1"] {
+    background-color: #d3d3d3;
+    border: 5px solid #cccccc;
+}
+
+ul[colorDepth="2"],
+ol[colorDepth="2"] {
+    background-color: #cdcdcd;
+    border: 5px solid #c5c5c5;
+}
+
+ul[colorDepth="3"],
+ol[colorDepth="3"] {
+    background-color: #c8c8c8;
+    border: 5px solid #bcbcbc;
+}
+
+ul[colorDepth="4"],
+ol[colorDepth="4"] {
+    background-color: #c3c3c3;
+    border: 5px solid #b5b5b5;
+}
+
+ul[colorDepth="5"],
+ol[colorDepth="5"] {
+    background-color: #bdbdbd;
+    border: 5px solid #acacac;
+}
+
+ul[colorDepth="6"],
+ol[colorDepth="6"] {
+    background-color: #b8b8b8;
+    border: 5px solid #a5a5a5;
+}
+
+
 
 li {
     color: #222;
@@ -592,7 +644,7 @@ mark {
         -ms-transform: scale(0.6);
         transform: scale(0.6);
         display: none;
-    
+
     }
 }
 
@@ -634,12 +686,12 @@ mark {
         -ms-transform: scale(0.6);
         transform: scale(0.6);
         display: none;
-        
+
     }
 }
 
 .show {
-    
+
     background-color: red;
     -webkit-animation: show 300ms ease-in;
     -moz-animation: show 300ms ease-in;
@@ -650,7 +702,7 @@ mark {
 }
 
 .hide {
-    
+
     -webkit-animation: hide 300ms ease-in;
     -moz-animation: hide 300ms ease-in;
     animation: hide 300ms ease-in;

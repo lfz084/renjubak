@@ -1342,7 +1342,7 @@ let control = (() => {
             setButtonClick(CLOSE_BUTTON, closeWindow);
             EX_WINDOW.appendChild(CLOSE_BUTTON);
 
-            const FONT_SIZE = sw / 30 + "px";
+            const FONT_SIZE = sw / 28 + "px";
             const EX_WINDOW_LEFT = parseInt(cFlipY.left) + "px";
             const EX_WINDOW_TOP = parseInt(cFlipY.top) + "px";
             const EX_WINDOW_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";

@@ -370,7 +370,7 @@ function copyMoves(moves) {
 
 
 
-// 复制一个arr数组
+// 复制一个arr二维数组, 
 function copyArr(arr, arr2) {
 
     getArr(arr);

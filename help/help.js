@@ -19,17 +19,20 @@ const topImage = (() => {
         topDiv.addEventListener("touchstart", (event) => {
             startX = event.changedTouches[0].pageX;
             startY = event.changedTouches[0].pageY;
+            if (event) event.cancelBubble = true;
         }, true);
 
         topDiv.addEventListener("touchend", (event) => {
             let tX = event.changedTouches[0].pageX;
             let tY = event.changedTouches[0].pageY;
+            if (event) event.cancelBubble = true;
             if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
                 close();
             }
         }, true);
 
         topDiv.onclick = () => {
+            if (event) event.cancelBubble = true;
             close();
         }
     }
@@ -230,13 +233,15 @@ window.scrollToAnimation = (() => {
 
 const setFocus = (() => {
     let busy = false;
-    let focusH = document.createElement("H4");
+    let focusH = null;
     return (elem) => {
         if (busy) return;
         busy = true;
-        if (elem && elem.nodeType == 1 && elem != focusH) {
-
-            focusH.removeAttribute("class", "cancelFocus");
+        if (elem &&
+            elem.nodeType == 1 &&
+            elem.parentNode != document.body)
+        {
+            if (focusH) focusH.removeAttribute("class");
             focusH = elem;
             focusH.setAttribute("class", "focus");
         }
@@ -244,7 +249,7 @@ const setFocus = (() => {
             const firstUL = getFirstChildNode(focusH, ["UL", "OL"]);
             const firstLI = getFirstChildNode(firstUL, ["LI"]);
             if (firstLI && firstLI.style.display == "none") {
-                focusH.removeAttribute("class", "cancelFocus");
+                focusH.removeAttribute("class");
             }
         }
         setTimeout(() => {
@@ -350,6 +355,7 @@ window.setScrollHeight = () => {}; // ios set iframe Height
 function showList(elem) {
 
     if (!elem) return;
+    //console.log(`${elem} showlist`)
     const UL_LIST_STYLE = ["none", "disc", "circle", "square", "disc", "circle", "square"];
     const OL_LIST_STYLE = ["none", "decimal", "decimal-leading-zero", "lower-alpha", "upper-alpha", "lower-roman", "upper-roman"];
     if (["H4"].indexOf(elem.nodeName) + 1) {
@@ -388,7 +394,7 @@ function showList(elem) {
     }
 
     function showChildNode(elem, depth) {
-
+        //console.log(`${elem}showChildNode`)
         const CHILD_NODES = elem.childNodes;
         for (let i in CHILD_NODES) { // show childNode
             showNode(CHILD_NODES[i], depth);
@@ -538,7 +544,7 @@ const hashControl = (() => {
 
                 scrollToElement(ELEM);
                 focusElement(ELEM);
-                
+
             }
             else {
                 const FIRST_NODE = getFirstChildNode(document.body, undefined, 1);
@@ -626,13 +632,14 @@ function createBody(iHTML, parentNode = document.body) {
     parentNode.appendChild(BODY_DIV);
     //console.log(`BODY_DIV.height=${BODY_DIV.scrollHeight}`);
 
-    function mapUL(elem) {
+    function mapUL(elem, colorDepth = 0) {
         const CHILD_NODES = elem.childNodes;
         for (let i in CHILD_NODES) {
             if (CHILD_NODES[i]) {
                 const NODE_NAME = CHILD_NODES[i].nodeName;
                 if (["OL", "UL"].indexOf(NODE_NAME) + 1) {
-                    mapLI(CHILD_NODES[i], NODE_NAME);
+                    mapLI(CHILD_NODES[i], NODE_NAME, colorDepth + 1);
+                    CHILD_NODES[i].setAttribute("colorDepth", `${colorDepth}`);
                 }
                 else if (["B", "H4", "H3", "DIV"].indexOf(NODE_NAME) + 1) {
                     mapLI(CHILD_NODES[i]);
@@ -642,10 +649,11 @@ function createBody(iHTML, parentNode = document.body) {
         }
     }
 
-    function mapLI(elem, listName) {
+    function mapLI(elem, listName, colorDepth = 0) {
         const ELEM_NAME = elem.nodeName;
         if (["UL", "OL"].indexOf(ELEM_NAME) + 1) {
-            elem.onclick = () => { // if not ListClick to cancel
+            elem.onclick = (event) => { // if not ListClick to cancel
+                if (event) event.cancelBubble = true;
                 elemClick(elem);
             }
         }
@@ -654,11 +662,13 @@ function createBody(iHTML, parentNode = document.body) {
             if (HASH.indexOf("#") == 0) {
                 const ID = HASH.slice(1);
                 elem.removeAttribute("href")
-                elem.onclick = () => {
-                    //event.preventDefault();
+                elem.onclick = (event) => {
+                    if (event) event.cancelBubble = true;
                     const TARGET_ELEM = document.getElementById(ID);
                     const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
-                    elemClick(elem); //cancel parentNode click event
+                    //cancel parentNode click event
+                    //elemClick(elem);
+                    //console.log(`ID="${ID}" ${elem} a_click, ${TARGET_ELEM} showlist`)
                     showList(TARGET_ELEM);
                     scrollToElement(TARGET_ELEM);
                     focusElement(TARGET_ELEM);
@@ -667,7 +677,8 @@ function createBody(iHTML, parentNode = document.body) {
         }
         else if (ELEM_NAME == "IMG") {
             elem.onclick = () => { // if not ListClick to cancel
-                elemClick(elem);
+                if (event) event.cancelBubble = true;
+                //elemClick(elem);
                 topImage(elem);
             }
         }
@@ -677,16 +688,12 @@ function createBody(iHTML, parentNode = document.body) {
             if (CHILD_NODES[i]) {
                 const NODE_NAME = CHILD_NODES[i].nodeName;
                 if (NODE_NAME == "UL" || NODE_NAME == "OL") {
-                    if (ELEM_NAME == listName) {
-                        mapLI(CHILD_NODES[i], listName);
-                    }
-                    else {
-                        listName = ELEM_NAME;
-                        mapLI(CHILD_NODES[i], listName);
-                    }
+                    listName = ELEM_NAME == listName ? listName : ELEM_NAME;
+                    mapLI(CHILD_NODES[i], listName, colorDepth + 1);
+                    CHILD_NODES[i].setAttribute("colorDepth", `${colorDepth}`);
                 }
-                else if (["LI", "A", "IMG", "MARK", "PS", "B", "DIV", "TEXT"].indexOf(NODE_NAME) + 1) {
-                    mapLI(CHILD_NODES[i], listName);
+                else if (["LI", "A", "IMG", "MARK", "PS", "B", "I", "P", "DIV", "TEXT"].indexOf(NODE_NAME) + 1) {
+                    mapLI(CHILD_NODES[i], listName, colorDepth);
                 }
                 else if (i == 0 && NODE_NAME == "#text") {
                     const TOHIDE_TXT = "...";
