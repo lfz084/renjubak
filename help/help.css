@@ -187,7 +187,7 @@ h4 {
 
 
 .focus {
-
+    border: 2px solid green; /*防止 safari 下设置失败*/
     animation: focus 700ms ease-in;
     animation-fill-mode: both;
 }
