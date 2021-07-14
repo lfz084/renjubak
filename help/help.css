@@ -32,7 +32,7 @@
 
 html,
 body {
-    color: #111111;
+    color: #222;
     background-color: #ddd;
     height: 100%;
     width: 800px;
@@ -159,7 +159,10 @@ div.bodyDiv {
 
 a {
     color: #663366;
+    font-size: 30px;
+    font-family: mHeiTi, SimHei;
     font-weight: 600;
+    line-height: 2;
     cursor: pointer;
 }
 
@@ -181,12 +184,13 @@ a:hover {
 
 /* 被选择的链接 */
 a:active {
-    color: blue;
+    color: #228;
     text-decoration: underline;
 }
 
 
 h3 {
+    color: #222;
     font-size: 36px;
     font-family: mHeiTi, SimHei;
     font-weight: 600;
@@ -197,6 +201,7 @@ h3 {
 
 
 h4 {
+    color: #222;
     font-size: 32px;
     font-family: mHeiTi, SimHei;
     font-weight: 600;
@@ -289,14 +294,15 @@ h4 {
 
 ul,
 ol {
-    color: #222222;
-    font-size: 30px;
+    color: #228;
+    font-size: 25px;
     font-family: mHeiTi, SimHei;
     font-weight: 300;
     line-height: 2;
 }
 
 li {
+    color: #222;
     font-size: 30px;
     font-family: mHeiTi, SimHei;
     font-weight: 600;
@@ -307,7 +313,16 @@ img {
     opacity: 0.72;
 }
 
+text {
+    color: #333;
+    font-size: 30px;
+    font-family: mHeiTi, SimHei;
+    font-weight: 300;
+    line-height: 2;
+}
+
 mark {
+    color: #333;
     background-color: #dddd88;
     font-size: 30px;
     font-family: mHeiTi, SimHei;

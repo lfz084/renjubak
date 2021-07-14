@@ -1811,8 +1811,8 @@ let control = (() => {
             FULL_DIV.setAttribute("class", "show");
 
             if (IFRAME.src.indexOf(url)+1) {
-                IFRAME.src = url;
-                IFRAME.contentWindow.onhashchange();
+                IFRAME.src = url; //保持上次滚动值，防止滚到顶部
+                IFRAME.contentWindow.onhashchange(); //onhashchange 滚动目标元素到可视区域
             }
             else {
                 IFRAME.src = url;
