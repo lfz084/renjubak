@@ -29,12 +29,11 @@
     <link rel="preload" href="./script/jsPDF/jspdf.umd_01.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCMedium.js" as="script">
     <link rel="preload" href="./script/jsPDF/PFSCHeavy.js" as="script">
-    
     <title> 摆棋小工具</title>
 </head>
 
 <body>
-     <script src="./registerSW.js"></script>
+    <script src="./registerSW.js"></script>
     <script src="./script/viewport.js"></script>
     <script src="./script/button.js"></script>
     <script src="./script/engine.js"></script>
@@ -96,21 +95,8 @@
             IFRAME.parentNode.removeChild(IFRAME);
         };
 
-        //用来保存跟踪正在发送的触摸事件
-        let canvasStartTouches = [];
-        let bodyStartTouches = [];
-        let previousTouch = []; // 辅助判断双击
-        let bodyPreviousTouch = [];
-        let bodyMoveTouches = [];
-        let continueSetCutDivX = 0;
-        let continueSetCutDivY = 0;
-        let isBodyClick = false; // 辅助判断单击
-        let timerCanvasKeepTouch = null;
-        let timerBodyKeepTouch = null;
-        let timerContinueSetCutDiv = null;
-        let exitContinueSetCutDivMove = null;
-        let cBoard = null; //棋盘对象
 
+        let cBoard = null; //棋盘对象
 
         var { jsPDF } = window.jspdf;
         document.body.onload = function() {
@@ -126,6 +112,8 @@
                 }
 
 
+                
+
                 let bodyDiv = d.createElement("div");
                 d.body.appendChild(bodyDiv);
                 bodyDiv.style.position = "absolute";
@@ -133,491 +121,43 @@
                 bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
                 bodyDiv.style.left = "0px";
                 bodyDiv.style.top = "0px";
+                //bodyDiv.style.backgroundColor = "black";
+                
                 let upDiv = d.createElement("div");
-                d.body.appendChild(upDiv);
+                bodyDiv.appendChild(upDiv);
                 upDiv.style.position = "absolute";
-                upDiv.style.width = "10%";
-                upDiv.style.height = 50 + "px";
+                upDiv.style.width = "0px";
+                upDiv.style.height = "0px";
                 upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
                 upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
+                //upDiv.style.backgroundColor = "green";
+
                 let downDiv = d.createElement("div");
-                d.body.appendChild(downDiv);
+                bodyDiv.appendChild(downDiv);
                 downDiv.style.position = "absolute";
-                downDiv.style.width = "10%";
-                downDiv.style.height = 50 + "px";
+                downDiv.style.width = "0px";
+                downDiv.style.height = "0px";
                 downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
                 downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
+                //downDiv.style.backgroundColor = "blue";
 
-                setTimeout(() => { scrollTo(0, dw < dh ? cWidth * 9 / 10 : 0); }, 5);
+
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
-                setCheckerBoardEvent(cBoard.canvas);
 
-                control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth]);
+                control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
                 appData.renjuLoad(cBoard);
+                //设置事件处理程序
                 registerSW();
-
+                viewport.resize();
             }
             catch (err) {
-                //alert (err);
+                //alert(err);
                 setTimeout(() => { location.reload() }, 1000);
             }
 
         }
 
-
-
-        //设置事件处理程序
-
-        function setCheckerBoardEvent(canvas) {
-
-            canvas.addEventListener("touchstart", handleStart, false);
-
-            canvas.addEventListener("touchend", handleEnd, false);
-
-            canvas.addEventListener("touchcancel", handleCancel, false);
-
-            canvas.addEventListener("touchleave", handleCancel, false);
-
-            canvas.addEventListener("touchmove", handleMove, false);
-
-            //canvas.addEventListener("click", canvasClick, false);
-
-            document.body.addEventListener("contextmenu", bodyKeepTouch, true);
-
-            canvas.addEventListener("dblclick", canvasDblClick, true);
-
-
-            document.body.addEventListener("touchstart", bodyTouchStart, true);
-
-            document.body.addEventListener("touchend", bodyTouchEnd, true);
-
-            document.body.addEventListener("touchcancel", bodyTouchCancel, true);
-
-            document.body.addEventListener("touchleave", bodyTouchEnd, true);
-
-            document.body.addEventListener("touchmove", bodyTouchMove, true);
-
-            document.body.addEventListener("click", canvasClick, true);
-
-
-        }
-
-
-
-        //处理触摸开始事件
-        function handleStart(evt) {
-            //evt.preventDefault();//阻止事件的默认行为
-            if (!timerBodyKeepTouch) {
-                //evt.preventDefault(); //阻止事件  body contextmenu 的默认行为
-            }
-        }
-
-
-
-        //处理触摸移动事件
-        function handleMove(evt) {
-            if (timerContinueSetCutDiv) evt.preventDefault();
-        }
-
-
-
-        //处理触摸结束事件
-        function handleEnd(evt) {
-            evt.preventDefault();
-        }
-
-
-
-        //处理触摸对出事件
-        function handleCancel(evt) {
-            evt.preventDefault();
-        }
-        
-        
-        
-        function cancelBodyEvent(){
-            return isMsgShow || isMenuShow;
-        }
-
-
-
-        //处理触摸开始事件
-        function bodyTouchStart(evt) {
-            //evt.preventDefault();
-            //阻止事件的默认行为
-            if (cancelBodyEvent()) return;
-            // 防止锁屏
-            let touches = evt.changedTouches;
-            //记录坐标，给continueSetCutDiv使用
-            continueSetCutDivX = touches[0].pageX;
-            continueSetCutDivY = touches[0].pageY;
-            if (bodyStartTouches.length == 0) {
-                if (bodyPreviousTouch.length) { //触发滑动调整
-                    //evt.preventDefault();
-                    if (timerContinueSetCutDiv == null) {
-                        timerContinueSetCutDiv = setTimeout(continueSetCutDivStart, 0);
-                        // 触发长按事件之前删除定时器，变量timerBodyKeepTouch还要用来判断双击事件，由touchend 清空变量。
-                        setTimeout(function() { clearTimeout(timerBodyKeepTouch) }, 600);
-                    }
-                }
-
-                //初始化长按事件
-                if (!timerBodyKeepTouch) {
-                    //event.preventDefault(); //阻止事件 contextmenu 的默认行为co
-                    timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
-                }
-
-                //保存当前触摸点
-                bodyStartTouches.push(copyTouch(touches[0], 1));
-                //初始化单击事件
-                isBodyClick = true;
-            }
-            else
-            {
-                // 多点触摸取消长按事件
-                if (timerBodyKeepTouch) {
-                    clearTimeout(timerBodyKeepTouch);
-                    timerBodyKeepTouch = null;
-                }
-                let touchNum = bodyStartTouches.length + 1; //判断是第几个手指触摸屏幕
-                if (touchNum > 3) return; //超过3指忽略
-                // 多点触摸 取消单击事件。
-                isBodyClick = false;
-                bodyStartTouches.push(copyTouch(touches[0], touchNum));
-            }
-        }
-
-
-
-        //处理触摸移动事件
-
-        function bodyTouchMove(evt) {
-            //evt.preventDefault();
-            if (timerContinueSetCutDiv) evt.preventDefault();
-            let touches = evt.changedTouches;
-
-            if (cancelBodyEvent()) return;
-
-            if (timerBodyKeepTouch != null) { //取消长按事件
-                clearTimeout(timerBodyKeepTouch);
-                timerBodyKeepTouch = null;
-            }
-
-            //记录坐标，给continueSetCutDiv使用
-            continueSetCutDivX = touches[0].pageX;
-            continueSetCutDivY = touches[0].pageY;
-
-            if ((bodyPreviousTouch.length && Math.abs(bodyPreviousTouch[0].pageX - touches[0].pageX) > 30) && (Math.abs(bodyPreviousTouch[0].pageY - touches[0].pageY) > 30)) {
-                // 取消单击事件。
-                isBodyClick = false;
-            }
-
-        }
-
-
-
-        //处理触摸结束事件
-
-        function bodyTouchEnd(evt) {
-
-            //evt.preventDefault();
-            if (cancelBodyEvent()) return;
-            let cancelClick = false;
-
-            let touches = evt.changedTouches;
-
-            let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
-            // 取消  ContinueSetCutDiv 事件
-            clearTimeout(timerContinueSetCutDiv);
-            if (timerContinueSetCutDiv) {
-                timerContinueSetCutDiv = null;
-                setTimeout(continueSetCutDivEnd(), 10);
-            }
-
-            if (timerBodyKeepTouch) { //取消长按事件
-                clearTimeout(timerBodyKeepTouch);
-                timerBodyKeepTouch = null;
-            }
-            else // 触发了长按事件，取消单击
-            {
-                cancelClick = true;
-            }
-
-            if (idx >= 0) {
-                let sX = bodyStartTouches[idx].pageX;
-                let sY = bodyStartTouches[idx].pageY;
-                let tX = touches[0].pageX;
-                let tY = touches[0].pageY;
-                let xMove = tX - sX;
-                let yMove = tY - sY;
-
-                let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
-
-                if (touchNum > 3) { // 超过3指重置触摸跟踪
-                    bodyStartTouches.length = 0; //remove it; we're done
-                    return;
-                }
-
-                if ((!cancelClick) && isBodyClick) {
-                    if ((bodyPreviousTouch.length > 0) && (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) && (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)) {
-                        bodyPreviousTouch.length = 0;
-                        /////////这里添加双击事件////////
-                        //通过 isOut 模拟 canvas事件
-                        if (!cBoard.isOut(tX, tY, cBoard.canvas)) {
-                            setTimeout(canvasDblClick(tX, tY), 10);
-                            //log("canvas 双击");
-                        }
-                        else {
-                            setTimeout(bodyDblClick(tX, tY), 10);
-                            //log("Body 双击");
-                        }
-                    }
-                    else {
-                        bodyPreviousTouch[0] = copyTouch(touches[0], 1);
-                        setTimeout("bodyPreviousTouch.length = 0;", 500);
-                        /////////这里添加单击事件////////
-                        //通过 isOut 模拟 canvas事件
-                        if (!cBoard.isOut(tX, tY, cBoard.canvas)) {
-                            evt.preventDefault();
-                            setTimeout(canvasClick(tX, tY), 10);
-                            //log("canvas 单击","red");
-                        }
-                        else {
-                            setTimeout(bodyClick(tX, tY), 10);
-                            //log("Body 单击","red");
-                        }
-                    }
-                }
-                /*
-                else if (xMove > 380 && Math.abs(xMove / yMove) > 2) {
-
-                    //log("右滑", "red");
-                }
-                else if (xMove < -380 && Math.abs(xMove / yMove) > 2) {
-
-                    //log("左滑", "red");
-                }
-                else if (yMove > 380 && Math.abs(yMove / xMove) > 2) {
-
-                    //log("下滑", "red");
-                }
-                else if (yMove < -380 && Math.abs(yMove / xMove) > 2) {
-
-                    //log("上滑", "red");
-                }
-                */
-
-                bodyStartTouches.splice(idx, 1); //remove it;we're done
-
-            }
-            else { // 出错重新初始化 触摸跟踪
-                bodyStartTouches.length = 0;
-            }
-            bodyStartTouches.length = 0;
-        }
-
-
-
-        //处理触摸对出事件
-
-        function bodyTouchCancel(evt) {
-
-            evt.preventDefault();
-
-            let touches = evt.changedTouches;
-            // 取消 continueSetCutDiv 事件
-            clearInterval(timerContinueSetCutDiv);
-            if (timerContinueSetCutDiv) {
-                timerContinueSetCutDiv = null;
-                setTimeout(continueSetCutDivEnd(), 10);
-            }
-
-            if (timerBodyKeepTouch) { // 取消长按事件
-                clearTimeout(timerBodyKeepTouch);
-                timerBodyKeepTouch = null;
-            }
-
-            bodyStartTouches.length = 0;
-        }
-
-
-
-
-
-        //拷贝一个触摸对象
-
-        function copyTouch(touch, touchNum) {
-
-            return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY, touchNum: touchNum };
-
-        }
-
-
-        //找出正在进行的触摸
-
-        function onTouchesIndex(idToFind, touches) {
-
-            for (let i = 0; i < touches.length; i++) {
-                let id = touches[i].identifier;
-                if (id == idToFind) { return i; }
-            }
-            return -1; //notfound
-
-        }
-
-
-
-
-        function canvasKeepTouch(x, y) {
-
-            if (control.getPlayModel() != control.imgModel) {
-                /*
-                if (event && event.type == "contextmenu") {
-                    control.renjuKeepTouch(event.pageX, event.pageY);
-                }
-                else {
-                */
-                control.renjuKeepTouch(x, y);
-                //}
-            }
-            else {
-                if (control.cLockImgChecked()) {
-                    control.putCheckerBoard(cBoard.getPIndex(x, y));
-                }
-                else {
-                    if (!timerContinueSetCutDiv) timerContinueSetCutDiv = setTimeout(continueSetCutDivStart, 10);
-                }
-            }
-
-        }
-
-
-
-        function canvasClick(x, y) {
-
-            //console.log(`isMsgShow = ${isMsgShow}`)
-            if (cancelBodyEvent()) return; // 针对鼠标事件
-            //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
-            x = event.type == "click" ? event.pageX : x;
-            y = event.type == "click" ? event.pageY : y;
-            //console.log(`get=${control.getPlayModel() },ren=${control.renjuModel}`)
-            if (control.getPlayModel() != control.imgModel) {
-                control.renjuClick(x, y);
-            }
-            else if (!control.cLockImgChecked()) {
-                if (cBoard.isOut(x, y, cBoard.canvas)) return;
-                let p = { x: x, y: y };
-                cBoard.setxy(p, event.type == "click" ? 2 : 1);
-                cBoard.setCutDiv(p.x, p.y, true);
-                cBoard.resetP();
-                cBoard.printBorder();
-            }
-            else {
-                let idx = cBoard.getPIndex(x, y);
-                if (idx < 0) return;
-                let color = control.cAddwhite2Checked() ? "white" : "black";
-                if (cBoard.P[idx].type != TYPE_EMPTY) {
-                    cBoard.P[idx].cle();
-                }
-                else {
-                    cBoard.P[idx].printNb(EMOJI_STAR_BLACK, color, cBoard.gW, cBoard.gH, color == "white" ? cBoard.wNumColor : cBoard.bNumColor);
-                }
-            }
-        }
-
-
-        function canvasDblClick(x, y) {
-
-            if (control.getPlayModel() != control.imgModel) {
-                if (event.type == "dblclick") {
-                    control.renjuDblClick(event.pageX, event.pageY);
-                }
-                else {
-                    control.renjuDblClick(x, y);
-                }
-            }
-        }
-
-
-        function bodyClick(x, y) {}
-
-
-
-        function bodyDblClick() {
-
-        }
-
-        let cancelContextmenu = false;
-
-        function bodyKeepTouch() {
-
-            if (cancelBodyEvent()) return;
-            if (cancelContextmenu) return;
-            clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
-            timerBodyKeepTouch = null;
-            cancelContextmenu = true;
-            setTimeout("cancelContextmenu = false", 1000);
-            //console.log(event)
-            //console.log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
-            let x = bodyStartTouches[0] ? bodyStartTouches[0].pageX : event.pageX;
-            let y = bodyStartTouches[0] ? bodyStartTouches[0].pageY : event.pageY;
-            //  针对 msg 弹窗 恢复下一次长按事件
-            bodyStartTouches.length = 0;
-            //通过 isOut 模拟 canvas事件
-            if (!cBoard.isOut(x, y, cBoard.canvas)) {
-                setTimeout(canvasKeepTouch(x, y), 10);
-                //log("canvad 长按");
-            }
-            else {
-                //log("Body 长按");
-            }
-
-        }
-
-
-
-        function continueSetCutDivStart() {
-            if (control.getPlayModel() != control.imgModel || control.cLockImgChecked()) return;
-            //console.log("continueSetCutDivStart")
-            setTimeout(cBoard.cleAllPointBorder(), 10);
-            exitContinueSetCutDivMove = false;
-            continueSetCutDivMove();
-        }
-
-
-
-
-        function continueSetCutDivMove() {
-            //log("continueSetCutDivMove ");
-            let x = parseInt(continueSetCutDivX);
-            let y = parseInt(continueSetCutDivY);
-            let p = { x: x, y: y };
-            if (!cBoard.isOut(x, y, cBoard.canvas, parseInt(cBoard.width) / 17))
-            {
-                cBoard.setxy(p, 0.02);
-                cBoard.setCutDiv(p.x, p.y, true);
-            }
-
-            //if (timerContinueSetCutDiv != null) timerContinueSetCutDiv = setTimeout(continueSetCutDivMove, 150);
-            timerContinueSetCutDiv = requestAnimationFrame(continueSetCutDivMove);
-            if (exitContinueSetCutDivMove) {
-                cancelAnimationFrame(timerContinueSetCutDiv);
-                timerContinueSetCutDiv = null;
-            }
-        }
-
-
-
-
-        function continueSetCutDivEnd() {
-            //console.log("continueSetCutDivEnd")
-            if (control.getPlayModel() != control.imgModel || control.cLockImgChecked()) return;
-            exitContinueSetCutDivMove = true;
-            cBoard.resetP();
-            cBoard.printBorder();
-
-        }
     </script>
 </body>
 

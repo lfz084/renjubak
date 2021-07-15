@@ -244,10 +244,9 @@ let control = (() => {
     let cMenu = null;
 
     function createContextMenu(left, top, width, height, fontSize) {
+
         cMenu = new button(cBd.parentNode, "select", 0, 0, 0, 0);
         cMenu.index = -1; // save cBoard click index;
-
-
         cMenu.addOption(1, `${EMOJI_SEARCH} 找点`);
         cMenu.addOption(2, `${EMOJI_QUESTION} 解题`);
         cMenu.addOption(3, "新棋局");
@@ -1279,7 +1278,7 @@ let control = (() => {
             setTop(parentNode.offsetTop + t)
         }
         else {
-            setTop(parentNode.offsetTop);
+            setTop(0);
         }
 
         cShareWhite = new button(renjuCmddiv, "button", w * 0, t, w, h);
@@ -1426,10 +1425,7 @@ let control = (() => {
                 showLabel("上次意外退出,继续计算...");
                 engine.postMsg(continueData.cmd, continueData);
             }
-
         }, 1000 * 1);
-
-
     }
 
 
@@ -1669,6 +1665,335 @@ let control = (() => {
         }
     }
 
+    let setCheckerBoardEvent = (() => {
+
+        //用来保存跟踪正在发送的触摸事件
+        let canvasStartTouches = [];
+        let bodyStartTouches = [];
+        let previousTouch = []; // 辅助判断双击
+        let bodyPreviousTouch = [];
+        let bodyMoveTouches = [];
+        let continueSetCutDivX = 0;
+        let continueSetCutDivY = 0;
+        let isBodyClick = false; // 辅助判断单击
+        let timerCanvasKeepTouch = null;
+        let timerBodyKeepTouch = null;
+        let timerContinueSetCutDiv = null;
+        let exitContinueSetCutDivMove = null;
+
+        //处理触摸开始事件
+        function bodyTouchStart(evt) {
+            //evt.preventDefault();//阻止事件的默认行为
+            let touches = evt.changedTouches; //记录坐标，给continueSetCutDiv使用
+            continueSetCutDivX = touches[0].pageX;
+            continueSetCutDivY = touches[0].pageY;
+            if (bodyStartTouches.length == 0) {
+                if (bodyPreviousTouch.length) { //触发滑动调整
+                    //evt.preventDefault();
+                    if (timerContinueSetCutDiv == null) {
+                        timerContinueSetCutDiv = setTimeout(continueSetCutDivStart, 0);
+                        // 触发长按事件之前删除定时器，变量timerBodyKeepTouch还要用来判断双击事件，由touchend 清空变量。
+                        setTimeout(function() { clearTimeout(timerBodyKeepTouch) }, 600);
+                    }
+                }
+                //初始化长按事件
+                if (!timerBodyKeepTouch) {
+                    //event.preventDefault(); //阻止事件 contextmenu 的默认行为co
+                    timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
+                }
+                //保存当前触摸点
+                bodyStartTouches.push(copyTouch(touches[0], 1));
+                //初始化单击事件
+                isBodyClick = true;
+            }
+            else
+            {
+                // 多点触摸取消长按事件
+                if (timerBodyKeepTouch) {
+                    clearTimeout(timerBodyKeepTouch);
+                    timerBodyKeepTouch = null;
+                }
+                let touchNum = bodyStartTouches.length + 1; //判断是第几个手指触摸屏幕
+                if (touchNum > 3) return; //超过3指忽略
+                // 多点触摸 取消单击事件。
+                isBodyClick = false;
+                bodyStartTouches.push(copyTouch(touches[0], touchNum));
+            }
+        }
+
+        //处理触摸移动事件
+        function bodyTouchMove(evt) {
+            //evt.preventDefault();
+            if (timerContinueSetCutDiv) evt.preventDefault();
+            let touches = evt.changedTouches;
+            if (timerBodyKeepTouch != null) { //取消长按事件
+                clearTimeout(timerBodyKeepTouch);
+                timerBodyKeepTouch = null;
+            }
+            //记录坐标，给continueSetCutDiv使用
+            continueSetCutDivX = touches[0].pageX;
+            continueSetCutDivY = touches[0].pageY;
+            if ((bodyPreviousTouch.length && Math.abs(bodyPreviousTouch[0].pageX - touches[0].pageX) > 30) && (Math.abs(bodyPreviousTouch[0].pageY - touches[0].pageY) > 30)) {
+                isBodyClick = false; // 取消单击事件。
+            }
+        }
+
+        //处理触摸结束事件
+        function bodyTouchEnd(evt) {
+
+            let cancelClick = false;
+            let touches = evt.changedTouches;
+            let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
+            clearTimeout(timerContinueSetCutDiv); // 取消  ContinueSetCutDiv 事件
+            if (timerContinueSetCutDiv) {
+                timerContinueSetCutDiv = null;
+                setTimeout(continueSetCutDivEnd, 10);
+            }
+            if (timerBodyKeepTouch) { //取消长按事件
+                clearTimeout(timerBodyKeepTouch);
+                timerBodyKeepTouch = null;
+            }
+            else { // 触发了长按事件，取消单击
+                cancelClick = true;
+            }
+            if (idx >= 0) {
+                let sX = bodyStartTouches[idx].pageX;
+                let sY = bodyStartTouches[idx].pageY;
+                let tX = touches[0].pageX;
+                let tY = touches[0].pageY;
+                let xMove = tX - sX;
+                let yMove = tY - sY;
+                let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
+                if (!cBd.isOut(tX, tY, cBd.canvas))
+                    evt.preventDefault(); // 棋盘内屏蔽浏览器双击放大
+                if (touchNum > 3) { // 超过3指重置触摸跟踪
+                    bodyStartTouches.length = 0; //remove it; we're done
+                    return;
+                }
+                if ((!cancelClick) && isBodyClick) {
+                    //console.log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
+                    if ((bodyPreviousTouch.length > 0) && (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) && (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)) {
+                        bodyPreviousTouch.length = 0;
+                        /////////这里添加双击事件////////
+                        //通过 isOut 模拟 canvas事件
+                        if (!cBd.isOut(tX, tY, cBd.canvas)) {
+                            setTimeout(canvasDblClick(tX, tY), 10);
+                            //console.log("canvas 双击");
+                        }
+                        else {
+                            //setTimeout(bodyDblClick(tX, tY), 10);
+                            //console.log("Body 双击");
+                        }
+                    }
+                    else {
+                        bodyPreviousTouch[0] = copyTouch(touches[0], 1);
+                        setTimeout(() => {
+                            bodyPreviousTouch.length = 0;
+                        }, 500);
+                        /////////这里添加单击事件////////
+                        //通过 isOut 模拟 canvas事件
+                        if (!cBd.isOut(tX, tY, cBd.canvas)) {
+                            canvasClick(tX, tY);
+                            //console.log("canvas 单击");
+                        }
+                        else {
+                            //bodyClick(tX, tY);
+                            //log("Body 单击");
+                        }
+                    }
+                }
+                bodyStartTouches.splice(idx, 1); //remove it;we're done
+            }
+            else { // 出错重新初始化 触摸跟踪
+                bodyStartTouches.length = 0;
+            }
+            bodyStartTouches.length = 0;
+        }
+
+        //处理触摸对出事件
+        function bodyTouchCancel(evt) {
+
+            evt.preventDefault();
+            let touches = evt.changedTouches;
+            // 取消 continueSetCutDiv 事件
+            clearInterval(timerContinueSetCutDiv);
+            if (timerContinueSetCutDiv) {
+                timerContinueSetCutDiv = null;
+                setTimeout(continueSetCutDivEnd, 10);
+            }
+            if (timerBodyKeepTouch) { // 取消长按事件
+                clearTimeout(timerBodyKeepTouch);
+                timerBodyKeepTouch = null;
+            }
+            bodyStartTouches.length = 0;
+        }
+
+        function bodyClick(x, y) {
+
+            let p = { x: 0, y: 0 };
+            x = event.type == "click" ? event.pageX : x;
+            y = event.type == "click" ? event.pageY : y;
+            cBd.xyPageToObj(p, cBd.canvas);
+            canvasClick(p.x, p.y);
+        }
+
+        function bodyDblClick(x, y) {
+
+            let p = { x: 0, y: 0 };
+            x = event.type == "click" ? event.pageX : x;
+            y = event.type == "click" ? event.pageY : y;
+            cBd.xyPageToObj(p, cBd.canvas);
+            canvasDblClick(p.x, p.y);
+        }
+
+        let cancelContextmenu = false;
+
+        function bodyKeepTouch() {
+
+            if (cancelContextmenu) return;
+            clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
+            timerBodyKeepTouch = null;
+            cancelContextmenu = true;
+            setTimeout(() => {
+                cancelContextmenu = false;
+            }, 1000);
+            //console.log(event)
+            //console.log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
+            let x = bodyStartTouches[0] ? bodyStartTouches[0].pageX : event.pageX;
+            let y = bodyStartTouches[0] ? bodyStartTouches[0].pageY : event.pageY;
+            //  针对 msg 弹窗 恢复下一次长按事件
+            bodyStartTouches.length = 0;
+            //通过 isOut 模拟 canvas事件
+            if (!cBd.isOut(x, y, cBd.canvas)) {
+                setTimeout(canvasKeepTouch(x, y), 10);
+                //log("canvad 长按");
+            }
+            else {
+                //log("Body 长按");
+            }
+        }
+
+        //拷贝一个触摸对象
+        function copyTouch(touch, touchNum) {
+
+            return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY, touchNum: touchNum };
+        }
+
+        //找出正在进行的触摸
+        function onTouchesIndex(idToFind, touches) {
+
+            for (let i = 0; i < touches.length; i++) {
+                let id = touches[i].identifier;
+                if (id == idToFind) { return i; }
+            }
+            return -1; //notfound
+        }
+
+        function canvasKeepTouch(x, y) {
+
+            if (playModel != MODEL_LOADIMG) {
+                renjuKeepTouch(x, y);
+            }
+            else {
+                if (cLockImg.checked) {
+                    putCheckerBoard(cBd.getPIndex(x, y));
+                }
+                else {
+                    if (!timerContinueSetCutDiv)
+                        timerContinueSetCutDiv = setTimeout(continueSetCutDivStart, 10);
+                }
+            }
+
+        }
+
+        function canvasClick(x, y) {
+            //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
+            x = event.type == "click" ? event.pageX : x;
+            y = event.type == "click" ? event.pageY : y;
+            //console.log(`get=${playModel },ren=${MODEL_RENJU}`)
+            if (playModel != MODEL_LOADIMG) {
+                renjuClick(x, y);
+            }
+            else if (!cLockImg.checked) {
+                if (cBd.isOut(x, y, cBd.canvas)) return;
+                let p = { x: x, y: y };
+                cBd.setxy(p, event.type == "click" ? 2 : 1);
+                cBd.setCutDiv(p.x, p.y, true);
+                cBd.resetP();
+                cBd.printBorder();
+            }
+            else {
+                let idx = cBd.getPIndex(x, y);
+                if (idx < 0) return;
+                let color = cAddwhite2.checked ? "white" : "black";
+                if (cBd.P[idx].type != TYPE_EMPTY) {
+                    cBd.P[idx].cle();
+                }
+                else {
+                    cBd.P[idx].printNb(EMOJI_STAR_BLACK, color, cBd.gW, cBd.gH, color == "white" ? cBd.wNumColor : cBd.bNumColor);
+                }
+            }
+        }
+
+        function canvasDblClick(x, y) {
+
+            if (playModel != MODEL_LOADIMG) {
+                if (event.type == "dblclick")
+                    renjuDblClick(event.pageX, event.pageY);
+                else
+                    renjuDblClick(x, y);
+            }
+        }
+
+        function continueSetCutDivStart() {
+
+            if (playModel != MODEL_LOADIMG ||
+                cLockImg.checked)
+                return;
+            //console.log("continueSetCutDivStart")
+            cBd.cleAllPointBorder();
+            exitContinueSetCutDivMove = false;
+            continueSetCutDivMove();
+        }
+
+        function continueSetCutDivMove() {
+            //log("continueSetCutDivMove ");
+            let x = parseInt(continueSetCutDivX);
+            let y = parseInt(continueSetCutDivY);
+            let p = { x: x, y: y };
+            if (!cBd.isOut(x, y, cBd.canvas, parseInt(cBd.width) / 17))
+            {
+                cBd.setxy(p, 0.02);
+                cBd.setCutDiv(p.x, p.y, true);
+            }
+            //if (timerContinueSetCutDiv != null) timerContinueSetCutDiv = setTimeout(continueSetCutDivMove, 150);
+            timerContinueSetCutDiv = requestAnimationFrame(continueSetCutDivMove);
+            if (exitContinueSetCutDivMove) {
+                cancelAnimationFrame(timerContinueSetCutDiv);
+                timerContinueSetCutDiv = null;
+            }
+        }
+
+        function continueSetCutDivEnd() {
+            //console.log("continueSetCutDivEnd")
+            if (playModel != MODEL_LOADIMG || cLockImg.checked) return;
+            exitContinueSetCutDivMove = true;
+            cBd.resetP();
+            cBd.printBorder();
+        }
+
+        return (canvas, bodyDiv) => {
+            bodyDiv.addEventListener("contextmenu", bodyKeepTouch, true);
+            bodyDiv.addEventListener("touchstart", bodyTouchStart, true);
+            bodyDiv.addEventListener("touchend", bodyTouchEnd, true);
+            bodyDiv.addEventListener("touchcancel", bodyTouchCancel, true);
+            bodyDiv.addEventListener("touchleave", bodyTouchEnd, true);
+            bodyDiv.addEventListener("touchmove", bodyTouchMove, true);
+            bodyDiv.addEventListener("click", bodyClick, true);
+            bodyDiv.addEventListener("dblclick", bodyDblClick, true);
+        };
+    })();
+
 
     function createHelpWindow() {
 
@@ -1739,7 +2064,6 @@ let control = (() => {
         function openHelpWindow(url) {
             if (busy) return;
             busy = true;
-            sharing = true;
             let s = FULL_DIV.style;
             s.position = "fixed";
             s.backgroundColor = "#666";
@@ -1810,7 +2134,7 @@ let control = (() => {
             FULL_DIV.style.zIndex = 99999;
             FULL_DIV.setAttribute("class", "show");
 
-            if (IFRAME.src.indexOf(url)+1) {
+            if (IFRAME.src.indexOf(url) + 1) {
                 IFRAME.src = url; //保持上次滚动值，防止滚到顶部
                 IFRAME.contentWindow.onhashchange(); //onhashchange 滚动目标元素到可视区域
             }
@@ -1829,7 +2153,6 @@ let control = (() => {
                 FULL_DIV.style.display = "none";
                 //IFRAME.src = "";
                 busy = false;
-                sharing = false;
             }, 500);
         }
 
@@ -2046,9 +2369,7 @@ let control = (() => {
     function renjuClick(x, y) {
 
         if (busy()) return;
-        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
-
         if (playModel == MODEL_RENJU) {
             if (idx > -1) {
                 let cmds = getRenjuCmd();
@@ -2139,7 +2460,6 @@ let control = (() => {
     function renjuDblClick(x, y) {
 
         if (busy()) return;
-        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
             // 触发快速悔棋
@@ -2164,7 +2484,6 @@ let control = (() => {
     function renjuKeepTouch(x, y) {
 
         if (busy()) return;
-        if (sharing) return;
         let idx = cBd.getPIndex(x, y);
         if (idx < 0) return;
         let w = cBd.width * 0.8;
@@ -2275,7 +2594,6 @@ let control = (() => {
 
     function busy() {
         let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
-        //if (busy) console.log(`请先停止计算，再操作`);
         return busy;
     }
 
@@ -2307,15 +2625,15 @@ let control = (() => {
     ICO_DOWNLOAD.oncontextmenu = (event) => {
         event.preventDefault();
     };
-    
+
     const ICO_CLOSE = document.createElement("img");
     imgWindow.appendChild(ICO_CLOSE);
     ICO_CLOSE.src = "./pic/close-bold.svg";
     ICO_CLOSE.oncontextmenu = (event) => {
         event.preventDefault();
     };
-    
-    
+
+
 
     function share(cBoardColor) {
 
@@ -2358,8 +2676,7 @@ let control = (() => {
             cBd.LbBackgroundColor = "white";
             cBd.refreshCheckerBoard();
             shareImg.src = cBd.canvas.toDataURL();
-            shareImg.onload = function() {
-            };
+            shareImg.onload = function() {};
         }
         else {
             shareImg.src = cBd.canvas.toDataURL();
@@ -2379,18 +2696,18 @@ let control = (() => {
         s.top = (imgWidth - iWidth) / 8 + "px";
         s.left = l + "px";
         s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
-    
+
         s = ICO_DOWNLOAD.style;
         s.position = "absolute";
-        s.width = (imgWidth-parseInt(shareImg.style.top)-parseInt(shareImg.style.height))/2 + "px";
+        s.width = (imgWidth - parseInt(shareImg.style.top) - parseInt(shareImg.style.height)) / 2 + "px";
         s.height = s.width;
-        s.top = imgWidth - parseInt(s.width)*1.5 + "px";
-        s.left = imgWidth/2 - parseInt(s.width)*1.5 + "px";
+        s.top = imgWidth - parseInt(s.width) * 1.5 + "px";
+        s.left = imgWidth / 2 - parseInt(s.width) * 1.5 + "px";
         s.backgroundColor = "#777";
         setButtonClick(ICO_DOWNLOAD, () => {
             cBd.saveAsImage("png");
         });
-    
+
         s = ICO_CLOSE.style;
         s.position = "absolute";
         s.width = ICO_DOWNLOAD.style.width;
@@ -2406,7 +2723,7 @@ let control = (() => {
                 cBd.refreshCheckerBoard();
             }
         });
-        
+
         shareWindow.setAttribute("class", "show");
         setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
 
@@ -2437,7 +2754,7 @@ let control = (() => {
         "renjuClick": renjuClick,
         "getRenjuSelColor": getRenjuSelColor,
         "getRenjuLbColor": getRenjuLbColor,
-        "reset": (cBoard, engine_, msg_, closeMsg_, appData_, documentWidth, documentHeight, param) => {
+        "reset": (cBoard, engine_, msg_, closeMsg_, appData_, documentWidth, documentHeight, param, bodyDiv) => {
             cBd = cBoard;
             engine = engine_;
             msg = msg_;
@@ -2449,6 +2766,7 @@ let control = (() => {
             createRenjuCmdDiv(param[0], param[1], param[2], param[3], param[4]);
             createImgCmdDiv(param[0], param[1], param[2], param[3], param[4]);
             createHelpWindow();
+            setCheckerBoardEvent(cBoard.canvas, bodyDiv);
         },
         "getEXWindow": () => { return exWindow },
         //"showContextMenu": ()=>{cMenu.showMenu();},

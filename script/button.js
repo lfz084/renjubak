@@ -1,7 +1,7 @@
   "use strict";
 
   const ANIMATION_TIMEOUT = 300;
-  let isMenuShow = false;
+  let isMenuShow = false; //控制主程序，不允许同时打开两个菜单
   // 定制按钮，button，file，Radio，select。
   function button(parentNode, type, left, top, width, height) {
 
