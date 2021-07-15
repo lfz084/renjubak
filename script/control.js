@@ -1698,7 +1698,7 @@ let control = (() => {
                 }
                 //初始化长按事件
                 if (!timerBodyKeepTouch) {
-                    //event.preventDefault(); //阻止事件 contextmenu 的默认行为co
+                    event.preventDefault(); //阻止事件 contextmenu 的默认行为co
                     timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
                 }
                 //保存当前触摸点
