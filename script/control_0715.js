@@ -1341,14 +1341,18 @@ let control = (() => {
             }
             setButtonClick(CLOSE_BUTTON, closeWindow);
             EX_WINDOW.appendChild(CLOSE_BUTTON);
-
+            
+            let p = { x: 0, y: 0 };
+            cBd.xyObjToPage(p, renjuCmddiv);
+            
             const FONT_SIZE = sw / 28 + "px";
-            const EX_WINDOW_LEFT = parseInt(cFlipY.left) + "px";
-            const EX_WINDOW_TOP = parseInt(cFlipY.top) + "px";
+            const EX_WINDOW_LEFT = parseInt(cFlipY.left) + p.x + "px";
+            const EX_WINDOW_TOP = parseInt(cFlipY.top ) + p.y + "px";
             const EX_WINDOW_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
             const EX_WINDOW_HEIGHT = h * 1.5 * 7 + h + "px";
-
+            
             function resetStyle() {
+                
                 let s = EX_WINDOW.style;
                 s.position = "absolute";
                 s.left = EX_WINDOW_LEFT;
@@ -1356,6 +1360,7 @@ let control = (() => {
                 s.width = EX_WINDOW_WIDTH;
                 s.height = EX_WINDOW_HEIGHT;
                 s.zIndex = 9999;
+                
                 s = IFRAME.style;
                 s.position = "absolute";
                 s.left = 0;
@@ -1369,6 +1374,7 @@ let control = (() => {
                 s.background = "white";
                 s.fontWeight = "normal";
                 s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
+                
                 s = CLOSE_BUTTON.style;
                 let sz = parseInt(EX_WINDOW_WIDTH) / 10 + "px";
                 s.position = "absolute";
@@ -1383,7 +1389,7 @@ let control = (() => {
             function openWindow() {
                 if (EX_WINDOW.parentNode) return;
                 resetStyle();
-                renjuCmddiv.appendChild(EX_WINDOW);
+                document.body.appendChild(EX_WINDOW);  //插入body内，保证a标签可以工作。因为renjuCmddiv.parentNode屏蔽了浏览器触摸click
             }
 
             function closeWindow() {
@@ -1700,7 +1706,6 @@ let control = (() => {
                 //初始化长按事件
                 isCancelMenuClick = false;
                 if (!timerBodyKeepTouch) {
-                    isCancelMenuClick = true;
                     timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
                 }
                 //保存当前触摸点
@@ -1767,7 +1772,7 @@ let control = (() => {
                 let xMove = tX - sX;
                 let yMove = tY - sY;
                 let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
-                if (!cBd.isOut(tX, tY, cBd.canvas))
+                //if (!cBd.isOut(tX, tY, cBd.canvas))
                     evt.preventDefault(); // 棋盘内屏蔽浏览器双击放大
                 if (touchNum > 3) { // 超过3指重置触摸跟踪
                     bodyStartTouches.length = 0; //remove it; we're done
@@ -1868,6 +1873,7 @@ let control = (() => {
             bodyStartTouches.length = 0;
             //通过 isOut 模拟 canvas事件
             if (!cBd.isOut(x, y, cBd.canvas)) {
+                isCancelMenuClick = true;
                 setTimeout(canvasKeepTouch(x, y), 10);
                 //log("canvad 长按");
             }
