@@ -173,7 +173,7 @@
 
 
 
-  button.prototype.createMenu = function(left, top, width, height, fontSize, closeAnimation) {
+  button.prototype.createMenu = function(left, top, width, height, fontSize, closeAnimation, isCancelMenuClick=()=>{}) { //safari 长按棋盘会误触发click事件 isCancelMenuClick判断是否是误触发
       
       if (this.type != "select" || this.menuWindow) return;
       
@@ -183,6 +183,7 @@
       menu.lis = [];
       muWindow.appendChild(menu);
       muWindow.onclick = menu.onclick = function() {
+          if (isCancelMenuClick()) return;
           if (event) {
               event.cancelBubble = true;
               event.preventDefault()
@@ -221,6 +222,7 @@
           menu.appendChild(li);
           let input = this.input;
           li.onclick = function() {
+              if (isCancelMenuClick()) return;
               if (event) event.cancelBubble = true;
               but.menuScroll(parseInt(li.style.lineHeight) * 5);
           };
@@ -249,6 +251,7 @@
           let input = this.input;
 
           li.onclick = function() {
+              if (isCancelMenuClick()) return;
               if (event) event.cancelBubble = true;
               input.value = i;
               input.selectedIndex = i; // input.onchange();
@@ -278,6 +281,7 @@
           menu.appendChild(li);
           let input = this.input;
           li.onclick = function() {
+              if (isCancelMenuClick()) return;
               if (event) event.cancelBubble = true;
               but.menuScroll(-parseInt(li.style.lineHeight) * 5);
           };

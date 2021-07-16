@@ -91,6 +91,7 @@ let control = (() => {
     let cCleLb = null;
     let cHelp = null;
     let exWindow;
+    let isCancelMenuClick = false;
     const setTop = (() => {
         let topMark = document.createElement("div");
         document.body.appendChild(topMark);
@@ -332,7 +333,7 @@ let control = (() => {
         let p = { x: 0, y: 0 };
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
-        cMenu.createMenu(left, undefined, width, undefined, fontSize, true);
+        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, ()=>{return isCancelMenuClick});
     }
 
 
@@ -1683,7 +1684,7 @@ let control = (() => {
 
         //处理触摸开始事件
         function bodyTouchStart(evt) {
-            //evt.preventDefault();//阻止事件的默认行为
+            
             let touches = evt.changedTouches; //记录坐标，给continueSetCutDiv使用
             continueSetCutDivX = touches[0].pageX;
             continueSetCutDivY = touches[0].pageY;
@@ -1697,8 +1698,9 @@ let control = (() => {
                     }
                 }
                 //初始化长按事件
+                isCancelMenuClick = false;
                 if (!timerBodyKeepTouch) {
-                    event.preventDefault(); //阻止事件 contextmenu 的默认行为co
+                    isCancelMenuClick = true;
                     timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
                 }
                 //保存当前触摸点
@@ -1740,7 +1742,8 @@ let control = (() => {
 
         //处理触摸结束事件
         function bodyTouchEnd(evt) {
-
+            
+            setTimeout(()=>{isCancelMenuClick = false}, 250);
             let cancelClick = false;
             let touches = evt.changedTouches;
             let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
@@ -1812,7 +1815,7 @@ let control = (() => {
 
         //处理触摸对出事件
         function bodyTouchCancel(evt) {
-
+            //console.log(`touchCancel`)
             evt.preventDefault();
             let touches = evt.changedTouches;
             // 取消 continueSetCutDiv 事件
@@ -1987,7 +1990,7 @@ let control = (() => {
             bodyDiv.addEventListener("touchstart", bodyTouchStart, true);
             bodyDiv.addEventListener("touchend", bodyTouchEnd, true);
             bodyDiv.addEventListener("touchcancel", bodyTouchCancel, true);
-            bodyDiv.addEventListener("touchleave", bodyTouchEnd, true);
+            bodyDiv.addEventListener("touchleave", bodyTouchCancel, true);
             bodyDiv.addEventListener("touchmove", bodyTouchMove, true);
             bodyDiv.addEventListener("click", bodyClick, true);
             bodyDiv.addEventListener("dblclick", bodyDblClick, true);
