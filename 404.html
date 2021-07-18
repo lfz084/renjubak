@@ -5,12 +5,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>404 err</title>
+    <style>
+        h1 {
+            font-size: 30px;
+            font-weight: 600;
+            line-height: 2;
+        }
+
+        a {
+            color: #663366;
+            font-size: 28px;
+            font-weight: 600;
+            text-decoration: underline;
+            line-height: 2;
+            cursor: pointer;
+        }
+
+        /* 未被访问的链接 */
+        a:link {
+            color: #663366;
+            text-decoration: underline;
+        }
+
+        /* 已被访问的链接 */
+        a:visited {
+            color: #552255;
+            text-decoration: underline;
+        }
+
+        /* 将鼠标悬停在链接上 */
+        a:hover {
+            color: #885588;
+            text-decoration: underline;
+        }
+
+        /* 被选择的链接 */
+        a:active {
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-    没有找到你要打开的页面</br>
-    <a href="index.html">返回主页</a></br>
-    <a href="renju.html">摆棋小工具</a></br>
+    <script>
+        const HOMES = ["https://lfz084.gitee.io/renju/",
+    "https://lfz084.github.io/",
+    "http://localhost:7700/"];
+        HOME = location.href.indexOf(HOMES[0]) + 1 ? HOMES[0] :
+            location.href.indexOf(HOMES[1]) + 1 ? HOMES[1] : HOMES[2];
+
+        function clk(filename) {
+            const URL = HOME + filename;
+            window.open(URL, "_self");
+        }
+        document.body.onload = () => {
+            document.getElementById("home").onclick = () => {
+                clk("index.html");
+            };
+            document.getElementById("renju").onclick = () => {
+                clk("renju.html");
+            };
+        }
+    </script>
+    <h1>没有找到你要打开的页面</h1></br>
+    <a id="home">返回主页</a></br>
+    <a id="renju">摆棋小工具</a></br>
 </body>
 
 </html>

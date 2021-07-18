@@ -100,6 +100,7 @@
 
         var { jsPDF } = window.jspdf;
         document.body.onload = function() {
+            registerSW();
             var reload = (()=>{
                 let count = 0;
                 return ()=>{
@@ -156,7 +157,7 @@
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
                 appData.renjuLoad(cBoard);
                 //设置事件处理程序
-                registerSW();
+                
                 setTimeout(()=>{viewport.resize()},0);
             }
             catch (err) {
