@@ -116,7 +116,7 @@ div.bodyDiv {
 }
 
 a {
-    color: #663366;
+    color: #683366;
     font-size: 30px;
     font-family: mHeiTi, SimHei;
     font-weight: 600;
@@ -126,12 +126,12 @@ a {
 
 /* 未被访问的链接 */
 a:link {
-    color: #663366;
+    color: #683366;
 }
 
 /* 已被访问的链接 */
 a:visited {
-    color: #552255;
+    color: #683366;
 }
 
 /* 将鼠标悬停在链接上 */

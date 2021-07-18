@@ -333,7 +333,7 @@ let control = (() => {
         let p = { x: 0, y: 0 };
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
-        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, ()=>{return isCancelMenuClick});
+        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, () => { return isCancelMenuClick });
     }
 
 
@@ -1341,18 +1341,18 @@ let control = (() => {
             }
             setButtonClick(CLOSE_BUTTON, closeWindow);
             EX_WINDOW.appendChild(CLOSE_BUTTON);
-            
+
             let p = { x: 0, y: 0 };
             cBd.xyObjToPage(p, renjuCmddiv);
-            
+
             const FONT_SIZE = sw / 28 + "px";
             const EX_WINDOW_LEFT = parseInt(cFlipY.left) + p.x + "px";
-            const EX_WINDOW_TOP = parseInt(cFlipY.top ) + p.y + "px";
+            const EX_WINDOW_TOP = parseInt(cFlipY.top) + p.y + "px";
             const EX_WINDOW_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
             const EX_WINDOW_HEIGHT = h * 1.5 * 7 + h + "px";
-            
+
             function resetStyle() {
-                
+
                 let s = EX_WINDOW.style;
                 s.position = "absolute";
                 s.left = EX_WINDOW_LEFT;
@@ -1360,7 +1360,7 @@ let control = (() => {
                 s.width = EX_WINDOW_WIDTH;
                 s.height = EX_WINDOW_HEIGHT;
                 s.zIndex = 9999;
-                
+
                 s = IFRAME.style;
                 s.position = "absolute";
                 s.left = 0;
@@ -1374,7 +1374,7 @@ let control = (() => {
                 s.background = "white";
                 s.fontWeight = "normal";
                 s.padding = `${0} ${FONT_SIZE} ${0} ${FONT_SIZE}`;
-                
+
                 s = CLOSE_BUTTON.style;
                 let sz = parseInt(EX_WINDOW_WIDTH) / 10 + "px";
                 s.position = "absolute";
@@ -1389,7 +1389,7 @@ let control = (() => {
             function openWindow() {
                 if (EX_WINDOW.parentNode) return;
                 resetStyle();
-                document.body.appendChild(EX_WINDOW);  //插入body内，保证a标签可以工作。因为renjuCmddiv.parentNode屏蔽了浏览器触摸click
+                document.body.appendChild(EX_WINDOW); //插入body内，保证a标签可以工作。因为renjuCmddiv.parentNode屏蔽了浏览器触摸click
             }
 
             function closeWindow() {
@@ -1690,7 +1690,7 @@ let control = (() => {
 
         //处理触摸开始事件
         function bodyTouchStart(evt) {
-            
+
             let touches = evt.changedTouches; //记录坐标，给continueSetCutDiv使用
             continueSetCutDivX = touches[0].pageX;
             continueSetCutDivY = touches[0].pageY;
@@ -1747,8 +1747,8 @@ let control = (() => {
 
         //处理触摸结束事件
         function bodyTouchEnd(evt) {
-            
-            setTimeout(()=>{isCancelMenuClick = false}, 250);
+
+            setTimeout(() => { isCancelMenuClick = false }, 250);
             let cancelClick = false;
             let touches = evt.changedTouches;
             let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
@@ -1772,15 +1772,18 @@ let control = (() => {
                 let xMove = tX - sX;
                 let yMove = tY - sY;
                 let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
-                //if (!cBd.isOut(tX, tY, cBd.canvas))
-                    evt.preventDefault(); // 棋盘内屏蔽浏览器双击放大
+                
                 if (touchNum > 3) { // 超过3指重置触摸跟踪
                     bodyStartTouches.length = 0; //remove it; we're done
                     return;
                 }
                 if ((!cancelClick) && isBodyClick) {
                     //console.log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
-                    if ((bodyPreviousTouch.length > 0) && (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) && (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)) {
+                    evt.preventDefault(); // 屏蔽浏览器双击放大 && clickEvent
+                    if ((bodyPreviousTouch.length > 0) &&
+                        (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) &&
+                        (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)
+                    ) {
                         bodyPreviousTouch.length = 0;
                         /////////这里添加双击事件////////
                         //通过 isOut 模拟 canvas事件
@@ -2195,7 +2198,8 @@ let control = (() => {
             CHILD_WINDOW.setScrollHeight = () => {
                 IFRAME.style.height = getDocumentHeight() + "px";
             };
-
+            
+            CHILD_WINDOW.setScrollHeight();
         }
 
 
@@ -2630,14 +2634,14 @@ let control = (() => {
     //取消按钮
     const ICO_DOWNLOAD = document.createElement("img");
     imgWindow.appendChild(ICO_DOWNLOAD);
-    ICO_DOWNLOAD.src = "./pic/download.svg";
+    ICO_DOWNLOAD.src = "./pic/docusign-white.svg";
     ICO_DOWNLOAD.oncontextmenu = (event) => {
         event.preventDefault();
     };
 
     const ICO_CLOSE = document.createElement("img");
     imgWindow.appendChild(ICO_CLOSE);
-    ICO_CLOSE.src = "./pic/close-bold.svg";
+    ICO_CLOSE.src = "./pic/close-white.svg";
     ICO_CLOSE.oncontextmenu = (event) => {
         event.preventDefault();
     };
@@ -2712,7 +2716,8 @@ let control = (() => {
         s.height = s.width;
         s.top = imgWidth - parseInt(s.width) * 1.5 + "px";
         s.left = imgWidth / 2 - parseInt(s.width) * 1.5 + "px";
-        s.backgroundColor = "#777";
+        s.backgroundColor = "#787878";
+        s.opacity = "0.8";
         setButtonClick(ICO_DOWNLOAD, () => {
             cBd.saveAsImage("png");
         });
@@ -2723,7 +2728,8 @@ let control = (() => {
         s.height = ICO_DOWNLOAD.style.height;
         s.top = ICO_DOWNLOAD.style.top;
         s.left = imgWidth / 2 + parseInt(s.width) * 0.5 + "px";
-        s.backgroundColor = "#777";
+        s.backgroundColor = "#787878";
+        s.opacity = "0.8";
         setButtonClick(ICO_CLOSE, () => {
             shareClose();
             if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {

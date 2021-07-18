@@ -100,6 +100,14 @@
 
         var { jsPDF } = window.jspdf;
         document.body.onload = function() {
+            var reload = (()=>{
+                let count = 0;
+                return ()=>{
+                    if (count++ < 3) return false;
+                    setTimeout(() => { window.location.reload() }, 1000);
+                    return true;
+                }
+            })();
             try {
 
                 //测试脚本是否加载成功;
@@ -149,11 +157,10 @@
                 appData.renjuLoad(cBoard);
                 //设置事件处理程序
                 registerSW();
-                viewport.resize();
+                setTimeout(()=>{viewport.resize()},0);
             }
             catch (err) {
-                //alert(err);
-                setTimeout(() => { location.reload() }, 1000);
+                if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p><h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>`;
             }
 
         }

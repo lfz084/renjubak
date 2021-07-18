@@ -115,13 +115,23 @@ const listClick = (() => {
             if (!fast) {
                 scrollToElement(elem);
                 focusElement(elem);
+                setFocus(elem);
             }
         }
         else {
             hideList(elem);
             if (!fast) {
                 focusElement(elem);
-                setFocus();
+                setFocus(elem);
+                setTimeout(() => {
+                    const p = getAbsolutePos(elem);
+                    if (getScrollY() > p.y - 80) {
+                        scrollToElement(elem);
+                    }
+                    else if(getScrollY() + document.documentElement.clientHeight < p.y + 100) {
+                        scrollToAnimation(getScrollY()+100);
+                    }
+                }, 0);
             }
         }
         if (busy) setTimeout(() => {
@@ -177,7 +187,7 @@ const scrollToElement = (() => {
             //console.log(`scrollHeight = ${elem.scrollHeight}`)
             const p = getAbsolutePos(elem);
             //console.log(`x=${p.x}, p.y=${p.y}`)
-            scrollToAnimation(p.y - 15);
+            scrollToAnimation(p.y - 80);
             setFocus(elem);
         }
         if (busy) setTimeout(() => {
@@ -235,26 +245,21 @@ const setFocus = (() => {
     let busy = false;
     let focusH = null;
     return (elem) => {
-        if (busy) return;
+        //if (busy) return;
         busy = true;
+        console.log("setFocus......" + new Date().getTime())
         if (elem &&
             elem.nodeType == 1 &&
             elem.parentNode != document.body)
         {
-            if (focusH) focusH.removeAttribute("class");
+            if (focusH) focusH.style.border = "";
             focusH = elem;
-            focusH.setAttribute("class", "focus");
+            focusH.style.border = "2px solid green";
         }
         else {
-            const firstUL = getFirstChildNode(focusH, ["UL", "OL"]);
-            const firstLI = getFirstChildNode(firstUL, ["LI"]);
-            if (firstLI && firstLI.style.display == "none") {
-                focusH.removeAttribute("class");
-            }
+            if (focusH) focusH.style.border = "";
         }
-        setTimeout(() => {
-            busy = false;
-        }, 1000);
+        busy = false;
     }
 })();
 
@@ -533,6 +538,7 @@ const hashControl = (() => {
 
             if (HASH) {
                 const ID = HASH.slice(1);
+                /*
                 const ELEM = document.getElementById(ID);
                 const FIRST_LIST = getFirstChildNode(ELEM, ["UL", "OL"]);
 
@@ -544,6 +550,13 @@ const hashControl = (() => {
 
                 scrollToElement(ELEM);
                 focusElement(ELEM);
+                */
+                
+                const TARGET_ELEM = document.getElementById(ID);
+                //const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
+                showList(TARGET_ELEM);
+                scrollToElement(TARGET_ELEM);
+                focusElement(TARGET_ELEM);
 
             }
             else {
@@ -665,7 +678,7 @@ function createBody(iHTML, parentNode = document.body) {
                 elem.onclick = (event) => {
                     if (event) event.cancelBubble = true;
                     const TARGET_ELEM = document.getElementById(ID);
-                    const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
+                    //const FIRST_NODE = getFirstChildNode(TARGET_ELEM, ["UL", "OL"]);
                     //cancel parentNode click event
                     //elemClick(elem);
                     //console.log(`ID="${ID}" ${elem} a_click, ${TARGET_ELEM} showlist`)
