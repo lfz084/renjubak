@@ -12,7 +12,6 @@
     <link rel="shortcut icon" sizes="128x128" href="https://lfz084.github.io/icon.png">
     <link rel="apple-touch-icon" href="https://lfz084.github.io/icon.png">
     <link rel="icon" href="https://lfz084.github.io/icon.ico">
-    
     <link href="./style/main.css" rel="stylesheet" type="text/css">
     <link rel="preload" href="./script/jsPDF/jspdf.umd_01.js" as="script">
     <title> 摆棋小工具</title>
@@ -21,11 +20,10 @@
 <body>
     <script src="./renju.js"></script>
     <script src="./script/jsPDF/jspdf.umd_01.js"></script>
-
     <script language="javascript">
         "use strict";
         var { jsPDF } = window.jspdf;
-        document.body.onload = ()=>{
+        document.body.onload = () => {
             console.log(`body onload`)
             loadApp();
         };

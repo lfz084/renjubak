@@ -122,11 +122,7 @@ let control = (() => {
             this.div.style.textAlign = "center";
             this.div.style.lineHeight = height;
             this.div.style.color = "#cccccc";
-            /*
-            this.div.style.borderStyle = "solid";
-            this.div.style.borderWidth = "1px";
-            this.div.style.borderColor = "red";
-            */
+
             this.div.innerHTML = "00:00:00"
             let lbDiv = this.div;
             let sTime = this.startTime;
@@ -138,7 +134,6 @@ let control = (() => {
                     this.prePostTimer = t;
                 }
                 t -= sTime;
-                //console.log(t);
                 let h = parseInt(t / 3600000);
                 h = h < 10 ? "0" + h : h;
                 let m = parseInt((t % 3600000) / 60000);
@@ -2567,7 +2562,6 @@ let control = (() => {
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
         msg("", "input", l, t, w, h, "输入标记", undefined, function(msgStr) {
-
                 if (msgStr.length > 3) { // printMoves  || add Num
                     let add = msgStr.indexOf("add");
                     let str = msgStr.slice(add > -1 ? add + 3 : 0);
@@ -2598,7 +2592,6 @@ let control = (() => {
                 let str = msgStr.substr(0, 3);
                 cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
                 if (str != "" && str != " ") cBd.wLb(idx, str, color);
-
             },
             function(msgStr) { //用户取消，删除标记
                 //cBd.clePoint(idx);
@@ -2613,149 +2606,147 @@ let control = (() => {
     }
 
 
-    // 创建一个window
-    let sharing = false;
+    let share = (() => {
+        // 创建一个window
+        let sharing = false;
 
-    let shareWindow = document.createElement("div");
-    shareWindow.ontouch = function() { if (event) event.preventDefault(); };
+        let shareWindow = document.createElement("div");
+        shareWindow.ontouch = function() { if (event) event.preventDefault(); };
 
-    let imgWindow = document.createElement("div");
-    imgWindow.ontouch = function() { if (event) event.preventDefault(); };
-    shareWindow.appendChild(imgWindow);
+        let imgWindow = document.createElement("div");
+        imgWindow.ontouch = function() { if (event) event.preventDefault(); };
+        shareWindow.appendChild(imgWindow);
 
-    let shareLabel = document.createElement("div");
-    imgWindow.appendChild(shareLabel);
+        let shareLabel = document.createElement("div");
+        imgWindow.appendChild(shareLabel);
 
-    let shareImg = document.createElement("img");
-    imgWindow.appendChild(shareImg);
+        let shareImg = document.createElement("img");
+        imgWindow.appendChild(shareImg);
 
-    let bkShareImg = document.createElement("img");
-    //imgWindow.appendChild(bkShareImg);
-    let bkCanvas = document.createElement("canvas");
-    //imgWindow.appendChild(bkCanvas);
-    //取消按钮
-    const ICO_DOWNLOAD = document.createElement("img");
-    imgWindow.appendChild(ICO_DOWNLOAD);
-    ICO_DOWNLOAD.src = "./pic/docusign-white.svg";
-    ICO_DOWNLOAD.oncontextmenu = (event) => {
-        event.preventDefault();
-    };
+        let bkShareImg = document.createElement("img");
+        //imgWindow.appendChild(bkShareImg);
+        let bkCanvas = document.createElement("canvas");
+        //imgWindow.appendChild(bkCanvas);
+        //取消按钮
+        const ICO_DOWNLOAD = document.createElement("img");
+        imgWindow.appendChild(ICO_DOWNLOAD);
+        ICO_DOWNLOAD.src = "./pic/docusign-white.svg";
+        ICO_DOWNLOAD.oncontextmenu = (event) => {
+            event.preventDefault();
+        };
 
-    const ICO_CLOSE = document.createElement("img");
-    imgWindow.appendChild(ICO_CLOSE);
-    ICO_CLOSE.src = "./pic/close-white.svg";
-    ICO_CLOSE.oncontextmenu = (event) => {
-        event.preventDefault();
-    };
-
-
-
-    function share(cBoardColor) {
-
-        if (sharing) return;
-        sharing = true;
-        let s = shareWindow.style;
-        s.position = "fixed";
-        s.zIndex = 9998;
-        s.width = dw + "px";
-        s.height = dh * 2 + "px";
-        s.top = "0px";
-        s.left = "0px";
-
-        let imgWidth = dw < dh ? dw : dh;
-        imgWidth = parseInt(imgWidth * 3 / 4);
-        s = imgWindow.style;
-        s.position = "relative";
-        s.width = imgWidth + "px";
-        s.height = imgWidth + "px";
-        s.top = parseInt((dh - imgWidth) / 2) + "px";
-        s.left = parseInt((dw - imgWidth) / 2) + "px";
-        s.backgroundColor = "#666666";
-        s.border = `0px solid `;
-
-        let iWidth = parseInt(imgWidth * 3 / 5);
-        shareImg.src = cBd.canvas.toDataURL();
-        s = shareImg.style;
-        s.position = "absolute";
-        s.width = iWidth + "px";
-        s.height = iWidth + "px";
-        s.top = parseInt((imgWidth - iWidth) / 2) + "px";
-        s.left = parseInt((imgWidth - iWidth) / 2) + "px";
-        s.border = `0px solid black`;
-
-        let oldBackgroundColor = cBd.backgroundColor;
-        let oldLbBackgroundColor = cBd.LbBackgroundColor;
-        if (cBoardColor == "white") {
-
-            cBd.backgroundColor = "white";
-            cBd.LbBackgroundColor = "white";
-            cBd.refreshCheckerBoard();
-            shareImg.src = cBd.canvas.toDataURL();
-            shareImg.onload = function() {};
-        }
-        else {
-            shareImg.src = cBd.canvas.toDataURL();
-            //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
+        const ICO_CLOSE = document.createElement("img");
+        imgWindow.appendChild(ICO_CLOSE);
+        ICO_CLOSE.src = "./pic/close-white.svg";
+        ICO_CLOSE.oncontextmenu = (event) => {
+            event.preventDefault();
+        };
+        
+        function shareClose() {
+            shareWindow.setAttribute("class", "hide");
+            setTimeout(() => {
+                shareWindow.parentNode.removeChild(shareWindow);
+                sharing = false;
+            }, ANIMATION_TIMEOUT);
         }
 
-        let h = parseInt((imgWidth - iWidth) / 2 / 2);
-        let w = h * 4;
-        let l = (imgWidth - w) / 2;
-        let t = imgWidth - h - (imgWidth - iWidth) / 8;
+        return (cBoardColor) =>{
 
-        shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:#f0f0f0">长按图片分享</h1>`;
-        s = shareLabel.style;
-        s.position = "absolute";
-        s.width = w + "px";
-        s.height = h + "px";
-        s.top = (imgWidth - iWidth) / 8 + "px";
-        s.left = l + "px";
-        s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
+            if (sharing) return;
+            sharing = true;
+            let s = shareWindow.style;
+            s.position = "fixed";
+            s.zIndex = 9998;
+            s.width = dw + "px";
+            s.height = dh * 2 + "px";
+            s.top = "0px";
+            s.left = "0px";
 
-        s = ICO_DOWNLOAD.style;
-        s.position = "absolute";
-        s.width = (imgWidth - parseInt(shareImg.style.top) - parseInt(shareImg.style.height)) / 2 + "px";
-        s.height = s.width;
-        s.top = imgWidth - parseInt(s.width) * 1.5 + "px";
-        s.left = imgWidth / 2 - parseInt(s.width) * 1.5 + "px";
-        s.backgroundColor = "#787878";
-        s.opacity = "0.8";
-        setButtonClick(ICO_DOWNLOAD, () => {
-            cBd.saveAsImage("png");
-        });
+            let imgWidth = dw < dh ? dw : dh;
+            imgWidth = parseInt(imgWidth * 3 / 4);
+            s = imgWindow.style;
+            s.position = "relative";
+            s.width = imgWidth + "px";
+            s.height = imgWidth + "px";
+            s.top = parseInt((dh - imgWidth) / 2) + "px";
+            s.left = parseInt((dw - imgWidth) / 2) + "px";
+            s.backgroundColor = "#666666";
+            s.border = `0px solid `;
 
-        s = ICO_CLOSE.style;
-        s.position = "absolute";
-        s.width = ICO_DOWNLOAD.style.width;
-        s.height = ICO_DOWNLOAD.style.height;
-        s.top = ICO_DOWNLOAD.style.top;
-        s.left = imgWidth / 2 + parseInt(s.width) * 0.5 + "px";
-        s.backgroundColor = "#787878";
-        s.opacity = "0.8";
-        setButtonClick(ICO_CLOSE, () => {
-            shareClose();
-            if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
-                cBd.backgroundColor = oldBackgroundColor;
-                cBd.LbBackgroundColor = oldLbBackgroundColor;
+            let iWidth = parseInt(imgWidth * 3 / 5);
+            shareImg.src = cBd.canvas.toDataURL();
+            s = shareImg.style;
+            s.position = "absolute";
+            s.width = iWidth + "px";
+            s.height = iWidth + "px";
+            s.top = parseInt((imgWidth - iWidth) / 2) + "px";
+            s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+            s.border = `0px solid black`;
+
+            let oldBackgroundColor = cBd.backgroundColor;
+            let oldLbBackgroundColor = cBd.LbBackgroundColor;
+            if (cBoardColor == "white") {
+
+                cBd.backgroundColor = "white";
+                cBd.LbBackgroundColor = "white";
                 cBd.refreshCheckerBoard();
+                shareImg.src = cBd.canvas.toDataURL();
+                shareImg.onload = function() {};
             }
-        });
+            else {
+                shareImg.src = cBd.canvas.toDataURL();
+                //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
+            }
 
-        shareWindow.setAttribute("class", "show");
-        setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
+            let h = parseInt((imgWidth - iWidth) / 2 / 2);
+            let w = h * 4;
+            let l = (imgWidth - w) / 2;
+            let t = imgWidth - h - (imgWidth - iWidth) / 8;
+
+            shareLabel.innerHTML = `<h1 style = "font-size: ${h*0.45}px;text-align: center;color:#f0f0f0">长按图片分享</h1>`;
+            s = shareLabel.style;
+            s.position = "absolute";
+            s.width = w + "px";
+            s.height = h + "px";
+            s.top = (imgWidth - iWidth) / 8 + "px";
+            s.left = l + "px";
+            s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
+
+            s = ICO_DOWNLOAD.style;
+            s.position = "absolute";
+            s.width = (imgWidth - parseInt(shareImg.style.top) - parseInt(shareImg.style.height)) / 2 + "px";
+            s.height = s.width;
+            s.top = imgWidth - parseInt(s.width) * 1.5 + "px";
+            s.left = imgWidth / 2 - parseInt(s.width) * 1.5 + "px";
+            s.backgroundColor = "#787878";
+            s.opacity = "0.8";
+            setButtonClick(ICO_DOWNLOAD, () => {
+                cBd.saveAsImage("png");
+            });
+
+            s = ICO_CLOSE.style;
+            s.position = "absolute";
+            s.width = ICO_DOWNLOAD.style.width;
+            s.height = ICO_DOWNLOAD.style.height;
+            s.top = ICO_DOWNLOAD.style.top;
+            s.left = imgWidth / 2 + parseInt(s.width) * 0.5 + "px";
+            s.backgroundColor = "#787878";
+            s.opacity = "0.8";
+            setButtonClick(ICO_CLOSE, () => {
+                shareClose();
+                if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
+                    cBd.backgroundColor = oldBackgroundColor;
+                    cBd.LbBackgroundColor = oldLbBackgroundColor;
+                    cBd.refreshCheckerBoard();
+                }
+            });
+
+            shareWindow.setAttribute("class", "show");
+            setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
 
 
-    }
-
-    function shareClose() {
-
-        shareWindow.setAttribute("class", "hide");
-        setTimeout(() => {
-            shareWindow.parentNode.removeChild(shareWindow);
-            sharing = false;
-        }, ANIMATION_TIMEOUT);
-
-    }
+        };
+    })();
 
     return {
         "getPlayModel": () => { return playModel },
@@ -2786,6 +2777,5 @@ let control = (() => {
             setCheckerBoardEvent(cBoard.canvas, bodyDiv);
         },
         "getEXWindow": () => { return exWindow },
-        //"showContextMenu": ()=>{cMenu.showMenu();},
     };
 })();

@@ -1,4 +1,4 @@
-//var { jsPDF } = window.jspdf;
+
 var loadApp = () => {
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -141,7 +141,9 @@ var loadApp = () => {
 
             return new Promise((resolve, reject) => {
                 loadScript(scriptList[0])
-                    .then(() => { return loadScript(scriptList[1]) })
+                    .then(() => { 
+                        window.viewport = new view(dw);
+                        return loadScript(scriptList[1]) })
                     .then(() => { return loadScript(scriptList[2]) })
                     .then(() => { return loadScript(scriptList[3]) })
                     .then(() => { return loadScript(scriptList[4]) })
@@ -270,7 +272,6 @@ var loadApp = () => {
     registerserviceWorker()
         .then(() => { return loadScriptAll() })
         .then(()=>{
-            window.viewport = new view(dw);
                 openVConsole();
                 resetNoSleep();
                 createUI();
