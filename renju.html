@@ -12,160 +12,23 @@
     <link rel="shortcut icon" sizes="128x128" href="https://lfz084.github.io/icon.png">
     <link rel="apple-touch-icon" href="https://lfz084.github.io/icon.png">
     <link rel="icon" href="https://lfz084.github.io/icon.ico">
-    <!--
-    <link rel="preload" href="./style/font/PingFangLightsubfont.otf" as="font" type="font/otf" crossorigin="anonymous">
-    -->
-    <link rel="preload" href="./style/font/PFSCMedium1.woff" as="font" type="font/woff" crossorigin="anonymous">
-    <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
+    
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport.js" as="script">
-    <link rel="preload" href="./script/button.js" as="script">
-    <link rel="preload" href="./script/engine.js" as="script">
-    <link rel="preload" href="./script/appData.js" as="script">
-    <link rel="preload" href="./script/control_0715.js" as="script">
-    <link rel="preload" href="./script/msgbox.js" as="script">
-    <link rel="preload" href="./script/checkerBoard.js" as="script">
-    <link rel="preload" href="./script/worker.js" as="script">
     <link rel="preload" href="./script/jsPDF/jspdf.umd_01.js" as="script">
-    <link rel="preload" href="./script/jsPDF/PFSCMedium.js" as="script">
-    <link rel="preload" href="./script/jsPDF/PFSCHeavy.js" as="script">
     <title> 摆棋小工具</title>
 </head>
 
 <body>
-    <script src="./registerSW.js"></script>
-    <script src="./script/viewport.js"></script>
-    <script src="./script/button.js"></script>
-    <script src="./script/engine.js"></script>
-    <script src="./script/appData.js"></script>
-    <script src="./script/control_0715.js"></script>
-    <script src="./script/msgbox.js"></script>
-    <script src="./script/checkerBoard.js"></script>
-    <script src="./script/worker.js"></script>
-    <script src="./script/NoSleep.min.js"></script>
-    <script src="./script/vConsole/vconsole.min.js"></script>
+    <script src="./renju.js"></script>
     <script src="./script/jsPDF/jspdf.umd_01.js"></script>
-    <script src="./script/jsPDF/PFSCMedium.js"></script>
-    <script src="./script/jsPDF/PFSCHeavy.js"></script>
+
     <script language="javascript">
         "use strict";
-
-        let vConsole = null;
-        let d = document;
-        let dw = d.documentElement.clientWidth;
-        let dh = d.documentElement.clientHeight;
-        let viewport = new view(dw);
-        let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
-        cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
-        //cWidth = 950;
-        // dw = 2000;
-        //  dh = 2000;
-        let noSleep;
-        let isNoSleep = false; // bodyTouchStart 防止锁屏
-        let noSleepTime = 0;
-        if (typeof(NoSleep) == "function") {
-            noSleep = new NoSleep();
-            setInterval(function() {
-                if (isNoSleep) {
-                    noSleep.enable();
-                    //console.log("noSleep.enable()")
-                }
-                else {
-                    noSleep.disable();
-                    //console.log("noSleep.disable()")
-                }
-            }, 15 * 1000);
-        }
-        let openNoSleep = function() {
-            if (noSleep) {
-                isNoSleep = true;
-            }
-        };
-        let closeNoSleep = function() {
-            isNoSleep = false;
-        };
-
-
-        window.alert = function(name) {
-            const IFRAME = document.createElement('IFRAME');
-            IFRAME.style.display = 'none';
-            IFRAME.setAttribute('src', 'data:text/plain,');
-            document.documentElement.appendChild(IFRAME);
-            window.frames[0].window.alert(name);
-            IFRAME.parentNode.removeChild(IFRAME);
-        };
-
-
-        let cBoard = null; //棋盘对象
-
         var { jsPDF } = window.jspdf;
-        document.body.onload = function() {
-            registerSW();
-            var reload = (()=>{
-                let count = 0;
-                return ()=>{
-                    if (count++ < 3) return false;
-                    setTimeout(() => { window.location.reload() }, 1000);
-                    return true;
-                }
-            })();
-            try {
-
-                //测试脚本是否加载成功;
-                if (!button || !checkerBoard || !msg || !findVCF || !view || !NoSleep) {
-                    setTimeout(() => { location.reload(); }, 1000);
-                    return;
-                }
-                if (String(window.location).indexOf("http://localhost") == 0) {
-                    if (vConsole == null) vConsole = new VConsole();
-                }
-
-
-                
-
-                let bodyDiv = d.createElement("div");
-                d.body.appendChild(bodyDiv);
-                bodyDiv.style.position = "absolute";
-                bodyDiv.style.width = "100%";
-                bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
-                bodyDiv.style.left = "0px";
-                bodyDiv.style.top = "0px";
-                //bodyDiv.style.backgroundColor = "black";
-                
-                let upDiv = d.createElement("div");
-                bodyDiv.appendChild(upDiv);
-                upDiv.style.position = "absolute";
-                upDiv.style.width = "0px";
-                upDiv.style.height = "0px";
-                upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
-                upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
-                //upDiv.style.backgroundColor = "green";
-
-                let downDiv = d.createElement("div");
-                bodyDiv.appendChild(downDiv);
-                downDiv.style.position = "absolute";
-                downDiv.style.width = "0px";
-                downDiv.style.height = "0px";
-                downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
-                downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
-                //downDiv.style.backgroundColor = "blue";
-
-
-                cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
-                cBoard.printCheckerBoard();
-
-                control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
-                appData.renjuLoad(cBoard);
-                //设置事件处理程序
-                
-                setTimeout(()=>{viewport.resize()},0);
-            }
-            catch (err) {
-                if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p><h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>`;
-            }
-
-        }
-
+        document.body.onload = ()=>{
+            console.log(`body onload`)
+            loadApp();
+        };
     </script>
 </body>
 

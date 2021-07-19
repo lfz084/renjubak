@@ -4502,7 +4502,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
     arr[y][x] = color;
     let level = getLevelB(arr, color, 60000, fType == ONLY_SIMPLE_WIN ? 1 : undefined);
     let nColor = color == 1 ? 2 : 1;
-    mConsole(`[${indexToName(idx)}]level=${level.level}, [${level.level==3?moveIndexToName(level.moves):""}]`)
+    //mConsole(`[${indexToName(idx)}]level=${level.level}, [${level.level==3?moveIndexToName(level.moves):""}]`)
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
         let txt = "";

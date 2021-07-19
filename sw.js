@@ -1,4 +1,4 @@
-var VERSION = 'v0718';
+var VERSION = 'v0719';
 
 let load = (() => {
     let urls = [];
@@ -46,7 +46,7 @@ let load = (() => {
 
 // 缓存
 self.addEventListener('install', function(event) {
-    postMsg(`service worker install...`);
+    //postMsg(`service worker install...`);
     event.waitUntil(
         caches.open(VERSION).then(function(cache) {
             return cache.addAll([
@@ -59,7 +59,7 @@ self.addEventListener('install', function(event) {
 
 // 缓存更新
 self.addEventListener('activate', function(event) {
-    postMsg(`service worker activate...`);
+    //postMsg(`service worker activate...`);
     event.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
@@ -78,6 +78,7 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
     
     const _URL = event.request.url;
+    if (_URL.indexOf("/null")+5 == _URL.length) return;
     load.loading(_URL);
     //postMsg(`请求资源\n url=${_URL}`);
     event.respondWith(

@@ -1772,14 +1772,15 @@ let control = (() => {
                 let xMove = tX - sX;
                 let yMove = tY - sY;
                 let touchNum = bodyStartTouches.length; //判断是第几个手指触摸屏幕
-                
+
                 if (touchNum > 3) { // 超过3指重置触摸跟踪
                     bodyStartTouches.length = 0; //remove it; we're done
                     return;
                 }
                 if ((!cancelClick) && isBodyClick) {
                     //console.log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
-                    evt.preventDefault(); // 屏蔽浏览器双击放大 && clickEvent
+                    if (!cBd.isOut(tX, tY, cBd.canvas))
+                        evt.preventDefault(); // 屏蔽浏览器双击放大 && clickEvent
                     if ((bodyPreviousTouch.length > 0) &&
                         (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) &&
                         (Math.abs(bodyPreviousTouch[0].pageY - tY) < 30)
@@ -2198,7 +2199,7 @@ let control = (() => {
             CHILD_WINDOW.setScrollHeight = () => {
                 IFRAME.style.height = getDocumentHeight() + "px";
             };
-            
+
             CHILD_WINDOW.setScrollHeight();
         }
 
@@ -2226,7 +2227,7 @@ let control = (() => {
             return () => {
                 if (busy) return;
                 busy = true;
-                setTimeout(() => { busy = false; }, 300);
+                setTimeout(() => { busy = false; }, 1000);
                 setTimeout(() => {
                     callbak();
                 }, timeout); //延迟，避免某些浏览器触发窗口下一层elem的click事件。
@@ -2238,6 +2239,7 @@ let control = (() => {
             startY = event.changedTouches[0].pageY;
         }, true);
         elem.addEventListener("touchend", (event) => {
+            event.preventDefault();
             let tX = event.changedTouches[0].pageX;
             let tY = event.changedTouches[0].pageY;
             if ((Math.abs(startX - tX) < 30) && (Math.abs(startY - tY) < 30)) {
