@@ -46,7 +46,7 @@ var loadApp = () => {
             WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-11"></div></div>`;
             //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`;
             //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`;
-            document.body.appendChild(WIN_LOADING);
+            //document.body.appendChild(WIN_LOADING);
             return {
                 open: (msg) => {
                     if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);

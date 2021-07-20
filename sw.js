@@ -1,4 +1,4 @@
-var VERSION = 'v0720';
+var VERSION = 'v0721';
 
 let load = (() => {
     let urls = [];
