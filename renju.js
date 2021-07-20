@@ -1,4 +1,3 @@
-
 var loadApp = () => {
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -31,7 +30,6 @@ var loadApp = () => {
         window._loading = (() => {
             let timer = null;
             const WIN_LOADING = document.createElement("div"),
-                IMG_LOAD = document.createElement("img"),
                 DW = document.documentElement.clientWidth,
                 DH = document.documentElement.clientHeight;
 
@@ -42,19 +40,13 @@ var loadApp = () => {
             s.left = (DW - 150) / 2 + "px";
             s.top = (DH - 150) / 2 + "px";
             s.zIndex = 0x100000;
-            s.transform = `scale(${DW/800})`;
-            //document.body.appendChild(WIN_LOADING);
-
-            s = IMG_LOAD.style;
-            s.position = "absolute";
-            s.width = "150px";
-            s.height = "150px";
-            s.left = "0px";
-            s.top = "0px";
-            s.opacity = "0.68";
-            IMG_LOAD.src = "./pic/ball-triangle.svg";
-            WIN_LOADING.appendChild(IMG_LOAD);
-
+            //s.background = "#777";
+            //s.opacity = "0.68";
+            s.transform = `scale(${Math.min(DW, DH)/430})`;
+            WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-11"></div></div>`;
+            //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`;
+            //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`;
+            document.body.appendChild(WIN_LOADING);
             return {
                 open: (msg) => {
                     if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
@@ -66,13 +58,13 @@ var loadApp = () => {
                     }, 3 * 1000);
                 },
                 close: (msg) => {
-                    //if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
+                    //return;
                     if (timer) {
                         clearTimeout(timer);
                     }
                     timer = setTimeout(() => {
                         if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
-                    }, 100);
+                    }, 500);
                 }
             };
         })();
@@ -106,25 +98,40 @@ var loadApp = () => {
 
         function loadScript(src) {
 
+            const filename = src.split("/").pop()
             return new Promise((resolve, reject) => {
                 let oHead = document.getElementsByTagName('HEAD').item(0);
                 let oScript = document.createElement("script");
                 oHead.appendChild(oScript);
                 oScript.type = "text/javascript";
                 oScript.onload = () => {
-                    console.log(`loadScript = ${src}`);
+                    console.log(`loadScript = ${filename}`);
                     resolve();
                 }
                 oScript.onerror = () => {
-                    console.log(`loadScript_Error =[] ${src} `);
+                    console.log(`loadScript_Error =[] ${filename} `);
                     reject();
                 }
                 oScript.src = src;
             });
         }
 
+        function createScript(code) {
+
+            return new Promise((resolve, reject) => {
+                let oHead = document.getElementsByTagName('HEAD').item(0);
+                let oScript = document.createElement("script");
+                oHead.appendChild(oScript);
+                oScript.type = "text/javascript";
+                oScript.text = code;
+                resolve();
+            });
+        }
+
         function loadScriptAll() {
-            const scriptList = ["script/viewport.js",
+            const scriptList = [
+                "script/viewport.js",
+                "script/vConsole/vconsole.min.js",
                 "script/button.js",
                 "script/engine.js",
                 "script/appData.js",
@@ -133,7 +140,6 @@ var loadApp = () => {
                 "script/checkerBoard.js",
                 "script/worker.js",
                 "script/NoSleep.min.js",
-                "script/vConsole/vconsole.min.js",
                 "script/jsPDF/jspdf.umd_01.js",
                 "script/jsPDF/PFSCMedium.js",
                 "script/jsPDF/PFSCHeavy.js",
@@ -141,10 +147,13 @@ var loadApp = () => {
 
             return new Promise((resolve, reject) => {
                 loadScript(scriptList[0])
-                    .then(() => { 
+                    .then(() => {
                         window.viewport = new view(dw);
-                        return loadScript(scriptList[1]) })
-                    .then(() => { return loadScript(scriptList[2]) })
+                        return loadScript(scriptList[1])
+                    })
+                    .then(() => { 
+                        openVConsole();
+                        return loadScript(scriptList[2]) })
                     .then(() => { return loadScript(scriptList[3]) })
                     .then(() => { return loadScript(scriptList[4]) })
                     .then(() => { return loadScript(scriptList[5]) })
@@ -156,6 +165,7 @@ var loadApp = () => {
                     .then(() => { return loadScript(scriptList[11]) })
                     .then(() => { return loadScript(scriptList[12]) })
                     .then(() => {
+                        createScript(`var { jsPDF } = window.jspdf;`);
                         resolve();
                     })
                     .catch((err) => {
@@ -173,7 +183,7 @@ var loadApp = () => {
                     });
                     navigator.serviceWorker.addEventListener("message", function(event) {
                         const MSG = event.data;
-                        //console.log(MSG);
+                        console.log(MSG);
                         if (MSG.indexOf("load finish") + 1) {
                             window._loading.close(MSG);
                             //console.log(`close`);
@@ -232,6 +242,7 @@ var loadApp = () => {
                 bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
                 bodyDiv.style.left = "0px";
                 bodyDiv.style.top = "0px";
+                bodyDiv.style.opacity = "0";
                 //bodyDiv.style.backgroundColor = "black";
                 
                 let upDiv = d.createElement("div");
@@ -252,16 +263,13 @@ var loadApp = () => {
                 downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
                 //downDiv.style.backgroundColor = "blue";
 
-
                 cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
                 cBoard.printCheckerBoard();
 
                 control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
                 appData.renjuLoad(cBoard);
                 
-                setTimeout(()=>{
-                    viewport.resize()
-                },500);
+                return bodyDiv;
             }
             catch (err) {
                 if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p><h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>
@@ -272,9 +280,12 @@ var loadApp = () => {
     registerserviceWorker()
         .then(() => { return loadScriptAll() })
         .then(()=>{
-                openVConsole();
                 resetNoSleep();
-                createUI();
+                const UI = createUI();
+                viewport.resize();
+                setTimeout(() => {
+                    UI.style.opacity = "1";
+                }, 500);
         })
         .catch((err)=>{
             alert(err);

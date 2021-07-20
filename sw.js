@@ -1,4 +1,4 @@
-var VERSION = 'v0719';
+var VERSION = 'v0720';
 
 let load = (() => {
     let urls = [];
@@ -18,22 +18,23 @@ let load = (() => {
     }
 
     function interval() {
-        
+
         if (urls.length == 0) {
             clearInterval(timer);
             timer = null;
             postMsg(`load finish`);
         }
     }
-    
+
     return {
         loading: (msg) => {
             let url = msg;
-            if (url.indexOf("worker.js")+1) return;
+            let filename = url.split("/").pop();
+            if (["worker.js"].indexOf(filename) + 1) return;
             if (!timer) {
-                timer = setInterval(interval, 1000);
-                postMsg(`loading......`);
+                timer = setInterval(interval, 100);
             }
+            postMsg(`loading......${url}`);
             pushURL(url);
 
         },
@@ -76,10 +77,16 @@ self.addEventListener('activate', function(event) {
 
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
-    
+
     const _URL = event.request.url;
-    if (_URL.indexOf("/null")+5 == _URL.length) return;
-    load.loading(_URL);
+    const filename = _URL.split("/").pop();
+    const type = _URL.split(".").pop();
+    if (filename.indexOf(type) + 1) {
+        load.loading(_URL);
+    }
+    else {
+        postMsg(`fetch\n [${_URL}]`);
+    }
     //postMsg(`请求资源\n url=${_URL}`);
     event.respondWith(
         caches.match(event.request).then(response => {
@@ -115,10 +122,12 @@ self.addEventListener('fetch', function(event) {
                         resolve(response);
                     }
                     else {
+                        load.finish(_URL);
                         reject();
                     }
                 })
                 .catch(err => {
+                    load.finish(_URL);
                     reject();
                 })
         })
