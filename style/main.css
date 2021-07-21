@@ -834,9 +834,9 @@ hr {
 .loader-ball-11:before,
 .loader-ball-11:after {
     position: absolute;
-	border-radius: 50%;
 	width: 25px;
 	height: 25px;
+	border-radius: 50%;
 	display: inline-block;
 	box-sizing: border-box;
 }

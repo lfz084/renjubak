@@ -1,5 +1,6 @@
-"use strict";
+
 let appData = (() => {
+    "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
     const TYPE_WHITE = 4; // 无序号 添加的黑棋
     let initialCBoard = { resetNum: 0, moves: [], whiteMoves: [], blackMoves: [] }; //开始计算时棋盘状态

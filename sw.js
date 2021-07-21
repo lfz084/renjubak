@@ -1,5 +1,7 @@
-var VERSION = 'v0721';
+var VERSION = 'v07';
 
+// 加载进度功能。
+//通过监视 fetch 事件，与窗口通信实现
 let load = (() => {
     let urls = [];
     let timer = null;

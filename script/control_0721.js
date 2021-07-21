@@ -1,5 +1,12 @@
-"use strict";
 let control = (() => {
+    "use strict";
+    const TEST_CONTROL = true;
+
+    function log(param) {
+        if (TEST_CONTROL && DEBUG)
+            console.log(`[control.js]>>` + param);
+    }
+
     const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
     setTimeout(function() {
         //alert(MAX_THREAD_NUM);
@@ -91,7 +98,7 @@ let control = (() => {
     let cCleLb = null;
     let cHelp = null;
     let exWindow;
-    let isCancelMenuClick = false;
+    let isCancelMenuClick = false; //iOS 长按弹出棋盘菜单后会触发click事件。
     const setTop = (() => {
         let topMark = document.createElement("div");
         document.body.appendChild(topMark);
@@ -968,7 +975,7 @@ let control = (() => {
         let hm = cLABC.hideMenu;
         cLABC.hideMenu = function(ms, callbak) {
             hm.call(this, ms, callbak);
-            //console.log(this.input.value)
+            //log(this.input.value)
             changePlayModel();
         };
 
@@ -991,16 +998,16 @@ let control = (() => {
         let changePlayModel = function() {
             if (cLABC.input.value == 0) {
                 playModel = MODEL_ARROW_EDIT;
-                //console.log("MODEL_ARROW_EDIT")
+                //log("MODEL_ARROW_EDIT")
             }
             else if (cLABC.input.value == 1) {
                 playModel = MODEL_LINE_EDIT;
-                //console.log("MODEL_LINE_EDIT")
+                //log("MODEL_LINE_EDIT")
             }
             else {
                 playModel = MODEL_RENJU;
                 cBd.drawLineEnd();
-                //console.log("MODEL_RENJU")
+                //log("MODEL_RENJU")
             }
         };
 
@@ -1055,8 +1062,8 @@ let control = (() => {
             s.height = `${cLbColor.menu.lis[i].style.lineHeight}`;
             s.left = `${parseInt(cLbColor.menu.lis[i].style.fontSize)*7}px`;
             s.top = `${(parseInt(cLbColor.menu.fontSize) * 2.5 + 3)*(cLbColor.menu.lis["down"] ? i +1 : i)+i}px`;
-            //console.log(`s.height= ${s.height}, s.width=${s.width}, left=${s.left}, top=${s.top}`)
-            //console.log(cLbColor.menu.lis["down"])
+            //log(`s.height= ${s.height}, s.width=${s.width}, left=${s.left}, top=${s.top}`)
+            //log(cLbColor.menu.lis["down"])
             s.backgroundColor = lbColor[i].color;
         }
         cLbColor.show();
@@ -1773,8 +1780,8 @@ let control = (() => {
                     return;
                 }
                 if ((!cancelClick) && isBodyClick) {
-                    //console.log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
-                    if (!cBd.isOut(tX, tY, cBd.canvas))
+                    //log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
+                    if (true || !cBd.isOut(tX, tY, cBd.canvas))
                         evt.preventDefault(); // 屏蔽浏览器双击放大 && clickEvent
                     if ((bodyPreviousTouch.length > 0) &&
                         (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) &&
@@ -1785,11 +1792,11 @@ let control = (() => {
                         //通过 isOut 模拟 canvas事件
                         if (!cBd.isOut(tX, tY, cBd.canvas)) {
                             setTimeout(canvasDblClick(tX, tY), 10);
-                            //console.log("canvas 双击");
+                            //log("canvas 双击");
                         }
                         else {
                             //setTimeout(bodyDblClick(tX, tY), 10);
-                            //console.log("Body 双击");
+                            //log("Body 双击");
                         }
                     }
                     else {
@@ -1801,7 +1808,7 @@ let control = (() => {
                         //通过 isOut 模拟 canvas事件
                         if (!cBd.isOut(tX, tY, cBd.canvas)) {
                             canvasClick(tX, tY);
-                            //console.log("canvas 单击");
+                            //log("canvas 单击");
                         }
                         else {
                             //bodyClick(tX, tY);
@@ -1819,7 +1826,7 @@ let control = (() => {
 
         //处理触摸对出事件
         function bodyTouchCancel(evt) {
-            //console.log(`touchCancel`)
+            //log(`touchCancel`)
             evt.preventDefault();
             let touches = evt.changedTouches;
             // 取消 continueSetCutDiv 事件
@@ -1858,21 +1865,23 @@ let control = (() => {
         function bodyKeepTouch() {
 
             if (cancelContextmenu) return;
-            clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
-            timerBodyKeepTouch = null;
+            if (timerBodyKeepTouch) {
+                clearTimeout(timerBodyKeepTouch); //防止与canvas重复重复
+                timerBodyKeepTouch = null;
+            }
             cancelContextmenu = true;
             setTimeout(() => {
                 cancelContextmenu = false;
             }, 1000);
-            //console.log(event)
-            //console.log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
+            //log(event)
+            //log(`event.button=${event.button}, typeof(x)=${typeof(event)}, x=${event.pageX}`);
             let x = bodyStartTouches[0] ? bodyStartTouches[0].pageX : event.pageX;
             let y = bodyStartTouches[0] ? bodyStartTouches[0].pageY : event.pageY;
             //  针对 msg 弹窗 恢复下一次长按事件
             bodyStartTouches.length = 0;
             //通过 isOut 模拟 canvas事件
             if (!cBd.isOut(x, y, cBd.canvas)) {
-                isCancelMenuClick = true;
+                isCancelMenuClick = !(event && "contextmenu" == event.type);
                 setTimeout(canvasKeepTouch(x, y), 10);
                 //log("canvad 长按");
             }
@@ -1915,10 +1924,10 @@ let control = (() => {
         }
 
         function canvasClick(x, y) {
-            //console.log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
+            //log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
-            //console.log(`get=${playModel },ren=${MODEL_RENJU}`)
+            //log(`get=${playModel },ren=${MODEL_RENJU}`)
             if (playModel != MODEL_LOADIMG) {
                 renjuClick(x, y);
             }
@@ -1958,7 +1967,7 @@ let control = (() => {
             if (playModel != MODEL_LOADIMG ||
                 cLockImg.checked)
                 return;
-            //console.log("continueSetCutDivStart")
+            //log("continueSetCutDivStart")
             cBd.cleAllPointBorder();
             exitContinueSetCutDivMove = false;
             continueSetCutDivMove();
@@ -1983,7 +1992,7 @@ let control = (() => {
         }
 
         function continueSetCutDivEnd() {
-            //console.log("continueSetCutDivEnd")
+            //log("continueSetCutDivEnd")
             if (playModel != MODEL_LOADIMG || cLockImg.checked) return;
             exitContinueSetCutDivMove = true;
             cBd.resetP();
@@ -2064,7 +2073,7 @@ let control = (() => {
 
 
         function setScrollY(top) {
-            //console.log(`IFRAME_DIV setScrollY, ${top}`)
+            //log(`IFRAME_DIV setScrollY, ${top}`)
             IFRAME_DIV.scrollTop = top;
         }
 
@@ -2201,7 +2210,7 @@ let control = (() => {
 
         const tempF = window.open;
         window.open = (url, target) => {
-            console.log(`url=${url}, target=${target}`)
+            log(`url=${url}, target=${target}`)
             if (target == "helpWindow") {
                 openHelpWindow(url);
             }
@@ -2545,10 +2554,9 @@ let control = (() => {
             }, undefined, 2);
         }
         else {
-            //console.log(`top=${window.scrollY}, left=${window.scrollX}`);
+            //log(`top=${window.scrollY}, left=${window.scrollX}`);
             cMenu.idx = idx;
             cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
-
         }
 
     }
@@ -2641,7 +2649,7 @@ let control = (() => {
         ICO_CLOSE.oncontextmenu = (event) => {
             event.preventDefault();
         };
-        
+
         function shareClose() {
             shareWindow.setAttribute("class", "hide");
             setTimeout(() => {
@@ -2650,7 +2658,7 @@ let control = (() => {
             }, ANIMATION_TIMEOUT);
         }
 
-        return (cBoardColor) =>{
+        return (cBoardColor) => {
 
             if (sharing) return;
             sharing = true;

@@ -1,5 +1,12 @@
-"use strict";
 let engine = (() => {
+    "use strict";
+    const TEST_ENGINE = true;
+    
+    function log(param) {
+        if (TEST_ENGINE && DEBUG)
+            console.log(`[engine.js]>>` + param);
+    }
+    
     const COLOR_TXT = ["白棋", "黑棋", "白棋"];
     let maxThread = 4;
     let work = [];
@@ -135,7 +142,7 @@ let engine = (() => {
             "showLabel": (p) => {
                 showLabel(p.text, p.timeout);
             },
-            "vConsole": (p) => { console.log(p) },
+            "vConsole": (p) => { log(p) },
             "cleLb": (p) => { cleLb(p.idx); },
             "wLb": (p) => { wLb(p.idx, p.text, p.color); },
             "printMoves": (p) => { cBd.printMoves(p.winMoves, p.color); },
@@ -181,7 +188,7 @@ let engine = (() => {
             save = param.saveData;
         },
         postMsg: (cmd, param) => {
-            //console.log(cmd);
+            //log(cmd);
             let cmdList = {
                 "cancelFind": () => {
                     for (let i = cBd.SLTX * cBd.SLTY - 1; i >= 0; i--) {

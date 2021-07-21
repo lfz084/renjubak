@@ -1,5 +1,12 @@
-var loadApp = () => {
+var loadApp = () => { // 按顺序加载应用
+        "use strict";
+        const TEST_LOADAPP = true;
 
+        function log(param) {
+            if (TEST_LOADAPP && DEBUG)
+                console.log(`[renju.js]>>` + param);
+        }
+        
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
         "https://lfz084.github.io/",
         "http://localhost:7700/"];
@@ -55,7 +62,7 @@ var loadApp = () => {
                     }
                     timer = setTimeout(() => {
                         if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
-                    }, 3 * 1000);
+                    }, 15 * 1000);
                 },
                 close: (msg) => {
                     //return;
@@ -78,11 +85,11 @@ var loadApp = () => {
                 setInterval(function() {
                     if (isNoSleep) {
                         noSleep.enable();
-                        //console.log("noSleep.enable()")
+                        //log("noSleep.enable()")
                     }
                     else {
                         noSleep.disable();
-                        //console.log("noSleep.disable()")
+                        //log("noSleep.disable()")
                     }
                 }, 15 * 1000);
             }
@@ -105,11 +112,11 @@ var loadApp = () => {
                 oHead.appendChild(oScript);
                 oScript.type = "text/javascript";
                 oScript.onload = () => {
-                    console.log(`loadScript = ${filename}`);
+                    log(`loadScript = ${filename}`);
                     resolve();
                 }
                 oScript.onerror = () => {
-                    console.log(`loadScript_Error =[] ${filename} `);
+                    log(`loadScript_Error =[] ${filename} `);
                     reject();
                 }
                 oScript.src = src;
@@ -132,12 +139,12 @@ var loadApp = () => {
             const scriptList = [
                 "script/viewport.js",
                 "script/vConsole/vconsole.min.js",
-                "script/button.js",
+                "script/button-0721.js",
                 "script/engine.js",
                 "script/appData.js",
-                "script/control_0715.js",
-                "script/msgbox.js",
-                "script/checkerBoard.js",
+                "script/control_0721.js",
+                "script/msgbox-0721.js",
+                "script/checkerBoard-0721.js",
                 "script/worker.js",
                 "script/NoSleep.min.js",
                 "script/jsPDF/jspdf.umd_01.js",
@@ -151,9 +158,10 @@ var loadApp = () => {
                         window.viewport = new view(dw);
                         return loadScript(scriptList[1])
                     })
-                    .then(() => { 
+                    .then(() => {
                         openVConsole();
-                        return loadScript(scriptList[2]) })
+                        return loadScript(scriptList[2])
+                    })
                     .then(() => { return loadScript(scriptList[3]) })
                     .then(() => { return loadScript(scriptList[4]) })
                     .then(() => { return loadScript(scriptList[5]) })
@@ -179,18 +187,18 @@ var loadApp = () => {
             return new Promise((resolve, reject) => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.addEventListener('statechange', function(e) {
-                        console.log(' >>> ' + e.target.state);
+                        log(' >>> ' + e.target.state);
                     });
                     navigator.serviceWorker.addEventListener("message", function(event) {
                         const MSG = event.data;
-                        console.log(MSG);
+                        log(MSG);
                         if (MSG.indexOf("load finish") + 1) {
                             window._loading.close(MSG);
-                            //console.log(`close`);
+                            //log(`close`);
                         }
                         else if (MSG.indexOf("loading...") + 1) {
                             window._loading.open(MSG);
-                            //console.log(`open`);
+                            //log(`open`);
                         }
                     });
                     // 开始注册service workers
@@ -206,7 +214,7 @@ var loadApp = () => {
                             serviceWorker = registration.active;
                         }
                         if (serviceWorker) {
-                            console.log(`serviceWorker.state=${serviceWorker.state}`)
+                            log(`serviceWorker.state=${serviceWorker.state}`)
                         }
                         resolve();
                     }).catch(function(error) {
@@ -286,6 +294,7 @@ var loadApp = () => {
                 setTimeout(() => {
                     UI.style.opacity = "1";
                 }, 500);
+                window.DEBUG = false;
         })
         .catch((err)=>{
             alert(err);
