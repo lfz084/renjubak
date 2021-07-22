@@ -4,7 +4,7 @@ let engine = (() => {
     
     function log(param) {
         if (TEST_ENGINE && DEBUG)
-            console.log(`[engine.js]>>` + param);
+            console.log(`[engine-0721.js]\n>> ` + param);
     }
     
     const COLOR_TXT = ["白棋", "黑棋", "白棋"];

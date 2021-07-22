@@ -7,7 +7,7 @@ var button = (() => {
 
     function log(param) {
         if (TEST_BUTTON && DEBUG)
-            console.log(`[button-0721.js]>>` + param);
+            console.log(`[button-0721.js]\n>> ` + param);
     }
 
     // 定制按钮，button，file，Radio，select。

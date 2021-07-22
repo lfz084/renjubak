@@ -1,4 +1,5 @@
 var view = (function() {
+    "use strict";
     function view(width) {
         let dw = document.documentElement.clientWidth;
         let dh = document.documentElement.clientHeight;

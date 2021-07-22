@@ -4,7 +4,7 @@
 
     function log(param) {
         if (TEST_HELP && window.top.DEBUG)
-            window.top.console.log(`[help.js]>>` + param);
+            window.top.console.log(`[help.js]\n>> ` + param);
     }
     
     const topImage = (() => {

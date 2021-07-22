@@ -1,4 +1,4 @@
-var VERSION = 'v07';
+var VERSION = 'v0721';
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -87,24 +87,24 @@ self.addEventListener('fetch', function(event) {
         load.loading(_URL);
     }
     else {
-        postMsg(`fetch\n [${_URL}]`);
+        postMsg(`fetch [${_URL}]`);
     }
-    //postMsg(`请求资源\n url=${_URL}`);
+    //postMsg(`请求资源 url=${_URL}`);
     event.respondWith(
         caches.match(event.request).then(response => {
             if (response.ok) {
                 load.finish(_URL);
-                //postMsg(`读取缓存成功\n url=${_URL}`);
+                //postMsg(`读取缓存成功 url=${_URL}`);
                 getFetch();
                 return response;
             }
             else {
-                //postMsg(`从网络下载资源\n url=${_URL}`);
+                //postMsg(`从网络下载资源 url=${_URL}`);
                 return getFetch();
             }
         })
         .catch(err => {
-            //postMsg(`下载失败，重试一次\n url=${_URL}`);
+            //postMsg(`下载失败，重试一次 url=${_URL}`);
             return getFetch();
         })
     )
@@ -116,7 +116,7 @@ self.addEventListener('fetch', function(event) {
                 .then(response => {
                     if (response.ok) {
                         load.finish(_URL);
-                        //postMsg(`下载资源完成\n url=${_URL}`);
+                        //postMsg(`下载资源完成 url=${_URL}`);
                         let cloneRes = response.clone();
                         caches.open(VERSION).then(cache => {
                             cache.put(event.request, cloneRes);

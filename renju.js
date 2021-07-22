@@ -4,9 +4,9 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju.js]>>` + param);
+                console.log(`[renju.js]\n>> ` + param);
         }
-        
+
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
         "https://lfz084.github.io/",
         "http://localhost:7700/"];
@@ -46,7 +46,7 @@ var loadApp = () => { // 按顺序加载应用
             s.height = "150px";
             s.left = (DW - 150) / 2 + "px";
             s.top = (DH - 150) / 2 + "px";
-            s.zIndex = 0x100000;
+            s.zIndex = 0xffffff;
             //s.background = "#777";
             //s.opacity = "0.68";
             s.transform = `scale(${Math.min(DW, DH)/430})`;
@@ -56,7 +56,8 @@ var loadApp = () => { // 按顺序加载应用
             //document.body.appendChild(WIN_LOADING);
             return {
                 open: (msg) => {
-                    if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
+                    if (!WIN_LOADING.parentNode &&
+                        window.viewport) document.body.appendChild(WIN_LOADING);
                     if (timer) {
                         clearTimeout(timer);
                     }
@@ -103,23 +104,72 @@ var loadApp = () => { // 按顺序加载应用
             };
         }
 
-        function loadScript(src) {
+        function loadCss(url) {
 
-            const filename = src.split("/").pop()
+            const filename = url.split("/").pop()
+            return new Promise((resolve, reject) => {
+                let head = document.getElementsByTagName('head')[0];
+                let _link = document.createElement('link');
+                _link.rel = "preload";
+                _link.as = "style";
+                _link.href = url;
+                head.appendChild(_link);
+                let link = document.createElement('link');
+                link.type = 'text/css';
+                link.rel = 'stylesheet';
+                link.onload = () => {
+                    log(`loadCss = ${filename}`);
+                    setTimeout(() => {
+                        resolve();
+                    }, 100);
+                }
+                link.onerror = () => {
+                    log(`loadCss_Error =[] ${filename} `);
+                    reject();
+                }
+                link.href = url;
+                head.appendChild(link);
+            });
+        }
+
+        function loadFont(url) {
+
+            const filename = url.split("/").pop()
+            return new Promise((resolve, reject) => {
+                function reqListener() {
+                    log(`loadFont = ${filename}`);
+                    setTimeout(() => {
+                        resolve();
+                    }, 100);
+                }
+                let oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", reqListener);
+                oReq.open("GET", url);
+                oReq.send();
+            });
+        }
+
+        function loadScript(url) {
+
+            const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 let oHead = document.getElementsByTagName('HEAD').item(0);
                 let oScript = document.createElement("script");
                 oHead.appendChild(oScript);
                 oScript.type = "text/javascript";
+                oScript.rel = "preload";
+                oScript.as = "script";
                 oScript.onload = () => {
                     log(`loadScript = ${filename}`);
-                    resolve();
+                    setTimeout(() => {
+                        resolve();
+                    }, 100);
                 }
-                oScript.onerror = () => {
-                    log(`loadScript_Error =[] ${filename} `);
-                    reject();
+                oScript.onerror = (err) => {
+                    log(`loadScript_Error = ${filename} `);
+                    reject(err);
                 }
-                oScript.src = src;
+                oScript.src = url;
             });
         }
 
@@ -135,16 +185,52 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
+        function loadCssAll() {
+            const cssList = [
+                "style/main.css",
+                ];
+            return new Promise((resolve, reject) => {
+                loadCss(cssList[0])
+                    .then(() => {
+                        resolve();
+                    })
+                    .catch((err) => {
+                        reject(err);
+                    })
+            });
+        }
+
+        function loadFontAll() {
+            const cssList = [
+                        "style/font/PFSCMedium1.woff",
+                        "style/font/PFSCMedium1.ttf",
+                        "style/font/PFSCHeavy1.ttf",
+                        "style/font/PFSCHeavy1.woff",
+                        ];
+            return new Promise((resolve, reject) => {
+                loadFont(cssList[0])
+                    .then(() => { return loadFont(cssList[1]) })
+                    .then(() => { return loadFont(cssList[2]) })
+                    .then(() => { return loadFont(cssList[3]) })
+                    .then(() => {
+                        resolve();
+                    })
+                    .catch((err) => {
+                        reject(err);
+                    })
+            });
+        }
+
         function loadScriptAll() {
             const scriptList = [
-                "script/viewport.js",
+                "script/viewport-0721.js",
                 "script/vConsole/vconsole.min.js",
                 "script/button-0721.js",
-                "script/engine.js",
+                "script/checkerBoard-0721.js",
+                "script/engine-0721.js",
                 "script/appData.js",
                 "script/control_0721.js",
                 "script/msgbox-0721.js",
-                "script/checkerBoard-0721.js",
                 "script/worker.js",
                 "script/NoSleep.min.js",
                 "script/jsPDF/jspdf.umd_01.js",
@@ -159,6 +245,7 @@ var loadApp = () => { // 按顺序加载应用
                         return loadScript(scriptList[1])
                     })
                     .then(() => {
+                        window._loading.open("loading...");
                         openVConsole();
                         return loadScript(scriptList[2])
                     })
@@ -173,7 +260,7 @@ var loadApp = () => { // 按顺序加载应用
                     .then(() => { return loadScript(scriptList[11]) })
                     .then(() => { return loadScript(scriptList[12]) })
                     .then(() => {
-                        createScript(`var { jsPDF } = window.jspdf;`);
+                        window._loading.close("load finish");
                         resolve();
                     })
                     .catch((err) => {
@@ -192,13 +279,13 @@ var loadApp = () => { // 按顺序加载应用
                     navigator.serviceWorker.addEventListener("message", function(event) {
                         const MSG = event.data;
                         log(MSG);
-                        if (MSG.indexOf("load finish") + 1) {
-                            window._loading.close(MSG);
-                            //log(`close`);
-                        }
-                        else if (MSG.indexOf("loading...") + 1) {
+                        if (MSG.indexOf("loading...") + 1) {
                             window._loading.open(MSG);
                             //log(`open`);
+                        }
+                        else if (MSG.indexOf("load finish") + 1) {
+                            window._loading.close(MSG);
+                            //log(`close`);
                         }
                     });
                     // 开始注册service workers
@@ -286,6 +373,8 @@ var loadApp = () => { // 按顺序加载应用
         }
 
     registerserviceWorker()
+        .then(() => { return loadFontAll() })
+        .then(() => { return loadCssAll() })
         .then(() => { return loadScriptAll() })
         .then(()=>{
                 resetNoSleep();
@@ -295,6 +384,7 @@ var loadApp = () => { // 按顺序加载应用
                     UI.style.opacity = "1";
                 }, 500);
                 window.DEBUG = false;
+                window.jsPDF = window.jspdf.jsPDF;
         })
         .catch((err)=>{
             alert(err);

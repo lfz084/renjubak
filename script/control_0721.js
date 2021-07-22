@@ -4,7 +4,7 @@ let control = (() => {
 
     function log(param) {
         if (TEST_CONTROL && DEBUG)
-            console.log(`[control.js]>>` + param);
+            console.log(`[control.js]\n>> ` + param);
     }
 
     const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;

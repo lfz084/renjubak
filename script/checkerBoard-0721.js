@@ -12,7 +12,7 @@ var checkerBoard = (function() {
 
     function log(param) {
         if (TEST_CHECKER_BOARD && DEBUG)
-            console.log(`[checkerBoard.js]>>` + param);
+            console.log(`[checkerBoard.js]\n>> ` + param);
     }
 
     var tempp = new point(0, 0, undefined);
