@@ -56,8 +56,7 @@ var loadApp = () => { // 按顺序加载应用
             //document.body.appendChild(WIN_LOADING);
             return {
                 open: (msg) => {
-                    if (!WIN_LOADING.parentNode &&
-                        window.viewport) document.body.appendChild(WIN_LOADING);
+                    if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
                     if (timer) {
                         clearTimeout(timer);
                     }
@@ -187,10 +186,12 @@ var loadApp = () => { // 按顺序加载应用
 
         function loadCssAll() {
             const cssList = [
+                "style/loaders.css",
                 "style/main.css",
                 ];
             return new Promise((resolve, reject) => {
                 loadCss(cssList[0])
+                    .then(() => { return loadCss(cssList[1]) })
                     .then(() => {
                         resolve();
                     })
@@ -245,7 +246,6 @@ var loadApp = () => { // 按顺序加载应用
                         return loadScript(scriptList[1])
                     })
                     .then(() => {
-                        window._loading.open("loading...");
                         openVConsole();
                         return loadScript(scriptList[2])
                     })
@@ -260,7 +260,6 @@ var loadApp = () => { // 按顺序加载应用
                     .then(() => { return loadScript(scriptList[11]) })
                     .then(() => { return loadScript(scriptList[12]) })
                     .then(() => {
-                        window._loading.close("load finish");
                         resolve();
                     })
                     .catch((err) => {
@@ -373,18 +372,21 @@ var loadApp = () => { // 按顺序加载应用
         }
 
     registerserviceWorker()
+        .then(() => { 
+            window._loading.open("loading...");
+            return loadCssAll() })
         .then(() => { return loadFontAll() })
-        .then(() => { return loadCssAll() })
         .then(() => { return loadScriptAll() })
         .then(()=>{
-                resetNoSleep();
-                const UI = createUI();
-                viewport.resize();
-                setTimeout(() => {
-                    UI.style.opacity = "1";
-                }, 500);
-                window.DEBUG = false;
-                window.jsPDF = window.jspdf.jsPDF;
+            window._loading.close("load finish");
+            resetNoSleep();
+            const UI = createUI();
+            viewport.resize();
+            setTimeout(() => {
+                UI.style.opacity = "1";
+            }, 500);
+            window.DEBUG = false;
+            window.jsPDF = window.jspdf.jsPDF;
         })
         .catch((err)=>{
             alert(err);
