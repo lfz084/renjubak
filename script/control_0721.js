@@ -1124,12 +1124,18 @@ let control = (() => {
             }
             else if (msgStr.indexOf("debug") > -1) {
 
-                if (vConsole == null) vConsole = new VConsole();
+                if (vConsole == null) {
+                    vConsole = new VConsole();
+                    appData.setKey("debug", true);
+                }
                 return;
             }
             else if (msgStr.indexOf("close") > -1) {
 
-                if (vConsole) vConsole.destroy();
+                if (vConsole) {
+                    vConsole.destroy();
+                    appData.setKey("debug", false);
+                }
                 vConsole = null;
                 return;
             }

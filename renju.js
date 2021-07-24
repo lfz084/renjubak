@@ -14,18 +14,18 @@ var loadApp = () => { // 按顺序加载应用
             location.href.indexOf(URL_HOMES[1]) + 1 ? URL_HOMES[1] : URL_HOMES[2];
 
         window.d = document;
-        window.dw = d.documentElement.clientWidth;
+        window.dw = d.documentElement.clientWidth; 
         window.dh = d.documentElement.clientHeight;
-        window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
+        window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95;  //棋盘宽度
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
 
-        window.viewport = null;
-        window.vConsole = null;
-        window.openNoSleep = () => {};
-        window.closeNoSleep = () => {};
+        window.viewport = null;  // 控制缩放
+        window.vConsole = null;  // 调试工具
+        window.openNoSleep = () => {}; //打开防休眠
+        window.closeNoSleep = () => {}; //关闭防休眠
         let cBoard = null; //棋盘对象
 
-        window.alert = function(name) {
+        window.alert = function(name) { //更改默认标题
             const IFRAME = document.createElement('IFRAME');
             IFRAME.style.display = 'none';
             IFRAME.setAttribute('src', 'data:text/plain,');
@@ -34,12 +34,17 @@ var loadApp = () => { // 按顺序加载应用
             IFRAME.parentNode.removeChild(IFRAME);
         };
 
-        window._loading = (() => {
+        window._loading = (function() { //控制加载动画
             let timer = null;
             const WIN_LOADING = document.createElement("div"),
+                ANIMA = document.createElement("div"),
+                LABEL = document.createElement("div"),
                 DW = document.documentElement.clientWidth,
                 DH = document.documentElement.clientHeight;
-
+            const triangle = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`,
+                ball = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`,
+                black_white = `<div class="center-body"><div class="loader-ball-11"></div></div>`;
+            let lock = false;
             let s = WIN_LOADING.style;
             s.position = "fixed";
             s.width = "150px";
@@ -50,12 +55,32 @@ var loadApp = () => { // 按顺序加载应用
             //s.background = "#777";
             //s.opacity = "0.68";
             s.transform = `scale(${Math.min(DW, DH)/430})`;
-            WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-11"></div></div>`;
-            //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`;
-            //WIN_LOADING.innerHTML = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`;
-            //document.body.appendChild(WIN_LOADING);
+            WIN_LOADING.setAttribute("class", "finish");
+
+            s = ANIMA.style;
+            s.position = "absolute";
+            s.width = "150px";
+            s.height = "150px";
+            s.left = "0px";
+            s.top = "0px";
+            ANIMA.innerHTML = black_white;
+            WIN_LOADING.appendChild(ANIMA);
+
+            s = LABEL.style;
+            s.position = "absolute";
+            s.width = "150px";
+            s.height = "25px";
+            s.left = "0px";
+            s.top = "150px";
+            s.fontSize = "15px";
+            s.textAlign = "center";
+            s.lineHeight = "25px";
+            WIN_LOADING.appendChild(LABEL);
+
             return {
-                open: (msg) => {
+                open: (msg) => { //打开动画
+                    if (lock) return;
+                    log("_loading.open")
                     if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
                     if (timer) {
                         clearTimeout(timer);
@@ -64,19 +89,25 @@ var loadApp = () => { // 按顺序加载应用
                         if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
                     }, 15 * 1000);
                 },
-                close: (msg) => {
-                    //return;
+                close: (msg) => { //关闭动画
+                    if (lock) return;
+                    log("_loading.close")
                     if (timer) {
                         clearTimeout(timer);
                     }
                     timer = setTimeout(() => {
                         if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
+                        LABEL.innerHTML = "";
                     }, 500);
-                }
+                },
+                lock: (value = false) => { lock = value }, //锁定后，不开打开或关闭
+                text: (text = "") => { //动画标题，可以用来显示进度百分百
+                    LABEL.innerHTML = text;
+                },
             };
         })();
 
-        function resetNoSleep() {
+        function resetNoSleep() {  //设置防休眠
             let noSleep;
             let isNoSleep = false; // bodyTouchStart 防止锁屏
             let noSleepTime = 0;
@@ -103,8 +134,7 @@ var loadApp = () => { // 按顺序加载应用
             };
         }
 
-        function loadCss(url) {
-
+        function loadCss(url) { //加载css
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 let head = document.getElementsByTagName('head')[0];
@@ -120,26 +150,25 @@ var loadApp = () => { // 按顺序加载应用
                     log(`loadCss = ${filename}`);
                     setTimeout(() => {
                         resolve();
-                    }, 100);
+                    }, 0);
                 }
-                link.onerror = () => {
+                link.onerror = (err) => {
                     log(`loadCss_Error =[] ${filename} `);
-                    reject();
+                    reject(err);
                 }
                 link.href = url;
                 head.appendChild(link);
             });
         }
 
-        function loadFont(url) {
-
+        function loadFont(url) { //加载字体文件
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
                     log(`loadFont = ${filename}`);
                     setTimeout(() => {
                         resolve();
-                    }, 100);
+                    }, 0);
                 }
                 let oReq = new XMLHttpRequest();
                 oReq.addEventListener("load", reqListener);
@@ -148,8 +177,7 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function loadScript(url) {
-
+        function loadScript(url) { //加载脚本
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 let oHead = document.getElementsByTagName('HEAD').item(0);
@@ -162,7 +190,7 @@ var loadApp = () => { // 按顺序加载应用
                     log(`loadScript = ${filename}`);
                     setTimeout(() => {
                         resolve();
-                    }, 100);
+                    }, 0);
                 }
                 oScript.onerror = (err) => {
                     log(`loadScript_Error = ${filename} `);
@@ -172,8 +200,7 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function createScript(code) {
-
+        function createScript(code) { // 用code 创建脚步
             return new Promise((resolve, reject) => {
                 let oHead = document.getElementsByTagName('HEAD').item(0);
                 let oScript = document.createElement("script");
@@ -184,88 +211,71 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function loadCssAll() {
-            const cssList = [
-                "style/loaders.css",
-                "style/main.css",
-                ];
+        Promise.queue = function(thenables) { // 顺序执行 thenable
             return new Promise((resolve, reject) => {
-                loadCss(cssList[0])
-                    .then(() => { return loadCss(cssList[1]) })
-                    .then(() => {
-                        resolve();
-                    })
-                    .catch((err) => {
-                        reject(err);
-                    })
-            });
+                function nextPromise() {
+                    if (thenables.length) {
+                        let t = thenables[0];
+                        thenables.splice(0, 1);
+                        Promise.resolve(t)
+                            .then(nextPromise)
+                            .catch((err) => {
+                                reject(err);
+                            })
+                    }
+                    else {
+                        return resolve();
+                    }
+                }
+                nextPromise();
+            })
         }
 
-        function loadFontAll() {
-            const cssList = [
-                        "style/font/PFSCMedium1.woff",
-                        "style/font/PFSCMedium1.ttf",
-                        "style/font/PFSCHeavy1.ttf",
-                        "style/font/PFSCHeavy1.woff",
-                        ];
-            return new Promise((resolve, reject) => {
-                loadFont(cssList[0])
-                    .then(() => { return loadFont(cssList[1]) })
-                    .then(() => { return loadFont(cssList[2]) })
-                    .then(() => { return loadFont(cssList[3]) })
-                    .then(() => {
-                        resolve();
-                    })
-                    .catch((err) => {
-                        reject(err);
-                    })
-            });
+        function createThenable(loadFun, fileName, callbak) {  // 返回thenable
+            return {
+                then: function(onFulfill, onReject) {
+                    onFulfill(
+                        loadFun(fileName)
+                        .then(() => {
+                            if (typeof callbak == "function") callbak();
+                        })
+                    )
+                }
+            };
         }
 
-        function loadScriptAll() {
-            const scriptList = [
-                "script/viewport-0721.js",
-                "script/vConsole/vconsole.min.js",
-                "script/button-0721.js",
-                "script/checkerBoard-0721.js",
-                "script/engine-0721.js",
-                "script/appData.js",
-                "script/control_0721.js",
-                "script/msgbox-0721.js",
-                "script/worker.js",
-                "script/NoSleep.min.js",
-                "script/jsPDF/jspdf.umd_01.js",
-                "script/jsPDF/PFSCMedium.js",
-                "script/jsPDF/PFSCHeavy.js",
-                ];
+        function createThenables(loadFun, config) {
+            let ts = [];
+            for (let i = 0; i < config.length; i++) {
+                ts.push(createThenable(loadFun, config[i][0], config[i][1]));
+            }
+            return ts;
+        }
 
-            return new Promise((resolve, reject) => {
-                loadScript(scriptList[0])
-                    .then(() => {
-                        window.viewport = new view(dw);
-                        return loadScript(scriptList[1])
-                    })
-                    .then(() => {
-                        openVConsole();
-                        return loadScript(scriptList[2])
-                    })
-                    .then(() => { return loadScript(scriptList[3]) })
-                    .then(() => { return loadScript(scriptList[4]) })
-                    .then(() => { return loadScript(scriptList[5]) })
-                    .then(() => { return loadScript(scriptList[6]) })
-                    .then(() => { return loadScript(scriptList[7]) })
-                    .then(() => { return loadScript(scriptList[8]) })
-                    .then(() => { return loadScript(scriptList[9]) })
-                    .then(() => { return loadScript(scriptList[10]) })
-                    .then(() => { return loadScript(scriptList[11]) })
-                    .then(() => { return loadScript(scriptList[12]) })
-                    .then(() => {
-                        resolve();
-                    })
-                    .catch((err) => {
-                        reject(err);
-                    })
-            });
+        function loadAll(loadFun, config, ayc = false) {  
+            const thenables = createThenables(loadFun, config);
+            if (ayc) {
+                let ps = [];
+                for (let i = 0; i < thenables.length; i++) {
+                    ps.push(Promise.resolve(thenables[i]));
+                }
+                return Promise.all(ps);
+            }
+            else {
+                return Promise.queue(thenables);
+            }
+        }
+
+        function loadCssAll(config, ayc = false) {
+            return loadAll(loadCss, config, ayc);
+        }
+
+        function loadFontAll(config, ayc = false) {
+            return loadAll(loadFont, config, ayc);
+        }
+
+        function loadScriptAll(config, ayc = false) {
+            return loadAll(loadScript, config, ayc);
         }
 
         function registerserviceWorker() {
@@ -313,7 +323,8 @@ var loadApp = () => { // 按顺序加载应用
         }
 
         function openVConsole() {
-            if (String(window.location).indexOf("http://localhost") == 0) {
+            const IS_DEBUG = localStorage.getItem("debug");
+            if (IS_DEBUG == "true") {
                 if (vConsole == null) vConsole = new VConsole();
             }
         }
@@ -338,6 +349,7 @@ var loadApp = () => { // 按顺序加载应用
                 bodyDiv.style.top = "0px";
                 bodyDiv.style.opacity = "0";
                 //bodyDiv.style.backgroundColor = "black";
+                bodyDiv.setAttribute("class", "finish");
                 
                 let upDiv = d.createElement("div");
                 bodyDiv.appendChild(upDiv);
@@ -370,25 +382,75 @@ var loadApp = () => { // 按顺序加载应用
                                 `;
             }
         }
-
+    
+    
     registerserviceWorker()
         .then(() => { 
             window._loading.open("loading...");
-            return loadCssAll() })
-        .then(() => { return loadFontAll() })
-        .then(() => { return loadScriptAll() })
+            window._loading.lock(true);
+            window._loading.text("0%");
+            return loadCssAll([
+                ["style/loaders.css"],
+                ["style/main.css"],
+            ],true)
+        })
+        .then(() => {
+            window._loading.text("5%");
+            return loadFontAll([
+                ["style/font/PFSCMedium1.woff"],
+                ["style/font/PFSCMedium1.ttf"],
+                ["style/font/PFSCHeavy1.ttf"],
+                ["style/font/PFSCHeavy1.woff"],
+            ], true) 
+        })
+        .then(() => { 
+            window._loading.text("30%");
+            return loadScriptAll([  //顺序 同步加载
+                ["script/viewport-0721.js",()=>{
+                    window.viewport = new view(dw);
+                }],
+                ["script/vConsole/vconsole.min.js",()=>{
+                    openVConsole();
+                }],
+                ["script/button-0721.js"],
+                ],false) 
+        })
+        .then(() => {
+            window._loading.text("50%");
+            return loadScriptAll([
+                ["script/checkerBoard-0721.js"],
+                ["script/control_0721.js"],
+                ["script/msgbox-0721.js"],
+                ["script/appData-0721.js"],
+                ["script/engine-0721.js"],
+                ["script/worker.js"],
+                ["script/NoSleep.min.js"],
+                ["script/jsPDF/jspdf.umd_01.js"],
+                ], true)
+        })
+        .then(() => {
+            window._loading.text("90%");
+            return loadScriptAll([
+                ["script/jsPDF/PFSCMedium.js"],
+                ["script/jsPDF/PFSCHeavy.js"],
+            ], true)
+        })
         .then(()=>{
-            window._loading.close("load finish");
+            window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
             viewport.resize();
+            window._loading.lock(false);
+            window._loading.close("load finish");
             setTimeout(() => {
                 UI.style.opacity = "1";
-            }, 500);
+            }, 300);
             window.DEBUG = false;
-            window.jsPDF = window.jspdf.jsPDF;
-        })
+            window.jsPDF = window.jspdf.jsPDF;})
         .catch((err)=>{
-            alert(err);
-        })
+            setTimeout(() => {
+                const MSG = "打开网页出错, 准备刷新\n" + err;
+                alert(MSG);
+                window.location.reload();
+            },0);});
 };

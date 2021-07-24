@@ -1,3 +1,20 @@
+.finish {
+    opacity: 1;
+    animation: finish 1000ms ease-in;
+    animation-fill-mode: both;
+}
+
+
+@keyframes finish {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
 .center-body {
     display: flex;
     justify-content: center;

@@ -121,25 +121,28 @@ let appData = (() => {
         return data;
 
     };
+    
+    let getKey = key => {
+        return localStorage.getItem(key);
+    };
+    
+    let setKey = (key, value) => {
+        return localStorage.setItem(key, value);
+    };
+    
+    let removeKey = key => {
+        return localStorage.removeItem(key);
+    };
 
     return {
-        "renjuSave": (cBd) => {
-            renjuSave(cBd);
-        },
-        "renjuLoad": (cBd) => {
-            renjuLoad(cBd);
-        },
-        "saveData": (cBd) => {
-            saveData(cBd);
-        },
-        "loadData": (cBd) => {
-            loadData(cBd);
-        },
-        "saveContinueData": (data, cBd) => {
-            saveContinueData(data, cBd);
-        },
-        "loadContinueData": (cBd) => {
-            return loadContinueData(cBd);
-        },
+        "renjuSave": renjuSave,
+        "renjuLoad": renjuLoad,
+        "saveData": saveData,
+        "loadData": loadData,
+        "saveContinueData": saveContinueData,
+        "loadContinueData": loadContinueData,
+        "getKey": getKey,
+        "setKey": setKey,
+        "removeKey": removeKey,
     };
 })();
