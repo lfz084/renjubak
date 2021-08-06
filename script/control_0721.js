@@ -280,7 +280,7 @@ let control = (() => {
                     cFindVCF.showMenu(x, y);
                     break;
                 case 3:
-                    cNewGame.input.ontouchend();
+                    cNewGame.touchend();
                     break;
                 case 4:
                     if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) {
@@ -288,19 +288,19 @@ let control = (() => {
                     }
                     break;
                 case 5:
-                    cCleLb.input.ontouchend();
+                    cCleLb.touchend();
                     break;
                 case 6:
-                    cShareWhite.input.ontouchend();
+                    cShareWhite.touchend();
                     break;
                 case 7:
-                    cShare.input.ontouchend();
+                    cShare.touchend();
                     break;
                 case 8:
-                    cNextone.input.ontouchend();
+                    cNextone.touchend();
                     break;
                 case 9:
-                    cResetnum.input.ontouchend();
+                    cResetnum.touchend();
                     break;
                 case 10:
                     cBd.showNum();
@@ -313,10 +313,10 @@ let control = (() => {
                     cBd.isShowNum = getShowNum();
                     break;
                 case 12:
-                    cInputcode.input.ontouchend();
+                    cInputcode.touchend();
                     break;
                 case 13:
-                    cOutputcode.input.ontouchend();
+                    cOutputcode.touchend();
                     break;
                 case 14:
                     cLoadImg.input.click();
@@ -335,7 +335,7 @@ let control = (() => {
         let p = { x: 0, y: 0 };
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
-        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, () => { return isCancelMenuClick });
+        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, () => { let rt = isCancelMenuClick; isCancelMenuClick=false; return rt; });
     }
 
 
@@ -973,8 +973,8 @@ let control = (() => {
         });
 
         let hm = cLABC.hideMenu;
-        cLABC.hideMenu = function(ms, callbak) {
-            hm.call(this, ms, callbak);
+        cLABC.hideMenu = function(ms, callback) {
+            hm.call(this, ms, callback);
             //log(this.input.value)
             changePlayModel();
         };
@@ -2229,7 +2229,7 @@ let control = (() => {
     }
 
 
-    function setClick(elem, callbak = () => {}, timeout = 300) {
+    function setClick(elem, callback = () => {}, timeout = 300) {
         let startX = 0,
             startY = 0;
         elem.onclick = (() => {
@@ -2239,7 +2239,7 @@ let control = (() => {
                 busy = true;
                 setTimeout(() => { busy = false; }, 1000);
                 setTimeout(() => {
-                    callbak();
+                    callback();
                 }, timeout); //延迟，避免某些浏览器触发窗口下一层elem的click事件。
             };
         })();
@@ -2260,13 +2260,13 @@ let control = (() => {
 
 
 
-    function setButtonClick(elem, callbak = () => {}) {
+    function setButtonClick(elem, callback = () => {}) {
         setClick(elem, () => {
             let bkColor = elem.style.opacity;
             elem.style.opacity = "0.2";
             setTimeout(() => {
                 elem.style.opacity = bkColor;
-                callbak();
+                callback();
             }, 300);
         }, 0);
     }

@@ -1,4 +1,4 @@
-var VERSION = 'v0721';
+var VERSION = 'v0725';
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -118,9 +118,11 @@ self.addEventListener('fetch', function(event) {
                         load.finish(_URL);
                         //postMsg(`下载资源完成 url=${_URL}`);
                         let cloneRes = response.clone();
-                        caches.open(VERSION).then(cache => {
-                            cache.put(event.request, cloneRes);
-                        });
+                        if (_URL.indexOf("blob:http") == -1) {
+                            caches.open(VERSION).then(cache => {
+                                cache.put(event.request, cloneRes);
+                            });
+                        }
                         resolve(response);
                     }
                     else {

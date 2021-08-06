@@ -3465,25 +3465,49 @@ var checkerBoard = (function() {
 
     checkerBoard.prototype.saveAsImage = function(type) {
 
+        function toBlob(callback, type, quality) {
+            function reqListener() {
+                let blob = new Blob([oReq.response]);
+                callback(blob);
+            }
+            let url = this.toDataURL(type, quality);
+            let oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", reqListener);
+            oReq.open("GET", url);
+            oReq.responseType = "arraybuffer";
+            oReq.send();
+        }
+
+        function setToBlob(canvas) {
+            return new Promise((resolve, reject) => {
+                if (canvas.toBlob == toBlob) {
+                    resolve();
+                    return;
+                }
+                if (canvas.toBlob == undefined) {
+                    canvas.toBlob = toBlob;
+                    log("canvas.toBlob == undefined, set canvas.toBlob = toBlob")
+                }
+                /*
+                else if (navigator.userAgent.indexOf("QQBrowser") + 1) {
+                    canvas.toBlob = toBlob;
+                    log("QQBrowser, set canvas.toBlob = toBlob")
+                }*/
+                resolve();
+            });
+        }
+
         let canvas = this.canvas;
-        //let downloadMime = "image/octet-stream"; // 强制下载
         let filename = this.autoFileName();
         filename += "." + type;
         let but = this;
         //保存
-        canvas.toBlob(function(blob) {
-            but.saveAs(blob, filename);
-            /*
-            save_link.href = URL.createObjectURL(blob);
-            save_link.download = filename;
-            let event = document.createEvent("MouseEvents");
-            event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, undefined);
-            save_link.dispatchEvent(event);
-            URL.revokeObjectURL(save_link.href);
-            */
-        }, "image/" + type, 0.1);
-
-
+        setToBlob(canvas)
+            .then(() => {
+                canvas.toBlob(function(blob) {
+                    but.saveAs(blob, filename);
+                }, "image/" + type, 0.1);
+            })
     };
 
 
@@ -3491,28 +3515,15 @@ var checkerBoard = (function() {
     // 棋盘保存PDF文件
     checkerBoard.prototype.saveAsPDF = function(fontName) {
 
-
         if (typeof jsPDF != "function") {
             showLabel(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
             return;
         }
-
-        //msg("创建PDF文档......", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0);
-
         //新建文档
         let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
-        //msgTextarea.value = "添加中文字体......";
-
-        //doc.addFont("PFSCMedium-normal.ttf", "PFSCMedium", "normal");
-        //doc.addFont('PFSCHeavy-normal.ttf', 'PFSCHeavy', 'normal');
-        //msgTextarea.value = "写入PDF数据......";
-
         this.printPDF(doc, "PFSCMedium", "PFSCHeavy"); // 写入文档
         let filename = this.autoFileName();
-        //closeMsg();
-        //log(doc.save)
         doc.save(filename + ".pdf"); //保存文档
-
     };
 
 
@@ -3524,14 +3535,6 @@ var checkerBoard = (function() {
         let mimetype = type == "html" ? "text/html" : "image/svg+xml";
         let blob = new Blob([this.getSVG()], { type: mimetype });
         this.saveAs(blob, filename);
-        /*
-        //log("checkerBoard.saveAsSVG Download" );
-        let event = document.createEvent("MouseEvents");
-        event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, undefined);
-        save_link.dispatchEvent(event);
-        //URL.revokeObjectURL(save_link.href);
-        */
-
     };
 
 

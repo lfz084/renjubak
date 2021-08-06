@@ -342,10 +342,10 @@ var button = (() => {
 
             }
 
-            function hideMenu(ms, callbak) {
+            function hideMenu(ms, callback) {
                 let muWindow = this.menuWindow;
                 let input = this.input;
-                callbak = callbak || function() {};
+                callback = callback || function() {};
                 if (timerHideMenu) {
                     clearTimeout(timerHideMenu);
                     timerHideMenu = null;
@@ -357,12 +357,12 @@ var button = (() => {
                         clearTimeout(timerHideMenu);
                         timerHideMenu = null;
                         muWindow.parentNode.removeChild(muWindow);
-                        callbak();
+                        callback();
                     }, ms);
                 }
                 else {
                     muWindow.parentNode.removeChild(muWindow);
-                    callbak();
+                    callback();
                 }
             }
 
@@ -374,13 +374,13 @@ var button = (() => {
                     setTimeout(() => { busy = false; }, ANIMATION_TIMEOUT);
                     show.call(menuObj, x, y);
                 },
-                "hideMenu": (ms, callbak) => {
+                "hideMenu": (ms, callback) => {
                     log(`hide=${busy}`)
                     if (busy) return;
                     busy = true;
                     isMenuShow = false;
                     setTimeout(() => { busy = false; }, ANIMATION_TIMEOUT);
-                    hideMenu.call(menuObj, ms, callbak);
+                    hideMenu.call(menuObj, ms, callback);
                 }
             };
         })(this);
@@ -464,9 +464,6 @@ var button = (() => {
     button.prototype.defaultontouchend = function() {
 
         //log(`typeof event=${typeof event}, isEventMove=${this.isEventMove}`);
-        //log(this)
-        // select 要弹出菜单不能屏蔽
-        //if (this.type != "select") {};
         if (event) event.preventDefault();
         //   "✔  ○●",radio,checked,前面加上特殊字符。
         let s;
@@ -563,8 +560,8 @@ var button = (() => {
 
 
 
-    button.prototype.hideMenu = function(ms, callbak) {
-        this._menu.hideMenu(ms, callbak);
+    button.prototype.hideMenu = function(ms, callback) {
+        this._menu.hideMenu(ms, callback);
     }
 
 
@@ -638,18 +635,20 @@ var button = (() => {
 
 
     // 給事件绑定函数
-    button.prototype.setonchange = function(callbak) {
+    button.prototype.setonchange = function(callback) {
         let fun = this.change;
         let but = this;
         this.change = function() {
             log(`new setonchange......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultonchange()) callbak(but);
+            if (but.defaultonchange()) callback(but);
         }
         if (this.type == "select" || this.type == "file") {
+            this.input.removeEventListener("change", fun, true);
             this.input.addEventListener("change", this.change, true);
         }
         else {
+            this.input.removeEventListener("change", fun, true);
             this.input.addEventListener("change", this.change, true);
         }
     };
@@ -657,18 +656,20 @@ var button = (() => {
 
 
     // 給事件绑定函数
-    button.prototype.setontouchstart = function(callbak) {
+    button.prototype.setontouchstart = function(callback) {
         let fun = this.touchstart;
         let but = this;
         this.touchstart = function() {
             log(`new touchstart......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultontouchstart()) callbak(but);
+            if (but.defaultontouchstart()) callback(but);
         }
         if (this.type == "select" || this.type == "file") {
+            this.div.removeEventListener("touchstart", fun, true);
             this.div.addEventListener("touchstart", this.touchstart, true);
         }
         else {
+            this.input.removeEventListener("touchstart", fun, true);
             this.input.addEventListener("touchstart", this.touchstart, true);
         }
     };
@@ -678,19 +679,21 @@ var button = (() => {
 
 
     // 給事件绑定函数
-    button.prototype.setontouchend = function(callbak) {
+    button.prototype.setontouchend = function(callback) {
 
         let fun = this.touchend;
         let but = this;
         this.touchend = function() {
             log(`new touchend......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultontouchend()) callbak(but);
+            if (but.defaultontouchend()) callback(but);
         }
         if (this.type == "select" || this.type == "file") {
+            this.div.removeEventListener("touchend", fun, true);
             this.div.addEventListener("touchend", this.touchend, true);
         }
         else {
+            this.input.removeEventListener("touchend", fun, true);
             this.input.addEventListener("touchend", this.touchend, true);
         }
     };

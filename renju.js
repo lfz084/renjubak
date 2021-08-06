@@ -231,13 +231,13 @@ var loadApp = () => { // 按顺序加载应用
             })
         }
 
-        function createThenable(loadFun, fileName, callbak) {  // 返回thenable
+        function createThenable(loadFun, fileName, callback) {  // 返回thenable
             return {
                 then: function(onFulfill, onReject) {
                     onFulfill(
                         loadFun(fileName)
                         .then(() => {
-                            if (typeof callbak == "function") callbak();
+                            if (typeof callback == "function") callback();
                         })
                     )
                 }
@@ -445,7 +445,8 @@ var loadApp = () => { // 按顺序加载应用
             setTimeout(() => {
                 UI.style.opacity = "1";
             }, 300);
-            window.DEBUG = false;
+            log(window.navigator.userAgent)
+            window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;})
         .catch((err)=>{
             setTimeout(() => {
