@@ -1,4 +1,4 @@
-var checkerBoard = (function() {
+window.checkerBoard = (function() {
 
     "use strict";
     const TEST_CHECKER_BOARD = true;

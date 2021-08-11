@@ -1,4 +1,4 @@
-let engine = (() => {
+window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
     

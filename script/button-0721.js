@@ -1,4 +1,4 @@
-var button = (() => {
+window.button = (() => {
 
     "use strict";
     const ANIMATION_TIMEOUT = 300;

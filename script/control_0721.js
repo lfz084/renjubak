@@ -1,4 +1,4 @@
-let control = (() => {
+window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
 
