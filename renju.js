@@ -428,8 +428,8 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("30%");
             return loadScriptAll([  //顺序 同步加载
                 ["script/viewport-0721.js",()=>{
-                    window.viewport = new view(dw);
-                    window._loading.text(`viewport = ${viewport}`);
+                    window.viewport1 = new view(dw);
+                    window._loading.text(`viewport = ${viewport1}`);
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
@@ -462,8 +462,8 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
-            window._loading.text(`viewport = ${window.viewport}`);
-            window.viewport.resize();
+            window._loading.text(`viewport = ${window.viewport1}`);
+            window.viewport1.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
             setTimeout(() => {
