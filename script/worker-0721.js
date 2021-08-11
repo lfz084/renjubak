@@ -1,27 +1,4 @@
 "use strict";
-const EMOJI_FOUL = "❌";
-const EMOJI_FOUL_THREE = EMOJI_FOUL + EMOJI_FOUL + EMOJI_FOUL;
-const EMOJI_QUESTION = "❓"
-const EMOJI_SEARCH = "🔍"
-const EMOJI_STOP = "🚫"
-const EMOJI_STAR = "☆"
-const EMOJI_STAR_BLACK = "★"
-const EMOJI_SCISSORSN = "✄"
-const EMOJI_PEN = "✎"
-const EMOJI_FORK = "✖"
-const EMOJI_TRIANGLE_BLACK = "▲"
-const EMOJI_ROUND = "○"
-const EMOJI_ROUND_DOUBLE = "◎"
-const EMOJI_SQUARE_BLACK = "■"
-const EMOJI_ROUND_BLACK_WHITE = "◐"
-const EMOJI_ROUND_BLACK = "●"
-const EMOJI_ROUND_ONE = "❶"
-const EMOJI_ROUND_TWO = "②"
-const EMOJI_ROUND_THREE = "③"
-const EMOJI_ROUND_FOUR = "④"
-const EMOJI_ROUND_FIVE = "⑤"
-
-
 const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4

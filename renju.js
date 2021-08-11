@@ -14,13 +14,13 @@ var loadApp = () => { // 按顺序加载应用
             location.href.indexOf(URL_HOMES[1]) + 1 ? URL_HOMES[1] : URL_HOMES[2];
 
         window.d = document;
-        window.dw = d.documentElement.clientWidth; 
+        window.dw = d.documentElement.clientWidth;
         window.dh = d.documentElement.clientHeight;
-        window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95;  //棋盘宽度
+        window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95; //棋盘宽度
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
 
-        window.viewport = null;  // 控制缩放
-        window.vConsole = null;  // 调试工具
+        window.viewport = null; // 控制缩放
+        window.vConsole = null; // 调试工具
         window.openNoSleep = () => {}; //打开防休眠
         window.closeNoSleep = () => {}; //关闭防休眠
         let cBoard = null; //棋盘对象
@@ -107,7 +107,7 @@ var loadApp = () => { // 按顺序加载应用
             };
         })();
 
-        function resetNoSleep() {  //设置防休眠
+        function resetNoSleep() { //设置防休眠
             let noSleep;
             let isNoSleep = false; // bodyTouchStart 防止锁屏
             let noSleepTime = 0;
@@ -177,26 +177,45 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function loadScript(url) { //加载脚本
+        function loadFile(url) { //加载字体文件
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
-                let oHead = document.getElementsByTagName('HEAD').item(0);
-                let oScript = document.createElement("script");
-                oHead.appendChild(oScript);
-                oScript.type = "text/javascript";
-                oScript.rel = "preload";
-                oScript.as = "script";
-                oScript.onload = () => {
-                    log(`loadScript = ${filename}`);
+                function reqListener() {
+                    log(`loadFile = ${filename}`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
                 }
-                oScript.onerror = (err) => {
-                    log(`loadScript_Error = ${filename} `);
-                    reject(err);
+                let oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", reqListener);
+                oReq.open("GET", url);
+                oReq.send();
+            });
+        }
+
+        function loadScript(url) { //加载脚本
+            const filename = url.split("/").pop()
+            return new Promise((resolve, reject) => {
+                function openScript() {
+                    let oHead = document.getElementsByTagName('HEAD').item(0);
+                    let oScript = document.createElement("script");
+                    oHead.appendChild(oScript);
+                    oScript.type = "text/javascript";
+                    //oScript.rel = "preload";
+                    oScript.as = "script";
+                    oScript.onload = () => {
+                        log(`loadScript = ${filename}`);
+                        setTimeout(() => {
+                            resolve();
+                        }, 0);
+                    }
+                    oScript.onerror = (err) => {
+                        log(`loadScript_Error = ${filename} `);
+                        reject(err);
+                    }
+                    oScript.src = url;
                 }
-                oScript.src = url;
+                loadFile(url).then(openScript);
             });
         }
 
@@ -231,7 +250,7 @@ var loadApp = () => { // 按顺序加载应用
             })
         }
 
-        function createThenable(loadFun, fileName, callback) {  // 返回thenable
+        function createThenable(loadFun, fileName, callback) { // 返回thenable
             return {
                 then: function(onFulfill, onReject) {
                     onFulfill(
@@ -252,7 +271,7 @@ var loadApp = () => { // 按顺序加载应用
             return ts;
         }
 
-        function loadAll(loadFun, config, ayc = false) {  
+        function loadAll(loadFun, config, ayc = false) {
             const thenables = createThenables(loadFun, config);
             if (ayc) {
                 let ps = [];
@@ -413,7 +432,7 @@ var loadApp = () => { // 按顺序加载应用
                     openVConsole();
                 }],
                 ["script/button-0721.js"],
-                ["script/worker.js"],  // first load emoji
+                ["script/emoji.js"],// first load emoji
                 ],false)
         })
         .then(() => {
@@ -423,6 +442,7 @@ var loadApp = () => { // 按顺序加载应用
                 ["script/control_0721.js"],
                 ["script/msgbox-0721.js"],
                 ["script/appData-0721.js"],
+                ["script/worker-0721.js"],
                 ["script/engine-0721.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
