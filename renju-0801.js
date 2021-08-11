@@ -4,7 +4,7 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju.js]\n>> ` + param);
+                console.log(`[renju-0801.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -427,25 +427,25 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => { 
             window._loading.text("30%");
             return loadScriptAll([  //顺序 同步加载
-                ["script/viewport-0721.js",()=>{
+                ["script/viewport-0801.js",()=>{
                     window.viewport1 = new view(dw);
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
                 }],
-                ["script/button-0721.js"],
+                ["script/button-0801.js"],
                 ["script/emoji.js"],// first load emoji
                 ],false)
         })
         .then(() => {
             window._loading.text("50%");
             return loadScriptAll([
-                ["script/checkerBoard-0721.js"],
-                ["script/control_0721.js"],
-                ["script/msgbox-0721.js"],
-                ["script/appData-0721.js"],
-                ["script/worker-0721.js"],
-                ["script/engine-0721.js"],
+                ["script/checkerBoard-0801.js"],
+                ["script/control_0801.js"],
+                ["script/msgbox-0801.js"],
+                ["script/appData-0801.js"],
+                ["script/worker-0801.js"],
+                ["script/engine-0801.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
                 ], true)
@@ -469,11 +469,13 @@ var loadApp = () => { // 按顺序加载应用
             }, 300);
             log(window.navigator.userAgent)
             window.DEBUG = true;
-            window.jsPDF = window.jspdf.jsPDF;})
+            window.jsPDF = window.jspdf.jsPDF;
+        })
         .catch((err)=>{
             setTimeout(() => {
                 const MSG = "打开网页出错, 准备刷新\n" + err;
                 alert(MSG);
                 window.location.reload();
-            },0);});
+            },0);
+        });
 };
