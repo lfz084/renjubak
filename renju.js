@@ -207,7 +207,7 @@ var loadApp = () => { // 按顺序加载应用
                         log(`loadScript = ${filename}`);
                         setTimeout(() => {
                             resolve();
-                        }, 0);
+                        }, 1000);
                     }
                     oScript.onerror = (err) => {
                         log(`loadScript_Error = ${filename} `);
@@ -459,7 +459,8 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
-            viewport.resize();
+            log(viewport)
+            window.viewport.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
             setTimeout(() => {
