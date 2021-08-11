@@ -196,7 +196,7 @@ var loadApp = () => { // 按顺序加载应用
         function loadScript(url) { //加载脚本
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
-                function openScript() {
+                //function openScript() {
                     let oHead = document.getElementsByTagName('HEAD').item(0);
                     let oScript = document.createElement("script");
                     oHead.appendChild(oScript);
@@ -207,15 +207,15 @@ var loadApp = () => { // 按顺序加载应用
                         log(`loadScript = ${filename}`);
                         setTimeout(() => {
                             resolve();
-                        }, 1000);
+                        }, 0);
                     }
                     oScript.onerror = (err) => {
                         log(`loadScript_Error = ${filename} `);
                         reject(err);
                     }
                     oScript.src = url;
-                }
-                loadFile(url).then(openScript);
+                //}
+                //loadFile(url).then(openScript);
             });
         }
 
@@ -256,7 +256,12 @@ var loadApp = () => { // 按顺序加载应用
                     onFulfill(
                         loadFun(fileName)
                         .then(() => {
-                            if (typeof callback == "function") callback();
+                            return new Promise((resolve, reject) => {
+                                if (typeof callback == "function") callback();
+                                setTimeout(()=>{
+                                    resolve();
+                                }, 1000)
+                            });
                         })
                     )
                 }
@@ -459,7 +464,6 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
-            log(viewport)
             window.viewport.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
