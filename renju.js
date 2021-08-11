@@ -196,26 +196,23 @@ var loadApp = () => { // 按顺序加载应用
         function loadScript(url) { //加载脚本
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
-                //function openScript() {
-                    let oHead = document.getElementsByTagName('HEAD').item(0);
-                    let oScript = document.createElement("script");
-                    oHead.appendChild(oScript);
-                    oScript.type = "text/javascript";
-                    //oScript.rel = "preload";
-                    oScript.as = "script";
-                    oScript.onload = () => {
-                        log(`loadScript = ${filename}`);
-                        setTimeout(() => {
-                            resolve();
-                        }, 0);
-                    }
-                    oScript.onerror = (err) => {
-                        log(`loadScript_Error = ${filename} `);
-                        reject(err);
-                    }
-                    oScript.src = url;
-                //}
-                //loadFile(url).then(openScript);
+                let oHead = document.getElementsByTagName('HEAD').item(0);
+                let oScript = document.createElement("script");
+                oHead.appendChild(oScript);
+                oScript.type = "text/javascript";
+                oScript.rel = "preload";
+                oScript.as = "script";
+                oScript.onload = () => {
+                    log(`loadScript = ${filename}`);
+                    setTimeout(() => {
+                        resolve();
+                    }, 0);
+                }
+                oScript.onerror = (err) => {
+                    log(`loadScript_Error = ${filename} `);
+                    reject(err);
+                }
+                oScript.src = url;
             });
         }
 
@@ -258,7 +255,7 @@ var loadApp = () => { // 按顺序加载应用
                         .then(() => {
                             return new Promise((resolve, reject) => {
                                 if (typeof callback == "function") callback();
-                                setTimeout(()=>{
+                                setTimeout(() => {
                                     resolve();
                                 }, 1000)
                             });
@@ -432,6 +429,7 @@ var loadApp = () => { // 按顺序加载应用
             return loadScriptAll([  //顺序 同步加载
                 ["script/viewport-0721.js",()=>{
                     window.viewport = new view(dw);
+                    window._loading.text(`viewport = ${viewport}`);
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
@@ -464,6 +462,7 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
+            window._loading.text(`viewport = ${window.viewport}`);
             window.viewport.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
