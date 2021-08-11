@@ -413,7 +413,7 @@ var loadApp = () => { // 按顺序加载应用
                     openVConsole();
                 }],
                 ["script/button-0721.js"],
-                ["script/worker.js"],
+                ["script/worker.js"],  // first load emoji
                 ],false)
         })
         .then(() => {
