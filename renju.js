@@ -19,7 +19,7 @@ var loadApp = () => { // 按顺序加载应用
         window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95; //棋盘宽度
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
 
-        window.viewport = null; // 控制缩放
+        window.viewport1 = null; // 控制缩放
         window.vConsole = null; // 调试工具
         window.openNoSleep = () => {}; //打开防休眠
         window.closeNoSleep = () => {}; //关闭防休眠
@@ -257,7 +257,7 @@ var loadApp = () => { // 按顺序加载应用
                                 if (typeof callback == "function") callback();
                                 setTimeout(() => {
                                     resolve();
-                                }, 1000)
+                                }, 0)
                             });
                         })
                     )
@@ -429,7 +429,6 @@ var loadApp = () => { // 按顺序加载应用
             return loadScriptAll([  //顺序 同步加载
                 ["script/viewport-0721.js",()=>{
                     window.viewport1 = new view(dw);
-                    window._loading.text(`viewport = ${viewport1}`);
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
@@ -462,7 +461,6 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
-            window._loading.text(`viewport = ${window.viewport1}`);
             window.viewport1.resize();
             window._loading.lock(false);
             window._loading.close("load finish");

@@ -211,7 +211,7 @@ window.control = (() => {
         parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         parentNode.appendChild(renjuCmddiv);
         if (imgCmdDiv.parentNode) imgCmdDiv.parentNode.removeChild(imgCmdDiv);
-        viewport.resize();
+        viewport1.resize();
         engine.postMsg("cancelFind");
     }
 
@@ -589,7 +589,7 @@ window.control = (() => {
                 but.input.value = 0;
                 return;
             }
-            viewport.resize();
+            viewport1.resize();
             let arr = [];
             cBd.getPointArray(arr);
             let newarr = getArr([]);
@@ -735,7 +735,7 @@ window.control = (() => {
                 but.input.value = 0;
                 return;
             }
-            viewport.resize();
+            viewport1.resize();
             let arr = [];
             cBd.getPointArray(arr);
             switch (but.input.value * 1) {
@@ -1251,7 +1251,7 @@ window.control = (() => {
             cSLTY.input.value = cBd.SLTY;
             cSLTY.setText(cSLTY.input.value + " 行");
             ctx = null;
-            viewport.userScalable();
+            viewport1.userScalable();
             showLabel(`长按棋盘，拖动虚线对齐棋子`);
         }
 
@@ -1509,7 +1509,7 @@ window.control = (() => {
             parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
             cBd.resetCutDiv();
             ctx = null;
-            viewport.userScalable();
+            viewport1.userScalable();
         }
 
         function lockImg(fun) {
@@ -1564,7 +1564,7 @@ window.control = (() => {
                     cBd.cleAllPointBorder();
                     cBd.hideCutDiv();
                     ctx = null;
-                    viewport.resize();
+                    viewport1.resize();
                     if (fun) fun();
                     /*
                     cBd.parentNode.appendChild(cBd.bakCanvas);
