@@ -335,7 +335,20 @@ let control = (() => {
         let p = { x: 0, y: 0 };
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
-        cMenu.createMenu(left, undefined, width, undefined, fontSize, true, () => { let rt = isCancelMenuClick; log(`isCancelMenuClick=${isCancelMenuClick}`);isCancelMenuClick=false; return rt; });
+        cMenu.createMenu(left,
+            undefined,
+            width,
+            undefined,
+            fontSize,
+            true,
+            () => {
+                log(`isCancelMenuClick=${isCancelMenuClick}`);
+                let rt = isCancelMenuClick;
+                setTimeout(() => {
+                    isCancelMenuClick = false;
+                }, 100);
+                return rt;
+            });
     }
 
 
@@ -1887,7 +1900,7 @@ let control = (() => {
             bodyStartTouches.length = 0;
             //通过 isOut 模拟 canvas事件
             if (!cBd.isOut(x, y, cBd.canvas)) {
-                isCancelMenuClick = navigator.userAgent.indexOf("iPhone") + 1; //!(event && "contextmenu" == event.type);
+                isCancelMenuClick = !!(navigator.userAgent.indexOf("iPhone") + 1); //!(event && "contextmenu" == event.type);
                 setTimeout(canvasKeepTouch(x, y), 10);
                 //log("canvad 长按");
             }

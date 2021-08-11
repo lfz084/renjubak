@@ -413,7 +413,8 @@ var loadApp = () => { // 按顺序加载应用
                     openVConsole();
                 }],
                 ["script/button-0721.js"],
-                ],false) 
+                ["script/worker.js"],
+                ],false)
         })
         .then(() => {
             window._loading.text("50%");
@@ -423,7 +424,6 @@ var loadApp = () => { // 按顺序加载应用
                 ["script/msgbox-0721.js"],
                 ["script/appData-0721.js"],
                 ["script/engine-0721.js"],
-                ["script/worker.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
                 ], true)
