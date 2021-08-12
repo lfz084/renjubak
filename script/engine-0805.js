@@ -4,7 +4,7 @@ window.engine = (() => {
     
     function log(param) {
         if (TEST_ENGINE && DEBUG)
-            console.log(`[engine-0801.js]\n>> ` + param);
+            console.log(`[engine-0805.js]\n>> ` + param);
     }
     
     const COLOR_TXT = ["白棋", "黑棋", "白棋"];
@@ -151,7 +151,7 @@ window.engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0802.js");
+        let wk = new Worker("./script/worker-0805.js");
         wk.postMessage({ cmd: "setWorkerIdx", parameter: { workerIdx: workerIdx } });
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());

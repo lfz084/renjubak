@@ -1,4 +1,5 @@
 "use strict";
+
 const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
@@ -27,8 +28,6 @@ let vcfBlackWinMoves = [];
 let stopFind = false;
 
 let vctNode;
-
-
 
 //，保存周围点的坐标
 // 创建二维数组，保存 0-224 个点周围点的坐标信息。
@@ -6550,3 +6549,5 @@ function movesSort(fMoves, fun) {
         }
     }
 }
+
+self.importScripts('emoji.js');

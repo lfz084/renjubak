@@ -4,7 +4,7 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju-0803.js]\n>> ` + param);
+                console.log(`[renju-0805.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -251,7 +251,17 @@ var loadApp = () => { // 按顺序加载应用
             return {
                 then: function(onFulfill, onReject) {
                     onFulfill(
-                        loadFun(fileName)
+                        Promise.resolve()
+                        .then(() => {
+                            return new Promise((resolve, reject) => {
+                                function _timeout() {
+                                    reject(`error: 连接网络超时 \n ${fileName}`);
+                                }
+                                setTimeout(_timeout, 30 * 1000);
+                                loadFun(fileName)
+                                    .then(resolve);
+                            })
+                        })
                         .then(() => {
                             return new Promise((resolve, reject) => {
                                 if (typeof callback == "function") callback();
@@ -399,7 +409,7 @@ var loadApp = () => { // 按顺序加载应用
                 return bodyDiv;
             }
             catch (err) {
-                if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p><h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>
+                if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>
                                 `;
             }
         }
@@ -413,7 +423,7 @@ var loadApp = () => { // 按顺序加载应用
             return loadCssAll([
                 ["style/loaders.css"],
                 ["style/main.css"],
-            ],true)
+                ],true)
         })
         .then(() => {
             window._loading.text("5%");
@@ -422,7 +432,7 @@ var loadApp = () => { // 按顺序加载应用
                 ["style/font/PFSCMedium1.ttf"],
                 ["style/font/PFSCHeavy1.ttf"],
                 ["style/font/PFSCHeavy1.woff"],
-            ], true) 
+                ], true) 
         })
         .then(() => { 
             window._loading.text("30%");
@@ -444,8 +454,8 @@ var loadApp = () => { // 按顺序加载应用
                 ["script/control_0801.js"],
                 ["script/msgbox-0801.js"],
                 ["script/appData-0801.js"],
-                ["script/worker-0802.js"],
-                ["script/engine-0801.js"],
+                ["script/worker-0805.js"],
+                ["script/engine-0805.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
                 ], true)
@@ -455,7 +465,7 @@ var loadApp = () => { // 按顺序加载应用
             return loadScriptAll([
                 ["script/jsPDF/PFSCMedium.js"],
                 ["script/jsPDF/PFSCHeavy.js"],
-            ], true)
+                ], true)
         })
         .then(()=>{
             window._loading.text("99%");
@@ -464,15 +474,15 @@ var loadApp = () => { // 按顺序加载应用
             window.viewport1.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
-            log(window.navigator.userAgent)
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
+            log(window.navigator.userAgent)
         })
         .catch((err)=>{
             setTimeout(() => {
                 const MSG = "打开网页出错, 准备刷新\n" + err;
                 alert(MSG);
-                window.location.reload();
+                setTimeout(()=>window.location.reload(), 1000);
             },0);
         });
 };

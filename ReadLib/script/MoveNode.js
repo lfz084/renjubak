@@ -106,7 +106,7 @@
         return bit_is_one(bitValue, (this.mInfo));
     }
 
-    MoveNode.prototype.setValue = function(value, bitValue) {
+    MoveNode.prototype.setIsValue = function(value, bitValue) {
         if (value) {
             this.mInfo = set_bit(bitValue, this.mInfo);
         }
@@ -129,11 +129,9 @@
         this.mInfo = (this.mInfo & 0xFFFF00) | info;
     }
 
-    MoveNode.prototype.getPosInfo = function() {
-        return {
-            pos: PointToPos(this.mPos),
-            info: this.mInfo & 0xFF
-        };
+    MoveNode.prototype.getPosInfo = function(arrBuf) {
+        arrBuf[0] = PointToPos(this.mPos);
+        arrBuf[1] = this.mInfo & 0xFF;
     }
     
     MoveNode.prototype.setExtendedInfo = function(info2, info1) {
@@ -141,11 +139,9 @@
         this.mInfo |= ((info2 << 8) | info1) << 8;
     }
     
-    MoveNode.prototype.getExtendedInfo = function() {
-        return {
-            info2: (this.mInfo >> 16) & 0xFF,
-            info1: (this.mInfo >> 8) & 0xFF
-        }
+    MoveNode.prototype.getExtendedInfo = function(arrBuf) {
+        arrBuf[0] = (this.mInfo >> 16) & 0xFF;  // info2
+        arrBuf[1] = (this.mInfo >> 8) & 0xFF;   //info1
     }
     
     MoveNode.prototype.clearInformation = function() {
@@ -204,14 +200,105 @@
     MoveNode.prototype.isMove = function() {
         return !this.isValue(NO_MOVE);
     }
+    
+    MoveNode.prototype.isPassMove = function() {
+        let result = false;
+        if (this.isMove()){
+            result = this.mPos.x == 0 && this.mPos.y==0;
+        }
+        return result;
+    }
+    
+    MoveNode.prototype.setIsMove = function(value) {
+        this.setIsValue(!value, NO_MOVE);
+    }
+    
+    MoveNode.prototype.isExtension = function() {
+        return this.isValue(EXTENSION);
+    }
+    
+    MoveNode.prototype.setIsExtension = function(value) {
+        this.setIsValue(value, EXTENSION);
+    }
+    
+    MoveNode.prototype.setMatch = function(match) {
+        this.mMatch = match;
+    }
+    
+    MoveNode.prototype.getMatch = function() {
+        return this.mMatch;
+    }
+    
+    MoveNode.prototype.setDown = function(node) {
+        this.mDown = node;
+    }
+    
+    MoveNode.prototype.getDown = function() {
+        return this.mDown;
+    }
+    
+    MoveNode.prototype.setRight = function(node) {
+        this.mRight = node;
+    }
+    
+    MoveNode.prototype.getRight = function() {
+        return this.mRight;
+    }
+    
+    MoveNode.prototype.isOneLineComment = function() {
+        return !!this.mOneLineComment;
+    }
+    
+    MoveNode.prototype.setOneLineComment = function(comment) {
+        this.mOneLineComment = comment;
+        this.setIsNewComment(this.isOneLineComment() || this.isMultiLineComment());
+    }
+    
+    MoveNode.prototype.getOneLineComment = function() {
+        return this.mOneLineComment;
+    }
+    
+    MoveNode.prototype.isMultiLineComment = function() {
+        return !!this.mMultiLineComment;
+    }
+    
+    MoveNode.prototype.setMultiLineComment = function(comment) {
+        this.mMultiLineComment = comment;
+        this.setIsNewComment(this.isOneLineComment() || this.isMultiLineComment());
+    }
+    
+    MoveNode.prototype.getMultiLineComment = function() {
+        return this.mMultiLineComment;
+    }
+    
+    MoveNode.prototype.setIsBoardText = function(value) {
+        this.setIsValue(value, BOARD_TEXT);
+        this.checkExtension();
+    }
+    
+    MoveNode.prototype.isBoardText = function() {
+        return this.isValue(BOARD_TEXT);
+    }
+    
+    MoveNode.prototype.setBoardText = function(text) {
+        this.mBoardText = text;
+        this.setIsBoardText(!!this.mBoardText);
+    }
+    
+    MoveNode.prototype.getBoardText = function() {
+        return this.mBoardText;
+    }
 
     exports.Point = Point;
     exports.MoveNode = MoveNode;
     
-    let n = new MoveNode();
+    let n = new MoveNode(), buf = new Uint8Array(2);
     n.setPosInfo(1,256*55)
-    let {info2, info1, info} = n.getExtendedInfo();
-    
-    console.log(info1)
+    n.getExtendedInfo(buf);
+    n.setOneLineComment("22333")
+    console.log(n.isOneLineComment())
+    let a=[0],b,c
+    a++
+    console.log([buf[0],buf[1],c])
 
 })))
