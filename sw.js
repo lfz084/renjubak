@@ -32,7 +32,7 @@ let load = (() => {
         loading: (msg) => {
             let url = msg;
             let filename = url.split("/").pop();
-            if (["worker-0801.js"].indexOf(filename) + 1) return;
+            if (["worker-0802.js"].indexOf(filename) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);
             }

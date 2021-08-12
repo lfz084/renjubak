@@ -4,7 +4,7 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju-0801.js]\n>> ` + param);
+                console.log(`[renju-0802.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -444,7 +444,7 @@ var loadApp = () => { // 按顺序加载应用
                 ["script/control_0801.js"],
                 ["script/msgbox-0801.js"],
                 ["script/appData-0801.js"],
-                ["script/worker-0801.js"],
+                ["script/worker-0802.js"],
                 ["script/engine-0801.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],

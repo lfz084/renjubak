@@ -151,7 +151,7 @@ window.engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0801.js");
+        let wk = new Worker("./script/worker-0802.js");
         wk.postMessage({ cmd: "setWorkerIdx", parameter: { workerIdx: workerIdx } });
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());

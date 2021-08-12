@@ -6443,7 +6443,7 @@ function getY(idx) {
 }
 
 
-
+/*
 function getArrElement(idx, arr) {
 
     let x = getX(idx);
@@ -6457,8 +6457,7 @@ function setArr(idx, arr, value) {
 
     getArrElement(idx, arr) = value;
 }
-
-
+*/
 
 function changeX(x, move, direction) {
 
