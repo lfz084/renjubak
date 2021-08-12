@@ -4,7 +4,7 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju-0802.js]\n>> ` + param);
+                console.log(`[renju-0803.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -368,7 +368,7 @@ var loadApp = () => { // 按顺序加载应用
                 bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
                 bodyDiv.style.left = "0px";
                 bodyDiv.style.top = "0px";
-                bodyDiv.style.opacity = "0";
+                //bodyDiv.style.opacity = "0";
                 //bodyDiv.style.backgroundColor = "black";
                 bodyDiv.setAttribute("class", "finish");
                 
@@ -464,9 +464,6 @@ var loadApp = () => { // 按顺序加载应用
             window.viewport1.resize();
             window._loading.lock(false);
             window._loading.close("load finish");
-            setTimeout(() => {
-                UI.style.opacity = "1";
-            }, 300);
             log(window.navigator.userAgent)
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
