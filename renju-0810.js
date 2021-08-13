@@ -1,4 +1,4 @@
-window.SCRIPT_VERSION["renju"] = "v0810";
+self.SCRIPT_VERSION["renju"] = "v0810";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -218,12 +218,9 @@ var loadApp = () => { // 按顺序加载应用
                     log(`loadScript = ${filename}`);
                     setTimeout(() => {
                         let key = filename.split(/[\-\_\.]/)[0];
-                        if (window.checkVersion(key)) {
-                            resolve();
-                        }
-                        else {
-                            
-                        }
+                        window.checkVersion(key)
+                        .then(resolve)
+                        .catch(reject)
                     }, 0);
                 }
                 oScript.onerror = (err) => {
@@ -494,7 +491,7 @@ var loadApp = () => { // 按顺序加载应用
         })
         .then(() => {
             window._loading.text("95%");
-            return loadFileAll([
+            return loadScriptAll([
                 ["script/worker-0810.js"],
                 ], true)
         })
