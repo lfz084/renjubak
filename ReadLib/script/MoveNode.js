@@ -291,8 +291,9 @@
 
     exports.Point = Point;
     exports.MoveNode = MoveNode;
-    
-    let n = new MoveNode(), buf = new Uint8Array(2);
+})))
+
+let n = new MoveNode(), buf = new Uint8Array(2);
     n.setPosInfo(1,256*55)
     n.getExtendedInfo(buf);
     n.setOneLineComment("22333")
@@ -300,5 +301,3 @@
     let a=[0],b,c
     a++
     console.log([buf[0],buf[1],c])
-
-})))

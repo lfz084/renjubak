@@ -1,3 +1,4 @@
+window.SCRIPT_VERSION["emoji"] = "v0810";
 const EMOJI_FOUL = "❌";
 const EMOJI_FOUL_THREE = EMOJI_FOUL + EMOJI_FOUL + EMOJI_FOUL;
 const EMOJI_QUESTION = "❓";

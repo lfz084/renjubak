@@ -1,10 +1,11 @@
+window.SCRIPT_VERSION["renju"] = "v0810";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju-0805.js]\n>> ` + param);
+                console.log(`[renju-0810.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -25,6 +26,7 @@ var loadApp = () => { // 按顺序加载应用
         window.closeNoSleep = () => {}; //关闭防休眠
         let cBoard = null; //棋盘对象
 
+
         window.alert = function(name) { //更改默认标题
             const IFRAME = document.createElement('IFRAME');
             IFRAME.style.display = 'none';
@@ -43,7 +45,14 @@ var loadApp = () => { // 按顺序加载应用
                 DH = document.documentElement.clientHeight;
             const triangle = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`,
                 ball = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`,
-                black_white = `<div class="center-body"><div class="loader-ball-11"></div></div>`;
+                black_white = `<div class="center-body"><div class="loader-ball-11"></div></div>`,
+                busy = `<div class="center-body"><div class="loader-circle-101"></div></div>`;
+            const ANIMA_NANE = {
+                "triangle": triangle,
+                "ball": ball,
+                "black_white": black_white,
+                "busy": busy,
+            }
             let lock = false;
             let s = WIN_LOADING.style;
             s.position = "fixed";
@@ -63,7 +72,7 @@ var loadApp = () => { // 按顺序加载应用
             s.height = "150px";
             s.left = "0px";
             s.top = "0px";
-            ANIMA.innerHTML = black_white;
+            //ANIMA.innerHTML = black_white;
             WIN_LOADING.appendChild(ANIMA);
 
             s = LABEL.style;
@@ -78,18 +87,21 @@ var loadApp = () => { // 按顺序加载应用
             WIN_LOADING.appendChild(LABEL);
 
             return {
-                open: (msg) => { //打开动画
-                    if (lock) return;
+                open: (animaName, _timeout) => { //打开动画
+                    //if (lock) return;
                     log("_loading.open")
-                    if (!WIN_LOADING.parentNode) document.body.appendChild(WIN_LOADING);
+                    if (!WIN_LOADING.parentNode) {
+                        ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
+                        document.body.appendChild(WIN_LOADING);
+                    }
                     if (timer) {
                         clearTimeout(timer);
                     }
                     timer = setTimeout(() => {
                         if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
-                    }, 15 * 1000);
+                    }, _timeout || 30 * 1000);
                 },
-                close: (msg) => { //关闭动画
+                close: () => { //关闭动画
                     if (lock) return;
                     log("_loading.close")
                     if (timer) {
@@ -177,7 +189,7 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function loadFile(url) { //加载字体文件
+        function loadFile(url) { //加载文件
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
@@ -205,7 +217,13 @@ var loadApp = () => { // 按顺序加载应用
                 oScript.onload = () => {
                     log(`loadScript = ${filename}`);
                     setTimeout(() => {
-                        resolve();
+                        let key = filename.split(/[\-\_\.]/)[0];
+                        if (window.checkVersion(key)) {
+                            resolve();
+                        }
+                        else {
+                            
+                        }
                     }, 0);
                 }
                 oScript.onerror = (err) => {
@@ -235,9 +253,7 @@ var loadApp = () => { // 按顺序加载应用
                         thenables.splice(0, 1);
                         Promise.resolve(t)
                             .then(nextPromise)
-                            .catch((err) => {
-                                reject(err);
-                            })
+                            .catch(reject)
                     }
                     else {
                         return resolve();
@@ -255,11 +271,12 @@ var loadApp = () => { // 按顺序加载应用
                         .then(() => {
                             return new Promise((resolve, reject) => {
                                 function _timeout() {
-                                    reject(`error: 连接网络超时 \n ${fileName}`);
+                                    reject(`Error: 连接网络超时\n文件"${fileName}"下载失败`);
                                 }
                                 setTimeout(_timeout, 30 * 1000);
                                 loadFun(fileName)
-                                    .then(resolve);
+                                    .then(resolve)
+                                    .catch(reject)
                             })
                         })
                         .then(() => {
@@ -305,6 +322,10 @@ var loadApp = () => { // 按顺序加载应用
             return loadAll(loadFont, config, ayc);
         }
 
+        function loadFileAll(config, ayc = false) {
+            return loadAll(loadFile, config, ayc);
+        }
+
         function loadScriptAll(config, ayc = false) {
             return loadAll(loadScript, config, ayc);
         }
@@ -320,11 +341,11 @@ var loadApp = () => { // 按顺序加载应用
                         const MSG = event.data;
                         log(MSG);
                         if (MSG.indexOf("loading...") + 1) {
-                            window._loading.open(MSG);
+                            window._loading.open();
                             //log(`open`);
                         }
                         else if (MSG.indexOf("load finish") + 1) {
-                            window._loading.close(MSG);
+                            window._loading.close();
                             //log(`close`);
                         }
                     });
@@ -415,9 +436,13 @@ var loadApp = () => { // 按顺序加载应用
         }
     
     
+    
     registerserviceWorker()
+        .then(()=>{
+            return window.checkVersion("renju")
+        })
         .then(() => { 
-            window._loading.open("loading...");
+            window._loading.open();
             window._loading.lock(true);
             window._loading.text("0%");
             return loadCssAll([
@@ -450,12 +475,12 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => {
             window._loading.text("50%");
             return loadScriptAll([
-                ["script/checkerBoard-0801.js"],
-                ["script/control_0801.js"],
+                ["script/checkerBoard-0810.js"],
+                ["script/control_0810.js"],
                 ["script/msgbox-0801.js"],
                 ["script/appData-0801.js"],
-                ["script/worker-0805.js"],
-                ["script/engine-0805.js"],
+                ["script/Evaluator.js"],
+                ["script/engine-0810.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
                 ], true)
@@ -467,21 +492,27 @@ var loadApp = () => { // 按顺序加载应用
                 ["script/jsPDF/PFSCHeavy.js"],
                 ], true)
         })
+        .then(() => {
+            window._loading.text("95%");
+            return loadFileAll([
+                ["script/worker-0810.js"],
+                ], true)
+        })
         .then(()=>{
             window._loading.text("99%");
             resetNoSleep();
             const UI = createUI();
             window.viewport1.resize();
             window._loading.lock(false);
-            window._loading.close("load finish");
+            window._loading.close();
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
             log(window.navigator.userAgent)
         })
         .catch((err)=>{
-            setTimeout(() => {
-                const MSG = "打开网页出错, 准备刷新\n" + err;
-                alert(MSG);
+            setTimeout(() => {  
+                const MSG = "❌" + "打开网页出错, 准备刷新"+ "\n\n" +  err;
+                alert(MSG)
                 setTimeout(()=>window.location.reload(), 1000);
             },0);
         });

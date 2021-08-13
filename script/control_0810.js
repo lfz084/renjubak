@@ -1,3 +1,4 @@
+window.SCRIPT_VERSION["control"] = "v0810";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -439,7 +440,7 @@ window.control = (() => {
                     cBd.isShowAutoLine = cShownum.menu.lis[2].checked;
                     break;
             }
-            cBd.autoShow("now");
+            cBd.autoShow();
 
             function setLis(idx, checked) {
                 cShownum.menu.lis[idx].checked = checked;
@@ -2607,7 +2608,7 @@ window.control = (() => {
                     let color = getRenjuSelColor();
                     if (add > -1) { // add Num
                         for (let i = 0; i < mv.length; i++) {
-                            cBd.wNb(mv[i], "auto", true);
+                            cBd.wNb(mv[i], "auto", true, undefined, undefined, 100);
                         }
                     }
                     else { //printMoves
@@ -2629,6 +2630,7 @@ window.control = (() => {
 
     function busy() {
         let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
+        if (busy) window._loading.open("busy", 1600);
         return busy;
     }
 

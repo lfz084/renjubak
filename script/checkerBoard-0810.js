@@ -1,3 +1,4 @@
+window.SCRIPT_VERSION["checkerBoard"] = "v0810";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -13,6 +14,12 @@ window.checkerBoard = (function() {
     function log(param) {
         if (TEST_CHECKER_BOARD && DEBUG)
             console.log(`[checkerBoard.js]\n>> ` + param);
+    }
+
+    function bind(callback, _this) {
+        return function() {
+            callback.call(_this);
+        }
     }
 
     var tempp = new point(0, 0, undefined);
@@ -239,7 +246,6 @@ window.checkerBoard = (function() {
         this.oldResetNum = 0;
         this.oldCode = "";
         this.tree = new this.node();
-        //this.timerUnpackTree = null;
         this.unpacking = false;
         this.threePoints = {};
 
@@ -327,7 +333,24 @@ window.checkerBoard = (function() {
         s.zIndex = -100;
         this.parentNode.appendChild(this.drawLine.selectDiv);
 
-        //this.resetCutDiv();
+        this.delay = function() { // 设置延迟执行
+            let timer;
+            return function(callback, t) {
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(callback, t);
+            }
+        }();
+
+        this.autoDelay = function(cBoard) {
+            return function(callback, timer) {
+                if (timer == "now") {
+                    callback();
+                }
+                else {
+                    cBoard.delay(callback, timer);
+                }
+            }
+        }(this)
     }
 
 
@@ -344,10 +367,10 @@ window.checkerBoard = (function() {
                 let idx = y * this.SLTX + x;
                 switch (arr[y][x]) {
                     case 1:
-                        this.wNb(idx, "black", undefined, TYPE_BLACK);
+                        this.wNb(idx, "black", undefined, TYPE_BLACK, undefined, 100);
                         break;
                     case 2:
-                        this.wNb(idx, "white", undefined, TYPE_WHITE);
+                        this.wNb(idx, "white", undefined, TYPE_WHITE, undefined, 100);
                         break;
                 }
             }
@@ -361,27 +384,12 @@ window.checkerBoard = (function() {
         log(`addTrue ${this.autoColor}`)
         this.tree.moveNodes = [];
         this.tree.moveNodesIndex = -1;
-        let exWindow = control.getEXWindow();
-        //exWindow.openWindow();
-
-        /*
-          this.tree.childNode.push({ idx: 1, node: new node() });
-          let nd = this.tree.childNode[0].node;
-          nd.parentNode = this.tree;
-          nd.childNode = [{ idx: 2, node: new node() }, { idx: 3, node: new node() }, { idx: 4, node: new node() }];
-          nd.childNode[0].node.childNode = [{ idx: 5, node: new node() }];
-          nd.childNode[1].node.childNode = [{ idx: 6, node: new node() }];
-          nd.childNode[2].node.childNode = [{ idx: 7, node: new node() }];
-        */
-        //log(this.tree);
-        //log("addTree")
-        //this.unpackTree();
-
+        this.autoShow();
     };
 
 
 
-    checkerBoard.prototype.autoShow = function(timer) {
+    checkerBoard.prototype.autoShow = function(timer = "now") {
 
         let playmodel = control.getPlayModel();
         //log(`playmofel=${control.getPlayModel()}`)
@@ -396,7 +404,7 @@ window.checkerBoard = (function() {
             show();
         }
         else {
-            this.timerAutoShow = setTimeout(show, 100);
+            this.timerAutoShow = setTimeout(show, parseInt(timer));
         }
 
         function show() {
@@ -552,15 +560,14 @@ window.checkerBoard = (function() {
 
             //  打印棋盘
             for (let i = 0; i <= tMSindex; i++) {
-                this.toNext(isShowNum);
+                this.toNext(isShowNum, 100);
             }
             for (let i = 0; i < wMS.length; i++) {
-                this.wNb(wMS[i], `white`);
+                this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
             }
             for (let i = 0; i < bMS.length; i++) {
-                this.wNb(bMS[i], `black`);
+                this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
             }
-            this.autoShow("now");
         }
 
     };
@@ -625,13 +632,13 @@ window.checkerBoard = (function() {
 
         //  打印棋盘
         for (let i = 0; i <= tMSindex; i++) {
-            this.toNext(isShowNum);
+            this.toNext(isShowNum, 100);
         }
         for (let i = 0; i < wMS.length; i++) {
-            this.wNb(wMS[i], `white`);
+            this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
         }
         for (let i = 0; i < bMS.length; i++) {
-            this.wNb(bMS[i], `black`);
+            this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
         }
 
     };
@@ -695,13 +702,13 @@ window.checkerBoard = (function() {
 
         //  打印棋盘
         for (let i = 0; i <= tMSindex; i++) {
-            this.toNext(isShowNum);
+            this.toNext(isShowNum, 100);
         }
         for (let i = 0; i < wMS.length; i++) {
-            this.wNb(wMS[i], `white`);
+            this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
         }
         for (let i = 0; i < bMS.length; i++) {
-            this.wNb(bMS[i], `black`);
+            this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
         }
 
     };
@@ -777,15 +784,14 @@ window.checkerBoard = (function() {
 
             //  打印棋盘
             for (let i = 0; i <= tMSindex; i++) {
-                this.toNext(isShowNum);
+                this.toNext(isShowNum, 100);
             }
             for (let i = 0; i < wMS.length; i++) {
-                this.wNb(wMS[i], `white`);
+                this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
             }
             for (let i = 0; i < bMS.length; i++) {
-                this.wNb(bMS[i], `black`);
+                this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
             }
-            this.autoShow("now");
         }
 
     };
@@ -852,8 +858,7 @@ window.checkerBoard = (function() {
                 refreshLine.call(this, idx);
             }
         }
-        //autoShow = autoShow == undefined ? true : autoShow;
-        //if (autoShow) this.showAutoLine(this.isShowAutoLine);
+
 
         function refreshLine(idx) {
             let mv = [0, -this.SLTX, this.SLTX, -1, 1];
@@ -871,7 +876,8 @@ window.checkerBoard = (function() {
 
 
     // 删除一颗棋子,不删除MS的记录
-    checkerBoard.prototype.cleNb = function(idx, showNum) {
+    checkerBoard.prototype.cleNb = function(idx, showNum, timer = "now") {
+
         if (idx < 0) return;
         if (this.P[idx].type == TYPE_NUMBER) {
             this.cletLbMoves();
@@ -881,21 +887,20 @@ window.checkerBoard = (function() {
             refreshLine.call(this, this.MS[i]);
             this.MSindex--;
             this.showLastNum(showNum);
-            //log("cleNb")
-            //this.unpackTree();
         }
         else if (this.P[idx].type == TYPE_BLACK || this.P[idx].type == TYPE_WHITE) {
             if (this.oldCode) return;
             this.cletLbMoves();
             this.clePoint(idx);
             refreshLine.call(this, idx);
-
         }
         if (this.threePoints.arr) this.cleThreePoints();
-        this.autoShow();
-        //this.showFoul(this.isShowFoul);
+        this.autoDelay(bind(function() {
+            this.autoShow();
+        }, this), timer);
 
         function refreshLine(idx) {
+
             let mv = [0, -this.SLTX, this.SLTX, -1, 1];
             for (let i = mv.length - 1; i >= 0; i--) {
                 let nIdx = idx + mv[i];
@@ -2138,7 +2143,7 @@ window.checkerBoard = (function() {
             this.MSToMoves();
             this.removeTree();
             this.cleThreePoints();
-            this.autoShow("now");
+            this.autoShow();
         }
 
         // 复制一个点，同时打印出来
@@ -3285,7 +3290,7 @@ window.checkerBoard = (function() {
         if (this.MS.length) this.showLastNum(this.isShowNum);
         this.refreshMarkLine("all");
         this.refreshMarkArrow("all");
-        this.autoShow("now");
+        this.autoShow();
 
     }
 
@@ -4070,7 +4075,7 @@ window.checkerBoard = (function() {
         }
         else if (this.MSindex < this.MS.length - 1) {
             while (this.MSindex < this.MS.length - 1) {
-                this.toNext(isShowNum);
+                this.toNext(isShowNum, 100);
             }
         }
         else {
@@ -4079,7 +4084,7 @@ window.checkerBoard = (function() {
                 let moveNodesIndex = this.tree.moveNodesIndex;
                 let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
                 let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
-                this.wNb(idx, "auto", isShowNum);
+                this.wNb(idx, "auto", isShowNum, undefined, undefined, 100);
             }
         }
     };
@@ -4087,7 +4092,7 @@ window.checkerBoard = (function() {
 
 
     // 跳到下一手
-    checkerBoard.prototype.toNext = function(isShowNum) {
+    checkerBoard.prototype.toNext = function(isShowNum, timer = "now") {
 
         if (this.threePoints.arr) {
             if (this.threePoints.index == -1) {
@@ -4101,7 +4106,7 @@ window.checkerBoard = (function() {
         }
         else {
             if (this.MS.length - 1 > this.MSindex) {
-                this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum);
+                this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum, undefined, undefined, timer);
             }
             else {
                 if (this.oldCode) { // auto move
@@ -4110,7 +4115,7 @@ window.checkerBoard = (function() {
                     let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
                     let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
                     //log(`index=${moveNodesIndex}, idx=${idx}`)
-                    this.wNb(idx, "auto", isShowNum);
+                    this.wNb(idx, "auto", isShowNum, undefined, undefined, timer);
                 }
                 //if (this.oldCode == "") this.addTree();
             }
@@ -4120,7 +4125,7 @@ window.checkerBoard = (function() {
 
 
     // 返回上一手
-    checkerBoard.prototype.toPrevious = function(isShowNum) {
+    checkerBoard.prototype.toPrevious = function(isShowNum, timer = "now") {
 
         if (this.threePoints.arr) {
             if (this.threePoints.index > -1) {
@@ -4137,7 +4142,7 @@ window.checkerBoard = (function() {
         }
         else {
             if (this.MSindex >= 0) {
-                this.cleNb(this.MS[this.MSindex], isShowNum);
+                this.cleNb(this.MS[this.MSindex], isShowNum, timer);
             }
             else if (this.oldCode) {
                 msgbox(`确定删除计算结果吗`, "确定",
@@ -4160,9 +4165,9 @@ window.checkerBoard = (function() {
         }
         else {
             while (this.MSindex > 0) {
-                this.toPrevious(isShowNum);
+                this.toPrevious(isShowNum, 100);
             }
-            if (this.oldCode) this.toPrevious(isShowNum);
+            if (this.oldCode) this.toPrevious(isShowNum, 100);
         }
     };
 
@@ -4214,8 +4219,7 @@ window.checkerBoard = (function() {
                 m = m.substr(1);
             }
             // 棋谱坐标转成 index 后添加棋子
-            this.wNb(this.nameToIndex(a), color, showNum)
-
+            this.wNb(this.nameToIndex(a), color, showNum, undefined, undefined, 100)
         }
     };
 
@@ -4226,18 +4230,11 @@ window.checkerBoard = (function() {
         //log(this.tree)
         if (this.unpacking || this.oldCode == "") return;
         if (this.oldCode) {
-            /*
-            if (this.timerUnpackTree) {
-                clearTimeout(this.timerUnpackTree);
-                this.timerUnpackTree = null;
-            }
-            */
 
             let MS = this.MS;
             let MSindex = this.MSindex;
             let moveNodes = this.tree.moveNodes;
             let moveNodesIndex = this.tree.moveNodesIndex;
-            //this.timerUnpackTree 
 
             this.unpacking = true;
             this.cleLb("all");
@@ -4249,13 +4246,7 @@ window.checkerBoard = (function() {
             let nd;
             let txt = MSindex % 2 ? "W" : "L";
             let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
-            //if (this.tree.keyMap.has(getKey(arr))) alert("has")
-            /*
-            if (MSindex == moveNodesIndex) {
-                nd = MSindex > -1 ? moveNodes[MSindex] : this.tree;
-                //printChildNode.call(this, nd, txt);
-            }
-            else*/
+
             if (MSindex - 1 == moveNodesIndex) {
                 //let i = 0; //unpackTree
                 //for (i = 0; i <= MSindex; i++) {
@@ -4321,19 +4312,6 @@ window.checkerBoard = (function() {
                 moveNodes.length = this.MS.length;
                 moveNodes[MSindex] = nd;
             }
-            /*
-            else if (MSindex < moveNodesIndex) {
-                moveNodes.length = this.MS.length;
-                nd = MSindex == -1 ? this.tree : moveNodes[MSindex];
-                //printChildNode.call(this, nd, txt);
-            }
-            else if (MSindex - 2 >= moveNodesIndex) {
-                for (let i = MSindex - moveNodesIndex; i >= 1; i--) {
-                    moveNodes.push(new Node());
-                }
-                
-            }
-            */
 
             this.tree.moveNodesIndex = MSindex;
             printChildNode.call(this, moveNodes[MSindex] || this.tree, txt);
@@ -4343,7 +4321,6 @@ window.checkerBoard = (function() {
 
 
             function printChildNode(node, txt) {
-
                 let exWindow = control.getEXWindow();
                 exWindow.innerHTML(node.innerHTML || "");
                 if (node.innerHTML) exWindow.openWindow();
@@ -4351,13 +4328,6 @@ window.checkerBoard = (function() {
                 for (let i = node.childNode.length - 1; i >= 0; i--) {
                     this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");
                 }
-                /*
-                if (!(MSindex % 2) && lvl.level < 4) {
-                    newarr = getArr([]);
-                    findFour(arr, this.tree.firstColor == "black" ? 2 : 1, newarr);
-                    this.printArray(newarr, txt, "black");
-                }
-                */
             }
 
             function printLines(lines = []) {
@@ -4418,15 +4388,15 @@ window.checkerBoard = (function() {
             }
             this.resetNum = bNarr.length;
             for (let i = 0; i < bNarr.length; i++) {
-                this.wNb(bNarr[i], "auto", isShowNum, TYPE_NUMBER);
+                this.wNb(bNarr[i], "auto", isShowNum, TYPE_NUMBER, undefined, 100);
             }
         }
         else {
             for (let i = 0; i < bNarr.length; i++) {
-                this.wNb(bNarr[i], "black", isShowNum, TYPE_BLACK);
+                this.wNb(bNarr[i], "black", isShowNum, TYPE_BLACK, undefined, 100);
             }
             for (let i = 0; i < wNarr.length; i++) {
-                this.wNb(wNarr[i], "white", isShowNum, TYPE_WHITE);
+                this.wNb(wNarr[i], "white", isShowNum, TYPE_WHITE, undefined, 100);
             }
         }
     };
@@ -4452,14 +4422,13 @@ window.checkerBoard = (function() {
         //this.refreshMarkLine(idx);
         this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
         this.refreshMarkArrow(idx);
-        //autoShow = autoShow == undefined ? true : autoShow;
-        //if (autoShow) this.showAutoLine(this.isShowAutoLine);
     };
 
 
 
     // 在棋盘的一个点上面，摆一颗棋子
-    checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint) {
+    checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
+
         if (idx < 0) return;
         let i = this.MSindex + 1;
         if (this.oldCode) {
@@ -4495,8 +4464,11 @@ window.checkerBoard = (function() {
 
         this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
         if (this.threePoints.arr) this.cleThreePoints();
+
         this.refreshMarkArrow(idx);
-        this.autoShow();
+        this.autoDelay(bind(function() {
+            this.autoShow();
+        }, this), timer);
     };
 
 
@@ -4535,7 +4507,6 @@ window.checkerBoard = (function() {
         p.y = p.y + t;
     };
 
-    "use strict";
 
     window.TYPE_EMPTY = TYPE_EMPTY;
     window.TYPE_MARK = TYPE_MARK; // 标记

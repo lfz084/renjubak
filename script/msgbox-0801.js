@@ -1,3 +1,4 @@
+ window.SCRIPT_VERSION["msgbox"] = "v0810";
  // 弹窗代码
  (function() {
      "use strict";
