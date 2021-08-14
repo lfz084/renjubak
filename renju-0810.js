@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0810";
+self.SCRIPT_VERSION["renju"] = "v0811";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -89,7 +89,7 @@ var loadApp = () => { // 按顺序加载应用
             return {
                 open: (animaName, _timeout) => { //打开动画
                     //if (lock) return;
-                    log("_loading.open")
+                    //log("_loading.open")
                     if (!WIN_LOADING.parentNode) {
                         ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
                         document.body.appendChild(WIN_LOADING);
@@ -103,7 +103,7 @@ var loadApp = () => { // 按顺序加载应用
                 },
                 close: () => { //关闭动画
                     if (lock) return;
-                    log("_loading.close")
+                    //log("_loading.close")
                     if (timer) {
                         clearTimeout(timer);
                     }
@@ -159,13 +159,13 @@ var loadApp = () => { // 按顺序加载应用
                 link.type = 'text/css';
                 link.rel = 'stylesheet';
                 link.onload = () => {
-                    log(`loadCss = ${filename}`);
+                    log(`loadCss "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
                 }
                 link.onerror = (err) => {
-                    log(`loadCss_Error =[] ${filename} `);
+                    log(`loadCss_Error: "${filename}"`);
                     reject(err);
                 }
                 link.href = url;
@@ -177,7 +177,7 @@ var loadApp = () => { // 按顺序加载应用
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
-                    log(`loadFont = ${filename}`);
+                    log(`loadFont "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
@@ -193,7 +193,7 @@ var loadApp = () => { // 按顺序加载应用
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
-                    log(`loadFile = ${filename}`);
+                    log(`loadFile "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
@@ -215,16 +215,16 @@ var loadApp = () => { // 按顺序加载应用
                 oScript.rel = "preload";
                 oScript.as = "script";
                 oScript.onload = () => {
-                    log(`loadScript = ${filename}`);
+                    //log(`loadScript "${filename}"`);
                     setTimeout(() => {
                         let key = filename.split(/[\-\_\.]/)[0];
                         window.checkVersion(key)
-                        .then(resolve)
-                        .catch(reject)
+                            .then(resolve)
+                            .catch(reject)
                     }, 0);
                 }
                 oScript.onerror = (err) => {
-                    log(`loadScript_Error = ${filename} `);
+                    log(`loadScript_Error: "${filename}"`);
                     reject(err);
                 }
                 oScript.src = url;
@@ -336,7 +336,7 @@ var loadApp = () => { // 按顺序加载应用
                     });
                     navigator.serviceWorker.addEventListener("message", function(event) {
                         const MSG = event.data;
-                        log(MSG);
+                        //log(MSG);
                         if (MSG.indexOf("loading...") + 1) {
                             window._loading.open();
                             //log(`open`);
@@ -351,10 +351,13 @@ var loadApp = () => { // 按顺序加载应用
                         scope: './'
                     }).then(function(registration) {
                         var serviceWorker;
+                        const MSG = `摆棋小工具需要更新版本: ${APP_VERSION}\n请关闭浏览器，重新打开`;
                         if (registration.installing) {
                             serviceWorker = registration.installing;
+                            alert(MSG)
                         } else if (registration.waiting) {
                             serviceWorker = registration.waiting;
+                            alert(MSG)
                         } else if (registration.active) {
                             serviceWorker = registration.active;
                         }
@@ -386,6 +389,22 @@ var loadApp = () => { // 按顺序加载应用
                 return true;
             }
         })();
+        
+        function testBrowser(){
+            let Msg = "";
+            Msg += `_____________________\n `;
+            Msg += `serviceWorker: ${"serviceWorker" in navigator}\n`;
+            Msg += `Worker: ${"Worker" in window}\n`;
+            Msg += `caches: ${"caches" in window}\n`;
+            Msg += `localStorage: ${"localStorage" in window}\n`;
+            Msg += `msSaveOrOpenBlob in navigator: ${"msSaveOrOpenBlob" in navigator}\n`;
+            Msg += `download in HTMLAnchorElement.prototype: ${"download"  in HTMLAnchorElement.prototype}\n`;
+            Msg += `_____________________\n `;
+            Msg += `\nuserAgent: ${window.navigator.userAgent}\n`
+            Msg += `_____________________\n `;
+            window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
+            log("testBrowser:\n" + Msg);
+        }
 
         function createUI() {
             try {
@@ -396,9 +415,10 @@ var loadApp = () => { // 按顺序加载应用
                 bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
                 bodyDiv.style.left = "0px";
                 bodyDiv.style.top = "0px";
-                //bodyDiv.style.opacity = "0";
+                bodyDiv.style.opacity = "0";
                 //bodyDiv.style.backgroundColor = "black";
                 bodyDiv.setAttribute("class", "finish");
+                setTimeout(()=>{bodyDiv.style.opacity = "1"}, 300);
                 
                 let upDiv = d.createElement("div");
                 bodyDiv.appendChild(upDiv);
@@ -431,7 +451,7 @@ var loadApp = () => { // 按顺序加载应用
                                 `;
             }
         }
-    
+        
     
     
     registerserviceWorker()
@@ -464,6 +484,7 @@ var loadApp = () => { // 按顺序加载应用
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
+                    testBrowser();
                 }],
                 ["script/button-0801.js"],
                 ["script/emoji.js"],// first load emoji
@@ -504,7 +525,7 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.close();
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
-            log(window.navigator.userAgent)
+            log(window.TEST_INFORMATION);
         })
         .catch((err)=>{
             setTimeout(() => {  

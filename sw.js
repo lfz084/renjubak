@@ -1,4 +1,4 @@
-var VERSION = "v0810";
+var VERSION = "v0811";
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -50,6 +50,7 @@ let load = (() => {
 // 缓存
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
+    //self.skipWaiting();
     event.waitUntil(
         caches.open(VERSION).then(function(cache) {
             return cache.addAll([

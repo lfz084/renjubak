@@ -337,11 +337,30 @@
     z-index: 1;
     line-height: 70px;
     opacity: 0;
-    animation: anm-CL-101-fill 0.8s ease 0s alternate 2;
+    animation: anm-CL-101-fill-1 0.8s ease 0s alternate 2;
 }
 @keyframes anm-CL-101-fill {
+    0% {
+        top: 75px;
+        opacity: 0;
+    }
+    50% {
+        top: 0;
+        opacity: 1;
+    }
     100% {
         top: 0;
+        opacity: 1;
+    }
+}
+@keyframes anm-CL-101-fill-1 {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
         opacity: 1;
     }
 }
