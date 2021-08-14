@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0811";
+self.SCRIPT_VERSION["renju"] = "v0169";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -327,6 +327,8 @@ var loadApp = () => { // 按顺序加载应用
             return loadAll(loadScript, config, ayc);
         }
 
+        let serviceWorker_state;
+
         function registerserviceWorker() {
 
             return new Promise((resolve, reject) => {
@@ -351,17 +353,15 @@ var loadApp = () => { // 按顺序加载应用
                         scope: './'
                     }).then(function(registration) {
                         var serviceWorker;
-                        const MSG = `摆棋小工具需要更新版本: ${APP_VERSION}\n请关闭浏览器，重新打开`;
                         if (registration.installing) {
                             serviceWorker = registration.installing;
-                            alert(MSG)
                         } else if (registration.waiting) {
                             serviceWorker = registration.waiting;
-                            alert(MSG)
                         } else if (registration.active) {
                             serviceWorker = registration.active;
                         }
                         if (serviceWorker) {
+                            serviceWorker_state = serviceWorker.state;
                             log(`serviceWorker.state=${serviceWorker.state}`)
                         }
                         resolve();
@@ -405,6 +405,26 @@ var loadApp = () => { // 按顺序加载应用
             window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
             log("testBrowser:\n" + Msg);
         }
+        
+        
+        function newVersion() {
+            if ("localStorage" in window){
+                const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
+                if (OLD_VERDION != window.APP_VERSION &&
+                    (serviceWorker_state == "installed" ||
+                    serviceWorker_state == "activated" ||
+                    serviceWorker_state == undefined)
+                )
+                {
+                    const MSG = `摆棋小工具 已经更新: ${ window.APP_VERSION }`;
+                    alert(MSG + serviceWorker_state);
+                    localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
+                }
+                alert(serviceWorker_state)
+            }
+        }
+        
+        
 
         function createUI() {
             try {
@@ -526,6 +546,7 @@ var loadApp = () => { // 按顺序加载应用
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
             log(window.TEST_INFORMATION);
+            newVersion(); // 提示新版本 更新已经完成
         })
         .catch((err)=>{
             setTimeout(() => {  
