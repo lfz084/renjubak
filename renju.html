@@ -18,7 +18,7 @@
 <body>
     <script language="javascript">
         "use strict";
-        window.APP_VERSION = "v0812.5";
+        window.APP_VERSION = "v0812.2";
         window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
             viewport: 1,
@@ -39,18 +39,20 @@
                 console.log(`[index] \n>> checkVersion \n[${[filename, ver || "undefined"]}]`);
                 if (ver && (ver != window.APP_VERSION)) {
                     const ERR = `如果反复刷新无效，请用无痕浏览模式`;
-                    const ASK = `版本号不一致，可能影响正常运行。\n\n${strLen("renju.html", 30)}  版本号: ${window.APP_VERSION} \n${strLen(filename+".js", 30)}  版本: ${self.SCRIPT_VERSION[filename]}  \n\n按确定刷新网页，按取消继续加载`;
+                    const ASK = `版本号不一致，可能影响正常运行。\n\n${strLen("renju.html", 30)}  版本号: ${window.APP_VERSION} \n${strLen(filename+".js", 30)}  版本: ${self.SCRIPT_VERSION[filename]} `;
+                    const PS = ` \n\n按确定刷新网页，按取消继续加载`;
                     function strLen(str, len) {
                         return (str + new Array(len).join(" ")).slice(0, len)
                     }
-                    window.CHECK_VERSION = false;
-                    if (confirm(ASK)) {
+                    
+                    if (window.CHECK_VERSION && confirm(ASK + PS)) {
                         reject(ERR)
-                        throw (ERR)
                     }
                     else {
                         resolve();
                     }
+                    window.CHECK_VERSION = false;
+                    console.log(ASK);
                 }
                 else {
                     resolve();
