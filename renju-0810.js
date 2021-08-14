@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0812.8";
+self.SCRIPT_VERSION["renju"] = "v0813";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -328,7 +328,7 @@ var loadApp = () => { // 按顺序加载应用
         }
 
         let serviceWorker_state;
-
+        
         function registerserviceWorker() {
 
             return new Promise((resolve, reject) => {
@@ -373,6 +373,24 @@ var loadApp = () => { // 按顺序加载应用
                 }
             });
         }
+        
+        function newVersion() {
+            if ("localStorage" in window) {
+                const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
+                if (OLD_VERDION != window.APP_VERSION &&
+                    window.CHECK_VERSION &&
+                    (serviceWorker_state == "installed" ||
+                        serviceWorker_state == "activated" ||
+                        serviceWorker_state == undefined)
+                )
+                {
+                    const MSG = `摆棋小工具 已经完成更新: ${ window.APP_VERSION }`;
+                    msg(MSG);
+                    localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
+                }
+                //alert(serviceWorker_state)
+            }
+        }
 
         function openVConsole() {
             const IS_DEBUG = localStorage.getItem("debug");
@@ -404,25 +422,6 @@ var loadApp = () => { // 按顺序加载应用
             Msg += `_____________________\n `;
             window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
             log("testBrowser:\n" + Msg);
-        }
-        
-        
-        function newVersion() {
-            if ("localStorage" in window){
-                const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
-                if (OLD_VERDION != window.APP_VERSION &&
-                    window.CHECK_VERSION &&
-                    (serviceWorker_state == "installed" ||
-                    serviceWorker_state == "activated" ||
-                    serviceWorker_state == undefined)
-                )
-                {
-                    const MSG = `摆棋小工具 已经完成更新: ${ window.APP_VERSION }`;
-                    msg(MSG);
-                    localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
-                }
-                //alert(serviceWorker_state)
-            }
         }
         
         
@@ -500,15 +499,15 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => { 
             window._loading.text("30%");
             return loadScriptAll([  //顺序 同步加载
-                ["script/viewport-0801.js",()=>{
+                ["script/viewport-0810.js",()=>{
                     window.viewport1 = new view(dw);
                 }],
                 ["script/vConsole/vconsole.min.js",()=>{
                     openVConsole();
                     testBrowser();
                 }],
-                ["script/button-0801.js"],
-                ["script/emoji.js"],// first load emoji
+                ["script/button-0810.js"],
+                ["script/emoji-0810.js"],// first load emoji
                 ],false)
         })
         .then(() => {
@@ -516,9 +515,9 @@ var loadApp = () => { // 按顺序加载应用
             return loadScriptAll([
                 ["script/checkerBoard-0810.js"],
                 ["script/control_0810.js"],
-                ["script/msgbox-0801.js"],
-                ["script/appData-0801.js"],
-                ["script/Evaluator.js"],
+                ["script/msgbox-0810.js"],
+                ["script/appData-0810.js"],
+                ["script/Evaluator-0810.js"],
                 ["script/engine-0810.js"],
                 ["script/NoSleep.min.js"],
                 ["script/jsPDF/jspdf.umd_01.js"],
@@ -550,6 +549,8 @@ var loadApp = () => { // 按顺序加载应用
             newVersion(); // 提示新版本 更新已经完成
         })
         .catch((err)=>{
+            if (typeof err == "object" && err.type)
+                err = err.message || err.type;
             setTimeout(() => {  
                 const MSG = "❌" + "打开网页出错, 准备刷新"+ "\n\n" +  err;
                 alert(MSG)

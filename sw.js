@@ -1,4 +1,4 @@
-var VERSION = "v0812.8";
+var VERSION = "v0813";
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -32,7 +32,7 @@ let load = (() => {
         loading: (msg) => {
             let url = msg;
             let filename = url.split("/").pop();
-            if (["worker-0810.js", "emoji.js", "Evaluator.js"].indexOf(filename) + 1) return;
+            if (["worker-0810.js", "emoji-0810.js", "Evaluator-0810.js"].indexOf(filename) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);
             }
@@ -137,6 +137,13 @@ self.addEventListener('fetch', function(event) {
                 })
         })
     }
+});
+
+self.addEventListener('message', function(event) {
+    if (event.data && event.data.type == "NEW_VERSION") {
+        VERSION = event.data.version;
+    }
+    postMsg(`serverWorker post: ${event.data}`)
 });
 
 function postMsg(msg) {

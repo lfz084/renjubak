@@ -16,10 +16,11 @@
 </head>
 
 <body>
+    <p>如果长时间无反应 <a href="renju.html" target="_self">点击刷新</a></p>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0812.8";
+        window.APP_VERSION = "v0813";
         window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
             viewport: 1,
@@ -48,7 +49,10 @@
                     }
 
                     if (window.CHECK_VERSION && confirm(ASK + PS)) {
-                        reject(ERR)
+                        removeAppCache()
+                            .then(() => {
+                                reject(ERR)
+                            })
                     }
                     else {
                         resolve();
@@ -61,10 +65,32 @@
                 }
             });
         }
+        window.removeAppCache = function() {
+            return new Promise((resolve, reject) => {
+                if (caches) {
+                    caches.keys().then(function(cacheNames) {
+                            return Promise.all(
+                                cacheNames.map(function(cacheName) {
+                                    return caches.delete(cacheName);
+                                })
+                            );
+                        })
+                        .then(resolve)
+                        .catch(reject)
+                }
+                else {
+                    resolve();
+                }
+            })
+        }
+
+        if (navigator.serviceWorker && navigator.serviceWorker.controller)
+            navigator.serviceWorker.controller.postMessage({ type: "NEW_VERSION", version: window.APP_VERSION });
     </script>
     <script>
         document.body.onload = () => {
             console.log(`body onload`)
+            document.body.innerHTML = "";
             window.DEBUG = true;
             loadApp();
         };

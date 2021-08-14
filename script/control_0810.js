@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["control"] = "v0812.8";
+self.SCRIPT_VERSION["control"] = "v0813";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1712,7 +1712,7 @@ window.control = (() => {
 
         //处理触摸开始事件
         function bodyTouchStart(evt) {
-
+        
             let touches = evt.changedTouches; //记录坐标，给continueSetCutDiv使用
             continueSetCutDivX = touches[0].pageX;
             continueSetCutDivY = touches[0].pageY;
@@ -1863,7 +1863,7 @@ window.control = (() => {
         }
 
         function bodyClick(x, y) {
-
+        
             let p = { x: 0, y: 0 };
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
