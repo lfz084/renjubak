@@ -18,7 +18,8 @@
 <body>
     <script language="javascript">
         "use strict";
-        window.APP_VERSION = "v0812";
+        window.APP_VERSION = "v0812.5";
+        window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
             viewport: 1,
             button: 1,
@@ -42,6 +43,7 @@
                     function strLen(str, len) {
                         return (str + new Array(len).join(" ")).slice(0, len)
                     }
+                    window.CHECK_VERSION = false;
                     if (confirm(ASK)) {
                         reject(ERR)
                         throw (ERR)

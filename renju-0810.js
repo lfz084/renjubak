@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0812";
+self.SCRIPT_VERSION["renju"] = "v0812.5";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -411,6 +411,7 @@ var loadApp = () => { // 按顺序加载应用
             if ("localStorage" in window){
                 const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
                 if (OLD_VERDION != window.APP_VERSION &&
+                    window.CHECK_VERSION &&
                     (serviceWorker_state == "installed" ||
                     serviceWorker_state == "activated" ||
                     serviceWorker_state == undefined)
