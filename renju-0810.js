@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0169";
+self.SCRIPT_VERSION["renju"] = "v0812";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -416,11 +416,11 @@ var loadApp = () => { // 按顺序加载应用
                     serviceWorker_state == undefined)
                 )
                 {
-                    const MSG = `摆棋小工具 已经更新: ${ window.APP_VERSION }`;
-                    alert(MSG + serviceWorker_state);
+                    const MSG = `摆棋小工具 已经完成更新: ${ window.APP_VERSION }`;
+                    msg(MSG);
                     localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 }
-                alert(serviceWorker_state)
+                //alert(serviceWorker_state)
             }
         }
         

@@ -320,37 +320,26 @@
     height: 100%;
     top: 75px;
     background-color: #8a8a8a;
-    opacity: 0;
-    animation: anm-CL-101-fill 0.8s ease 0s alternate 2;
+    /*animation: anm-CL-101-fill 0.8s ease 0s alternate 2;*/
     display: inline-block;
 }
 .loader-circle-101::after {
-    content: '忙';
+    content: '🚫';
     position: absolute;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     color: #fff;
     font-family: sans-serif;
-    font-size: 36px;
+    font-size: 50px;
     text-align: center;
     z-index: 1;
     line-height: 70px;
-    opacity: 0;
     animation: anm-CL-101-fill-1 0.8s ease 0s alternate 2;
 }
 @keyframes anm-CL-101-fill {
-    0% {
-        top: 75px;
-        opacity: 0;
-    }
-    50% {
-        top: 0;
-        opacity: 1;
-    }
     100% {
         top: 0;
-        opacity: 1;
     }
 }
 @keyframes anm-CL-101-fill-1 {
@@ -358,7 +347,7 @@
         opacity: 0;
     }
     50% {
-        opacity: 1;
+        opacity: 0.5;
     }
     100% {
         opacity: 1;
