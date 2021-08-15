@@ -137,8 +137,14 @@
             console.log(`body onload`)
             window.DEBUG = true;
             postVersion()
-                .then(checkAppVersion)
-                .then(loadApp)
+                .then(()=>{
+                    alert("postVersion")
+                    checkAppVersion()
+                })
+                .then(()=>{
+                    alert("postVersion")
+                    loadApp()
+                })
                 .then(() => {
                     const BUT = document.getElementById("butRefresh");
                     if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);

@@ -14,6 +14,9 @@
 </head>
 
 <body onload="resetPage()">
+    <script>
+        window.SCRIPT_VERSION = {};
+    </script>
     <script src="./script/button-0810.js"></script>
     <script src="./script/viewport-0810.js"></script>
     <script src="./script/msgbox-0810.js"></script>
@@ -705,10 +708,10 @@
                 s.zIndex = -100;
             }
         })();
-        if (dw<dh) {
-            setTop(fileDiv.offsetTop+cT);
+        if (dw < dh) {
+            setTop(fileDiv.offsetTop + cT);
         }
-        else{
+        else {
             setTop(0);
         }
 
@@ -1184,7 +1187,7 @@
             //alert("lockClk")
             if (chkLock.checked)
             {
-                console.log("chkLock.checked="+chkLock.checked)
+                console.log("chkLock.checked=" + chkLock.checked)
                 XL = v.offsetLeft;
                 XR = XL + parseInt(v.style.width);
                 YT = v.offsetTop;
@@ -1237,7 +1240,7 @@
             }
             else
             {
-                console.log("chkLock.checked="+chkLock.checked)
+                console.log("chkLock.checked=" + chkLock.checked)
                 openImg(img, tempHistoryIndex, function() {
                     resetMDiv(); // 
                     MS.length = 0;
@@ -1848,7 +1851,7 @@
             }
             catch (err) {
                 //console.log("reLoad");
-                location.reload();
+                //location.reload();
             }
         }
 
