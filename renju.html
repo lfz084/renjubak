@@ -139,11 +139,11 @@
             postVersion()
                 .then(()=>{
                     alert("postVersion")
-                    checkAppVersion()
+                    return checkAppVersion()
                 })
                 .then(()=>{
-                    alert("postVersion")
-                    loadApp()
+                    alert("checkAppVersion")
+                    return loadApp()
                 })
                 .then(() => {
                     const BUT = document.getElementById("butRefresh");
