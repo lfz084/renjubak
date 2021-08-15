@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0813.1";
+self.SCRIPT_VERSION["renju"] = "v0815.0";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -389,12 +389,25 @@ var loadApp = () => { // 按顺序加载应用
                         serviceWorker_state == undefined)
                 )
                 {
-                    const MSG = `摆棋小工具 已经完成更新: ${ window.APP_VERSION }`;
-                    msg(MSG);
+                    let infoArr = window.UPDATA_INFO[window.APP_VERSION];
+                    let lineNum = infoArr ? infoArr.length + 7 : 1;
+                    let Msg = lineNum > 1 ? "\n\t" : "";
+                    Msg += `摆棋小工具 更新完毕`;
+                    if (infoArr) {
+                        Msg += `\n\t_____________________ `;
+                        Msg += `\n\t版本： ${window.APP_VERSION}\n`;
+                        for (let i = 0; i < infoArr.length; i++)
+                            Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
+                        Msg += `\n\t_____________________ `;
+                    }
+                    msg(Msg, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+                        1, lineNum);
                     localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 }
             }
         }
+
+        //alert(("undefined").join("\n"))
 
         function logVersions() {
             let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;

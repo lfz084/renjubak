@@ -1,4 +1,4 @@
-var VERSION = "v0813.1";
+var VERSION = "v0815.0";
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
