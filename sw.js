@@ -1,4 +1,4 @@
-var VERSION = "v0813";
+var VERSION = "v0813.1";
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -32,7 +32,7 @@ let load = (() => {
         loading: (msg) => {
             let url = msg;
             let filename = url.split("/").pop();
-            if (["worker-0810.js", "emoji-0810.js", "Evaluator-0810.js"].indexOf(filename) + 1) return;
+            if (["worker", "emoji", "Evaluator"].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);
             }

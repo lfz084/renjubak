@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSION) self.SCRIPT_VERSION["worker"] = "v0813";
+if (self.SCRIPT_VERSION) self.SCRIPT_VERSION["worker"] = "v0813.1";
 if (self.importScripts)
     self.importScripts('emoji-0810.js',`Evaluator-0810.js`);
 

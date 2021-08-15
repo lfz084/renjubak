@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0813";
+self.SCRIPT_VERSION["renju"] = "v0813.1";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -429,6 +429,10 @@ var loadApp = () => { // 按顺序加载应用
             Msg += `serviceWorker: ${"serviceWorker" in navigator}\n`;
             Msg += `Worker: ${"Worker" in window}\n`;
             Msg += `caches: ${"caches" in window}\n`;
+            const canvas = document.createElement("canvas");
+            Msg += `canvas: ${!!canvas.getContext}\n`
+            Msg += `canvas.toBlob: ${typeof canvas.toBlob=="function"}\n`;
+            Msg += `canvas.toDataURL: ${typeof canvas.toDataURL=="function"}\n`;
             Msg += `localStorage: ${"localStorage" in window}\n`;
             Msg += `msSaveOrOpenBlob in navigator: ${"msSaveOrOpenBlob" in navigator}\n`;
             Msg += `download in HTMLAnchorElement.prototype: ${"download"  in HTMLAnchorElement.prototype}\n`;
