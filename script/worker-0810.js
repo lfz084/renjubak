@@ -1150,7 +1150,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     fs = fs.concat(aroundFindPoint(newarr, 112));
                     vcfFS = fs;
                 }
-                //mConsole(`>>___\n${fs}`)
+                //mConsole(`>>___\n\n${fs}`)
                 ed = fs.length - 1;
                 let idx; // 优先选择活4,再43
                 if (ed > st) { // 两个以上冲四点，优先选择活4,再43
@@ -1190,7 +1190,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                         }
                     }
                 }
-                //mConsole(`<<___\n${fs}`)
+                //mConsole(`<<___\n\n${fs}`)
 
                 tx = getX(fs[ed]);
                 ty = getY(fs[ed]);
@@ -3189,7 +3189,7 @@ function isTwoVCF(idx, color, arr) {
                     moves = moves.concat(fMoves[j]);
 
                     post("showLabel", {text:`${count++}/${maxCount} [${moveIndexToName(moves,20)}]`, timeout:500000});
-                    //if (test) mConsole(`__\n${moveIndexToName(moves)}`)
+                    //if (test) mConsole(`__\n\n${moveIndexToName(moves)}`)
                     let nd = node;
                     nd = movesToNode(fMoves[j], nd);
                     keyMapList.push({ key: getKey(arr), node: nd });
@@ -3371,7 +3371,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                     }
                 }
             }
-            if (test) mConsole(`_______\n${toStr(newarr)}`);
+            if (test) mConsole(`_______\n\n${toStr(newarr)}`);
             x = getX(moves[moves.length - 1]);
             y = getY(moves[moves.length - 1]);
             //arr[y][x] = color;
@@ -3467,7 +3467,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
                     //if (test) mConsole(`j=${j}, pw=3, direction=${DIRECTIONS[i]}\n________`);
                     if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
                         if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
-                            //if (test) mConsole(`i=${i}, j=${j}, pw=3, direction=${DIRECTIONS[i]}\n________\n${toStr(arr)}`);
+                            //if (test) mConsole(`i=${i}, j=${j}, pw=3, direction=${DIRECTIONS[i]}\n________\n\n${toStr(arr)}`);
                             let k;
                             let p;
                             for (k = 2; k < 5; k++) {
@@ -3534,7 +3534,7 @@ function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
         }
 
         arr[y][x] = "*";
-        //if (test) mConsole(`depth=${depth}\ncount=${count}<<________\n${toStr(arr)}`);
+        //if (test) mConsole(`depth=${depth}\ncount=${count}<<________\n\n${toStr(arr)}`);
         arr[y][x] = color;
 
 
@@ -3938,7 +3938,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             let x = winLevel.p.x;
             arr[y][x] = color == 1 ? 2 : 1;
             let num = findVCF(arr, color, 1, maxNum - 2, timeout);
-            //if (node.idx==111) mConsole(`${toStr(arr)}\n________\nwinLevel.level=${winLevel.level}\nfMum=${num}`)
+            //if (node.idx==111) mConsole(`${toStr(arr)}\n________\n\nwinLevel.level=${winLevel.level}\nfMum=${num}`)
             arr[y][x] = 0;
 
             if (num) {

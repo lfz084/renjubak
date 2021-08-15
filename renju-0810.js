@@ -208,26 +208,31 @@ var loadApp = () => { // 按顺序加载应用
         function loadScript(url) { //加载脚本
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
-                let oHead = document.getElementsByTagName('HEAD').item(0);
-                let oScript = document.createElement("script");
-                oHead.appendChild(oScript);
-                oScript.type = "text/javascript";
-                oScript.rel = "preload";
-                oScript.as = "script";
-                oScript.onload = () => {
-                    //log(`loadScript "${filename}"`);
-                    setTimeout(() => {
-                        let key = filename.split(/[\-\_\.]/)[0];
-                        window.checkVersion(key)
-                            .then(resolve)
-                            .catch(reject)
-                    }, 0);
+                try {
+                    let oHead = document.getElementsByTagName('HEAD').item(0);
+                    let oScript = document.createElement("script");
+                    oHead.appendChild(oScript);
+                    oScript.type = "text/javascript";
+                    oScript.rel = "preload";
+                    oScript.as = "script";
+                    oScript.onload = () => {
+                        //log(`loadScript "${filename}"`);
+                        setTimeout(() => {
+                            let key = filename.split(/[\-\_\.]/)[0];
+                            window.checkVersion(key)
+                                .then(resolve)
+                                .catch(err => reject(err))
+                        }, 0);
+                    }
+                    oScript.onerror = (err) => {
+                        log(`loadScript_Error: "${filename}"`);
+                        reject(err);
+                    }
+                    oScript.src = url;
                 }
-                oScript.onerror = (err) => {
-                    log(`loadScript_Error: "${filename}"`);
+                catch (err) {
                     reject(err);
                 }
-                oScript.src = url;
             });
         }
 
@@ -250,7 +255,7 @@ var loadApp = () => { // 按顺序加载应用
                         thenables.splice(0, 1);
                         Promise.resolve(t)
                             .then(nextPromise)
-                            .catch(reject)
+                            .catch(err => reject(err))
                     }
                     else {
                         return resolve();
@@ -273,7 +278,7 @@ var loadApp = () => { // 按顺序加载应用
                                 setTimeout(_timeout, 30 * 1000);
                                 loadFun(fileName)
                                     .then(resolve)
-                                    .catch(reject)
+                                    .catch(err => reject(err))
                             })
                         })
                         .then(() => {
@@ -328,7 +333,7 @@ var loadApp = () => { // 按顺序加载应用
         }
 
         let serviceWorker_state;
-        
+
         function registerserviceWorker() {
 
             return new Promise((resolve, reject) => {
@@ -373,7 +378,7 @@ var loadApp = () => { // 按顺序加载应用
                 }
             });
         }
-        
+
         function newVersion() {
             if ("localStorage" in window) {
                 const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
@@ -388,8 +393,18 @@ var loadApp = () => { // 按顺序加载应用
                     msg(MSG);
                     localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 }
-                //alert(serviceWorker_state)
             }
+        }
+
+        function logVersions() {
+            let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
+            Msg += `_____________________\n\n `;
+            Msg += `${strLen("主页  ", 30)}  版本号: ${window.APP_VERSION}\n`;
+            for (let key in window.SCRIPT_VERSION) {
+                Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSION[key]}\n`;
+            }
+            Msg += `_____________________\n\n `;
+            log(Msg)
         }
 
         function openVConsole() {
@@ -410,18 +425,18 @@ var loadApp = () => { // 按顺序加载应用
         
         function testBrowser(){
             let Msg = "";
-            Msg += `_____________________\n `;
+            Msg += `_____________________\n\n `;
             Msg += `serviceWorker: ${"serviceWorker" in navigator}\n`;
             Msg += `Worker: ${"Worker" in window}\n`;
             Msg += `caches: ${"caches" in window}\n`;
             Msg += `localStorage: ${"localStorage" in window}\n`;
             Msg += `msSaveOrOpenBlob in navigator: ${"msSaveOrOpenBlob" in navigator}\n`;
             Msg += `download in HTMLAnchorElement.prototype: ${"download"  in HTMLAnchorElement.prototype}\n`;
-            Msg += `_____________________\n `;
+            Msg += `_____________________\n\n `;
             Msg += `\nuserAgent: ${window.navigator.userAgent}\n`
-            Msg += `_____________________\n `;
+            Msg += `_____________________\n\n `;
             window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
-            log("testBrowser:\n" + Msg);
+            //log("testBrowser:\n" + Msg);
         }
         
         
@@ -474,7 +489,7 @@ var loadApp = () => { // 按顺序加载应用
         
     
     
-    registerserviceWorker()
+    return registerserviceWorker()
         .then(()=>{
             return window.checkVersion("renju")
         })
@@ -545,16 +560,22 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.close();
             window.DEBUG = true;
             window.jsPDF = window.jspdf.jsPDF;
-            log(window.TEST_INFORMATION);
             newVersion(); // 提示新版本 更新已经完成
+            logVersions();
+            log(window.TEST_INFORMATION);
         })
         .catch((err)=>{
-            if (typeof err == "object" && err.type)
+            if (typeof err == "object" && err.type){
                 err = err.message || err.type;
-            setTimeout(() => {  
+            }
+            if (err == "reload") {
+                setTimeout(()=>window.location.reload(), 1000);
+                return;
+            }
+            else{
                 const MSG = "❌" + "打开网页出错, 准备刷新"+ "\n\n" +  err;
                 alert(MSG)
                 setTimeout(()=>window.location.reload(), 1000);
-            },0);
+            }
         });
 };

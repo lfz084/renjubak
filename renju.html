@@ -16,10 +16,14 @@
 </head>
 
 <body>
-    <p>如果长时间无反应 <a href="renju.html" target="_self">点击刷新</a></p>
+    <p id="butRefresh"><a href="renju.html" target="_self">刷新</a></p>
     <script language="javascript">
         // updata 
         "use strict";
+
+        function strLen(str, len, char = " ") {
+            return (str + new Array(len).join(char)).slice(0, len)
+        }
         window.APP_VERSION = "v0813";
         window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
@@ -40,13 +44,9 @@
                 let ver = self.SCRIPT_VERSION[filename];
                 console.log(`[index] \n>> checkVersion \n[${[filename, ver || "undefined"]}]`);
                 if (ver && (ver != window.APP_VERSION)) {
-                    const ERR = `如果反复刷新无效，请用无痕浏览模式`;
-                    const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 30)}版本号: ${window.APP_VERSION} \n${strLen(filename + ".js", 30)}主页版本号: ${self.SCRIPT_VERSION[filename]} \n_____________________\n`;
-                    const PS = ` \n点[取消] 不更新  点[确定] 更新`;
-
-                    function strLen(str, len) {
-                        return (str + new Array(len).join(" ")).slice(0, len)
-                    }
+                    const ERR = `reload`;
+                    const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 30)}版本号: ${window.APP_VERSION} \n${strLen(filename + ".js", 30)}版本号: ${self.SCRIPT_VERSION[filename]} \n_____________________\n\n`;
+                    const PS = `\n是否更新？\n${strLen("",15)}[取消] = 不更新${strLen("",10)}[确定] = 更新`;
 
                     if (window.CHECK_VERSION && confirm(ASK + PS)) {
                         removeAppCache()
@@ -58,7 +58,7 @@
                         resolve();
                     }
                     window.CHECK_VERSION = false;
-                    console.log(ASK);
+                    //console.log(ASK);
                 }
                 else {
                     resolve();
@@ -90,9 +90,12 @@
     <script>
         document.body.onload = () => {
             console.log(`body onload`)
-            document.body.innerHTML = "";
             window.DEBUG = true;
-            loadApp();
+            loadApp()
+                .then(() => {
+                    const BUT = document.getElementById("butRefresh");
+                    if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
+                })
         };
     </script>
     <script src="./renju-0810.js"></script>
