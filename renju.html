@@ -13,14 +13,26 @@
     <link rel="apple-touch-icon" href="https://lfz084.github.io/icon.png">
     <link rel="icon" href="https://lfz084.github.io/icon.ico">
     <title> 摆棋小工具</title>
+    <style>
+        #mlog{
+            text-align: center;
+            width: 100%;
+            opacity: 0.3;
+        }
+        .refresh{
+            font-size: 100px;
+            opacity: 0.93;
+            position: absolute;
+            top: 100px;
+        }
+    </style>
 </head>
 
 <body>
-    <p id="butRefresh"><a href="renju.html" target="_self">刷新</a></p>
+    <div id="mlog"></div>
     <script language="javascript">
         // updata 
         "use strict";
-
         function strLen(str, len, char = " ") {
             return (str + new Array(len).join(char)).slice(0, len)
         }
@@ -119,6 +131,7 @@
                             rm();
                         }
                     }
+
                     function rm() {
                         navigator.serviceWorker.onmessage = undefined;
                         resolve();
@@ -136,17 +149,29 @@
         document.body.onload = () => {
             console.log(`body onload`)
             window.DEBUG = true;
+            const BUT = document.getElementById("mlog");
+            let mlog = (function() {
+                let timer;
+                return function(message) {
+                    if (timer) clearTimeout(timer);
+                    BUT.innerHTML = message;
+                    timer = setTimeout(() => {
+                        BUT.innerHTML = `<a href="renju.html" target="_self">点击刷新</a>`;
+                        BUT.setAttribute("class", "refresh")
+                    }, 15 * 1000)
+                }
+            })()
+            mlog("postVersion ......");
             postVersion()
                 .then(() => {
-                    //alert("postVersion")
+                    mlog("checkAppVersion ......");
                     return checkAppVersion()
                 })
                 .then(() => {
-                    //alert("checkAppVersion")
+                    mlog("loadApp ......")
                     return loadApp()
                 })
                 .then(() => {
-                    const BUT = document.getElementById("butRefresh");
                     if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
                 })
                 .catch((err) => {
