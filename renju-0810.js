@@ -183,9 +183,10 @@ var loadApp = () => { // 按顺序加载应用
                         resolve();
                     }, 0);
                 }
-                function err(err){
+
+                function err(err) {
                     let message = `loadFont_Error: "${filename}"`;
-                    reject({type: "error", message: message});
+                    reject({ type: "error", message: message });
                     //log(message);
                 }
                 let oReq = new XMLHttpRequest();
@@ -205,6 +206,7 @@ var loadApp = () => { // 按顺序加载应用
                         resolve();
                     }, 0);
                 }
+
                 function err(err) {
                     let message = `loadFile_Error: "${filename}"`;
                     reject({ type: "error", message: message });
@@ -252,7 +254,7 @@ var loadApp = () => { // 按顺序加载应用
                 oHead.appendChild(oScript);
                 oScript.type = "text/javascript";
                 oScript.text = code;
-                resolve();
+                setTimeout(resolve, 100);
             });
         }
 
