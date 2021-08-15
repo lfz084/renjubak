@@ -14,12 +14,13 @@
     <link rel="icon" href="https://lfz084.github.io/icon.ico">
     <title> 摆棋小工具</title>
     <style>
-        #mlog{
+        #mlog {
             text-align: center;
             width: 100%;
             opacity: 0.3;
         }
-        .refresh{
+
+        .refresh {
             font-size: 100px;
             opacity: 0.93;
             position: absolute;
@@ -33,6 +34,7 @@
     <script language="javascript">
         // updata 
         "use strict";
+
         function strLen(str, len, char = " ") {
             return (str + new Array(len).join(char)).slice(0, len)
         }
@@ -61,7 +63,7 @@
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
                 let ver = self.SCRIPT_VERSION[filename];
-                console.log(`[index] \n>> checkScriptVersion \n[${[filename, ver || "undefined"]}]`);
+                mlog(`[index] \n>> checkScriptVersion \n[${[filename, ver || "undefined"]}]`);
                 if (ver && (ver != window.APP_VERSION)) {
                     const ERR = `reload`;
                     const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 25)}版本号: ${window.APP_VERSION} \n${strLen(filename + ".js", 25)}版本号: ${self.SCRIPT_VERSION[filename]} \n_____________________\n\n`;
@@ -77,7 +79,7 @@
                         resolve();
                     }
                     window.CHECK_VERSION = false;
-                    //console.log(ASK);
+                    //mlog(ASK);
                 }
                 else {
                     resolve();
@@ -86,21 +88,27 @@
         }
         window.checkAppVersion = function() {
             return new Promise((resolve, reject) => {
-                if ("localStorage" in window) {
-                    const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
-                    if (OLD_VERDION != window.APP_VERSION) {
-                        removeAppCache()
-                            .then(() => {
-                                console.log("renju.html removeAppCache ...")
-                                resolve();
-                            })
+                try {
+                    if ("localStorage" in window) {
+                        const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
+                        if (OLD_VERDION != window.APP_VERSION) {
+                            removeAppCache()
+                                .then(() => {
+                                    mlog("renju.html removeAppCache ...")
+                                    resolve();
+                                })
+                                .catch(resolve)
+                        }
+                        else {
+                            setTimeout(resolve, 100);
+                        }
                     }
                     else {
                         setTimeout(resolve, 100);
                     }
                 }
-                else {
-                    setTimeout(resolve, 100);
+                catch (err) {
+                    resolve();
                 }
             })
         }
@@ -146,21 +154,22 @@
         }
     </script>
     <script>
+        const BUT = document.getElementById("mlog");
+        let mlog = (function() {
+            let timer;
+            return function(message) {
+                if (timer) clearTimeout(timer);
+                BUT.innerHTML = message;
+                console.log(message);
+                timer = setTimeout(() => {
+                    BUT.innerHTML = `<a href="renju.html" target="_self">点击刷新</a>`;
+                    BUT.setAttribute("class", "refresh")
+                }, 15 * 1000)
+            }
+        })()
         document.body.onload = () => {
-            console.log(`body onload`)
+            mlog(`body onload`)
             window.DEBUG = true;
-            const BUT = document.getElementById("mlog");
-            let mlog = (function() {
-                let timer;
-                return function(message) {
-                    if (timer) clearTimeout(timer);
-                    BUT.innerHTML = message;
-                    timer = setTimeout(() => {
-                        BUT.innerHTML = `<a href="renju.html" target="_self">点击刷新</a>`;
-                        BUT.setAttribute("class", "refresh")
-                    }, 15 * 1000)
-                }
-            })()
             mlog("postVersion ......");
             postVersion()
                 .then(() => {
