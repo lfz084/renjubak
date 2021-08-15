@@ -1,4 +1,4 @@
- self.SCRIPT_VERSION["msgbox"] = "v0815.0";
+ self.SCRIPT_VERSION["msgbox"] = "v0815.1";
  // 弹窗代码
  (function() {
      "use strict";
@@ -104,7 +104,7 @@
              s.padding = "0px";
              if (type == "msgbox") {
                  msgTextarea.readOnly = true;
-                 s.textAlign = lineNum <2 ? "center" : "left";
+                 s.textAlign = lineNum < 5 ? "center" : "left";
                  s.border = `0px`;
                  s.color = "#f0f0f0";
                  s.backgroundColor = "#666666";

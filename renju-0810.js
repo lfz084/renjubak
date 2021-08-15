@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0815.0";
+self.SCRIPT_VERSION["renju"] = "v0815.1";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -219,7 +219,7 @@ var loadApp = () => { // 按顺序加载应用
                         //log(`loadScript "${filename}"`);
                         setTimeout(() => {
                             let key = filename.split(/[\-\_\.]/)[0];
-                            window.checkVersion(key)
+                            window.checkScriptVersion(key)
                                 .then(resolve)
                                 .catch(err => reject(err))
                         }, 0);
@@ -508,7 +508,7 @@ var loadApp = () => { // 按顺序加载应用
     
     return registerserviceWorker()
         .then(()=>{
-            return window.checkVersion("renju")
+            return window.checkScriptVersion("renju")
         })
         .then(() => { 
             window._loading.open();

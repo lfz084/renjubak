@@ -1,4 +1,4 @@
-var VERSION = "v0815.0";
+var VERSION = "v0815.1";
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -142,8 +142,11 @@ self.addEventListener('fetch', function(event) {
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type == "NEW_VERSION") {
         VERSION = event.data.version;
+        postMsg(event.data)
     }
-    postMsg(`serverWorker post: ${event.data}`)
+    else {
+        postMsg(`serverWorker post: ${event.data}`)
+    }
 });
 
 function postMsg(msg) {
