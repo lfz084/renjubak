@@ -3485,19 +3485,10 @@ window.checkerBoard = (function() {
 
         function setToBlob(canvas) {
             return new Promise((resolve, reject) => {
-                if (canvas.toBlob == toBlob) {
-                    resolve();
-                    return;
-                }
                 if (canvas.toBlob == undefined) {
                     canvas.toBlob = toBlob;
                     log("canvas.toBlob == undefined, set canvas.toBlob = toBlob")
                 }
-                /*
-                else if (navigator.userAgent.indexOf("QQBrowser") + 1) {
-                    canvas.toBlob = toBlob;
-                    log("QQBrowser, set canvas.toBlob = toBlob")
-                }*/
                 resolve();
             });
         }

@@ -159,14 +159,15 @@ var loadApp = () => { // 按顺序加载应用
                 link.type = 'text/css';
                 link.rel = 'stylesheet';
                 link.onload = () => {
-                    log(`loadCss "${filename}"`);
+                    //log(`loadCss "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
                 }
                 link.onerror = (err) => {
-                    log(`loadCss_Error: "${filename}"`);
-                    reject(err);
+                    let message = `loadCss_Error: "${filename}"`;
+                    reject({ type: "error", message: message });
+                    //log(message);
                 }
                 link.href = url;
                 head.appendChild(link);
@@ -177,13 +178,19 @@ var loadApp = () => { // 按顺序加载应用
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
-                    log(`loadFont "${filename}"`);
+                    //log(`loadFont "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
                 }
+                function err(err){
+                    let message = `loadFont_Error: "${filename}"`;
+                    reject({type: "error", message: message});
+                    //log(message);
+                }
                 let oReq = new XMLHttpRequest();
                 oReq.addEventListener("load", reqListener);
+                oReq.addEventListener("error", err);
                 oReq.open("GET", url);
                 oReq.send();
             });
@@ -193,13 +200,19 @@ var loadApp = () => { // 按顺序加载应用
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
                 function reqListener() {
-                    log(`loadFile "${filename}"`);
+                    //log(`loadFile "${filename}"`);
                     setTimeout(() => {
                         resolve();
                     }, 0);
                 }
+                function err(err) {
+                    let message = `loadFile_Error: "${filename}"`;
+                    reject({ type: "error", message: message });
+                    //log(message);
+                }
                 let oReq = new XMLHttpRequest();
                 oReq.addEventListener("load", reqListener);
+                oReq.addEventListener("error", err);
                 oReq.open("GET", url);
                 oReq.send();
             });
@@ -208,31 +221,27 @@ var loadApp = () => { // 按顺序加载应用
         function loadScript(url) { //加载脚本
             const filename = url.split("/").pop()
             return new Promise((resolve, reject) => {
-                try {
-                    let oHead = document.getElementsByTagName('HEAD').item(0);
-                    let oScript = document.createElement("script");
-                    oHead.appendChild(oScript);
-                    oScript.type = "text/javascript";
-                    oScript.rel = "preload";
-                    oScript.as = "script";
-                    oScript.onload = () => {
-                        //log(`loadScript "${filename}"`);
-                        setTimeout(() => {
-                            let key = filename.split(/[\-\_\.]/)[0];
-                            window.checkScriptVersion(key)
-                                .then(resolve)
-                                .catch(err => reject(err))
-                        }, 0);
-                    }
-                    oScript.onerror = (err) => {
-                        log(`loadScript_Error: "${filename}"`);
-                        reject(err);
-                    }
-                    oScript.src = url;
+                let oHead = document.getElementsByTagName('HEAD').item(0);
+                let oScript = document.createElement("script");
+                oHead.appendChild(oScript);
+                oScript.type = "text/javascript";
+                oScript.rel = "preload";
+                oScript.as = "script";
+                oScript.onload = () => {
+                    //log(`loadScript "${filename}"`);
+                    setTimeout(() => {
+                        let key = filename.split(/[\-\_\.]/)[0];
+                        window.checkScriptVersion(key)
+                            .then(resolve)
+                            .catch(err => reject(err))
+                    }, 0);
                 }
-                catch (err) {
-                    reject(err);
+                oScript.onerror = (err) => {
+                    let message = `loadScript_Error: "${filename}"`;
+                    reject({ type: "error", message: message });
+                    //log(message);
                 }
+                oScript.src = url;
             });
         }
 
