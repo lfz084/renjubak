@@ -84,11 +84,11 @@
                             })
                     }
                     else {
-                        resolve();
+                        setTimeout(resolve, 0);
                     }
                 }
                 else {
-                    resolve();
+                    setTimeout(resolve, 0);
                 }
             })
         }
@@ -127,7 +127,7 @@
                     setTimeout(rm, 1000);
                 }
                 else {
-                    resolve();
+                    setTimeout(resolve, 0);
                 }
             })
         }
@@ -137,11 +137,11 @@
             console.log(`body onload`)
             window.DEBUG = true;
             postVersion()
-                .then(()=>{
+                .then(() => {
                     //alert("postVersion")
                     return checkAppVersion()
                 })
-                .then(()=>{
+                .then(() => {
                     //alert("checkAppVersion")
                     return loadApp()
                 })
@@ -149,7 +149,7 @@
                     const BUT = document.getElementById("butRefresh");
                     if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
                 })
-                .catch((err)=>{
+                .catch((err) => {
                     alert(err)
                 })
         };
