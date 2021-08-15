@@ -119,7 +119,7 @@
                             rm();
                         }
                     }
-                    function rm(){
+                    function rm() {
                         navigator.serviceWorker.onmessage = undefined;
                         resolve();
                     }
@@ -136,12 +136,15 @@
         document.body.onload = () => {
             console.log(`body onload`)
             window.DEBUG = true;
-            postVersion()  
+            postVersion()
                 .then(checkAppVersion)
-                .then(loadApp)  
-                .then(() => { 
+                .then(loadApp)
+                .then(() => {
                     const BUT = document.getElementById("butRefresh");
                     if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
+                })
+                .catch((err)=>{
+                    alert(err)
                 })
         };
     </script>
