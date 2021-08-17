@@ -1,4 +1,4 @@
-var VERSION = "v0816.7";
+var VERSION = "v0817.6";
 var myInit = {
     cache: "no-store"
 };
@@ -61,7 +61,6 @@ function initCaches() {
     return caches.open(VERSION)
         .then(function(cache) {
             return cache.addAll([
-                        './',
                         './404.html'
                       ]);
         })
@@ -80,10 +79,12 @@ function deleteOldCaches() {
     })
 }
 
+/*
 // 缓存
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
     //self.skipWaiting();
+    
     event.waitUntil(
         initCaches()
     );
@@ -92,11 +93,10 @@ self.addEventListener('install', function(event) {
 // 缓存更新
 self.addEventListener('activate', function(event) {
     //postMsg(`service worker activate...`);
-    return;
     event.waitUntil(
         deleteOldCaches()
     );
-});
+});*/
 
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
@@ -112,30 +112,34 @@ self.addEventListener('fetch', function(event) {
     }
     //postMsg(`请求资源 url=${_URL}`);
     event.respondWith(
-        caches.match(event.request).then(response => {
-            if (response.ok) {
-                load.finish(_URL);
-                //postMsg(`读取缓存成功 url=${_URL}`);
-                getFetch();
-                return response;
-            }
-            else {
-                //postMsg(`缓存错误，从网络下载资源 url=${_URL}`);
-                return getFetch();
-            }
-        })
-        .catch(err => {
-            //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
-            return getFetch();
-        })
-        .catch(err => {
-            postMsg("404.html");
-            let request = new Request("./404.html");
-            return caches.match(request)
+        caches.open(VERSION)
+        .then(cache => {
+            return cache.match(event.request)
+                .then(response => {
+                    if (response.ok) {
+                        load.finish(_URL);
+                        //postMsg(`读取缓存成功 url=${_URL}`);
+                        //myFetch();
+                        return response;
+                    }
+                    else {
+                        //postMsg(`缓存错误，从网络下载资源 url=${_URL}`);
+                        return myFetch();
+                    }
+                })
+                .catch(err => {
+                    //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
+                    return myFetch();
+                })
+                .catch(err => {
+                    //postMsg(`404.html ${err.message}`);
+                    let request = new Request("./404.html");
+                    return cache.match(request)
+                })
         })
     )
 
-    function getFetch() {
+    function myFetch() {
         return new Promise((resolve, reject) => {
             fetch(event.request, myInit)
                 .then(response => {
@@ -171,17 +175,8 @@ self.addEventListener('message', function(event) {
             myInit = {
                 cache: "no-store"
             };
-            deleteOldCaches()
-                .then(() => {
-                    return initCaches()
-                })
-                .then(() => {
-                    postMsg(event.data)
-                })
         }
-        else {
-            postMsg(event.data)
-        }
+        postMsg(event.data)
     }
     else {
         postMsg(`serverWorker post: ${event.data}`)

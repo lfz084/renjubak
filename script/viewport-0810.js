@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["viewport"] = "v0816.7";
+self.SCRIPT_VERSION["viewport"] = "v0817.6";
 window.view = (function() {
     "use strict";
     function view(width) {

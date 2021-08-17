@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["button"] = "v0816.7";
+self.SCRIPT_VERSION["button"] = "v0817.6";
 window.button = (() => {
 
     "use strict";

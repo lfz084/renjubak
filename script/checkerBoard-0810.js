@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["checkerBoard"] = "v0816.7";
+self.SCRIPT_VERSION["checkerBoard"] = "v0817.6";
 window.checkerBoard = (function() {
 
     "use strict";

@@ -11,31 +11,59 @@
         }
 
         .main-view {
+            word-wrap: break-word;
             position: absolute;
             top: 0;
             left: 0;
-            right: 10px;
-            bottom: 10px;
+            right: 0px;
+            bottom: 0px;
             margin: auto;
             width: 500px;
             height: 500px;
             border-radius: 50px;
-            background: skyblue;
+            background: #ddd;
             text-align: center;
         }
 
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 500px;
+            height: 250px;
+            text-align: center;
+        }
+
+        #link {
+            position: absolute;
+            top: 260px;
+            width: 500px;
+            height: 250px;
+            text-align: center;
+        }
+
+        #refresh {
+            font-size: 70px;
+            border-radius: 50%;
+            border: 0px;
+        }
+
+        #refresh:hover {
+            color: #885588;
+            opacity: 0.38;
+        }
+
         h1 {
-            font-size: 35px;
-            font-weight: 600;
-            line-height: 2;
+            font-size: 25px;
+            font-weight: blod;
+            line-height: 1.5;
         }
 
         a {
             color: #663366;
-            font-size: 30px;
-            font-weight: 600;
+            font-size: 26px;
+            font-weight: blod;
             text-decoration: underline;
-            line-height: 2;
+            line-height: 1.8;
             cursor: pointer;
         }
 
@@ -80,18 +108,35 @@
             window.open(URL, "_self");
         }
         document.body.onload = () => {
+            document.getElementById("refresh").onclick = () => {
+                window.location.reload();
+            };
             document.getElementById("home").onclick = () => {
                 clk("index.html");
             };
             document.getElementById("renju").onclick = () => {
                 clk("renju.html");
             };
+            document.getElementById("tuya").onclick = () => {
+                clk("tuya.html");
+            };
+            document.getElementById("url").innerHTML = window.location.href;
+            if (window.top != window.self)
+                document.getElementById("link").style.display = "none";
         }
     </script>
     <div class="main-view">
-        <h1>没有找到你要打开的页面</h1></br>
-        <a id="home">返回主页</a></br>
-        <a id="renju">摆棋小工具</a></br>
+        <div id="info">
+            <h1 id="url"></h1>
+            <h1>没有找到你要打开的页面</h1></br>
+            <button id="refresh">🔄</button>
+        </div>
+        <div id="link">
+            <br>
+            <a id="home">返回主页</a></br>
+            <a id="renju">摆棋小工具</a></br>
+            <a id="tuya">五子棋涂鸦</a></br>
+        </div>
     </div>
 </body>
 

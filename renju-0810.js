@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0816.7";
+self.SCRIPT_VERSION["renju"] = "v0817.6";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -577,6 +577,12 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("95%");
             return loadScriptAll([
                 ["script/worker-0810.js"],
+                ], true)
+        })
+        .then(()=>{
+            window._loading.text("99%");
+            return loadFileAll([
+                ["./404.html"],
                 ], true)
         })
         .then(()=>{
