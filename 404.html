@@ -6,15 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>404 err</title>
     <style>
+        body {
+            width: 800px;
+        }
+
+        .main-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 10px;
+            bottom: 10px;
+            margin: auto;
+            width: 500px;
+            height: 500px;
+            border-radius: 50px;
+            background: skyblue;
+            text-align: center;
+        }
+
         h1 {
-            font-size: 30px;
+            font-size: 35px;
             font-weight: 600;
             line-height: 2;
         }
 
         a {
             color: #663366;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 600;
             text-decoration: underline;
             line-height: 2;
@@ -70,9 +88,11 @@
             };
         }
     </script>
-    <h1>没有找到你要打开的页面</h1></br>
-    <a id="home">返回主页</a></br>
-    <a id="renju">摆棋小工具</a></br>
+    <div class="main-view">
+        <h1>没有找到你要打开的页面</h1></br>
+        <a id="home">返回主页</a></br>
+        <a id="renju">摆棋小工具</a></br>
+    </div>
 </body>
 
 </html>

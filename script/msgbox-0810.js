@@ -1,4 +1,4 @@
- self.SCRIPT_VERSION["msgbox"] = "v0815.5";
+ self.SCRIPT_VERSION["msgbox"] = "v0816.7";
  // 弹窗代码
  (function() {
      "use strict";
@@ -210,12 +210,12 @@
              textAlign = data.textAlign || textAlign;
          }
          return new Promise((resolve, reject) => {
-             let newCallEnter = () => {
-                     callEnter();
+             let newCallEnter = (param) => {
+                     callEnter(param);
                      resolve(MSG_ENTER);
                  },
-                 newCallCancel = () => {
-                     callCancel();
+                 newCallCancel = (param) => {
+                     callCancel(param);
                      resolve(MSG_CANCEL);
                  }
              msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, newCallEnter, newCallCancel, butNum, lineNum, textAlign);
@@ -234,12 +234,12 @@
              timer = data.timer || timer;
          }
          return new Promise((resolve, reject) => {
-             let newEnterFunction = () => {
-                     enterFunction();
+             let newEnterFunction = (param) => {
+                     enterFunction(param);
                      resolve(MSG_ENTER);
                  },
-                 newCancelFunction = () => {
-                     cancelFunction();
+                 newCancelFunction = (param) => {
+                     cancelFunction(param);
                      resolve(MSG_CANCEL);
                  }
              msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, newEnterFunction, newCancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);

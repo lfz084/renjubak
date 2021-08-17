@@ -1,7 +1,8 @@
-self.SCRIPT_VERSION["renju"] = "v0815.5";
+self.SCRIPT_VERSION["renju"] = "v0816.7";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
+        const TEST_SERVER_WORKER = true;
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
@@ -352,15 +353,20 @@ var loadApp = () => { // 按顺序加载应用
                         log(' >>> ' + e.target.state);
                     });
                     navigator.serviceWorker.addEventListener("message", function(event) {
-                        const MSG = event.data;
-                        //log(MSG);
-                        if (MSG.indexOf("loading...") + 1) {
-                            window._loading.open();
-                            //log(`open`);
+                        if (typeof event.data == "string") {
+                            const MSG = event.data;
+                            TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`)
+                            if (MSG.indexOf("loading...") + 1) {
+                                window._loading.open();
+                                //log(`open`);
+                            }
+                            else if (MSG.indexOf("load finish") + 1) {
+                                window._loading.close();
+                                //log(`close`);
+                            }
                         }
-                        else if (MSG.indexOf("load finish") + 1) {
-                            window._loading.close();
-                            //log(`close`);
+                        else{
+                            TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`)
                         }
                     });
                     // 开始注册service workers
@@ -410,7 +416,7 @@ var loadApp = () => { // 按顺序加载应用
                             Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
                         Msg += `\n\t_____________________ `;
                     }
-                    msg({text:Msg, butNum:1, lineNum:lineNum, textAlign: lineNum > 1 ? "left" : "center"});
+                    msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
                     localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 }
             }

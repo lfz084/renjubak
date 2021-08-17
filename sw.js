@@ -1,6 +1,6 @@
-var VERSION = "v0815.5";
+var VERSION = "v0816.7";
 var myInit = {
-    cache: "no-cache"
+    cache: "no-store"
 };
 
 // 加载进度功能。
@@ -23,7 +23,6 @@ let load = (() => {
     }
 
     function interval() {
-
         if (urls.length == 0) {
             clearInterval(timer);
             timer = null;
@@ -50,34 +49,52 @@ let load = (() => {
     };
 })();
 
+function postMsg(msg) {
+    return self.clients.matchAll().then(function(clients) {
+        return Promise.all(clients.map(function(client) {
+            return client.postMessage(msg);
+        }));
+    });
+}
+
+function initCaches() {
+    return caches.open(VERSION)
+        .then(function(cache) {
+            return cache.addAll([
+                        './',
+                        './404.html'
+                      ]);
+        })
+}
+
+function deleteOldCaches() {
+    return caches.keys().then(function(cacheNames) {
+        return Promise.all(
+            cacheNames.map(function(cacheName) {
+                // 如果当前版本和缓存版本不一致
+                if (cacheName !== VERSION) {
+                    return caches.delete(cacheName);
+                }
+            })
+        );
+    })
+}
+
 // 缓存
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
     //self.skipWaiting();
     event.waitUntil(
-        caches.open(VERSION).then(function(cache) {
-            return cache.addAll([
-                    './',
-                    './index.html'
-                  ]);
-        })
+        initCaches()
     );
 });
 
 // 缓存更新
 self.addEventListener('activate', function(event) {
     //postMsg(`service worker activate...`);
+    return;
     event.waitUntil(
-        caches.keys().then(function(cacheNames) {
-            return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    // 如果当前版本和缓存版本不一致
-                    if (cacheName !== VERSION) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
+        deleteOldCaches()
     );
 });
 
@@ -91,7 +108,6 @@ self.addEventListener('fetch', function(event) {
         load.loading(_URL);
     }
     else {
-        
         postMsg(`fetch [${_URL}]`);
     }
     //postMsg(`请求资源 url=${_URL}`);
@@ -104,18 +120,22 @@ self.addEventListener('fetch', function(event) {
                 return response;
             }
             else {
-                //postMsg(`从网络下载资源 url=${_URL}`);
+                //postMsg(`缓存错误，从网络下载资源 url=${_URL}`);
                 return getFetch();
             }
         })
         .catch(err => {
-            //postMsg(`下载失败，重试一次 url=${_URL}`);
+            //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
             return getFetch();
+        })
+        .catch(err => {
+            postMsg("404.html");
+            let request = new Request("./404.html");
+            return caches.match(request)
         })
     )
 
     function getFetch() {
-
         return new Promise((resolve, reject) => {
             fetch(event.request, myInit)
                 .then(response => {
@@ -124,20 +144,21 @@ self.addEventListener('fetch', function(event) {
                         //postMsg(`下载资源完成 url=${_URL}`);
                         let cloneRes = response.clone();
                         if (_URL.indexOf("blob:http") == -1) {
-                            caches.open(VERSION).then(cache => {
-                                cache.put(event.request, cloneRes);
-                            });
+                            caches.open(VERSION)
+                                .then(cache => {
+                                    cache.put(event.request, cloneRes)
+                                })
                         }
                         resolve(response);
                     }
                     else {
                         load.finish(_URL);
-                        reject();
+                        reject(response);
                     }
                 })
                 .catch(err => {
                     load.finish(_URL);
-                    reject();
+                    reject(err);
                 })
         })
     }
@@ -145,21 +166,24 @@ self.addEventListener('fetch', function(event) {
 
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type == "NEW_VERSION") {
-        VERSION = event.data.version;
-        myInit = {
-            cache: "no-store"
-        };
-        postMsg(event.data)
+        if (event.data.version != VERSION) {
+            VERSION = event.data.version;
+            myInit = {
+                cache: "no-store"
+            };
+            deleteOldCaches()
+                .then(() => {
+                    return initCaches()
+                })
+                .then(() => {
+                    postMsg(event.data)
+                })
+        }
+        else {
+            postMsg(event.data)
+        }
     }
     else {
         postMsg(`serverWorker post: ${event.data}`)
     }
 });
-
-function postMsg(msg) {
-    return self.clients.matchAll().then(function(clients) {
-        return Promise.all(clients.map(function(client) {
-            return client.postMessage(msg);
-        }));
-    });
-}
