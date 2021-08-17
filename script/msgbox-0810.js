@@ -1,4 +1,4 @@
- self.SCRIPT_VERSION["msgbox"] = "v0815.1";
+ self.SCRIPT_VERSION["msgbox"] = "v0815.5";
  // 弹窗代码
  (function() {
      "use strict";
@@ -37,7 +37,7 @@
 
 
 
-         function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum) {
+         function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum, textAlign) {
 
              isMsgShow = true; // 屏蔽 bodytouch 事件;
              if (closeTimer) {
@@ -104,7 +104,7 @@
              s.padding = "0px";
              if (type == "msgbox") {
                  msgTextarea.readOnly = true;
-                 s.textAlign = lineNum < 5 ? "center" : "left";
+                 s.textAlign = textAlign || "center";
                  s.border = `0px`;
                  s.color = "#f0f0f0";
                  s.backgroundColor = "#666666";
@@ -188,14 +188,63 @@
              "closeMsg": closeMsg,
          }
      })();
+     
+     window.MSG_ENTER = 1;
+     window.MSG_CANCEL = -1;
 
-     window.msg = function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum) {
-         msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum);
+     window.msg = function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter = () => {}, callCancel = () => {}, butNum, lineNum, textAlign) {
+         if (typeof text == "object") {
+             const data = text;
+             text = data.text || text;
+             type = data.type || type;
+             left = data.left || left;
+             top = data.top || top;
+             width = data.width || width;
+             height = data.height || height;
+             enterTXT = data.enterTXT || enterTXT;
+             cancelTXT = data.cancelTXT || cancelTXT;
+             callEnter = data.callEnter || callEnter;
+             callCancel = data.callCancel || callCancel;
+             butNum = data.butNum || butNum;
+             lineNum = data.lineNum || lineNum;
+             textAlign = data.textAlign || textAlign;
+         }
+         return new Promise((resolve, reject) => {
+             let newCallEnter = () => {
+                     callEnter();
+                     resolve(MSG_ENTER);
+                 },
+                 newCallCancel = () => {
+                     callCancel();
+                     resolve(MSG_CANCEL);
+                 }
+             msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, newCallEnter, newCallCancel, butNum, lineNum, textAlign);
+         })
      }
 
-     window.msgbox =function msgbox(title, enterTXT, enterFunction, cancelTXT, cancelFunction, butNum, timer) {
-         msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, enterFunction, cancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
-         if (butNum == 0) msgWindow.closeMsg(timer || 2000);
+     window.msgbox = function msgbox(title, enterTXT, enterFunction = () => {}, cancelTXT, cancelFunction = () => {}, butNum, timer) {
+         if (typeof title == "object") {
+             const data = title;
+             title = data.title || title;
+             enterTXT = data.enterTXT || enterTXT;
+             cancelTXT = data.cancelTXT || cancelTXT;
+             enterFunction = data.enterFunction || enterFunction;
+             cancelFunction = data.cancelFunction || cancelFunction;
+             butNum = data.butNum || butNum;
+             timer = data.timer || timer;
+         }
+         return new Promise((resolve, reject) => {
+             let newEnterFunction = () => {
+                     enterFunction();
+                     resolve(MSG_ENTER);
+                 },
+                 newCancelFunction = () => {
+                     cancelFunction();
+                     resolve(MSG_CANCEL);
+                 }
+             msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, newEnterFunction, newCancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
+             if (butNum == 0) msgWindow.closeMsg(timer || 2000);
+         })
      }
 
      window.closeMsg = function closeMsg(timer) {

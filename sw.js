@@ -1,4 +1,7 @@
-var VERSION = "v0815.1";
+var VERSION = "v0815.5";
+var myInit = {
+    cache: "no-cache"
+};
 
 // 加载进度功能。
 //通过监视 fetch 事件，与窗口通信实现
@@ -88,6 +91,7 @@ self.addEventListener('fetch', function(event) {
         load.loading(_URL);
     }
     else {
+        
         postMsg(`fetch [${_URL}]`);
     }
     //postMsg(`请求资源 url=${_URL}`);
@@ -113,7 +117,7 @@ self.addEventListener('fetch', function(event) {
     function getFetch() {
 
         return new Promise((resolve, reject) => {
-            fetch(event.request)
+            fetch(event.request, myInit)
                 .then(response => {
                     if (response.ok) {
                         load.finish(_URL);
@@ -142,6 +146,9 @@ self.addEventListener('fetch', function(event) {
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type == "NEW_VERSION") {
         VERSION = event.data.version;
+        myInit = {
+            cache: "no-store"
+        };
         postMsg(event.data)
     }
     else {

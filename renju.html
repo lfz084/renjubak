@@ -34,11 +34,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-
-        function strLen(str, len, char = " ") {
-            return (str + new Array(len).join(char)).slice(0, len)
-        }
-        window.APP_VERSION = "v0815.1";
+        window.APP_VERSION = "v0815.5";
         window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
             viewport: 1,
@@ -54,11 +50,7 @@
             renju: 1
         };
         window.UPDATA_INFO = {
-            'v0815.1': [
-                "优化了 自动更新功能",
-                "修复了几个 BUG",
-                "可能又加了几个隐藏的 BUG"
-                ]
+            
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
@@ -153,6 +145,7 @@
             return function(message) {
                 if (timer) clearTimeout(timer);
                 BUT.innerHTML = message;
+                BUT.removeAttribute("class");
                 console.log(message);
                 timer = setTimeout(() => {
                     BUT.innerHTML = `<a href="renju.html" target="_self">点击刷新</a>`;
@@ -160,7 +153,39 @@
                 }, 15 * 1000)
             }
         })()
+
+        function strLen(str, len, char = " ", align = "left") {
+            if (align == "left") {
+                return (str + new Array(len).join(char)).slice(0, len)
+            }
+            else {
+                return (new Array(len).join(char) + str).slice(-len)
+            }
+        }
+
         document.body.onload = () => {
+            function _loadScript(url) { //加载脚本
+                const filename = url.split("/").pop()
+                return new Promise((resolve, reject) => {
+                    let oHead = document.getElementsByTagName('HEAD').item(0);
+                    let oScript = document.createElement("script");
+                    oHead.appendChild(oScript);
+                    oScript.type = "text/javascript";
+                    oScript.rel = "preload";
+                    oScript.as = "script";
+                    oScript.onload = () => {
+                        let message = `_loadScript: "${filename}"`;
+                        setTimeout(() => {
+                            resolve(message);
+                        }, 0);
+                    }
+                    oScript.onerror = (err) => {
+                        let message = `_loadScript_Error: "${filename}"`;
+                        reject(message);
+                    }
+                    oScript.src = url;
+                });
+            }
             mlog(`body onload`)
             window.DEBUG = true;
             mlog("postVersion ......");
@@ -170,18 +195,23 @@
                     return checkAppVersion()
                 })
                 .then(() => {
-                    mlog("loadApp ......")
+                    mlog("load App ......");
+                    return _loadScript("./renju-0810.js")
+                })
+                .then(() => {
+                    mlog("loadApp source ......")
                     return loadApp()
                 })
                 .then(() => {
                     if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
                 })
                 .catch((err) => {
-                    alert(err)
+                    const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
+                    alert(MSG)
+                    setTimeout(() => window.location.reload(), 1000);
                 })
         };
     </script>
-    <script src="./renju-0810.js"></script>
 </body>
 
 </html>

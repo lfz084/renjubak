@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0815.1";
+self.SCRIPT_VERSION["renju"] = "v0815.5";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -72,7 +72,6 @@ var loadApp = () => { // 按顺序加载应用
             s.height = "150px";
             s.left = "0px";
             s.top = "0px";
-            //ANIMA.innerHTML = black_white;
             WIN_LOADING.appendChild(ANIMA);
 
             s = LABEL.style;
@@ -411,14 +410,11 @@ var loadApp = () => { // 按顺序加载应用
                             Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
                         Msg += `\n\t_____________________ `;
                     }
-                    msg(Msg, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-                        1, lineNum);
+                    msg({text:Msg, butNum:1, lineNum:lineNum, textAlign: lineNum > 1 ? "left" : "center"});
                     localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 }
             }
         }
-
-        //alert(("undefined").join("\n"))
 
         function logVersions() {
             let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
@@ -467,8 +463,6 @@ var loadApp = () => { // 按顺序加载应用
             //log("testBrowser:\n" + Msg);
         }
         
-        
-
         function createUI() {
             try {
                 let bodyDiv = d.createElement("div");
