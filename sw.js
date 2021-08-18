@@ -1,4 +1,4 @@
-var VERSION = "v0817.6";
+var VERSION = "v0818.7";
 var myInit = {
     cache: "no-store"
 };
@@ -34,7 +34,7 @@ let load = (() => {
         loading: (msg) => {
             let url = msg;
             let filename = url.split("/").pop();
-            if (["worker", "emoji", "Evaluator"].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
+            if (["worker", "emoji", "Evaluator", "renju"].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);
             }
@@ -79,17 +79,17 @@ function deleteOldCaches() {
     })
 }
 
-/*
+
 // 缓存
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
-    //self.skipWaiting();
-    
+    self.skipWaiting();
+    /*
     event.waitUntil(
         initCaches()
-    );
+    );*/
 });
-
+/*
 // 缓存更新
 self.addEventListener('activate', function(event) {
     //postMsg(`service worker activate...`);
@@ -104,6 +104,7 @@ self.addEventListener('fetch', function(event) {
     const _URL = event.request.url;
     const filename = _URL.split("/").pop();
     const type = _URL.split(".").pop();
+    const SAVE_CACHE =  ["html","htm"].indexOf(type) + 1 > 0;
     if (filename.indexOf(type) + 1) {
         load.loading(_URL);
     }
@@ -111,33 +112,12 @@ self.addEventListener('fetch', function(event) {
         postMsg(`fetch [${_URL}]`);
     }
     //postMsg(`请求资源 url=${_URL}`);
-    event.respondWith(
-        caches.open(VERSION)
-        .then(cache => {
-            return cache.match(event.request)
-                .then(response => {
-                    if (response.ok) {
-                        load.finish(_URL);
-                        //postMsg(`读取缓存成功 url=${_URL}`);
-                        //myFetch();
-                        return response;
-                    }
-                    else {
-                        //postMsg(`缓存错误，从网络下载资源 url=${_URL}`);
-                        return myFetch();
-                    }
-                })
-                .catch(err => {
-                    //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
-                    return myFetch();
-                })
-                .catch(err => {
-                    //postMsg(`404.html ${err.message}`);
-                    let request = new Request("./404.html");
-                    return cache.match(request)
-                })
-        })
-    )
+    /*
+    if (SAVE_CACHE)
+        event.respondWith(netFirst())
+    else*/
+        event.respondWith(cacheFirst())
+
 
     function myFetch() {
         return new Promise((resolve, reject) => {
@@ -165,6 +145,47 @@ self.addEventListener('fetch', function(event) {
                     reject(err);
                 })
         })
+    }
+
+    function cacheFirst() {
+        return caches.open(VERSION)
+            .then(cache => {
+                return cache.match(event.request)
+                .then(response => {
+                    load.finish(_URL);
+                    if (!response.ok) throw new Error("response is undefined");
+                    SAVE_CACHE && myFetch();
+                    return response;
+                })
+            })
+            .catch(() => {
+                //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
+                return myFetch();
+            })
+            .catch(err => {
+                //postMsg(`404.html ${err.message}`);
+                let request = new Request("./404.html");
+                return caches.match(request)
+            })
+    }
+
+    function netFirst() {
+        return myFetch()
+            .catch(() => {
+                return caches.open(VERSION)
+                .then(cache => {
+                    return cache.match(event.request)
+                    .then(response => {
+                        load.finish(_URL);
+                        if (!response.ok) throw new Error("response is undefined");
+                        return response;
+                    })
+                })
+            })
+            .catch(err => {
+                let request = new Request("./404.html");
+                return caches.match(request)
+            })
     }
 });
 

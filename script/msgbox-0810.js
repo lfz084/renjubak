@@ -1,4 +1,4 @@
- self.SCRIPT_VERSION["msgbox"] = "v0817.6";
+ self.SCRIPT_VERSION["msgbox"] = "v0818.7";
  // 弹窗代码
  (function() {
      "use strict";
@@ -188,7 +188,7 @@
              "closeMsg": closeMsg,
          }
      })();
-     
+
      window.MSG_ENTER = 1;
      window.MSG_CANCEL = -1;
 
@@ -210,15 +210,20 @@
              textAlign = data.textAlign || textAlign;
          }
          return new Promise((resolve, reject) => {
-             let newCallEnter = (param) => {
-                     callEnter(param);
-                     resolve(MSG_ENTER);
-                 },
-                 newCallCancel = (param) => {
-                     callCancel(param);
-                     resolve(MSG_CANCEL);
-                 }
-             msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, newCallEnter, newCallCancel, butNum, lineNum, textAlign);
+             try {
+                 let newCallEnter = (param) => {
+                         callEnter(param);
+                         resolve(MSG_ENTER);
+                     },
+                     newCallCancel = (param) => {
+                         callCancel(param);
+                         resolve(MSG_CANCEL);
+                     }
+                 msgWindow.msg(text, type, left, top, width, height, enterTXT, cancelTXT, newCallEnter, newCallCancel, butNum, lineNum, textAlign);
+             }
+             catch (err) {
+                 reject(err)
+             }
          })
      }
 
@@ -234,16 +239,21 @@
              timer = data.timer || timer;
          }
          return new Promise((resolve, reject) => {
-             let newEnterFunction = (param) => {
-                     enterFunction(param);
-                     resolve(MSG_ENTER);
-                 },
-                 newCancelFunction = (param) => {
-                     cancelFunction(param);
-                     resolve(MSG_CANCEL);
-                 }
-             msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, newEnterFunction, newCancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
-             if (butNum == 0) msgWindow.closeMsg(timer || 2000);
+             try {
+                 let newEnterFunction = (param) => {
+                         enterFunction(param);
+                         resolve(MSG_ENTER);
+                     },
+                     newCancelFunction = (param) => {
+                         cancelFunction(param);
+                         resolve(MSG_CANCEL);
+                     }
+                 msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, newEnterFunction, newCancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
+                 if (butNum == 0) msgWindow.closeMsg(timer || 2000);
+             }
+             catch (err) {
+                 reject(err)
+             }
          })
      }
 

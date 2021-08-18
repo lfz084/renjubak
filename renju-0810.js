@@ -1,8 +1,8 @@
-self.SCRIPT_VERSION["renju"] = "v0817.6";
+self.SCRIPT_VERSION["renju"] = "v0818.7";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
-        const TEST_SERVER_WORKER = true;
+        const TEST_SERVER_WORKER = false;
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
@@ -88,7 +88,7 @@ var loadApp = () => { // 按顺序加载应用
 
             return {
                 open: (animaName, _timeout) => { //打开动画
-                    //if (lock) return;
+                    if (lock) return;
                     //log("_loading.open")
                     if (!WIN_LOADING.parentNode) {
                         ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
@@ -209,6 +209,29 @@ var loadApp = () => { // 按顺序加载应用
 
                 function err(err) {
                     let message = `loadFile_Error: "${filename}"`;
+                    reject({ type: "error", message: message });
+                    //log(message);
+                }
+                let oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", reqListener);
+                oReq.addEventListener("error", err);
+                oReq.open("GET", url);
+                oReq.send();
+            });
+        }
+
+        function loadTxT(url) { //加载文件
+            const filename = url.split("/").pop()
+            return new Promise((resolve, reject) => {
+                function reqListener() {
+                    //log(`loadTxT "${filename}"`);
+                    setTimeout(() => {
+                        resolve(oReq.response);
+                    }, 0);
+                }
+
+                function err(err) {
+                    let message = `loadTxT_Error: "${filename}"`;
                     reject({ type: "error", message: message });
                     //log(message);
                 }
@@ -346,7 +369,6 @@ var loadApp = () => { // 按顺序加载应用
         let serviceWorker_state;
 
         function registerserviceWorker() {
-
             return new Promise((resolve, reject) => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.addEventListener('statechange', function(e) {
@@ -365,7 +387,7 @@ var loadApp = () => { // 按顺序加载应用
                                 //log(`close`);
                             }
                         }
-                        else{
+                        else {
                             TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`)
                         }
                     });
@@ -395,7 +417,39 @@ var loadApp = () => { // 按顺序加载应用
             });
         }
 
-        function newVersion() {
+        function upData() {
+            function isNewVersion() {
+                return new Promise((resolve, reject) => {
+                    loadTxT("./renju.html")
+                        .then(txt => {
+                            const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
+                            const version = versionCode ?
+                                String(versionCode).split(/[\"\;]/)[1] :
+                                undefined;
+                            resolve(version != window.APP_VERSION)
+                        })
+                        .catch(err => {
+                            reject(err)
+                        })
+                })
+            }
+
+            if ("serviceWorker" in navigator) {
+                return isNewVersion()
+                    .then(newVersion => {
+                        if (newVersion)
+                            return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
+                                .then((num) => {
+                                    num == 1 && window.location.reload();
+                                })
+                    })
+            }
+            else {
+                return Promise.resolve()
+            }
+        }
+
+        function autoShowUpDataInformation() {
             if ("localStorage" in window) {
                 const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
                 if (OLD_VERDION != window.APP_VERSION &&
@@ -583,33 +637,38 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("99%");
             return loadFileAll([
                 ["./404.html"],
+                ["./renju.html"],
                 ], true)
-        })
-        .then(()=>{
-            window._loading.text("99%");
-            resetNoSleep();
-            const UI = createUI();
-            window.viewport1.resize();
-            window._loading.lock(false);
-            window._loading.close();
-            window.DEBUG = true;
-            window.jsPDF = window.jspdf.jsPDF;
-            newVersion(); // 提示新版本 更新已经完成
-            logVersions();
-            log(window.TEST_INFORMATION);
-        })
-        .catch((err)=>{
-            if (typeof err == "object" && err.type){
-                err = err.message || err.type;
-            }
-            if (err == "reload") {
-                setTimeout(()=>window.location.reload(), 1000);
-                return;
-            }
-            else{
-                const MSG = "❌" + "打开网页出错, 准备刷新"+ "\n\n" +  err;
-                alert(MSG)
-                setTimeout(()=>window.location.reload(), 1000);
-            }
-        });
+})
+.then(() => {
+        window._loading.text("99%");
+        resetNoSleep();
+        const UI = createUI();
+        window.viewport1.resize();
+        window._loading.lock(false);
+        window._loading.close();
+        window.DEBUG = true;
+        window.jsPDF = window.jspdf.jsPDF;
+        autoShowUpDataInformation(); // 提示新版本 更新已经完成
+        logVersions();
+        log(window.TEST_INFORMATION);
+        setTimeout(()=>{
+            log("[upData]");
+            upData()
+        }, 2 * 1000)
+    })
+    .catch((err) => {
+        if (typeof err == "object" && err.type) {
+            err = err.message || err.type;
+        }
+        if (err == "reload") {
+            setTimeout(() => window.location.reload(), 1000);
+            return;
+        }
+        else {
+            const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
+            alert(MSG)
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    });
 };

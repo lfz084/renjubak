@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["appData"] = "v0817.6";
+self.SCRIPT_VERSION["appData"] = "v0818.7";
 window.appData = (() => {
     "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
