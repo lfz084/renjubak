@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0819.0";
+self.SCRIPT_VERSIONS["renju"] = "v0819.1";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -6,7 +6,7 @@ var loadApp = () => { // 按顺序加载应用
 
         function log(param) {
             if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju-0810.js]\n>> ` + param);
+                console.log(`[renju.js]\n>> ` + param);
         }
 
         window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
@@ -480,8 +480,8 @@ var loadApp = () => { // 按顺序加载应用
             let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
             Msg += `_____________________\n\n `;
             Msg += `${strLen("主页  ", 30)}  版本号: ${window.APP_VERSION}\n`;
-            for (let key in window.SCRIPT_VERSION) {
-                Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSION[key]}\n`;
+            for (let key in window.SCRIPT_VERSIONS) {
+                Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSIONS[key]}\n`;
             }
             Msg += `_____________________\n\n `;
             log(Msg)
@@ -580,64 +580,64 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.lock(true);
             window._loading.text("0%");
             return loadCssAll([
-                ["style/loaders.css"],
-                ["style/main.css"],
+                [SOURCE_FILES["loaders"]],
+                [SOURCE_FILES["main"]],
                 ],true)
         })
         .then(() => {
             window._loading.text("5%");
             return loadFontAll([
-                ["style/font/PFSCMedium1.woff"],
-                ["style/font/PFSCMedium1.ttf"],
-                ["style/font/PFSCHeavy1.ttf"],
-                ["style/font/PFSCHeavy1.woff"],
+                [SOURCE_FILES["PFSCMedium1_woff"]],
+                [SOURCE_FILES["PFSCMedium1_ttf"]],
+                [SOURCE_FILES["PFSCHeavy1_ttf"]],
+                [SOURCE_FILES["PFSCHeavy1_woff"]],
                 ], true) 
         })
         .then(() => { 
             window._loading.text("30%");
             return loadScriptAll([  //顺序 同步加载
-                ["script/viewport-0810.js",()=>{
+                [SOURCE_FILES["viewport"],()=>{
                     window.viewport1 = new view(dw);
                 }],
-                ["script/vConsole/vconsole.min.js",()=>{
+                [SOURCE_FILES["vconsole"],()=>{
                     openVConsole();
                     testBrowser();
                 }],
-                ["script/button-0810.js"],
-                ["script/emoji-0810.js"],// first load emoji
+                [SOURCE_FILES["button"]],
+                [SOURCE_FILES["emoji"]],// first load emoji
                 ],false)
         })
         .then(() => {
             window._loading.text("50%");
             return loadScriptAll([
-                ["script/checkerBoard-0810.js"],
-                ["script/control_0810.js"],
-                ["script/msgbox-0810.js"],
-                ["script/appData-0810.js"],
-                ["script/Evaluator-0810.js"],
-                ["script/engine-0810.js"],
-                ["script/NoSleep.min.js"],
-                ["script/jsPDF/jspdf.umd_01.js"],
+                [SOURCE_FILES["checkerBoard"]],
+                [SOURCE_FILES["control"]],
+                [SOURCE_FILES["msgbox"]],
+                [SOURCE_FILES["appData"]],
+                [SOURCE_FILES["Evaluator"]],
+                [SOURCE_FILES["engine"]],
+                [SOURCE_FILES["NoSleep"]],
+                [SOURCE_FILES["jspdf"]],
                 ], true)
         })
         .then(() => {
             window._loading.text("90%");
             return loadScriptAll([
-                ["script/jsPDF/PFSCMedium.js"],
-                ["script/jsPDF/PFSCHeavy.js"],
+                [SOURCE_FILES["PFSCMedium"]],
+                [SOURCE_FILES["PFSCHeavy"]],
                 ], true)
         })
         .then(() => {
             window._loading.text("95%");
             return loadScriptAll([
-                ["script/worker-0810.js"],
+                [SOURCE_FILES["worker"]],
                 ], true)
         })
         .then(()=>{
             window._loading.text("99%");
             return loadFileAll([
-                ["./404.html"],
-                ["./renju.html"],
+                [SOURCE_FILES["404_html"]],
+                [SOURCE_FILES["renju_html"]],
                 ], true)
 })
 .then(() => {
@@ -655,6 +655,22 @@ var loadApp = () => { // 按顺序加载应用
         setTimeout(()=>{
             log("[upData]");
             upData()
+        }, 2 * 1000)
+        setTimeout(()=>{
+            let cs = "";
+            caches.open(window.APP_VERSION)
+                .then(function(cache) {
+                    return cache.keys()
+                        .then(function(keys) {
+                            return keys.forEach(function(request, index, array) {
+                                cs+=request.url.split("/").pop()+"\n"
+                            });
+                        });
+                })
+                .then(()=>{
+                    log(cs)
+                })
+        
         }, 2 * 1000)
     })
     .catch((err) => {

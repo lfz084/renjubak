@@ -34,9 +34,35 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0819.0";
+        window.APP_VERSION = "v0819.1";
         window.CHECK_VERSION = true;
-        window.SCRIPT_VERSION = {
+        window.SOURCE_FILES = {
+            loaders: "style/loaders.css",
+            main: "style/main.css",
+            PFSCMedium1_woff: "style/font/PFSCMedium1.woff",
+            PFSCMedium1_ttf: "style/font/PFSCMedium1.ttf",
+            PFSCHeavy1_ttf: "style/font/PFSCHeavy1.ttf",
+            PFSCHeavy1_woff: "style/font/PFSCHeavy1.woff",
+            viewport: "script/viewport-0810.js",
+            vconsole: "script/vConsole/vconsole.min.js",
+            button: "script/button-0810.js",
+            emoji: "script/emoji-0810.js",
+            checkerBoard: "script/checkerBoard-0810.js",
+            control: "script/control_0810.js",
+            msgbox: "script/msgbox-0810.js",
+            appData: "script/appData-0810.js",
+            Evaluator: "script/Evaluator-0810.js",
+            engine: "script/engine-0810.js",
+            NoSleep: "script/NoSleep.min.js",
+            jspdf: "script/jsPDF/jspdf.umd_01.js",
+            PFSCMedium: "script/jsPDF/PFSCMedium.js",
+            PFSCHeavy: "script/jsPDF/PFSCHeavy.js",
+            worker: "script/worker-0810.js",
+            '404_html': "./404.html",
+            renju_html: "./renju.html",
+            renju_js: "./renju-0810.js",
+        }
+        window.SCRIPT_VERSIONS = {
             viewport: 1,
             button: 1,
             emoji: 1,
@@ -54,11 +80,11 @@
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
-                let ver = self.SCRIPT_VERSION[filename];
+                let ver = self.SCRIPT_VERSIONS[filename];
                 mlog(`[index] \n>> checkScriptVersion \n[${[filename, ver || "undefined"]}]`);
                 if (ver && (ver != window.APP_VERSION)) {
                     const ERR = `reload`;
-                    const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 25)}版本号: ${window.APP_VERSION} \n${strLen(filename + ".js", 25)}版本号: ${self.SCRIPT_VERSION[filename]} \n_____________________\n\n`;
+                    const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 25)}版本号: ${window.APP_VERSION} \n${strLen(filename + ".js", 25)}版本号: ${self.SCRIPT_VERSIONS[filename]} \n_____________________\n\n`;
                     const PS = `是否更新？\n\n${strLen("",15)}[取消] = 不更新${strLen("",10)}[确定] = 更新`;
                     if (window.CHECK_VERSION && confirm(ASK + PS)) {
                         removeAppCache()
@@ -205,7 +231,7 @@
                 })
                 .then(() => {
                     mlog("load App ......");
-                    return _loadScript("./renju-0810.js")
+                    return _loadScript(SOURCE_FILES["renju_js"])
                 })
                 .then(() => {
                     mlog("loadApp source ......")

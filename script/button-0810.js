@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["button"] = "v0819.0";
+self.SCRIPT_VERSIONS["button"] = "v0819.1";
 window.button = (() => {
 
     "use strict";
@@ -8,7 +8,7 @@ window.button = (() => {
 
     function log(param) {
         if (TEST_BUTTON && DEBUG)
-            console.log(`[button-0810.js]\n>> ` + param);
+            console.log(`[button.js]\n>> ` + param);
     }
 
     // 定制按钮，button，file，Radio，select。

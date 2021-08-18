@@ -1,11 +1,11 @@
-self.SCRIPT_VERSION["engine"] = "v0819.0";
+self.SCRIPT_VERSIONS["engine"] = "v0819.1";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
     
     function log(param) {
         if (TEST_ENGINE && DEBUG)
-            console.log(`[engine-0810.js]\n>> ` + param);
+            console.log(`[engine.js]\n>> ` + param);
     }
     
     const COLOR_TXT = ["白棋", "黑棋", "白棋"];
