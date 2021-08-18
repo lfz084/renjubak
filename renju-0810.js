@@ -1,4 +1,4 @@
-self.SCRIPT_VERSION["renju"] = "v0818.7";
+self.SCRIPT_VERSION["renju"] = "v0818.8";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -166,7 +166,7 @@ var loadApp = () => { // 按顺序加载应用
                 }
                 link.onerror = (err) => {
                     let message = `loadCss_Error: "${filename}"`;
-                    reject({ type: "error", message: message });
+                    reject(new Error(message));
                     //log(message);
                 }
                 link.href = url;
@@ -186,7 +186,7 @@ var loadApp = () => { // 按顺序加载应用
 
                 function err(err) {
                     let message = `loadFont_Error: "${filename}"`;
-                    reject({ type: "error", message: message });
+                    reject(new Error(message));
                     //log(message);
                 }
                 let oReq = new XMLHttpRequest();
@@ -209,7 +209,7 @@ var loadApp = () => { // 按顺序加载应用
 
                 function err(err) {
                     let message = `loadFile_Error: "${filename}"`;
-                    reject({ type: "error", message: message });
+                    reject(new Error(message));
                     //log(message);
                 }
                 let oReq = new XMLHttpRequest();
@@ -232,7 +232,7 @@ var loadApp = () => { // 按顺序加载应用
 
                 function err(err) {
                     let message = `loadTxT_Error: "${filename}"`;
-                    reject({ type: "error", message: message });
+                    reject(new Error(message));
                     //log(message);
                 }
                 let oReq = new XMLHttpRequest();
@@ -258,12 +258,12 @@ var loadApp = () => { // 按顺序加载应用
                         let key = filename.split(/[\-\_\.]/)[0];
                         window.checkScriptVersion(key)
                             .then(resolve)
-                            .catch(err => reject(err))
+                            .catch(reject)
                     }, 0);
                 }
                 oScript.onerror = (err) => {
                     let message = `loadScript_Error: "${filename}"`;
-                    reject({ type: "error", message: message });
+                    reject(new Error(message));
                     //log(message);
                 }
                 oScript.src = url;
@@ -289,7 +289,7 @@ var loadApp = () => { // 按顺序加载应用
                         thenables.splice(0, 1);
                         Promise.resolve(t)
                             .then(nextPromise)
-                            .catch(err => reject(err))
+                            .catch(reject)
                     }
                     else {
                         return resolve();
@@ -307,12 +307,12 @@ var loadApp = () => { // 按顺序加载应用
                         .then(() => {
                             return new Promise((resolve, reject) => {
                                 function _timeout() {
-                                    reject(`Error: 连接网络超时\n文件"${fileName}"下载失败`);
+                                    reject(new Error(`Error: 连接网络超时\n文件"${fileName}"下载失败`));
                                 }
                                 setTimeout(_timeout, 30 * 1000);
                                 loadFun(fileName)
                                     .then(resolve)
-                                    .catch(err => reject(err))
+                                    .catch(reject)
                             })
                         })
                         .then(() => {

@@ -34,7 +34,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0818.7";
+        window.APP_VERSION = "v0818.8";
         window.CHECK_VERSION = true;
         window.SCRIPT_VERSION = {
             viewport: 1,
@@ -190,7 +190,7 @@
                     }
                     oScript.onerror = (err) => {
                         let message = `_loadScript_Error: "${filename}"`;
-                        reject(message);
+                        reject(new Error(message));
                     }
                     oScript.src = url;
                 });

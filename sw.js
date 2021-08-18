@@ -1,4 +1,4 @@
-var VERSION = "v0818.7";
+var VERSION = "v0818.8";
 var myInit = {
     cache: "no-store"
 };
@@ -49,7 +49,10 @@ let load = (() => {
     };
 })();
 
-function postMsg(msg) {
+function postMsg(msg, client) {
+    if (client && typeof client.postMessage == "function") {
+        return client.postMessage(msg);
+    }
     return self.clients.matchAll().then(function(clients) {
         return Promise.all(clients.map(function(client) {
             return client.postMessage(msg);
@@ -84,19 +87,18 @@ function deleteOldCaches() {
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
     self.skipWaiting();
-    /*
     event.waitUntil(
         initCaches()
-    );*/
+    );
 });
-/*
+
 // 缓存更新
 self.addEventListener('activate', function(event) {
     //postMsg(`service worker activate...`);
     event.waitUntil(
         deleteOldCaches()
     );
-});*/
+});
 
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
@@ -104,7 +106,7 @@ self.addEventListener('fetch', function(event) {
     const _URL = event.request.url;
     const filename = _URL.split("/").pop();
     const type = _URL.split(".").pop();
-    const SAVE_CACHE =  ["html","htm"].indexOf(type) + 1 > 0;
+    const SAVE_CACHE = ["html", "htm"].indexOf(type) + 1 > 0;
     if (filename.indexOf(type) + 1) {
         load.loading(_URL);
     }
@@ -116,7 +118,7 @@ self.addEventListener('fetch', function(event) {
     if (SAVE_CACHE)
         event.respondWith(netFirst())
     else*/
-        event.respondWith(cacheFirst())
+    event.respondWith(cacheFirst())
 
 
     function myFetch() {
@@ -137,7 +139,7 @@ self.addEventListener('fetch', function(event) {
                     }
                     else {
                         load.finish(_URL);
-                        reject(response);
+                        reject(new Error(`response = ${response}`));
                     }
                 })
                 .catch(err => {
@@ -151,12 +153,12 @@ self.addEventListener('fetch', function(event) {
         return caches.open(VERSION)
             .then(cache => {
                 return cache.match(event.request)
-                .then(response => {
-                    load.finish(_URL);
-                    if (!response.ok) throw new Error("response is undefined");
-                    SAVE_CACHE && myFetch();
-                    return response;
-                })
+                    .then(response => {
+                        load.finish(_URL);
+                        if (!response.ok) throw new Error("response is undefined");
+                        SAVE_CACHE && myFetch();
+                        return response;
+                    })
             })
             .catch(() => {
                 //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
@@ -166,6 +168,12 @@ self.addEventListener('fetch', function(event) {
                 //postMsg(`404.html ${err.message}`);
                 let request = new Request("./404.html");
                 return caches.match(request)
+                    .then(response => {
+                        if (response.ok)
+                            return response;
+                        else
+                            return fetch(request)
+                    })
             })
     }
 
@@ -173,18 +181,24 @@ self.addEventListener('fetch', function(event) {
         return myFetch()
             .catch(() => {
                 return caches.open(VERSION)
-                .then(cache => {
-                    return cache.match(event.request)
-                    .then(response => {
-                        load.finish(_URL);
-                        if (!response.ok) throw new Error("response is undefined");
-                        return response;
+                    .then(cache => {
+                        return cache.match(event.request)
+                            .then(response => {
+                                load.finish(_URL);
+                                if (!response.ok) throw new Error("response is undefined");
+                                return response;
+                            })
                     })
-                })
             })
             .catch(err => {
                 let request = new Request("./404.html");
                 return caches.match(request)
+                    .then(response => {
+                        if (response.ok)
+                            return response;
+                        else
+                            return fetch(request)
+                    })
             })
     }
 });
