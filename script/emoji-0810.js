@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["emoji"] = "v0819.9";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["emoji"] = "v0820.0";
 const EMOJI_FOUL = "❌";
 const EMOJI_FOUL_THREE = EMOJI_FOUL + EMOJI_FOUL + EMOJI_FOUL;
 const EMOJI_QUESTION = "❓";
