@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0819.8";
+self.SCRIPT_VERSIONS["renju"] = "v0819.9";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -130,9 +130,10 @@ var loadApp = () => { // 按顺序加载应用
             function put() {
                 return new Promise((resolve, reject) => {
                     function save() {
-                        if (_self.count++ > 3) {
+                        if (_self.count++ >= 3) {
                             log(`[put cache Error: count > 3]`)
                             resolve()
+                            return;
                         }
                         log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
                         caches.open(cacheName)
@@ -147,7 +148,7 @@ var loadApp = () => { // 按顺序加载应用
                                             else
                                                 save()
                                         })
-                                }, 0)
+                                }, 100)
                             })
                             .catch(() => {
                                 save()
