@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0820.0";
+self.SCRIPT_VERSIONS["renju"] = "v0820.1";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -131,11 +131,12 @@ var loadApp = () => { // 按顺序加载应用
                 return new Promise((resolve, reject) => {
                     function save() {
                         if (_self.count++ >= 3) {
-                            log(`[put cache Error: count > 3]`)
-                            resolve()
+                            const MSG = `put cache Error: count > 3 (${request.url.split("/").pop()})`
+                            log(MSG)
+                            reject(new Error(MSG))
                             return;
                         }
-                        log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
+                        //log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
                         caches.open(cacheName)
                             .then(cache => {
                                 let cloneRes = _self.response.clone();
@@ -148,7 +149,7 @@ var loadApp = () => { // 按顺序加载应用
                                             else
                                                 save()
                                         })
-                                }, 100)
+                                }, 0)
                             })
                             .catch(() => {
                                 save()
@@ -176,13 +177,14 @@ var loadApp = () => { // 按顺序加载应用
 
         window.logCaches = function() {
             if ("caches" in window) {
-                let cs = "";
+                let cs = `_____________________\n`;
                 return caches.keys()
                     .then(function(cachesNames) {
-                        cs += `caches count = ${cachesNames.length}\n`
+                        cs += `________ 离线缓存 ${cachesNames.length}个 ________\n\n`
                         cachesNames.forEach(function(cache, index, array) {
-                            cs += cache + "\n"
+                            cs += `.\t[${cache}]\n`
                         });
+                        cs += `_____________________\n`;
                         log(cs);
                     });
             }
@@ -193,15 +195,16 @@ var loadApp = () => { // 按顺序加载应用
 
         window.logCache = function(cacheName) {
             if ("caches" in window) {
-                let cs = "";
+                let cs = `_____________________\n`;
                 return caches.open(cacheName)
                     .then(function(cache) {
                         return cache.keys()
                             .then(function(keys) {
-                                cs += `${cacheName} keys.length = ${keys.length}\n`
+                                cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
                                 keys.forEach(function(request, index, array) {
-                                    cs += request.url.split("/").pop() + "\n"
+                                    cs += `.\t${request.url.split("/").pop()}\n`
                                 });
+                                cs += `_____________________\n`;
                                 log(cs);
                             });
                     })
@@ -239,14 +242,14 @@ var loadApp = () => { // 按顺序加载应用
         }
 
         function putCache(url) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 new SaveResponse().saveResponse(new Request(url))
                     .then(response => {
                         resolve()
                     })
                     .catch(err =>{
                         log(`putCache Error: ${err.message}`)
-                        resolve()
+                        reject()
                     })
             })
         }
@@ -265,7 +268,9 @@ var loadApp = () => { // 按顺序加载应用
                 link.rel = 'stylesheet';
                 link.onload = () => {
                     //log(`loadCss "${filename}"`);
-                    return putCache(url).then(resolve).catch(resolve);
+                    setTimeout(()=>{
+                        resolve()
+                    }, 0)
                 }
                 link.onerror = (err) => {
                     let message = `loadCss_Error: "${filename}"`;
@@ -282,7 +287,9 @@ var loadApp = () => { // 按顺序加载应用
             return new Promise((resolve, reject) => {
                 function reqListener() {
                     //log(`loadFont "${filename}"`);
-                    return putCache(url).then(resolve).catch(resolve);
+                    setTimeout(() => {
+                        resolve()
+                    }, 0)
                 }
 
                 function err(err) {
@@ -303,7 +310,9 @@ var loadApp = () => { // 按顺序加载应用
             return new Promise((resolve, reject) => {
                 function reqListener() {
                     //log(`loadFile "${filename}"`);
-                    return putCache(url).then(resolve).catch(resolve);
+                    setTimeout(() => {
+                        resolve()
+                    }, 0)
                 }
 
                 function err(err) {
@@ -324,11 +333,9 @@ var loadApp = () => { // 按顺序加载应用
             return new Promise((resolve, reject) => {
                 function reqListener() {
                     //log(`loadTxT "${filename}"`);
-                    return putCache(url)
-                        .then(() => {
-                            resolve(oReq.response)
-                        })
-                        .catch(resolve);
+                    setTimeout(() => {
+                        resolve(oReq.response)
+                    }, 0)
                 }
 
                 function err(err) {
@@ -359,7 +366,9 @@ var loadApp = () => { // 按顺序加载应用
                         let key = filename.split(/[\-\_\.]/)[0];
                         window.checkScriptVersion(key)
                             .then(() => {
-                                return putCache(url).then(resolve).catch(resolve);
+                                setTimeout(() => {
+                                    resolve()
+                                }, 0)
                             })
                             .catch(reject)
                     }, 0);
@@ -529,7 +538,7 @@ var loadApp = () => { // 按顺序加载应用
                             const version = versionCode ?
                                 String(versionCode).split(/[\"\;]/)[1] :
                                 undefined;
-                            resolve(version && version != window.APP_VERSION)
+                            resolve(version != window.APP_VERSION)
                         })
                         .catch(err => {
                             reject(err)
