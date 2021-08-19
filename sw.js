@@ -1,4 +1,4 @@
-var VERSION = "v0819.1";
+var VERSION = "v0819.3";
 var myInit = {
     cache: "no-store"
 };
@@ -87,17 +87,18 @@ function deleteOldCaches() {
 self.addEventListener('install', function(event) {
     //postMsg(`service worker install...`);
     self.skipWaiting();
+    /*
     event.waitUntil(
         initCaches()
-    );
+    );*/
 });
 
 // 缓存更新
 self.addEventListener('activate', function(event) {
     //postMsg(`service worker activate...`);
-    event.waitUntil(
+    /*event.waitUntil(
         deleteOldCaches()
-    );
+    );*/
 });
 
 // 捕获请求并返回缓存数据

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0819.1";
+self.SCRIPT_VERSIONS["renju"] = "v0819.3";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -523,6 +523,43 @@ var loadApp = () => { // 按顺序加载应用
             //log("testBrowser:\n" + Msg);
         }
         
+        function logCaches(){
+            if ("caches" in window){
+                let cs = "";
+                return caches.keys()
+                    .then(function(cachesNames) {
+                        cs += `caches count = ${cachesNames.length}\n`
+                        cachesNames.forEach(function(cache, index, array) {
+                            cs += cache + "\n"
+                        });
+                        log(cs);
+                    });
+            }
+            else {
+                return Promise.resolve()
+            }
+        }
+        
+        function logCache(cacheName){
+            if ("caches" in window){
+                let cs = "";
+                return caches.open(cacheName)
+                    .then(function(cache) {
+                        return cache.keys()
+                            .then(function(keys) {
+                                cs += `${cacheName} keys.length = ${keys.length}\n`
+                                keys.forEach(function(request, index, array) {
+                                    cs += request.url.split("/").pop() + "\n"
+                                });
+                                log(cs);
+                            });
+                    })
+            }
+            else{
+                return Promise.resolve();
+            }
+        }
+        
         function createUI() {
             try {
                 let bodyDiv = d.createElement("div");
@@ -655,22 +692,10 @@ var loadApp = () => { // 按顺序加载应用
         setTimeout(()=>{
             log("[upData]");
             upData()
-        }, 2 * 1000)
-        setTimeout(()=>{
-            let cs = "";
-            caches.open(window.APP_VERSION)
-                .then(function(cache) {
-                    return cache.keys()
-                        .then(function(keys) {
-                            return keys.forEach(function(request, index, array) {
-                                cs+=request.url.split("/").pop()+"\n"
-                            });
-                        });
-                })
+                .then(logCaches)
                 .then(()=>{
-                    log(cs)
+                    logCache(window.APP_VERSION)
                 })
-        
         }, 2 * 1000)
     })
     .catch((err) => {
