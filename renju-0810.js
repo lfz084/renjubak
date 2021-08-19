@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0819.3";
+self.SCRIPT_VERSIONS["renju"] = "v0819.5";
 var loadApp = () => { // 按顺序加载应用
         "use strict";
         const TEST_LOADAPP = true;
@@ -523,7 +523,7 @@ var loadApp = () => { // 按顺序加载应用
             //log("testBrowser:\n" + Msg);
         }
         
-        function logCaches(){
+        window.logCaches = () => {
             if ("caches" in window){
                 let cs = "";
                 return caches.keys()
@@ -540,7 +540,7 @@ var loadApp = () => { // 按顺序加载应用
             }
         }
         
-        function logCache(cacheName){
+        window.logCache = (cacheName) => {
             if ("caches" in window){
                 let cs = "";
                 return caches.open(cacheName)

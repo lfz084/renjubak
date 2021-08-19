@@ -1,4 +1,4 @@
-var VERSION = "v0819.3";
+var VERSION = "v0819.5";
 var myInit = {
     cache: "no-store"
 };
@@ -133,10 +133,10 @@ self.addEventListener('fetch', function(event) {
                     if (_URL.indexOf("blob:http") == -1) {
                         caches.open(VERSION)
                             .then(cache => {
-                                cache.put(event.request, cloneRes)
+                                cache.put(event.request, response)
                             })
                     }
-                    resolve(response);
+                    resolve(cloneRes);
                 })
                 .catch(err => {
                     load.finish(_URL);
