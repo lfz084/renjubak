@@ -1,4 +1,4 @@
-var VERSION = "v0820.1";
+var VERSION = "v0821.0";
 var myInit = {
     cache: "reload"
 };
@@ -124,7 +124,10 @@ self.addEventListener('fetch', function(event) {
 
     function myFetch() {
         return new Promise((resolve, reject) => {
-            fetch(event.request, myInit)
+            let req = _URL == "https://lfz084.github.io/icon.ico" ?
+                new Request("https://lfz084.gitee.io/renju/icon.ico", myInit) :
+                event.request
+            fetch(req, myInit)
                 .then(response => {
                     load.finish(_URL);
                     if (!response.ok) throw new Error(`response = ${response}`);
@@ -133,7 +136,7 @@ self.addEventListener('fetch', function(event) {
                     if (_URL.indexOf("blob:http") == -1) {
                         caches.open(VERSION)
                             .then(cache => {
-                                cache.put(event.request, response)
+                                cache.put(req, response)
                             })
                     }
                     resolve(cloneRes);
@@ -165,17 +168,17 @@ self.addEventListener('fetch', function(event) {
             statusText: "OK",
             headers: myHeaders
         }
-            let request = new Request("./404.html");
-            return caches.match(request)
-                .then(response => {
-                    if (response.ok)
-                        return response;
-                    else
-                        return new Response(response_err, init)
-                })
-                .catch(() => {
+        let request = new Request("./404.html");
+        return caches.match(request)
+            .then(response => {
+                if (response.ok)
+                    return response;
+                else
                     return new Response(response_err, init)
-                })
+            })
+            .catch(() => {
+                return new Response(response_err, init)
+            })
     }
 
     function cacheFirst() {

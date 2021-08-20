@@ -2,9 +2,26 @@
     "use strict";
     const TEST_HELP = true;
 
-    function log(param) {
+    function log(param, type = "log") {
+        const command = {
+            log: () => { window.top.console.log(param) },
+            info: () => { window.top.console.info(param) },
+            error: () => { window.top.console.error(param) },
+            warn: () => { window.top.console.warn(param) },
+            assert: () => { window.top.console.assert(param) },
+            clear: () => { window.top.console.clear(param) },
+            count: () => { window.top.console.count(param) },
+            group: () => { window.top.console.group(param) },
+            groupCollapsed: () => { window.top.console.groupCollapsed(param) },
+            groupEnd: () => { window.top.console.groupEnd(param) },
+            table: () => { window.top.console.table(param) },
+            time: () => { window.top.console.time(param) },
+            timeEnd: () => { window.top.console.timeEnd(param) },
+            trace: () => { window.top.console.trace(param) },
+        }
+        let print = command[type] || console.log;
         if (TEST_HELP && window.top.DEBUG)
-            window.top.console.log(`[help.js]\n>> ` + param);
+            print(`[help.js]\n>> ` + param);
     }
     
     const topImage = (() => {

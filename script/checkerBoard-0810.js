@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v0820.1";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v0821.0";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -11,9 +11,26 @@ window.checkerBoard = (function() {
     const TYPE_MOVE = 5; //VCF手顺
     const TYPE_MARK_FOUL = 6;
 
-    function log(param) {
+    function log(param, type = "log") {
+        const command = {
+            log: () => { console.log(param) },
+            info: () => { console.info(param) },
+            error: () => { console.error(param) },
+            warn: () => { console.warn(param) },
+            assert: () => { console.assert(param) },
+            clear: () => { console.clear(param) },
+            count: () => { console.count(param) },
+            group: () => { console.group(param) },
+            groupCollapsed: () => { console.groupCollapsed(param) },
+            groupEnd: () => { console.groupEnd(param) },
+            table: () => { console.table(param) },
+            time: () => { console.time(param) },
+            timeEnd: () => { console.timeEnd(param) },
+            trace: () => { console.trace(param) },
+        }
+        let print = command[type] || console.log;
         if (TEST_CHECKER_BOARD && DEBUG)
-            console.log(`[checkerBoard.js]\n>> ` + param);
+            print(`[checkerBoard.js]\n>> ` + param);
     }
 
     function bind(callback, _this) {

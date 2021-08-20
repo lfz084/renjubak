@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["button"] = "v0820.1";
+self.SCRIPT_VERSIONS["button"] = "v0821.0";
 window.button = (() => {
 
     "use strict";
@@ -6,9 +6,26 @@ window.button = (() => {
     const TEST_BUTTON = true; // ==true >>> console.log;
     let isMenuShow = false; //控制主程序，不允许同时打开两个菜单
 
-    function log(param) {
+    function log(param, type = "log") {
+        const command = {
+            log: () => { console.log(param) },
+            info: () => { console.info(param) },
+            error: () => { console.error(param) },
+            warn: () => { console.warn(param) },
+            assert: () => { console.assert(param) },
+            clear: () => { console.clear(param) },
+            count: () => { console.count(param) },
+            group: () => { console.group(param) },
+            groupCollapsed: () => { console.groupCollapsed(param) },
+            groupEnd: () => { console.groupEnd(param) },
+            table: () => { console.table(param) },
+            time: () => { console.time(param) },
+            timeEnd: () => { console.timeEnd(param) },
+            trace: () => { console.trace(param) },
+        }
+        let print = command[type] || console.log;
         if (TEST_BUTTON && DEBUG)
-            console.log(`[button.js]\n>> ` + param);
+            print(`[button.js]\n>> ` + param);
     }
 
     // 定制按钮，button，file，Radio，select。

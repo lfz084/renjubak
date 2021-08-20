@@ -1,700 +1,783 @@
-self.SCRIPT_VERSIONS["renju"] = "v0820.1";
+self.SCRIPT_VERSIONS["renju"] = "v0821.0";
 var loadApp = () => { // 按顺序加载应用
-        "use strict";
-        const TEST_LOADAPP = true;
-        const TEST_SERVER_WORKER = false;
+    "use strict";
+    const TEST_LOADAPP = true;
+    const TEST_SERVER_WORKER = false;
 
-        function log(param) {
-            if (TEST_LOADAPP && DEBUG)
-                console.log(`[renju.js]\n>> ` + param);
+    function log(param, type = "log") {
+        const command = {
+            log: ()=>{console.log(param)},
+            info: ()=>{console.info(param)},
+            error: ()=>{console.error(param)},
+            warn: ()=>{console.warn(param)},
+            assert: ()=>{console.assert(param)},
+            clear: ()=>{console.clear(param)},
+            count: ()=>{console.count(param)},
+            group: ()=>{console.group(param)},
+            groupCollapsed: ()=>{console.groupCollapsed(param)},
+            groupEnd: ()=>{console.groupEnd(param)},
+            table: ()=>{console.table(param)},
+            time: ()=>{console.time(param)},
+            timeEnd: ()=>{console.timeEnd(param)},
+            trace: ()=>{console.trace(param)},
         }
+        let print = command[type] || console.log;
+        if (TEST_LOADAPP && DEBUG) {
+            print(`[renju.js]\n>> ` + param);
+        }
+    }
+    
+    function testConsole(){
+        console.clear("clear")
+        console.info("info")
+        console.error("error")
+        console.warn("warn")
+        console.assert("assert")
+        console.count("count")
+        console.group("group")
+        console.group("group1")
+        console.groupEnd("groupEnd")
+        console.groupCollapsed("groupCollapsed")
+        console.groupCollapsed("groupCollapsed1")
+        console.groupEnd("groupEnd")
+        console.table("table")
+        console.time("time")
+        console.timeEnd("timeEnd")
+        console.trace("trace")
+    }
 
-        window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
+    window.URL_HOMES = ["https://lfz084.gitee.io/renju/",
         "https://lfz084.github.io/",
         "http://localhost:7700/"];
-        window.URL_HOME = location.href.indexOf(URL_HOMES[0]) + 1 ? URL_HOMES[0] :
-            location.href.indexOf(URL_HOMES[1]) + 1 ? URL_HOMES[1] : URL_HOMES[2];
+    window.URL_HOME = location.href.indexOf(URL_HOMES[0]) + 1 ? URL_HOMES[0] :
+        location.href.indexOf(URL_HOMES[1]) + 1 ? URL_HOMES[1] : URL_HOMES[2];
 
-        window.d = document;
-        window.dw = d.documentElement.clientWidth;
-        window.dh = d.documentElement.clientHeight;
-        window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95; //棋盘宽度
-        cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
+    window.d = document;
+    window.dw = d.documentElement.clientWidth;
+    window.dh = d.documentElement.clientHeight;
+    window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95; //棋盘宽度
+    cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
 
-        window.viewport1 = null; // 控制缩放
-        window.vConsole = null; // 调试工具
-        window.openNoSleep = () => {}; //打开防休眠
-        window.closeNoSleep = () => {}; //关闭防休眠
-        let cBoard = null; //棋盘对象
+    window.viewport1 = null; // 控制缩放
+    window.vConsole = null; // 调试工具
+    window.openNoSleep = () => {}; //打开防休眠
+    window.closeNoSleep = () => {}; //关闭防休眠
+    let cBoard = null; //棋盘对象
 
 
-        window.alert = function(name) { //更改默认标题
-            const IFRAME = document.createElement('IFRAME');
-            IFRAME.style.display = 'none';
-            IFRAME.setAttribute('src', 'data:text/plain,');
-            document.documentElement.appendChild(IFRAME);
-            window.frames[0].window.alert(name);
-            IFRAME.parentNode.removeChild(IFRAME);
-        };
+    window.alert = function(name) { //更改默认标题
+        const IFRAME = document.createElement('IFRAME');
+        IFRAME.style.display = 'none';
+        IFRAME.setAttribute('src', 'data:text/plain,');
+        document.documentElement.appendChild(IFRAME);
+        window.frames[0].window.alert(name);
+        IFRAME.parentNode.removeChild(IFRAME);
+    };
 
-        window._loading = (function() { //控制加载动画
-            let timer = null;
-            const WIN_LOADING = document.createElement("div"),
-                ANIMA = document.createElement("div"),
-                LABEL = document.createElement("div"),
-                DW = document.documentElement.clientWidth,
-                DH = document.documentElement.clientHeight;
-            const triangle = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`,
-                ball = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`,
-                black_white = `<div class="center-body"><div class="loader-ball-11"></div></div>`,
-                busy = `<div class="center-body"><div class="loader-circle-101"></div></div>`;
-            const ANIMA_NANE = {
-                "triangle": triangle,
-                "ball": ball,
-                "black_white": black_white,
-                "busy": busy,
-            }
-            let lock = false;
-            let s = WIN_LOADING.style;
-            s.position = "fixed";
-            s.width = "150px";
-            s.height = "150px";
-            s.left = (DW - 150) / 2 + "px";
-            s.top = (DH - 150) / 2 + "px";
-            s.zIndex = 0xffffff;
-            //s.background = "#777";
-            //s.opacity = "0.68";
-            s.transform = `scale(${Math.min(DW, DH)/430})`;
-            WIN_LOADING.setAttribute("class", "finish");
-
-            s = ANIMA.style;
-            s.position = "absolute";
-            s.width = "150px";
-            s.height = "150px";
-            s.left = "0px";
-            s.top = "0px";
-            WIN_LOADING.appendChild(ANIMA);
-
-            s = LABEL.style;
-            s.position = "absolute";
-            s.width = "150px";
-            s.height = "25px";
-            s.left = "0px";
-            s.top = "150px";
-            s.fontSize = "15px";
-            s.textAlign = "center";
-            s.lineHeight = "25px";
-            WIN_LOADING.appendChild(LABEL);
-
-            return {
-                open: (animaName, _timeout) => { //打开动画
-                    if (lock) return;
-                    //log("_loading.open")
-                    if (!WIN_LOADING.parentNode) {
-                        ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
-                        document.body.appendChild(WIN_LOADING);
-                    }
-                    if (timer) {
-                        clearTimeout(timer);
-                    }
-                    timer = setTimeout(() => {
-                        if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
-                    }, _timeout || 30 * 1000);
-                },
-                close: () => { //关闭动画
-                    if (lock) return;
-                    //log("_loading.close")
-                    if (timer) {
-                        clearTimeout(timer);
-                    }
-                    timer = setTimeout(() => {
-                        if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
-                        LABEL.innerHTML = "";
-                    }, 500);
-                },
-                lock: (value = false) => { lock = value }, //锁定后，不开打开或关闭
-                text: (text = "") => { //动画标题，可以用来显示进度百分百
-                    LABEL.innerHTML = text;
-                },
-            };
-        })();
-
-        window.SaveResponse = function SaveResponse() {
-            this.count = 0;
-            this.response;
+    window._loading = (function() { //控制加载动画
+        let timer = null;
+        const WIN_LOADING = document.createElement("div"),
+            ANIMA = document.createElement("div"),
+            LABEL = document.createElement("div"),
+            DW = document.documentElement.clientWidth,
+            DH = document.documentElement.clientHeight;
+        const triangle = `<div class="center-body"><div class="loader-ball-51"><div></div><div></div><div></div></div></div>`,
+            ball = `<div class="center-body"><div class="loader-ball-38"><div></div><div></div><div></div><div></div><div></div></div></div>`,
+            black_white = `<div class="center-body"><div class="loader-ball-11"></div></div>`,
+            busy = `<div class="center-body"><div class="loader-circle-101"></div></div>`;
+        const ANIMA_NANE = {
+            "triangle": triangle,
+            "ball": ball,
+            "black_white": black_white,
+            "busy": busy,
         }
+        let lock = false;
+        let s = WIN_LOADING.style;
+        s.position = "fixed";
+        s.width = "150px";
+        s.height = "150px";
+        s.left = (DW - 150) / 2 + "px";
+        s.top = (DH - 150) / 2 + "px";
+        s.zIndex = 0xffffff;
+        //s.background = "#777";
+        //s.opacity = "0.68";
+        s.transform = `scale(${Math.min(DW, DH)/430})`;
+        WIN_LOADING.setAttribute("class", "finish");
 
-        SaveResponse.prototype.saveResponse = function(request, cacheName = window.APP_VERSION) {
-            let _self = this;
+        s = ANIMA.style;
+        s.position = "absolute";
+        s.width = "150px";
+        s.height = "150px";
+        s.left = "0px";
+        s.top = "0px";
+        WIN_LOADING.appendChild(ANIMA);
 
-            function put() {
-                return new Promise((resolve, reject) => {
-                    function save() {
-                        if (_self.count++ >= 3) {
-                            const MSG = `put cache Error: count > 3 (${request.url.split("/").pop()})`
-                            log(MSG)
-                            reject(new Error(MSG))
-                            return;
-                        }
-                        //log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
-                        caches.open(cacheName)
-                            .then(cache => {
-                                let cloneRes = _self.response.clone();
-                                cache.put(request, cloneRes)
-                                setTimeout(() => {
-                                    cache.match(request)
-                                        .then(response => {
-                                            if (response && response.ok)
-                                                resolve(response)
-                                            else
-                                                save()
-                                        })
-                                }, 0)
-                            })
-                            .catch(() => {
-                                save()
-                            })
-                    }
-                    save();
-                })
-            }
+        s = LABEL.style;
+        s.position = "absolute";
+        s.width = "150px";
+        s.height = "25px";
+        s.left = "0px";
+        s.top = "150px";
+        s.fontSize = "15px";
+        s.textAlign = "center";
+        s.lineHeight = "25px";
+        WIN_LOADING.appendChild(LABEL);
 
+        return {
+            open: (animaName, _timeout) => { //打开动画
+                if (lock) return;
+                //log("_loading.open")
+                if (!WIN_LOADING.parentNode) {
+                    ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
+                    document.body.appendChild(WIN_LOADING);
+                }
+                if (timer) {
+                    clearTimeout(timer);
+                }
+                timer = setTimeout(() => {
+                    if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
+                }, _timeout || 30 * 1000);
+            },
+            close: () => { //关闭动画
+                if (lock) return;
+                //log("_loading.close")
+                if (timer) {
+                    clearTimeout(timer);
+                }
+                timer = setTimeout(() => {
+                    if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
+                    LABEL.innerHTML = "";
+                }, 500);
+            },
+            lock: (value = false) => { lock = value }, //锁定后，不开打开或关闭
+            text: (text = "") => { //动画标题，可以用来显示进度百分百
+                LABEL.innerHTML = text;
+            },
+        };
+    })();
+
+    window.SaveResponse = function SaveResponse() {
+        this.count = 0;
+        this.response;
+    }
+
+    SaveResponse.prototype.saveResponse = function(request, cacheName = window.APP_VERSION) {
+        let _self = this;
+
+        function put() {
             return new Promise((resolve, reject) => {
-                if ("caches" in window) {
-                    fetch(request)
-                        .then((response) => {
+                function newRequest(err) {
+                    let myInit = { cache: "reload" };
+                    fetch(request, myInit)
+                        .then(response => {
+                            if (_self.count++ >= 3) {
+                                const MSG = `${err ? err.message: ""}\n put cache Error: count > 3 (${request.url.split("/").pop()})`
+                                log(MSG, "error")
+                                reject(new Error(MSG))
+                                return;
+                            }
+                            //log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
                             if (!response.ok) throw new Error("response not OK")
                             _self.response = response;
-                            return put().then(resolve).catch(reject)
+                            return caches.open(cacheName)
+                                .then(cache => {
+                                    let cloneRes = _self.response.clone();
+                                    cache.put(request, cloneRes)
+                                    setTimeout(() => {
+                                        cache.match(request)
+                                            .then(response => {
+                                                if (response && response.ok)
+                                                    resolve(response)
+                                                else
+                                                    newRequest()
+                                            })
+                                            .catch (err => {
+                                                    newRequest(err)
+                                            })
+                                    }, 200)
+                                })
+                                .catch(err => {
+                                    setTimeout(() => {
+                                        newRequest(err)
+                                    }, 200)
+                                })
                         })
+                        .catch(err => {
+                            setTimeout(() => {
+                                newRequest(err)
+                            }, 200)
+                        })
+                }
+                newRequest();
+            })
+        }
+
+        return new Promise((resolve, reject) => {
+            if ("caches" in window) {
+                put().then(resolve).catch(reject)
+            }
+            else {
+                resolve()
+            }
+        })
+    }
+
+    window.logCaches = function() {
+        if ("caches" in window) {
+            let cs = `_____________________\n`;
+            return caches.keys()
+                .then(function(cachesNames) {
+                    cs += `________ 离线缓存 ${cachesNames.length}个 ________\n\n`
+                    cachesNames.forEach(function(cache, index, array) {
+                        cs += `.\t[${cache}]\n`
+                    });
+                    cs += `_____________________\n`;
+                    log(cs, "warn");
+                });
+        }
+        else {
+            return Promise.resolve()
+        }
+    }
+
+    window.logCache = function(cacheName) {
+        if ("caches" in window) {
+            let cs = `_____________________\n`;
+            return caches.open(cacheName)
+                .then(function(cache) {
+                    return cache.keys()
+                        .then(function(keys) {
+                            cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
+                            keys.forEach(function(request, index, array) {
+                                cs += `.\t${request.url.split("/").pop()}\n`
+                            });
+                            cs += `_____________________\n`;
+                            log(cs);
+                        });
+                })
+        }
+        else {
+            return Promise.resolve();
+        }
+    }
+
+    function resetNoSleep() { //设置防休眠
+        let noSleep;
+        let isNoSleep = false; // bodyTouchStart 防止锁屏
+        let noSleepTime = 0;
+        if (typeof NoSleep == "function") {
+            noSleep = new NoSleep();
+            setInterval(function() {
+                if (isNoSleep) {
+                    noSleep.enable();
+                    //log("noSleep.enable()")
+                }
+                else {
+                    noSleep.disable();
+                    //log("noSleep.disable()")
+                }
+            }, 15 * 1000);
+        }
+        window.openNoSleep = function() {
+            if (noSleep) {
+                isNoSleep = true;
+            }
+        };
+        window.closeNoSleep = function() {
+            isNoSleep = false;
+        };
+    }
+
+    function putCache(url) {
+        return new Promise((resolve, reject) => {
+            new SaveResponse().saveResponse(new Request(url))
+                .then(response => {
+                    resolve()
+                })
+                .catch(err => {
+                    log(`putCache Error: ${err.message}`, "error")
+                    reject(err)
+                })
+        })
+    }
+    
+    function downloadSource(){
+        let ps=[];
+        let keys = Object.keys(window.SOURCE_FILES);
+        for(let i=0; i<keys.length; i++){
+            ps.push(putCache(window.SOURCE_FILES[keys[i]]));
+        }
+        return Promise.all(ps)
+            .then(()=>{
+                log("---更新离线缓存--->ok", "warn")
+            })
+            .catch(err => {
+                log(`---更新离线缓存失败---> ${err.message}`, "error")
+            })
+            
+    }
+
+    function loadCss(url) { //加载css
+        const filename = url.split("/").pop()
+        return new Promise((resolve, reject) => {
+            let head = document.getElementsByTagName('head')[0];
+            let _link = document.createElement('link');
+            _link.rel = "preload";
+            _link.as = "style";
+            _link.href = url;
+            head.appendChild(_link);
+            let link = document.createElement('link');
+            link.type = 'text/css';
+            link.rel = 'stylesheet';
+            link.onload = () => {
+                //log(`loadCss "${filename}"`);
+                setTimeout(() => {
+                    resolve()
+                }, 0)
+            }
+            link.onerror = (err) => {
+                let message = `loadCss_Error: "${filename}"`;
+                reject(new Error(message));
+                //log(message);
+            }
+            link.href = url;
+            head.appendChild(link);
+        });
+    }
+
+    function loadFont(url) { //加载字体文件
+        const filename = url.split("/").pop()
+        return new Promise((resolve, reject) => {
+            function reqListener() {
+                //log(`loadFont "${filename}"`);
+                setTimeout(() => {
+                    resolve()
+                }, 0)
+            }
+
+            function err(err) {
+                let message = `loadFont_Error: "${filename}"`;
+                reject(new Error(message));
+                //log(message);
+            }
+            let oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", reqListener);
+            oReq.addEventListener("error", err);
+            oReq.open("GET", url);
+            oReq.send();
+        });
+    }
+
+    function loadFile(url) { //加载文件
+        const filename = url.split("/").pop()
+        return new Promise((resolve, reject) => {
+            function reqListener() {
+                //log(`loadFile "${filename}"`);
+                setTimeout(() => {
+                    resolve()
+                }, 0)
+            }
+
+            function err(err) {
+                let message = `loadFile_Error: "${filename}"`;
+                reject(new Error(message));
+                //log(message);
+            }
+            let oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", reqListener);
+            oReq.addEventListener("error", err);
+            oReq.open("GET", url);
+            oReq.send();
+        });
+    }
+
+    function loadTxT(url) { //加载文件
+        const filename = url.split("/").pop()
+        return new Promise((resolve, reject) => {
+            function reqListener() {
+                //log(`loadTxT "${filename}"`);
+                setTimeout(() => {
+                    resolve(oReq.response)
+                }, 0)
+            }
+
+            function err(err) {
+                let message = `loadTxT_Error: "${filename}"`;
+                reject(new Error(message));
+                //log(message);
+            }
+            let oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", reqListener);
+            oReq.addEventListener("error", err);
+            oReq.open("GET", url);
+            oReq.send();
+        });
+    }
+
+    function loadScript(url) { //加载脚本
+        const filename = url.split("/").pop()
+        return new Promise((resolve, reject) => {
+            let oHead = document.getElementsByTagName('HEAD').item(0);
+            let oScript = document.createElement("script");
+            oHead.appendChild(oScript);
+            oScript.type = "text/javascript";
+            oScript.rel = "preload";
+            oScript.as = "script";
+            oScript.onload = () => {
+                //log(`loadScript "${filename}"`);
+                setTimeout(() => {
+                    let key = filename.split(/[\-\_\.]/)[0];
+                    window.checkScriptVersion(key)
+                        .then(() => {
+                            setTimeout(() => {
+                                resolve()
+                            }, 0)
+                        })
+                        .catch(reject)
+                }, 0);
+            }
+            oScript.onerror = (err) => {
+                let message = `loadScript_Error: "${filename}"`;
+                reject(new Error(message));
+                //log(message);
+            }
+            oScript.src = url;
+        });
+    }
+
+    function createScript(code) { // 用code 创建脚步
+        return new Promise((resolve, reject) => {
+            let oHead = document.getElementsByTagName('HEAD').item(0);
+            let oScript = document.createElement("script");
+            oHead.appendChild(oScript);
+            oScript.type = "text/javascript";
+            oScript.text = code;
+            setTimeout(resolve, 100);
+        });
+    }
+
+    Promise.queue = function(thenables) { // 顺序执行 thenable
+        return new Promise((resolve, reject) => {
+            function nextPromise() {
+                if (thenables.length) {
+                    let t = thenables[0];
+                    thenables.splice(0, 1);
+                    Promise.resolve(t)
+                        .then(nextPromise)
                         .catch(reject)
                 }
                 else {
-                    resolve()
+                    return resolve();
                 }
-            })
-        }
+            }
+            nextPromise();
+        })
+    }
 
-        window.logCaches = function() {
-            if ("caches" in window) {
-                let cs = `_____________________\n`;
-                return caches.keys()
-                    .then(function(cachesNames) {
-                        cs += `________ 离线缓存 ${cachesNames.length}个 ________\n\n`
-                        cachesNames.forEach(function(cache, index, array) {
-                            cs += `.\t[${cache}]\n`
+    function createThenable(loadFun, fileName, callback) { // 返回thenable
+        return {
+            then: function(onFulfill, onReject) {
+                onFulfill(
+                    Promise.resolve()
+                    .then(() => {
+                        return new Promise((resolve, reject) => {
+                            function _timeout() {
+                                reject(new Error(`Error: 连接网络超时\n文件"${fileName}"下载失败`));
+                            }
+                            setTimeout(_timeout, 30 * 1000);
+                            loadFun(fileName)
+                                .then(resolve)
+                                .catch(reject)
+                        })
+                    })
+                    .then(() => {
+                        return new Promise((resolve, reject) => {
+                            if (typeof callback == "function") callback();
+                            setTimeout(() => {
+                                resolve();
+                            }, 0)
                         });
-                        cs += `_____________________\n`;
-                        log(cs);
-                    });
-            }
-            else {
-                return Promise.resolve()
-            }
-        }
-
-        window.logCache = function(cacheName) {
-            if ("caches" in window) {
-                let cs = `_____________________\n`;
-                return caches.open(cacheName)
-                    .then(function(cache) {
-                        return cache.keys()
-                            .then(function(keys) {
-                                cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
-                                keys.forEach(function(request, index, array) {
-                                    cs += `.\t${request.url.split("/").pop()}\n`
-                                });
-                                cs += `_____________________\n`;
-                                log(cs);
-                            });
                     })
-            }
-            else {
-                return Promise.resolve();
-            }
-        }
-
-        function resetNoSleep() { //设置防休眠
-            let noSleep;
-            let isNoSleep = false; // bodyTouchStart 防止锁屏
-            let noSleepTime = 0;
-            if (typeof NoSleep == "function") {
-                noSleep = new NoSleep();
-                setInterval(function() {
-                    if (isNoSleep) {
-                        noSleep.enable();
-                        //log("noSleep.enable()")
-                    }
-                    else {
-                        noSleep.disable();
-                        //log("noSleep.disable()")
-                    }
-                }, 15 * 1000);
-            }
-            window.openNoSleep = function() {
-                if (noSleep) {
-                    isNoSleep = true;
-                }
-            };
-            window.closeNoSleep = function() {
-                isNoSleep = false;
-            };
-        }
-
-        function putCache(url) {
-            return new Promise((resolve, reject) => {
-                new SaveResponse().saveResponse(new Request(url))
-                    .then(response => {
-                        resolve()
-                    })
-                    .catch(err =>{
-                        log(`putCache Error: ${err.message}`)
-                        reject()
-                    })
-            })
-        }
-
-        function loadCss(url) { //加载css
-            const filename = url.split("/").pop()
-            return new Promise((resolve, reject) => {
-                let head = document.getElementsByTagName('head')[0];
-                let _link = document.createElement('link');
-                _link.rel = "preload";
-                _link.as = "style";
-                _link.href = url;
-                head.appendChild(_link);
-                let link = document.createElement('link');
-                link.type = 'text/css';
-                link.rel = 'stylesheet';
-                link.onload = () => {
-                    //log(`loadCss "${filename}"`);
-                    setTimeout(()=>{
-                        resolve()
-                    }, 0)
-                }
-                link.onerror = (err) => {
-                    let message = `loadCss_Error: "${filename}"`;
-                    reject(new Error(message));
-                    //log(message);
-                }
-                link.href = url;
-                head.appendChild(link);
-            });
-        }
-
-        function loadFont(url) { //加载字体文件
-            const filename = url.split("/").pop()
-            return new Promise((resolve, reject) => {
-                function reqListener() {
-                    //log(`loadFont "${filename}"`);
-                    setTimeout(() => {
-                        resolve()
-                    }, 0)
-                }
-
-                function err(err) {
-                    let message = `loadFont_Error: "${filename}"`;
-                    reject(new Error(message));
-                    //log(message);
-                }
-                let oReq = new XMLHttpRequest();
-                oReq.addEventListener("load", reqListener);
-                oReq.addEventListener("error", err);
-                oReq.open("GET", url);
-                oReq.send();
-            });
-        }
-
-        function loadFile(url) { //加载文件
-            const filename = url.split("/").pop()
-            return new Promise((resolve, reject) => {
-                function reqListener() {
-                    //log(`loadFile "${filename}"`);
-                    setTimeout(() => {
-                        resolve()
-                    }, 0)
-                }
-
-                function err(err) {
-                    let message = `loadFile_Error: "${filename}"`;
-                    reject(new Error(message));
-                    //log(message);
-                }
-                let oReq = new XMLHttpRequest();
-                oReq.addEventListener("load", reqListener);
-                oReq.addEventListener("error", err);
-                oReq.open("GET", url);
-                oReq.send();
-            });
-        }
-
-        function loadTxT(url) { //加载文件
-            const filename = url.split("/").pop()
-            return new Promise((resolve, reject) => {
-                function reqListener() {
-                    //log(`loadTxT "${filename}"`);
-                    setTimeout(() => {
-                        resolve(oReq.response)
-                    }, 0)
-                }
-
-                function err(err) {
-                    let message = `loadTxT_Error: "${filename}"`;
-                    reject(new Error(message));
-                    //log(message);
-                }
-                let oReq = new XMLHttpRequest();
-                oReq.addEventListener("load", reqListener);
-                oReq.addEventListener("error", err);
-                oReq.open("GET", url);
-                oReq.send();
-            });
-        }
-
-        function loadScript(url) { //加载脚本
-            const filename = url.split("/").pop()
-            return new Promise((resolve, reject) => {
-                let oHead = document.getElementsByTagName('HEAD').item(0);
-                let oScript = document.createElement("script");
-                oHead.appendChild(oScript);
-                oScript.type = "text/javascript";
-                oScript.rel = "preload";
-                oScript.as = "script";
-                oScript.onload = () => {
-                    //log(`loadScript "${filename}"`);
-                    setTimeout(() => {
-                        let key = filename.split(/[\-\_\.]/)[0];
-                        window.checkScriptVersion(key)
-                            .then(() => {
-                                setTimeout(() => {
-                                    resolve()
-                                }, 0)
-                            })
-                            .catch(reject)
-                    }, 0);
-                }
-                oScript.onerror = (err) => {
-                    let message = `loadScript_Error: "${filename}"`;
-                    reject(new Error(message));
-                    //log(message);
-                }
-                oScript.src = url;
-            });
-        }
-
-        function createScript(code) { // 用code 创建脚步
-            return new Promise((resolve, reject) => {
-                let oHead = document.getElementsByTagName('HEAD').item(0);
-                let oScript = document.createElement("script");
-                oHead.appendChild(oScript);
-                oScript.type = "text/javascript";
-                oScript.text = code;
-                setTimeout(resolve, 100);
-            });
-        }
-
-        Promise.queue = function(thenables) { // 顺序执行 thenable
-            return new Promise((resolve, reject) => {
-                function nextPromise() {
-                    if (thenables.length) {
-                        let t = thenables[0];
-                        thenables.splice(0, 1);
-                        Promise.resolve(t)
-                            .then(nextPromise)
-                            .catch(reject)
-                    }
-                    else {
-                        return resolve();
-                    }
-                }
-                nextPromise();
-            })
-        }
-
-        function createThenable(loadFun, fileName, callback) { // 返回thenable
-            return {
-                then: function(onFulfill, onReject) {
-                    onFulfill(
-                        Promise.resolve()
-                        .then(() => {
-                            return new Promise((resolve, reject) => {
-                                function _timeout() {
-                                    reject(new Error(`Error: 连接网络超时\n文件"${fileName}"下载失败`));
-                                }
-                                setTimeout(_timeout, 30 * 1000);
-                                loadFun(fileName)
-                                    .then(resolve)
-                                    .catch(reject)
-                            })
-                        })
-                        .then(() => {
-                            return new Promise((resolve, reject) => {
-                                if (typeof callback == "function") callback();
-                                setTimeout(() => {
-                                    resolve();
-                                }, 0)
-                            });
-                        })
-                    )
-                }
-            };
-        }
-
-        function createThenables(loadFun, config) {
-            let ts = [];
-            for (let i = 0; i < config.length; i++) {
-                ts.push(createThenable(loadFun, config[i][0], config[i][1]));
-            }
-            return ts;
-        }
-
-        function loadAll(loadFun, config, ayc = false) {
-            const thenables = createThenables(loadFun, config);
-            if (ayc) {
-                let ps = [];
-                for (let i = 0; i < thenables.length; i++) {
-                    ps.push(Promise.resolve(thenables[i]));
-                }
-                return Promise.all(ps);
-            }
-            else {
-                return Promise.queue(thenables);
-            }
-        }
-
-        function loadCssAll(config, ayc = false) {
-            return loadAll(loadCss, config, ayc);
-        }
-
-        function loadFontAll(config, ayc = false) {
-            return loadAll(loadFont, config, ayc);
-        }
-
-        function loadFileAll(config, ayc = false) {
-            return loadAll(loadFile, config, ayc);
-        }
-
-        function loadScriptAll(config, ayc = false) {
-            return loadAll(loadScript, config, ayc);
-        }
-
-        let serviceWorker_state;
-
-        function registerserviceWorker() {
-            return new Promise((resolve, reject) => {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.addEventListener('statechange', function(e) {
-                        log(' >>> ' + e.target.state);
-                    });
-                    navigator.serviceWorker.addEventListener("message", function(event) {
-                        if (typeof event.data == "string") {
-                            const MSG = event.data;
-                            TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`)
-                            if (MSG.indexOf("loading...") + 1) {
-                                window._loading.open();
-                                //log(`open`);
-                            }
-                            else if (MSG.indexOf("load finish") + 1) {
-                                window._loading.close();
-                                //log(`close`);
-                            }
-                        }
-                        else {
-                            TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`)
-                        }
-                    });
-                    // 开始注册service workers
-                    navigator.serviceWorker.register('./sw.js', {
-                        scope: './'
-                    }).then(function(registration) {
-                        var serviceWorker;
-                        if (registration.installing) {
-                            serviceWorker = registration.installing;
-                        } else if (registration.waiting) {
-                            serviceWorker = registration.waiting;
-                        } else if (registration.active) {
-                            serviceWorker = registration.active;
-                        }
-                        if (serviceWorker) {
-                            serviceWorker_state = serviceWorker.state;
-                            log(`serviceWorker.state=${serviceWorker.state}`)
-                        }
-                        resolve();
-                    }).catch(function(error) {
-                        reject(error);
-                    });
-                } else {
-                    resolve();
-                }
-            });
-        }
-
-        function upData() {
-            function isNewVersion() {
-                return new Promise((resolve, reject) => {
-                    loadTxT("./renju.html")
-                        .then(txt => {
-                            const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
-                            const version = versionCode ?
-                                String(versionCode).split(/[\"\;]/)[1] :
-                                undefined;
-                            resolve(version != window.APP_VERSION)
-                        })
-                        .catch(err => {
-                            reject(err)
-                        })
-                })
-            }
-
-            if ("serviceWorker" in navigator) {
-                return isNewVersion()
-                    .then(newVersion => {
-                        if (newVersion)
-                            return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
-                                .then((num) => {
-                                    num == 1 && window.location.reload();
-                                })
-                    })
-            }
-            else {
-                return Promise.resolve()
-            }
-        }
-
-        function autoShowUpDataInformation() {
-            if ("localStorage" in window) {
-                const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
-                if (OLD_VERDION != window.APP_VERSION &&
-                    window.CHECK_VERSION &&
-                    (serviceWorker_state == "installed" ||
-                        serviceWorker_state == "activated" ||
-                        serviceWorker_state == undefined)
                 )
-                {
-                    let infoArr = window.UPDATA_INFO[window.APP_VERSION];
-                    let lineNum = infoArr ? infoArr.length + 7 : 1;
-                    let Msg = lineNum > 1 ? "\n\t" : "";
-                    Msg += `摆棋小工具 更新完毕`;
-                    if (infoArr) {
-                        Msg += `\n\t_____________________ `;
-                        Msg += `\n\t版本： ${window.APP_VERSION}\n`;
-                        for (let i = 0; i < infoArr.length; i++)
-                            Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
-                        Msg += `\n\t_____________________ `;
+            }
+        };
+    }
+
+    function createThenables(loadFun, config) {
+        let ts = [];
+        for (let i = 0; i < config.length; i++) {
+            ts.push(createThenable(loadFun, config[i][0], config[i][1]));
+        }
+        return ts;
+    }
+
+    function loadAll(loadFun, config, ayc = false) {
+        const thenables = createThenables(loadFun, config);
+        if (ayc) {
+            let ps = [];
+            for (let i = 0; i < thenables.length; i++) {
+                ps.push(Promise.resolve(thenables[i]));
+            }
+            return Promise.all(ps);
+        }
+        else {
+            return Promise.queue(thenables);
+        }
+    }
+
+    function loadCssAll(config, ayc = false) {
+        return loadAll(loadCss, config, ayc);
+    }
+
+    function loadFontAll(config, ayc = false) {
+        return loadAll(loadFont, config, ayc);
+    }
+
+    function loadFileAll(config, ayc = false) {
+        return loadAll(loadFile, config, ayc);
+    }
+
+    function loadScriptAll(config, ayc = false) {
+        return loadAll(loadScript, config, ayc);
+    }
+
+    let serviceWorker_state;
+
+    function registerserviceWorker() {
+        return new Promise((resolve, reject) => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('statechange', function(e) {
+                    log(' >>> ' + e.target.state);
+                });
+                navigator.serviceWorker.addEventListener("message", function(event) {
+                    if (typeof event.data == "string") {
+                        const MSG = event.data;
+                        TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`, "warn")
+                        if (MSG.indexOf("loading...") + 1) {
+                            window._loading.open();
+                            //log(`open`);
+                        }
+                        else if (MSG.indexOf("load finish") + 1) {
+                            window._loading.close();
+                            //log(`close`);
+                        }
                     }
-                    msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
-                    localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
+                    else {
+                        TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`, "warn")
+                    }
+                });
+                // 开始注册service workers
+                navigator.serviceWorker.register('./sw.js', {
+                    scope: './'
+                }).then(function(registration) {
+                    var serviceWorker;
+                    if (registration.installing) {
+                        serviceWorker = registration.installing;
+                    } else if (registration.waiting) {
+                        serviceWorker = registration.waiting;
+                    } else if (registration.active) {
+                        serviceWorker = registration.active;
+                    }
+                    if (serviceWorker) {
+                        serviceWorker_state = serviceWorker.state;
+                        log(`serviceWorker.state=${serviceWorker.state}`, "warn")
+                    }
+                    resolve();
+                }).catch(function(error) {
+                    reject(error);
+                });
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    function upData() {
+        function isNewVersion() {
+            return new Promise((resolve, reject) => {
+                loadTxT("./renju.html")
+                    .then(txt => {
+                        const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
+                        const version = versionCode ?
+                            String(versionCode).split(/[\"\;]/)[1] :
+                            undefined;
+                        resolve(version && version != window.APP_VERSION)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        }
+
+        if ("serviceWorker" in navigator) {
+            return isNewVersion()
+                .then(newVersion => {
+                    if (newVersion)
+                        return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
+                            .then((num) => {
+                                num == 1 && window.location.reload();
+                                return true;
+                            })
+                            .catch(()=>{
+                                return false;
+                            })
+                    return false;
+                })
+                .catch(()=>{
+                    return false;
+                })
+        }
+        else {
+            return Promise.resolve(true)
+        }
+    }
+    
+    function searchUpData() {
+        const TIMER_NEXT = 5 * 1000;
+        let count = 0;
+        function search() {
+            if (count++ > 5) return;
+            log(`searchUpData ---> ${count}`, "warn");
+            upData()
+                .then(newVersion => {
+                    log(`[${newVersion}]`)
+                    newVersion || setTimeout(search, TIMER_NEXT)
+                })
+                .catch(err => {
+                    log(`[${err}]`, "error")
+                    setTimeout(search, TIMER_NEXT)
+                })
+        }
+        if ("serviceWorker" in navigator) {
+            search();
+        }
+    }
+
+    function autoShowUpDataInformation() {
+        if ("localStorage" in window) {
+            const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
+            if (OLD_VERDION != window.APP_VERSION &&
+                window.CHECK_VERSION &&
+                (serviceWorker_state == "installed" ||
+                    serviceWorker_state == "activated" ||
+                    serviceWorker_state == undefined)
+            )
+            {
+                let infoArr = window.UPDATA_INFO[window.APP_VERSION];
+                let lineNum = infoArr ? infoArr.length + 7 : 1;
+                let Msg = lineNum > 1 ? "\n\t" : "";
+                Msg += `摆棋小工具 更新完毕`;
+                if (infoArr) {
+                    Msg += `\n\t_____________________ `;
+                    Msg += `\n\t版本： ${window.APP_VERSION}\n`;
+                    for (let i = 0; i < infoArr.length; i++)
+                        Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
+                    Msg += `\n\t_____________________ `;
                 }
-            }
-        }
-
-        function logVersions() {
-            let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
-            Msg += `_____________________\n\n `;
-            Msg += `${strLen("主页  ", 30)}  版本号: ${window.APP_VERSION}\n`;
-            for (let key in window.SCRIPT_VERSIONS) {
-                Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSIONS[key]}\n`;
-            }
-            Msg += `_____________________\n\n `;
-            log(Msg)
-        }
-
-        function openVConsole() {
-            const IS_DEBUG = localStorage.getItem("debug");
-            if (IS_DEBUG == "true") {
-                if (vConsole == null) vConsole = new VConsole();
-            }
-        }
-
-        var reload = (() => {
-                    let count = 0;
-                    return () => {
-                            if (count++< 3) return false;
-                setTimeout(() => { window.location.reload() }, 1000);
+                msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
+                localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 return true;
             }
-        })();
-        
-        function testBrowser(){
-            let Msg = "";
-            Msg += `_____________________\n\n `;
-            Msg += `serviceWorker: ${"serviceWorker" in navigator}\n`;
-            Msg += `Worker: ${"Worker" in window}\n`;
-            Msg += `caches: ${"caches" in window}\n`;
-            const canvas = document.createElement("canvas");
-            Msg += `canvas: ${!!canvas.getContext}\n`
-            Msg += `canvas.toBlob: ${typeof canvas.toBlob=="function"}\n`;
-            Msg += `canvas.toDataURL: ${typeof canvas.toDataURL=="function"}\n`;
-            Msg += `localStorage: ${"localStorage" in window}\n`;
-            Msg += `msSaveOrOpenBlob in navigator: ${"msSaveOrOpenBlob" in navigator}\n`;
-            Msg += `download in HTMLAnchorElement.prototype: ${"download"  in HTMLAnchorElement.prototype}\n`;
-            Msg += `_____________________\n\n `;
-            Msg += `\nuserAgent: ${window.navigator.userAgent}\n`
-            Msg += `_____________________\n\n `;
-            window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
-            //log("testBrowser:\n" + Msg);
         }
-        
-        function createUI() {
-            try {
-                let bodyDiv = d.createElement("div");
-                d.body.appendChild(bodyDiv);
-                bodyDiv.style.position = "absolute";
-                bodyDiv.style.width = "100%";
-                bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
-                bodyDiv.style.left = "0px";
-                bodyDiv.style.top = "0px";
-                bodyDiv.style.opacity = "0";
-                //bodyDiv.style.backgroundColor = "black";
-                bodyDiv.setAttribute("class", "finish");
-                setTimeout(()=>{bodyDiv.style.opacity = "1"}, 300);
-                
-                let upDiv = d.createElement("div");
-                bodyDiv.appendChild(upDiv);
-                upDiv.style.position = "absolute";
-                upDiv.style.width = "0px";
-                upDiv.style.height = "0px";
-                upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
-                upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
-                //upDiv.style.backgroundColor = "green";
+    }
 
-                let downDiv = d.createElement("div");
-                bodyDiv.appendChild(downDiv);
-                downDiv.style.position = "absolute";
-                downDiv.style.width = "0px";
-                downDiv.style.height = "0px";
-                downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
-                downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
-                //downDiv.style.backgroundColor = "blue";
-
-                cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
-                cBoard.printCheckerBoard();
-
-                control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
-                appData.renjuLoad(cBoard);
-                
-                return bodyDiv;
-            }
-            catch (err) {
-                if (!reload()) document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>
-                                `;
-            }
+    function logVersions() {
+        let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
+        Msg += `_____________________\n\n `;
+        Msg += `${strLen("主页  ", 30)}  版本号: ${window.APP_VERSION}\n`;
+        for (let key in window.SCRIPT_VERSIONS) {
+            Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSIONS[key]}\n`;
         }
-        
-    
-    
+        Msg += `_____________________\n\n `;
+        log(Msg, "warn")
+    }
+
+    function openVConsole() {
+        const IS_DEBUG = localStorage.getItem("debug");
+        if (IS_DEBUG == "true") {
+            if (vConsole == null) vConsole = new VConsole();
+        }
+    }
+
+    function testBrowser() {
+        let Msg = "";
+        Msg += `_____________________\n\n `;
+        Msg += `serviceWorker: ${"serviceWorker" in navigator}\n`;
+        Msg += `Worker: ${"Worker" in window}\n`;
+        Msg += `caches: ${"caches" in window}\n`;
+        const canvas = document.createElement("canvas");
+        Msg += `canvas: ${!!canvas.getContext}\n`
+        Msg += `canvas.toBlob: ${typeof canvas.toBlob=="function"}\n`;
+        Msg += `canvas.toDataURL: ${typeof canvas.toDataURL=="function"}\n`;
+        Msg += `localStorage: ${"localStorage" in window}\n`;
+        Msg += `msSaveOrOpenBlob in navigator: ${"msSaveOrOpenBlob" in navigator}\n`;
+        Msg += `download in HTMLAnchorElement.prototype: ${"download"  in HTMLAnchorElement.prototype}\n`;
+        Msg += `_____________________\n\n `;
+        Msg += `\nuserAgent: ${window.navigator.userAgent}\n`
+        Msg += `_____________________\n\n `;
+        window.TEST_INFORMATION = window.BROWSER_INFORMATION = "\nBROWSER_INFORMATION:\n" + Msg;
+        //log("testBrowser:\n" + Msg);
+    }
+
+    function createUI() {
+        try {
+            let bodyDiv = d.createElement("div");
+            d.body.appendChild(bodyDiv);
+            bodyDiv.style.position = "absolute";
+            bodyDiv.style.width = "100%";
+            bodyDiv.style.height = dw < dh ? cWidth * 4 + "px" : "100%";
+            bodyDiv.style.left = "0px";
+            bodyDiv.style.top = "0px";
+            bodyDiv.style.opacity = "0";
+            //bodyDiv.style.backgroundColor = "black";
+            bodyDiv.setAttribute("class", "finish");
+            setTimeout(() => { bodyDiv.style.opacity = "1" }, 300);
+
+            let upDiv = d.createElement("div");
+            bodyDiv.appendChild(upDiv);
+            upDiv.style.position = "absolute";
+            upDiv.style.width = "0px";
+            upDiv.style.height = "0px";
+            upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
+            upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
+            //upDiv.style.backgroundColor = "green";
+
+            let downDiv = d.createElement("div");
+            bodyDiv.appendChild(downDiv);
+            downDiv.style.position = "absolute";
+            downDiv.style.width = "0px";
+            downDiv.style.height = "0px";
+            downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
+            downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
+            //downDiv.style.backgroundColor = "blue";
+
+            cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
+            cBoard.printCheckerBoard();
+
+            control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
+            appData.renjuLoad(cBoard);
+
+            return bodyDiv;
+        }
+        catch (err) {
+            document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>`;
+        }
+    }
+
+
+
     return registerserviceWorker()
-        .then(()=>{
+        .then(() => {
             return window.checkScriptVersion("renju")
         })
-        .then(() => { 
+        .then(() => {
             window._loading.open();
             window._loading.lock(true);
             window._loading.text("0%");
             return loadCssAll([
                 [SOURCE_FILES["loaders"]],
                 [SOURCE_FILES["main"]],
-                ],true)
+                ], true)
         })
         .then(() => {
             window._loading.text("5%");
@@ -703,21 +786,21 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["PFSCMedium1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_woff"]],
-                ], true) 
+                ], true)
         })
-        .then(() => { 
+        .then(() => {
             window._loading.text("30%");
-            return loadScriptAll([  //顺序 同步加载
-                [SOURCE_FILES["viewport"],()=>{
+            return loadScriptAll([ //顺序 同步加载
+                [SOURCE_FILES["viewport"], () => {
                     window.viewport1 = new view(dw);
                 }],
-                [SOURCE_FILES["vconsole"],()=>{
+                [SOURCE_FILES["vconsole"], () => {
                     openVConsole();
                     testBrowser();
                 }],
                 [SOURCE_FILES["button"]],
-                [SOURCE_FILES["emoji"]],// first load emoji
-                ],false)
+                [SOURCE_FILES["emoji"]], // first load emoji
+                ], false)
         })
         .then(() => {
             window._loading.text("50%");
@@ -745,46 +828,46 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["worker"]],
                 ], true)
         })
-        .then(()=>{
+        .then(() => {
             window._loading.text("99%");
             return loadFileAll([
                 [SOURCE_FILES["404_html"]],
                 [SOURCE_FILES["renju_html"]],
                 ], true)
-})
-.then(() => {
-        window._loading.text("99%");
-        resetNoSleep();
-        const UI = createUI();
-        window.viewport1.resize();
-        window._loading.lock(false);
-        window._loading.close();
-        window.DEBUG = true;
-        window.jsPDF = window.jspdf.jsPDF;
-        autoShowUpDataInformation(); // 提示新版本 更新已经完成
-        logVersions();
-        log(window.TEST_INFORMATION);
-        setTimeout(()=>{
-            log("[upData]");
-            upData()
-                .then(logCaches)
-                .then(()=>{
-                    logCache(window.APP_VERSION)
+        })
+        .then(() => {
+            window._loading.text("99%");
+            resetNoSleep();
+            const UI = createUI();
+            window.viewport1.resize();
+            window._loading.lock(false);
+            window._loading.close();
+            window.DEBUG = true;
+            window.jsPDF = window.jspdf.jsPDF;
+            log(window.TEST_INFORMATION, "info");
+            logVersions();
+            if (autoShowUpDataInformation())    //提示新版本 更新已经完成
+                return downloadSource()  //下载缓存文件
+        })
+        .then(()=>{
+            logCaches()  // print caches information
+                .then(() => {
+                    return logCache(window.APP_VERSION)
                 })
-        }, 2 * 1000)
-    })
-    .catch((err) => {
-        if (typeof err == "object" && err.type) {
-            err = err.message || err.type;
-        }
-        if (err == "reload") {
-            setTimeout(() => window.location.reload(), 1000);
-            return;
-        }
-        else {
-            const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
-            alert(MSG)
-            setTimeout(() => window.location.reload(), 1000);
-        }
-    });
+                .then(searchUpData)
+        })
+        .catch((err) => {
+            if (typeof err == "object" && err.type) {
+                err = err.message || err.type;
+            }
+            if (err == "reload") {
+                setTimeout(() => window.location.reload(), 1000);
+                return;
+            }
+            else {
+                const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
+                alert(MSG)
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
 };

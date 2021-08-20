@@ -1,11 +1,28 @@
-self.SCRIPT_VERSIONS["control"] = "v0820.1";
+self.SCRIPT_VERSIONS["control"] = "v0821.0";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
 
-    function log(param) {
+    function log(param, type = "log") {
+        const command = {
+            log: () => { console.log(param) },
+            info: () => { console.info(param) },
+            error: () => { console.error(param) },
+            warn: () => { console.warn(param) },
+            assert: () => { console.assert(param) },
+            clear: () => { console.clear(param) },
+            count: () => { console.count(param) },
+            group: () => { console.group(param) },
+            groupCollapsed: () => { console.groupCollapsed(param) },
+            groupEnd: () => { console.groupEnd(param) },
+            table: () => { console.table(param) },
+            time: () => { console.time(param) },
+            timeEnd: () => { console.timeEnd(param) },
+            trace: () => { console.trace(param) },
+        }
+        let print = command[type] || console.log;
         if (TEST_CONTROL && DEBUG)
-            console.log(`[control.js]\n>> ` + param);
+            print(`[control.js]\n>> ` + param);
     }
 
     const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
