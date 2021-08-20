@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.0";
+self.SCRIPT_VERSIONS["renju"] = "v0821.1";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -795,8 +795,8 @@ var loadApp = () => { // 按顺序加载应用
                     window.viewport1 = new view(dw);
                 }],
                 [SOURCE_FILES["vconsole"], () => {
-                    openVConsole();
                     testBrowser();
+                    openVConsole();
                 }],
                 [SOURCE_FILES["button"]],
                 [SOURCE_FILES["emoji"]], // first load emoji
