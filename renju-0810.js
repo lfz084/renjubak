@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.53";
+self.SCRIPT_VERSIONS["renju"] = "v0821.55";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -663,10 +663,10 @@ var loadApp = () => { // 按顺序加载应用
     }
     
     function searchUpData() {
-        const TIMER_NEXT = 5 * 1000;
+        const TIMER_NEXT = 30 * 1000;
         let count = 0;
         function search() {
-            if (count++ > 10) return;
+            if (count++ > 5) return;
             log(`searchUpData ---> ${count}`, "warn");
             upData()
                 .then(version => {
