@@ -1,4 +1,4 @@
-var VERSION = "v0821.35";
+var VERSION = "v0821.53";
 var myInit = {
     cache: "reload"
 };
@@ -126,6 +126,8 @@ self.addEventListener('fetch', function(event) {
         return new Promise((resolve, reject) => {
             let req = _URL == "https://lfz084.github.io/icon.ico" ?
                 new Request("https://lfz084.gitee.io/renju/icon.ico", myInit) :
+                _URL == "https://lfz084.github.io/icon.png" ?
+                new Request("https://lfz084.gitee.io/renju/icon.png", myInit) :
                 event.request
             fetch(req, myInit)
                 .then(response => {

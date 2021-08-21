@@ -1,9 +1,9 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.35";
+self.SCRIPT_VERSIONS["renju"] = "v0821.53";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
     const TEST_SERVER_WORKER = false;
-
+    let logCommands = [];
     function log(param, type = "log") {
         const command = {
             log: ()=>{console.log(param)},
@@ -494,14 +494,27 @@ var loadApp = () => { // 按顺序加载应用
                     })
                     .then(() => {
                         return new Promise((resolve, reject) => {
-                            if (typeof callback == "function") callback();
                             setTimeout(() => {
-                                resolve();
+                                try {
+                                    let p;
+                                    if (typeof callback == "function") p = callback();
+                                    if (typeof p == "object" &&
+                                        typeof p.then == "function" &&
+                                        typeof p.catch == "function") {
+                                        p.then(resolve).catch(reject) // p == Promise
+                                    }
+                                    else {
+                                        resolve();
+                                    }
+                                }
+                                catch (err) {
+                                    reject(err)
+                                }
                             }, 0)
                         });
                     })
                 )
-            }
+            },
         };
     }
 
@@ -543,7 +556,8 @@ var loadApp = () => { // 按顺序加载应用
         return loadAll(loadScript, config, ayc);
     }
 
-    let serviceWorker_state;
+    let serviceWorker_state,
+        serviceWorker_state_history = [];
 
     function registerserviceWorker() {
         return new Promise((resolve, reject) => {
@@ -573,6 +587,15 @@ var loadApp = () => { // 按顺序加载应用
                     scope: './'
                 }).then(function(registration) {
                     var serviceWorker;
+                    function statechange(state){
+                        serviceWorker_state = state;
+                        serviceWorker_state_history.push(serviceWorker_state)
+                        //log(`serviceWorker.state=${serviceWorker_state}`, "warn");
+                        if (serviceWorker_state == "activated" ||
+                            serviceWorker_state == "waiting" ||
+                            serviceWorker_state == "redundant")
+                            resolve()
+                    }
                     if (registration.installing) {
                         serviceWorker = registration.installing;
                     } else if (registration.waiting) {
@@ -581,10 +604,12 @@ var loadApp = () => { // 按顺序加载应用
                         serviceWorker = registration.active;
                     }
                     if (serviceWorker) {
-                        serviceWorker_state = serviceWorker.state;
-                        log(`serviceWorker.state=${serviceWorker.state}`, "warn")
+                        statechange(serviceWorker.state)
+                        serviceWorker.addEventListener('statechange', function(e) {
+                            statechange(e.target.state)
+                        });
                     }
-                    resolve();
+                    setTimeout(resolve, 10 * 1000);
                 }).catch(function(error) {
                     reject(error);
                 });
@@ -663,8 +688,8 @@ var loadApp = () => { // 按顺序加载应用
             const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
             if (OLD_VERDION != window.APP_VERSION &&
                 window.CHECK_VERSION &&
-                (serviceWorker_state == "installed" ||
-                    serviceWorker_state == "activated" ||
+                (serviceWorker_state == "activated" ||
+                    serviceWorker_state == "redundant" ||
                     serviceWorker_state == undefined)
             )
             {
@@ -698,10 +723,20 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function openVConsole() {
-        const IS_DEBUG = localStorage.getItem("debug");
-        if (IS_DEBUG == "true") {
-            if (vConsole == null) vConsole = new VConsole();
-        }
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                try {
+                    const IS_DEBUG = localStorage.getItem("debug");
+                    if (IS_DEBUG == "true") {
+                        if (vConsole == null) vConsole = new VConsole();
+                        resolve(vConsole)
+                    }
+                }
+                catch (err) {
+                    reject(err)
+                }
+            }, 0)
+        })
     }
 
     function testBrowser() {
@@ -801,7 +836,10 @@ var loadApp = () => { // 按顺序加载应用
                 }],
                 [SOURCE_FILES["vconsole"], () => {
                     testBrowser();
-                    openVConsole();
+                    return openVConsole()
+                        .then(() => {
+                            log(`serviceWorker.state: ${serviceWorker_state_history.join(" --> ")}`, "warn")
+                        })
                 }],
                 [SOURCE_FILES["button"]],
                 [SOURCE_FILES["emoji"]], // first load emoji

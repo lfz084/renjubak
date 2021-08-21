@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0821.35";
+self.SCRIPT_VERSIONS["control"] = "v0821.53";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
