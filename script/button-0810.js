@@ -1,9 +1,9 @@
-self.SCRIPT_VERSIONS["button"] = "v0821.1";
+self.SCRIPT_VERSIONS["button"] = "v0821.35";
 window.button = (() => {
 
     "use strict";
     const ANIMATION_TIMEOUT = 300;
-    const TEST_BUTTON = true; // ==true >>> console.log;
+    const TEST_BUTTON = false; // ==true >>> console.log;
     let isMenuShow = false; //控制主程序，不允许同时打开两个菜单
 
     function log(param, type = "log") {

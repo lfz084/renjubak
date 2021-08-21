@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.1";
+self.SCRIPT_VERSIONS["renju"] = "v0821.35";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -227,6 +227,7 @@ var loadApp = () => { // 按顺序加载应用
             let cs = `_____________________\n`;
             return caches.keys()
                 .then(function(cachesNames) {
+                    cachesNames.length==0 && typeof showLabel=="function" && showLabel(`️⚠ ️缓存异常 不能离线运行 刷新一下吧!`);
                     cs += `________ 离线缓存 ${cachesNames.length}个 ________\n\n`
                     cachesNames.forEach(function(cache, index, array) {
                         cs += `.\t[${cache}]\n`
@@ -247,6 +248,7 @@ var loadApp = () => { // 按顺序加载应用
                 .then(function(cache) {
                     return cache.keys()
                         .then(function(keys) {
+                            keys.length==0 && typeof showLabel=="function" && showLabel(`️⚠ ️缓存异常 不能离线运行 刷新一下吧!`);
                             cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
                             keys.forEach(function(request, index, array) {
                                 cs += `.\t${request.url.split("/").pop()}\n`
@@ -592,8 +594,8 @@ var loadApp = () => { // 按顺序加载应用
         });
     }
 
-    function upData() {
-        function isNewVersion() {
+    function upData() {  // find UpData open msg
+        function getNewVersion() {
             return new Promise((resolve, reject) => {
                 loadTxT("./renju.html")
                     .then(txt => {
@@ -601,7 +603,10 @@ var loadApp = () => { // 按顺序加载应用
                         const version = versionCode ?
                             String(versionCode).split(/[\"\;]/)[1] :
                             undefined;
-                        resolve(version && version != window.APP_VERSION)
+                        resolve({
+                            version: version,
+                            isNewVersion: version && version != window.APP_VERSION
+                        })
                     })
                     .catch(err => {
                         reject(err)
@@ -610,25 +615,25 @@ var loadApp = () => { // 按顺序加载应用
         }
 
         if ("serviceWorker" in navigator) {
-            return isNewVersion()
-                .then(newVersion => {
-                    if (newVersion)
+            return getNewVersion()
+                .then(version => {
+                    if (version.isNewVersion)
                         return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
                             .then((num) => {
                                 num == 1 && window.location.reload();
-                                return true;
+                                return version.version;
                             })
                             .catch(()=>{
-                                return false;
+                                return undefined;
                             })
-                    return false;
+                    return undefined;
                 })
                 .catch(()=>{
-                    return false;
+                    return undefined;
                 })
         }
         else {
-            return Promise.resolve(true)
+            return Promise.resolve(undefined)
         }
     }
     
@@ -636,12 +641,12 @@ var loadApp = () => { // 按顺序加载应用
         const TIMER_NEXT = 5 * 1000;
         let count = 0;
         function search() {
-            if (count++ > 5) return;
+            if (count++ > 10) return;
             log(`searchUpData ---> ${count}`, "warn");
             upData()
-                .then(newVersion => {
-                    log(`[${newVersion}]`)
-                    newVersion || setTimeout(search, TIMER_NEXT)
+                .then(version => {
+                    log(`[${version}]`)
+                    version || setTimeout(search, TIMER_NEXT)
                 })
                 .catch(err => {
                     log(`[${err}]`, "error")
@@ -674,7 +679,7 @@ var loadApp = () => { // 按顺序加载应用
                         Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
                     Msg += `\n\t_____________________ `;
                 }
-                msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
+                lineNum==1 ? showLabel(Msg): msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
                 localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 return true;
             }
