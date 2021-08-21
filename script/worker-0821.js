@@ -1,7 +1,7 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v0821.55";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v0821.58";
 if (self.importScripts)
-    self.importScripts('emoji-0810.js',`Evaluator-0810.js`);
+    self.importScripts('emoji-0821.js',`Evaluator-0821.js`);
 
 let generator;
 let workerIdx = 0;

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v0821.55";
+self.SCRIPT_VERSIONS["engine"] = "v0821.58";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -169,7 +169,7 @@ window.engine = (() => {
         for (let cmd in commands) { // add commands
             defaultCmd[cmd] = commands[cmd];
         }
-        let wk = new Worker("./script/worker-0810.js");
+        let wk = new Worker("./script/worker-0821.js");
         wk.postMessage({ cmd: "setWorkerIdx", parameter: { workerIdx: workerIdx } });
         wk.onmessage = (e) => {
             labelTime.setPrePostTimer(new Date().getTime());
