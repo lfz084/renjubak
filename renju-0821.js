@@ -913,7 +913,13 @@ var loadApp = () => { // 按顺序加载应用
             else {
                 const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
                 alert(MSG)
-                setTimeout(() => window.location.reload(), 1000);
+                removeAppCache()
+                    .then(() => {
+                        window.location.reload()
+                    })
+                    .catch(() => {
+                        window.location.reload()
+                    })
             }
         });
 };
