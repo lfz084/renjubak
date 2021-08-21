@@ -1,4 +1,4 @@
- self.SCRIPT_VERSIONS["msgbox"] = "v0821.58";
+ self.SCRIPT_VERSIONS["msgbox"] = "v0821.59";
  // 弹窗代码
  (function() {
      "use strict";

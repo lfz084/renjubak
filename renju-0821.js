@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.58";
+self.SCRIPT_VERSIONS["renju"] = "v0821.59";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -730,6 +730,9 @@ var loadApp = () => { // 按顺序加载应用
                     if (IS_DEBUG == "true") {
                         if (vConsole == null) vConsole = new VConsole();
                         resolve(vConsole)
+                    }
+                    else{
+                        resolve()
                     }
                 }
                 catch (err) {
