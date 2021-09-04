@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["viewport"] = "v0821.60";
+self.SCRIPT_VERSIONS["viewport"] = "v0901.02";
 window.view = (function() {
     "use strict";
     function view(width) {
@@ -17,19 +17,22 @@ window.view = (function() {
         this.viewport.setAttribute("content", `width=${width}, initial-scale=${this.scale}, minimum-scale=${this.scale}, maximum-scale =${localhost ? this.scale * 5 : this.scale}, user-scalable=${localhost ? "yes" : "no"}`);
     }
 
-    view.prototype.resize = function(width) {
+    view.prototype.resize = function(width, scalable) {
         let localhost = (String(window.location).indexOf("http://localhost") == 0);
         let self = this;
         width = width || self.width;
-        self.viewport.setAttribute("content", `initial-scale=${self.scale+0.01} `);
-        self.viewport.setAttribute("content", `width=${width}, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${localhost ? self.scale * 5 : self.scale}, user-scalable=${localhost ? "yes" : "no"}`);
+        scalable = scalable || self.scale;
+        self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
+        self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${localhost ? scalable * 5 : scalable}, user-scalable=${localhost ? "yes" : "no"}`);
         self.scrollTop();
     };
 
-    view.prototype.userScalable = function(scalable) {
+    view.prototype.userScalable = function(width, scalable) {   
         let self = this;
-        self.viewport.setAttribute("content", `initial-scale=${self.scale+0.01} `);
-        self.viewport.setAttribute("content", `width=${self.width}, initial-scale=${self.scale}, minimum-scale=${self.scale}, maximum-scale =${self.scale * 5}, user-scalable=yes`);
+        width = width || self.width;
+        scalable = scalable || self.scale;
+        self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
+        self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${scalable * 5}, user-scalable=yes`);
         self.scrollTop();
     };
 

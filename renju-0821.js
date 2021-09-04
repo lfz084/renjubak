@@ -1,8 +1,8 @@
-self.SCRIPT_VERSIONS["renju"] = "v0821.60";
+self.SCRIPT_VERSIONS["renju"] = "v0901.02";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
-    const TEST_SERVER_WORKER = false;
+    const TEST_SERVER_WORKER = true;
     let logCommands = [];
     function log(param, type = "log") {
         const command = {
@@ -609,7 +609,9 @@ var loadApp = () => { // 按顺序加载应用
                             statechange(e.target.state)
                         });
                     }
-                    setTimeout(resolve, 10 * 1000);
+                    setTimeout(()=>{
+                        reject(new Error("注册 serviceWorker 失败"))
+                    }, 30 * 1000);
                 }).catch(function(error) {
                     reject(error);
                 });

@@ -1,4 +1,4 @@
-var VERSION = "v0821.60";
+var VERSION = "v0901.02";
 var myInit = {
     cache: "reload"
 };
@@ -85,7 +85,7 @@ function deleteOldCaches() {
 
 // 缓存
 self.addEventListener('install', function(event) {
-    //postMsg(`service worker install...`);
+    //postMsg(`service worker install...`, event.clientID);
     self.skipWaiting();
     /*
     event.waitUntil(
@@ -95,7 +95,7 @@ self.addEventListener('install', function(event) {
 
 // 缓存更新
 self.addEventListener('activate', function(event) {
-    //postMsg(`service worker activate...`);
+    //postMsg(`service worker activate...`, event.clientID);
     /*event.waitUntil(
         deleteOldCaches()
     );*/
@@ -114,7 +114,7 @@ self.addEventListener('fetch', function(event) {
     else {
         postMsg(`fetch [${_URL}]`);
     }
-    //postMsg(`请求资源 url=${_URL}`);
+    //postMsg(`请求资源 url=${_URL}`, event.clientID);
     /*
     if (NEW_CACHE)
         event.respondWith(netFirst())
@@ -133,7 +133,7 @@ self.addEventListener('fetch', function(event) {
                 .then(response => {
                     load.finish(_URL);
                     if (!response.ok) throw new Error(`response = ${response}`);
-                    //postMsg(`下载资源完成 url=${_URL}`);
+                    //postMsg(`下载资源完成 url=${_URL}`, event.clientID);
                     let cloneRes = response.clone();
                     if (_URL.indexOf("blob:http") == -1) {
                         caches.open(VERSION)
@@ -186,11 +186,11 @@ self.addEventListener('fetch', function(event) {
     function cacheFirst() {
         return loadCache(true)
             .catch(() => {
-                //postMsg(`没有缓存，从网络下载资源 url=${_URL}`);
+                //postMsg(`没有缓存，从网络下载资源 url=${_URL}`, event.clientID);
                 return myFetch();
             })
             .catch(err => {
-                //postMsg(`404.html ${err.message}`);
+                //postMsg(`404.html ${err.message}`, event.clientID);
                 return fetchErr();
             })
     }
@@ -214,9 +214,9 @@ self.addEventListener('message', function(event) {
                 cache: "reload"
             };
         }
-        postMsg(event.data)
+        postMsg(event.data, event.clientID)
     }
     else {
-        postMsg(`serverWorker post: ${event.data}`)
+        postMsg(`serverWorker post: ${event.data}`, event.clientID)
     }
 });

@@ -61,22 +61,63 @@
                 data[1] = this.m_buffer[this.m_indexStart++];
                 return true;
             }
-            
-            if (node && node.length){
-                if(node.length == 1){
+
+            if (node && node.length) {
+                if (node.length == 1) {
                     return Get_Node(node)
                 }
-                else{
+                else {
                     return Get_Byte(node)
                 }
             }
         }
-        checkVersion(){
+        checkVersion() {
             let VersionOk = false;
+
             let header = new Uint8Array(HEADER_SIZE);
             header = [0xFF, "R".charCodeAt(), "e".charCodeAt(), "n".charCodeAt(), "L".charCodeAt(), "i".charCodeAt(), "b".charCodeAt(), 0xFF]
+
             let buf = new Uint8Array(HEADER_SIZE);
+            let dwRead;
+
+            dwRead = m_file.Read(buf, HEADER_SIZE);
+
+            if (dwRead == HEADER_SIZE) {
+                let HeaderMatch = true;
+
+                for (let i = 0; i <= 7; i++) {
+                    if (buf[i] != header[i]) {
+                        HeaderMatch = false;
+                        break;
+                    }
+                }
+
+                if (HeaderMatch) {
+                    m_MajorFileVersion = buf[MAJOR_FILE_VERSION_INDEX];
+                    m_MinorFileVersion = buf[MINOR_FILE_VERSION_INDEX];
+
+                    if (100 * m_MajorFileVersion + m_MinorFileVersion <=
+                        100 * MAJOR_FILE_VERSION + MINOR_FILE_VERSION) {
+                        VersionOk = true;
+                    }
+                    else {
+
+                    }
+                }
+                else if (buf[0] == CENTER) {
+                    m_file.SeekToBegin();
+                    VersionOk = true;
+                }
+            }
+            if (!VersionOk){
+                
+            }
+            return VersionOk;
         }
         
+        getVersion() {
+            return m_Version;
+        }
+
     }
 })))

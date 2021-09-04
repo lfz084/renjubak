@@ -34,7 +34,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0821.60";
+        window.APP_VERSION = "v0901.02";
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
             loaders: "style/loaders.css",
@@ -110,6 +110,7 @@
         }
         window.checkAppVersion = function() {
             return new Promise((resolve, reject) => {
+                mlog("checkAppVersion ...")
                 if ("localStorage" in window) {
                     const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
                     if (OLD_VERDION != window.APP_VERSION) {
@@ -118,7 +119,9 @@
                                 mlog("renju.html removeAppCache ...")
                                 resolve();
                             })
-                            .catch(resolve)
+                            .catch(()=>{
+                                resolve();
+                            })
                     }
                     else {
                         resolve();
