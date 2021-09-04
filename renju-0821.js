@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0901.15";
+self.SCRIPT_VERSIONS["renju"] = "v0901.21";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -320,7 +320,8 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function loadCss(url) { //加载css
-        const filename = url.split("/").pop()
+        url = url.split("?")[0] + window.URL_VERSION;
+        const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             let head = document.getElementsByTagName('head')[0];
             let _link = document.createElement('link');
@@ -348,7 +349,8 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function loadFont(url) { //加载字体文件
-        const filename = url.split("/").pop()
+        url = url.split("?")[0] + window.URL_VERSION;
+        const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             function reqListener() {
                 //log(`loadFont "${filename}"`);
@@ -371,7 +373,8 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function loadFile(url) { //加载文件
-        const filename = url.split("/").pop()
+        url = url.split("?")[0] + window.URL_VERSION;
+        const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             function reqListener() {
                 //log(`loadFile "${filename}"`);
@@ -394,7 +397,8 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function loadTxT(url) { //加载文件
-        const filename = url.split("/").pop()
+        url = url.split("?")[0] + window.URL_VERSION;
+        const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             function reqListener() {
                 //log(`loadTxT "${filename}"`);
@@ -417,7 +421,8 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function loadScript(url) { //加载脚本
-        const filename = url.split("/").pop()
+        url = url.split("?")[0] + window.URL_VERSION;
+        const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             let oHead = document.getElementsByTagName('HEAD').item(0);
             let oScript = document.createElement("script");
@@ -681,7 +686,7 @@ var loadApp = () => { // 按顺序加载应用
                 })
         }
         if ("serviceWorker" in navigator) {
-            search();
+            setTimeout(search, 5 * 1000);
         }
     }
 

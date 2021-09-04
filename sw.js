@@ -1,4 +1,4 @@
-var VERSION = "v0901.15";
+var VERSION = "v0901.21";
 var myInit = {
     cache: "reload"
 };
@@ -104,8 +104,8 @@ self.addEventListener('activate', function(event) {
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
 
-    const STRING_VERSION = "?v=" + VERSION;
-    const _URL = event.request.url.split("?")[0] + STRING_VERSION;
+    const URL_VERSION = "?v=" + VERSION;
+    const _URL = event.request.url.split("?")[0] + URL_VERSION;
     const filename = _URL.split("/").pop();
     const type = _URL.split(".").pop();
     const NEW_CACHE = ["html", "htm"].indexOf(type) + 1 > 0;
@@ -125,12 +125,13 @@ self.addEventListener('fetch', function(event) {
 
     function myFetch() {
         return new Promise((resolve, reject) => {
-            let req = _URL == "https://lfz084.github.io/icon.ico" + STRING_VERSION ?
-                new Request("https://lfz084.gitee.io/renju/icon.ico" + STRING_VERSION, myInit) :
-                _URL == "https://lfz084.github.io/icon.png" + STRING_VERSION ?
-                new Request("https://lfz084.gitee.io/renju/icon.png" + STRING_VERSION, myInit) :
-                new Request(_URL, myInit);
-            fetch(req, myInit)
+            let req = _URL == "https://lfz084.github.io/icon.ico" + URL_VERSION ?
+                new Request("https://lfz084.gitee.io/renju/icon.ico" + URL_VERSION, myInit) :
+                _URL == "https://lfz084.github.io/icon.png" + URL_VERSION ?
+                new Request("https://lfz084.gitee.io/renju/icon.png" + URL_VERSION, myInit) :
+                new Request(_URL, myInit),
+                nRequest = new Request(req.url.split("?")[0] + "?v=" + new Date().getTime(), myInit);
+        fetch(nRequest)
                 .then(response => {
                     load.finish(_URL);
                     if (!response.ok) throw new Error(`response = ${response}`);
@@ -139,7 +140,7 @@ self.addEventListener('fetch', function(event) {
                     if (_URL.indexOf("blob:http") == -1) {
                         caches.open(VERSION)
                             .then(cache => {
-                                cache.put(req, response)
+                                cache.put(new Request(_URL, myInit), response)
                             })
                     }
                     resolve(cloneRes);

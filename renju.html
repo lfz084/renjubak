@@ -31,10 +31,16 @@
 
 <body>
     <div id="mlog"></div>
+    <script>
+        if (window.location.href.indexOf("?") < 0){
+            window.location.href = window.location.href + "?v=" + new Date().getTime();
+        }
+    </script>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0901.15";
+        window.APP_VERSION = "v0901.21";
+        window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
             loaders: "style/loaders.css",
@@ -218,7 +224,8 @@
 
         document.body.onload = () => {
             function _loadScript(url) { //加载脚本
-                const filename = url.split("/").pop()
+                url = url.split("?")[0] + window.URL_VERSION;
+                const filename = url.split("/").pop().split("?")[0];
                 return new Promise((resolve, reject) => {
                     let oHead = document.getElementsByTagName('HEAD').item(0);
                     let oScript = document.createElement("script");
