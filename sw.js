@@ -1,4 +1,4 @@
-var VERSION = "v0901.02";
+var VERSION = "v0901.10";
 var myInit = {
     cache: "reload"
 };
@@ -104,7 +104,8 @@ self.addEventListener('activate', function(event) {
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
 
-    const _URL = event.request.url;
+    const STRING_VERSION = "?v=" + VERSION;
+    const _URL = event.request.url.split("?")[0] + STRING_VERSION;
     const filename = _URL.split("/").pop();
     const type = _URL.split(".").pop();
     const NEW_CACHE = ["html", "htm"].indexOf(type) + 1 > 0;
@@ -124,11 +125,11 @@ self.addEventListener('fetch', function(event) {
 
     function myFetch() {
         return new Promise((resolve, reject) => {
-            let req = _URL == "https://lfz084.github.io/icon.ico" ?
-                new Request("https://lfz084.gitee.io/renju/icon.ico", myInit) :
-                _URL == "https://lfz084.github.io/icon.png" ?
-                new Request("https://lfz084.gitee.io/renju/icon.png", myInit) :
-                event.request
+            let req = _URL == "https://lfz084.github.io/icon.ico" + STRING_VERSION ?
+                new Request("https://lfz084.gitee.io/renju/icon.ico" + STRING_VERSION, myInit) :
+                _URL == "https://lfz084.github.io/icon.png" + STRING_VERSION ?
+                new Request("https://lfz084.gitee.io/renju/icon.png" + STRING_VERSION, myInit) :
+                new Request(_URL, myInit);
             fetch(req, myInit)
                 .then(response => {
                     load.finish(_URL);

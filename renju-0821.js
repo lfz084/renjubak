@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0901.02";
+self.SCRIPT_VERSIONS["renju"] = "v0901.10";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -307,7 +307,7 @@ var loadApp = () => { // 按顺序加载应用
         let ps=[];
         let keys = Object.keys(window.SOURCE_FILES);
         for(let i=0; i<keys.length; i++){
-            ps.push(putCache(window.SOURCE_FILES[keys[i]]));
+            ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.APP_VERSION));
         }
         return Promise.all(ps)
             .then(()=>{
@@ -624,7 +624,7 @@ var loadApp = () => { // 按顺序加载应用
     function upData() {  // find UpData open msg
         function getNewVersion() {
             return new Promise((resolve, reject) => {
-                loadTxT("./renju.html")
+                loadTxT("./renju.html?v=" + window.APP_VERSION)
                     .then(txt => {
                         const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
                         const version = versionCode ?
