@@ -1,4 +1,4 @@
-var VERSION = "v0901.10";
+var VERSION = "v0901.15";
 var myInit = {
     cache: "reload"
 };
@@ -154,7 +154,7 @@ self.addEventListener('fetch', function(event) {
     function loadCache(refresh) {
         return caches.open(VERSION)
             .then(cache => {
-                return cache.match(event.request)
+                return cache.match(new Request(_URL, myInit))
                     .then(response => {
                         load.finish(_URL);
                         if (!response.ok) throw new Error("response is undefined");
