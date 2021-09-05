@@ -31,15 +31,20 @@
 
 <body>
     <div id="mlog"></div>
-    <script>
-        if (window.location.href.indexOf("?") < 0){
-            window.location.href = window.location.href + "?v=" + new Date().getTime();
+    <script>?
+        let re1 = /\?(v|V)\=/;
+        function reload(){
+            window.location.href = window.location.href.split("?")[0] + "?v=" + new Date().getTime();
+        }
+        let oldTime = window.location.href.split(re1)[2] || 0;
+        if ((new Date().getTime() - oldTime)/1000 > 300){
+            reload();
         }
     </script>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0901.21";
+        window.APP_VERSION = "v0903.00";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
