@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0903.02";
+self.SCRIPT_VERSIONS["control"] = "v0903.11";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -343,7 +343,7 @@ window.control = (() => {
                     cCutImage.showMenu(x, y);
                     break;
                 case 16:
-                    window.location.reload();
+                    typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload();
                     break;
 
 

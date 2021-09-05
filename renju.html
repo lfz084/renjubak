@@ -33,18 +33,18 @@
     <div id="mlog"></div>
     <script>
         let re1 = /\?(v|V)\=/;
-        function reload(){
+        window.reloadApp = function (){
             window.location.href = window.location.href.split("?")[0] + "?v=" + new Date().getTime();
         }
         let oldTime = window.location.href.split(re1)[2] || 0;
         if ((new Date().getTime() - oldTime)/1000 > 300){
-            reload();
+            reloadApp();
         }
     </script>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0903.02";
+        window.APP_VERSION = "v0903.11";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -275,10 +275,10 @@
                     alert(MSG)
                     removeAppCache()
                         .then(()=>{
-                            window.location.reload()
+                            window.reloadApp()
                         })
                         .catch(()=>{
-                            window.location.reload()
+                            window.reloadApp()
                         })
                 })
         };

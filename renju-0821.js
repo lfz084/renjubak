@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0903.02";
+self.SCRIPT_VERSIONS["renju"] = "v0903.11";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -601,6 +601,9 @@ var loadApp = () => { // 按顺序加载应用
                             serviceWorker_state == "redundant")
                             resolve()
                     }
+                    function registerError(){
+                        reject(new Error("注册 serviceWorker 失败"))
+                    }
                     if (registration.installing) {
                         serviceWorker = registration.installing;
                     } else if (registration.waiting) {
@@ -613,10 +616,12 @@ var loadApp = () => { // 按顺序加载应用
                         serviceWorker.addEventListener('statechange', function(e) {
                             statechange(e.target.state)
                         });
+                        setTimeout(registerError, 15 * 1000);
                     }
-                    setTimeout(()=>{
-                        reject(new Error("注册 serviceWorker 失败"))
-                    }, 30 * 1000);
+                    else{
+                        registerError();
+                    }
+                    
                 }).catch(function(error) {
                     reject(error);
                 });
@@ -652,7 +657,7 @@ var loadApp = () => { // 按顺序加载应用
                     if (version.isNewVersion)
                         return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
                             .then((num) => {
-                                num == 1 && window.location.reload();
+                                num == 1 && window.reloadApp();
                                 return version.version;
                             })
                             .catch(()=>{
@@ -914,7 +919,7 @@ var loadApp = () => { // 按顺序加载应用
                 err = err.message || err.type;
             }
             if (err == "reload") {
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => window.reloadApp(), 1000);
                 return;
             }
             else {
@@ -922,10 +927,10 @@ var loadApp = () => { // 按顺序加载应用
                 alert(MSG)
                 removeAppCache()
                     .then(() => {
-                        window.location.reload()
+                        window.reloadApp()
                     })
                     .catch(() => {
-                        window.location.reload()
+                        window.reloadApp()
                     })
             }
         });
