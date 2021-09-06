@@ -3,15 +3,9 @@
 }(this, (function(exports) {
     'use strict';
     //console.log(exports);
-    class Point {
-        constructor(x, y) {
-            this.x = parseInt(x);
-            this.y = parseInt(y);
-        }
-    }
     
-    const NullPoint = new Point(0, 0);
-    const Center = new Point(8, 8);
+    const NullPoint = new JPoint(0, 0);
+    const Center = new JPoint(8, 8);
     
     const MajorProgramVersion = 3;
     const MinorProgramVersion = 6;

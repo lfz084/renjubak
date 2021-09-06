@@ -734,7 +734,7 @@ var loadApp = () => { // 按顺序加载应用
         log(Msg, "warn")
     }
 
-    function openVConsole() {
+        function openVConsole() {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 try {

@@ -32,6 +32,13 @@
             display: none;
         }
     </style>
+    <script src="./script/JFile.js"></script>
+    <script src="./script/JPoint.js"></script>
+    <script src="./script/LibraryFile.js"></script>
+    <script src="./script/MoveList.js"></script>
+    <script src="./script/MoveNode.js"></script>
+    <script src="./script/Stack.js"></script>
+    <script src="../script/vConsole/vconsole.min.js"></script>
 </head>
 
 <body>
@@ -39,6 +46,9 @@
         <button id="but_file">loadFile</button>
         <button id="but_text">text</button>
         <button id="but_code">code</button>
+        <button id="but_next">next</button>
+        <button id="but_8">utf-8</button>
+        <button id="but_16">utf-16</button>
         <input id="file" type="file" />
     </div>
     <div>
@@ -47,12 +57,159 @@
         </textarea>
     </div>
     <script>
+        let charset = "utf-8";
+        /*
+        //ArrayBuffer转字符串
+        function ab2str(u, f) {
+            var b = new Blob([u]);
+            var r = new FileReader();
+            r.readAsText(b, charset);
+            r.onload = function() { if (f) f.call(null, r.result) }
+        }*/
+
+        /*
+        //字符串转字符串ArrayBuffer
+        function str2ab(s, f) {
+            var b = new Blob([s], { type: 'text/plain' });
+            var r = new FileReader();
+            r.readAsArrayBuffer(b);
+            r.onload = function() { if (f) f.call(null, r.result) }
+        }*/
+
+        // source: http://stackoverflow.com/a/11058858
+        function ab2str(buf) {
+            return String.fromCharCode.apply(null, new Uint16Array(buf));
+        }
+
+        function str2ab(str) {
+            var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+            var bufView = new Uint16Array(buf);
+            for (var i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        }
+
+        function ReadOldComment(libFile, pStrOneLine, pStrMultiLine) {
+            function msb(ch) {
+                return (ch & 0x80);
+            }
+
+            let buffer = new Uint8Array(2),
+                strNew = "";
+
+            pStrOneLine = "";
+            pStrMultiLine = "";
+
+            while (true) {
+                libFile.Get(buffer);
+
+                //strNew += TCHAR(buffer[0]);
+
+                if (msb(buffer[0])) {
+                    break;
+                }
+
+                //strNew += TCHAR(buffer[1]);
+
+                if (msb(buffer[1])) {
+                    break;
+                }
+            }
+            /*
+            Utils::AsciiToWinChar(strNew);
+
+            int n = strNew.Find(TCHAR(8));
+
+            if (n == -1){
+                pStrOneLine = strNew;
+            }
+            else{
+                pStrOneLine = strNew.Left(n);
+                pStrMultiLine = strNew.Right(strNew.GetLength() - n - 1);
+            }
+            */
+        }
+
+        function ReadNewComment(libFile, pStrOneLine, pStrMultiLine) {
+            let buffer = new Uint8Array(2),
+                strNew = [];
+
+            strOneLine = "";
+            strMultiLine = "";
+
+            while (true) {
+                libFile.get(buffer);
+
+                if (buffer[0] == 0) {
+                    break;
+                }
+
+                strNew.push(buffer[0]);
+
+                if (buffer[1] == 0) {
+                    break;
+                }
+
+                strNew.push(buffer[1]);
+            }
+            let bufStr = new Uint8Array(strNew)
+            console.log(ab2str(bufStr))
+            /*
+                        int n = strNew.Find(TCHAR(8));
+
+                        if (n == -1)
+                        {
+                            strOneLine = strNew;
+                        }
+                        else
+                        {
+                            strOneLine = strNew.Left(n);
+                            strMultiLine = strNew.Right(strNew.GetLength() - n - 1);
+                        }*/
+        }
+
+        //------------------------------------------------------------------------
+
+        function ReadBoardText(libFile, pStrBoardText) {
+            let buffer = new Uint8Array(2);
+
+            pStrBoardText = [];
+
+            while (true) {
+
+                libFile.get(buffer);
+
+                if (buffer[0] == 0) {
+                    break;
+                }
+
+                pStrBoardText.push(buffer[0]);
+
+                if (buffer[1] == 0) {
+                    break;
+                }
+
+                pStrBoardText.push(buffer[1]);
+            }
+
+            let bufStr = new Uint8Array(pStrBoardText)
+            console.log(ab2str(bufStr))
+        }
+    </script>
+    <script>
         const BUT_FILE = document.getElementById("but_file"),
             BUT_TEXT = document.getElementById("but_text"),
             BUT_CODE = document.getElementById("but_code"),
+            BUT_NEXT = document.getElementById("but_next"),
+            BUT_8 = document.getElementById("but_8"),
+            BUT_16 = document.getElementById("but_16"),
             INPUT_FILE = document.getElementById("file"),
             TEXTBOX = document.getElementById("textBox");
-        let arrBuf, dataView;
+        let arrBuf,
+            dataView,
+            vConsole,
+            m_libfile = new LibraryFile();
 
         function getArrBuf(file) {
             return new Promise((resolve, reject) => {
@@ -63,6 +220,12 @@
                 fr.readAsArrayBuffer(file);
             });
         }
+        BUT_8.onclick = () => {
+            alert(charset = "utf-8")
+        }
+        BUT_16.onclick = () => {
+            alert(charset = "utf-16")
+        }
         BUT_FILE.onclick = () => {
             INPUT_FILE.click()
         };
@@ -70,7 +233,36 @@
             TEXTBOX.value = loadAsText();
         };
         BUT_CODE.onclick = () => {
-        TEXTBOX.value = loadAsCode();
+            TEXTBOX.value = loadAsCode();
+        };
+        BUT_NEXT.onclick = () => {
+            for (let i = 0; i < 50; i++) {
+                let nd = new MoveNode();
+                if(!m_libfile.get(nd)) break;
+                console.log(nd)
+
+                let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    name = (alpha.charAt(nd.mPos.x - 1) + (15 - nd.mPos.y + 1)).toUpperCase();
+                console.warn(name)
+
+                if (nd.isOldComment()) {
+                    ReadOldComment(m_libfile)
+                }
+
+                if (nd.isNewComment()) {
+                    ReadNewComment(m_libfile)
+                }
+
+                if (nd.isBoardText()) {
+                    ReadBoardText(m_libfile)
+                    /*
+                    nd = new MoveNode();
+                    m_libfile.get(nd);
+                    console.log(nd)
+                    */
+                }
+
+            }
         };
         INPUT_FILE.onchange = () => {
             let file = INPUT_FILE.files[0];
@@ -78,7 +270,35 @@
                 .then((buffer) => {
                     arrBuf = buffer;
                     dataView = new DataView(arrBuf);
+                    console.log(`open`)
+                    if (m_libfile.open(buffer)) {
+                        console.log(`open--> end`)
+                        if (m_libfile.checkVersion()) {
+                            console.log(`checkVersion=true`)
+                            let nd = new MoveNode();
+                            console.log(nd)
+                            m_libfile.get(nd);
+                            console.log(nd)
+                            console.log([nd.isOldComment(), nd.isNewComment(), nd.isBoardText()])
+                        }
+                        else {
+                            console.log(`checkVersion=false`)
+                        }
+                    }
                 })
+            /*
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: 'Pictures',
+                    text: 'Our Pictures.',
+                })
+                .then(() => alert('Share was successful.'))
+                .catch((error) => alert('Sharing failed', error));
+            } else {
+                alert(`Your system doesn't support sharing files.`);
+            }
+            */
         }
 
         function loadAsText(start = 0, end = 100) {
@@ -88,15 +308,18 @@
             }
             return txt;
         }
-        
+
         function loadAsCode(start = 0, end = 100) {
             let txt = "";
             for (let i = start; i < end; i++) {
-                txt += ("00000000"+dataView.getUint8(i).toString(2)).slice(-8) + " ";
+                txt += ("00000000" + dataView.getUint8(i).toString(2)).slice(-8) + " ";
             }
             return txt;
         }
-    
+
+        document.body.onload = () => {
+            vConsole = new VConsole();
+        }
     </script>
 </body>
 

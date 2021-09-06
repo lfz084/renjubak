@@ -116,8 +116,8 @@
 
     exports.MoveList = MoveList;
 })))
-
+/*
 console.log(MoveList.name)
 i=new MoveList();
 console.log(i.constructor.name)
-
+*/

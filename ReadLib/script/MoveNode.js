@@ -3,12 +3,6 @@
 }(this, (function(exports) {
     'use strict';
     //console.log(exports);
-    class Point {
-        constructor(x, y) {
-            this.x = parseInt(x);
-            this.y = parseInt(y);
-        }
-    }
 
     const BOARD_TEXT = 0x000100;
 
@@ -22,7 +16,7 @@
     const EXTENSION = 0x000001;
 
     const MASK = 0xFFFF3F;
-    const NullPoint = new Point(0, 0);
+    const NullPoint = new JPoint(0, 0);
 
     function isValid(Pos) {
         return (Pos.x == NullPoint.x && Pos.y == NullPoint.y) ||
@@ -44,11 +38,12 @@
     }
 
     function PosToPoint(pos) {
+        console.log(`pos=${pos}`)
         if (pos == 0) {
-            return new Point(0, 0);
+            return new JPoint(0, 0);
         }
         else {
-            return new Point(pos % 16, pos / 16 + 1)
+            return new JPoint(pos % 16, pos / 16 + 1)
         }
     }
 
@@ -70,7 +65,7 @@
     class MoveNode {
         constructor(mPos) {
             let name = typeof mPos=="object" ? mPos.constructor.name : undefined;
-            if (name == "Point") {
+            if (name == "JPoint") {
                 this.mPos = mPos;
                 this.mInfo = 0;
                 if (!isValid(mPos))
@@ -127,6 +122,8 @@
     MoveNode.prototype.setPosInfo = function(pos, info) {
         this.mPos = PosToPoint(pos);
         this.mInfo = (this.mInfo & 0xFFFF00) | info;
+        //console.log(`mInfo=${this.mInfo}, info=${info}`)
+        console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
     }
 
     MoveNode.prototype.getPosInfo = function(arrBuf) {
@@ -137,6 +134,12 @@
     MoveNode.prototype.setExtendedInfo = function(info2, info1) {
         this.mInfo &= 0xFF;
         this.mInfo |= ((info2 << 8) | info1) << 8;
+        //console.log(`mInfo=${this.mInfo}, info2=${info2}, info1=${info1}`)
+        let s = ("000000000000000000000000"+this.mInfo.toString(2)).slice(-24),
+            b1 = s.slice(0,8),
+            b2 = s.slice(8,16),
+            b3 = s.slice(16);
+        console.warn(`${b1},${b2},${b3}`)
     }
     
     MoveNode.prototype.getExtendedInfo = function(arrBuf) {
@@ -289,10 +292,9 @@
         return this.mBoardText;
     }
 
-    exports.Point = Point;
     exports.MoveNode = MoveNode;
 })))
-
+/*
 let n = new MoveNode(), buf = new Uint8Array(2);
     n.setPosInfo(1,256*55)
     n.getExtendedInfo(buf);
@@ -301,3 +303,4 @@ let n = new MoveNode(), buf = new Uint8Array(2);
     let a=[0],b,c
     a++
     console.log([buf[0],buf[1],c])
+*/
