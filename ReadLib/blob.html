@@ -32,6 +32,9 @@
             display: none;
         }
     </style>
+    <script src="./script/UNICODE2GBK.js"></script>
+    <script src="./script/GB2312-UTF8.js"></script>
+    <script src="./script/UTF8-UTF16.js"></script>
     <script src="./script/JFile.js"></script>
     <script src="./script/JPoint.js"></script>
     <script src="./script/LibraryFile.js"></script>
@@ -57,7 +60,9 @@
         </textarea>
     </div>
     <script>
+        alert("ver0905")
         let charset = "utf-8";
+        let xx = new GB2312UTF8();
         /*
         //ArrayBuffer转字符串
         function ab2str(u, f) {
@@ -77,7 +82,11 @@
         }*/
 
         // source: http://stackoverflow.com/a/11058858
-        function ab2str(buf) {
+        function ab2str_8(buf) {
+            return String.fromCharCode.apply(null, new Uint8Array(buf));
+        }
+
+        function ab2str_16(buf) {
             return String.fromCharCode.apply(null, new Uint16Array(buf));
         }
 
@@ -153,8 +162,7 @@
 
                 strNew.push(buffer[1]);
             }
-            let bufStr = new Uint8Array(strNew)
-            console.log(ab2str(bufStr))
+            console.log(bufferGBK2Unicode(strNew))
             /*
                         int n = strNew.Find(TCHAR(8));
 
@@ -192,9 +200,18 @@
 
                 pStrBoardText.push(buffer[1]);
             }
-
+            console.log(bufferGBK2Unicode(pStrBoardText))
+            console.log(pStrBoardText)
+            /*
             let bufStr = new Uint8Array(pStrBoardText)
-            console.log(ab2str(bufStr))
+            let code = new Uint16Array([bufStr[0] << 8 | bufStr[1]])
+            console.log(code)
+            console.log(code[0].toString(16))
+            console.log(bufStr)
+            let u16 = ab2str_16(bufStr)
+            console.log(new Uint16Array(str2ab(u16))[0].toString(16))
+            console.log(u16)
+            */
         }
     </script>
     <script>
@@ -238,7 +255,9 @@
         BUT_NEXT.onclick = () => {
             for (let i = 0; i < 50; i++) {
                 let nd = new MoveNode();
-                if(!m_libfile.get(nd)) break;
+                console.log("_______get_________")
+                if (!m_libfile.get(nd)) break;
+                console.log("<<________________")
                 console.log(nd)
 
                 let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
