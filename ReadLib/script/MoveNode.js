@@ -38,11 +38,14 @@
     }
 
     function PosToPoint(pos) {
-        console.log(`pos=${pos}`)
+        //console.log(`pos=${pos}`)
+        let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         if (pos == 0) {
             return new JPoint(0, 0);
         }
         else {
+            let name = (alpha.charAt(pos % 16 - 1) + (15 - ~~(pos / 16))).toUpperCase();
+            console.warn(name)
             return new JPoint(pos % 16, pos / 16 + 1)
         }
     }
@@ -68,13 +71,13 @@
             if (name == "JPoint") {
                 this.mPos = mPos;
                 this.mInfo = 0;
-                if (!isValid(mPos))
+                if (!isValid(this.mPos))
                     throw `MoveNode Error: mPos error`;
             }
             else if (name == "MoveNode") {
                 this.mPos = mPos.mPos;
                 this.mInfo = mPos.mInfo;
-                if (!isValid(mPos))
+                if (!isValid(this.mPos))
                     throw `MoveNode Error: mPos error`;
             }
             else {
@@ -126,7 +129,7 @@
         console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
     }
 
-    MoveNode.prototype.getPosInfo = function(arrBuf) {
+    MoveNode.prototype.getPosInfo = function(arrBuf = new Uint8Array(2)) {
         arrBuf[0] = PointToPos(this.mPos);
         arrBuf[1] = this.mInfo & 0xFF;
     }
@@ -135,14 +138,16 @@
         this.mInfo &= 0xFF;
         this.mInfo |= ((info2 << 8) | info1) << 8;
         //console.log(`mInfo=${this.mInfo}, info2=${info2}, info1=${info1}`)
+        
         let s = ("000000000000000000000000"+this.mInfo.toString(2)).slice(-24),
             b1 = s.slice(0,8),
             b2 = s.slice(8,16),
             b3 = s.slice(16);
         console.warn(`${b1},${b2},${b3}`)
+        
     }
     
-    MoveNode.prototype.getExtendedInfo = function(arrBuf) {
+    MoveNode.prototype.getExtendedInfo = function(arrBuf = new Uint8Array(2)) {
         arrBuf[0] = (this.mInfo >> 16) & 0xFF;  // info2
         arrBuf[1] = (this.mInfo >> 8) & 0xFF;   //info1
     }

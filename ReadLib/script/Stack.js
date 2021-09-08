@@ -35,9 +35,10 @@
         this.m_nIndex++;
     }
 
-    Stack.prototype.pop = function(nMove = 0, pMove = null) {
+    Stack.prototype.pop = function(nMove = [0], pMove = [null]) {
         if (this.m_nIndex <= 0)
             throw `Stack.pop Error: Stack.m_nIndex <= 0`;
+        this.m_nIndex--;
         if (typeof nMove == "object")
             nMove[0] = this.m_Stack[this.m_nIndex].nMove;
         if (typeof pMove == "object")

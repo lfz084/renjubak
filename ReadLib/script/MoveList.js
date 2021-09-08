@@ -40,6 +40,7 @@
     }
 
     MoveList.prototype.add = function(pMove) {
+        //console.log(this.m_nIndex >= this.MAXINDEX)
         if (this.m_nIndex >= this.MAXINDEX)
             throw `MoveList.add Error: MoveList is Full`;
         this.m_List[++this.m_nIndex] = pMove;
@@ -109,13 +110,14 @@
         this.m_nIndex--;
     }
 
-    MoveList.prototype.Index = function() {
+    MoveList.prototype.index = function() {
         return this.m_nIndex;
     }
 
 
     exports.MoveList = MoveList;
 })))
+
 /*
 console.log(MoveList.name)
 i=new MoveList();

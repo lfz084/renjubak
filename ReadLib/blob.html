@@ -26,6 +26,7 @@
             width: 950px;
             height: 1000px;
             border: solid black 1px;
+            display: none;
         }
 
         input {
@@ -41,6 +42,7 @@
     <script src="./script/MoveList.js"></script>
     <script src="./script/MoveNode.js"></script>
     <script src="./script/Stack.js"></script>
+    <script src="./script/RenLibDoc.js"></script>
     <script src="../script/vConsole/vconsole.min.js"></script>
 </head>
 
@@ -60,9 +62,11 @@
         </textarea>
     </div>
     <script>
-        alert("ver0905")
+        alert("ver0905.02")
         let charset = "utf-8";
         let xx = new GB2312UTF8();
+        let renLibDoc = new CRenLibDoc();
+
         /*
         //ArrayBuffer转字符串
         function ab2str(u, f) {
@@ -162,7 +166,7 @@
 
                 strNew.push(buffer[1]);
             }
-            console.log(bufferGBK2Unicode(strNew))
+            //console.log(bufferGBK2Unicode(strNew))
             /*
                         int n = strNew.Find(TCHAR(8));
 
@@ -200,8 +204,8 @@
 
                 pStrBoardText.push(buffer[1]);
             }
-            console.log(bufferGBK2Unicode(pStrBoardText))
-            console.log(pStrBoardText)
+            //console.log(bufferGBK2Unicode(pStrBoardText))
+            //console.log(pStrBoardText)
             /*
             let bufStr = new Uint8Array(pStrBoardText)
             let code = new Uint16Array([bufStr[0] << 8 | bufStr[1]])
@@ -212,6 +216,42 @@
             console.log(new Uint16Array(str2ab(u16))[0].toString(16))
             console.log(u16)
             */
+        }
+
+        function addLibrary(file) {
+            getArrBuf(file)
+                .then((buffer) => {
+                    arrBuf = buffer;
+                    dataView = new DataView(arrBuf);
+                    console.log(`open`)
+                    if (m_libfile.open(buffer)) {
+                        console.log(`open--> end`)
+                        if (m_libfile.checkVersion()) {
+                            console.log(`checkVersion=true`)
+                            return true
+                        }
+                        else {
+                            console.log(`checkVersion=false`)
+                            return false
+                        }
+                    }
+                })
+                .then((rt) => {
+                    let nd = new MoveNode();
+                    while (rt && m_libfile.get(nd)) {
+
+                        //console.log(nd)
+
+                        if (nd.isOldComment()) ReadOldComment(m_libfile)
+
+                        if (nd.isNewComment()) ReadNewComment(m_libfile)
+
+                        if (nd.isBoardText()) ReadBoardText(m_libfile)
+
+                        //console.log("<<________________")
+                    }
+                    alert("finish")
+                })
         }
     </script>
     <script>
@@ -253,16 +293,15 @@
             TEXTBOX.value = loadAsCode();
         };
         BUT_NEXT.onclick = () => {
-            for (let i = 0; i < 50; i++) {
+            renLibDoc.addLibrary(m_libfile)
+            /*
+            for (let i = 0; i < 20; i++) {
                 let nd = new MoveNode();
                 console.log("_______get_________")
                 if (!m_libfile.get(nd)) break;
                 console.log("<<________________")
                 console.log(nd)
 
-                let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                    name = (alpha.charAt(nd.mPos.x - 1) + (15 - nd.mPos.y + 1)).toUpperCase();
-                console.warn(name)
 
                 if (nd.isOldComment()) {
                     ReadOldComment(m_libfile)
@@ -274,37 +313,37 @@
 
                 if (nd.isBoardText()) {
                     ReadBoardText(m_libfile)
-                    /*
-                    nd = new MoveNode();
-                    m_libfile.get(nd);
-                    console.log(nd)
-                    */
                 }
 
-            }
+            }*/
         };
         INPUT_FILE.onchange = () => {
             let file = INPUT_FILE.files[0];
+
             getArrBuf(file)
                 .then((buffer) => {
-                    arrBuf = buffer;
-                    dataView = new DataView(arrBuf);
-                    console.log(`open`)
-                    if (m_libfile.open(buffer)) {
-                        console.log(`open--> end`)
-                        if (m_libfile.checkVersion()) {
-                            console.log(`checkVersion=true`)
-                            let nd = new MoveNode();
-                            console.log(nd)
-                            m_libfile.get(nd);
-                            console.log(nd)
-                            console.log([nd.isOldComment(), nd.isNewComment(), nd.isBoardText()])
+                    return new Promise((resolve, reject) => {
+                        try {
+                            console.log(`open`)
+                            if (m_libfile.open(buffer)) {
+                                console.log(`open--> end`)
+                                renLibDoc.addLibrary(m_libfile)
+                            }
+                            resolve()
                         }
-                        else {
-                            console.log(`checkVersion=false`)
+                        catch (err) {
+                            reject(err)
                         }
-                    }
+                    })
                 })
+                .then((rt) => {
+                    alert("finish")
+                })
+                .catch(err => {
+                    alert(err)
+                    console.error(err.stack)
+                })
+            //addLibrary(file);
             /*
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 navigator.share({
@@ -338,6 +377,7 @@
 
         document.body.onload = () => {
             vConsole = new VConsole();
+            //new MoveNode(new MoveNode())
         }
     </script>
 </body>

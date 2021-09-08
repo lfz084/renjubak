@@ -246,7 +246,8 @@ window.checkerBoard = (function() {
         this.LbBackgroundColor = "#f0f0f0"; //888888
         this.coordinateColor = "#000000"; //111111
         this.lineColor = "#000000"; //111111
-        this.lastNumColor = "#ff0000"; //dd0000
+        this.wLastNumColor = "#ff0000"; //dd0000
+        this.bLastNumColor = "#ffaaaa"; //dd0000
         this.moveWhiteColor = "#bbbbbb"; //bbbbbb
         this.moveBlackColor = "#bbbbbb"; //666666
         this.moveWhiteFontColor = "#ffffff"; //ffffff
@@ -3998,7 +3999,9 @@ window.checkerBoard = (function() {
         // 设置字体
         ctx.font = "bolder " + parseInt(w * 1.08) + "px  mHeiTi";
         // 由棋子颜色决定字体颜色
-        ctx.fillStyle = this.notShowLastNum ? color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor : this.lastNumColor;
+        ctx.fillStyle = this.notShowLastNum ? 
+            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor : 
+            color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
         if (showNum) { // 显示数字
             // 判断最后一手是否高亮显示
             let txt = parseInt(this.P[idx].text) - this.resetNum;

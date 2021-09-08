@@ -60,7 +60,7 @@
             return success;
         }
     
-        function Get_Byte(data) {
+        function Get_Byte(data = new Uint8Array(2)) {
             //console.log(`Get_Byte`)
             data[0] = 0;
             data[1] = 0;
@@ -147,7 +147,7 @@
         if (!VersionOk) {
     
         }
-        
+        console.log(`VersionOk=${VersionOk}`)
         return VersionOk;
     }
     
