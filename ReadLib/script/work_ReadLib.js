@@ -3,7 +3,6 @@ if (self.importScripts)
     self.importScripts(
         "./UNICODE2GBK.js",
         //"./GB2312-UTF8.js",
-        //"./UTF8-UTF16.js",
         "./JFile.js",
         "./JPoint.js",
         "./LibraryFile.js",

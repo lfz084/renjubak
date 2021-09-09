@@ -20930,6 +20930,7 @@ function charPointGBK2GBK(arr){
 }
 // return Unicode char; [190, 252] ==> "军"
 function charPointGBK2Unicode(arr){
+    //postMessage(charGBK2Unicode(charPointGBK2GBK(arr)))
     return charGBK2Unicode(charPointGBK2GBK(arr))
 }
 // return Unicode String;
@@ -20943,6 +20944,7 @@ function bufferGBK2Unicode(buf){
             str += charPointGBK2Unicode([buf[i], buf[++i] || 0])
         }
     }
+    
     return str;
 }
 /*

@@ -147,8 +147,12 @@
 
             strNew.push(buffer[1]);
         }
-        pStrBoardText[0] = bufferGBK2Unicode(strNew);
-        postMessage(pStrBoardText[0])
+        
+        //pStrBoardText[0] = bufferGBK2Unicode(strNew);
+        //postMessage(strNew)
+        //postMessage(`${strNew[0].toString(16)}${strNew[1].toString(16)} => ${pStrBoardText[0].charCodeAt(0).toString(16)}`)
+        //postMessage(pStrBoardText[0])
+        
         /*
         let bufStr = new Uint8Array(pStrBoardText[0])
         let code = new Uint16Array([bufStr[0] << 8 | bufStr[1]])
