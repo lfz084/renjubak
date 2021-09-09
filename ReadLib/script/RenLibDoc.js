@@ -114,8 +114,8 @@
 
             strNew.push(buffer[1]);
         }
-        //strNew = bufferGBK2Unicode(strNew)
-        //postMessage(strNew)
+        strNew = bufferGBK2Unicode(strNew)
+        postMessage(strNew)
         let n = -1//strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
