@@ -114,8 +114,8 @@
 
             strNew.push(buffer[1]);
         }
-        strNew = bufferGBK2Unicode(strNew)
-
+        //strNew = bufferGBK2Unicode(strNew)
+        //postMessage(strNew)
         let n = -1//strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
@@ -147,8 +147,8 @@
 
             strNew.push(buffer[1]);
         }
-        //pStrBoardText[0] = bufferGBK2Unicode(strNew);
-        //console.log(pStrBoardText[0])
+        pStrBoardText[0] = bufferGBK2Unicode(strNew);
+        postMessage(pStrBoardText[0])
         /*
         let bufStr = new Uint8Array(pStrBoardText[0])
         let code = new Uint16Array([bufStr[0] << 8 | bufStr[1]])

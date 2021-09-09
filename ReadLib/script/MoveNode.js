@@ -45,7 +45,7 @@
         }
         else {
             let name = (alpha.charAt(pos % 16 - 1) + (15 - ~~(pos / 16))).toUpperCase();
-            console.warn(name)
+            //postMessage(name)
             return new JPoint(pos % 16, pos / 16 + 1)
         }
     }

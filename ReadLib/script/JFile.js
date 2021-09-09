@@ -24,7 +24,7 @@
         this.m_begin = 0;
         this.m_current = 0;
         this.m_end = buffer.byteLength;
-        this.m_buffer = new DataView(buffer);
+        this.m_buffer = new Uint8Array(buffer);
         this.m_fileName = fileName;
         return this.m_end * 1;
     }
@@ -43,7 +43,7 @@
         for (i = 0; i < BUF_LEN; i++) {
             //console.log([this.m_current, this.m_end])
             if (i >= nCount || this.m_current >= this.m_end) break;
-            lpBuf[i] = this.m_buffer.getUint8(this.m_current++);
+            lpBuf[i] = this.m_buffer[this.m_current++];
         }
         //console.log(`lpBuf = [${lpBuf}]`)
         typeof this.onRead == "function" ?

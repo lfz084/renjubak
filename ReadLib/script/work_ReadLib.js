@@ -22,11 +22,12 @@ self.post = function (cmd, param) {
 
 let renLibDoc = new CRenLibDoc(),
     m_libfile = new LibraryFile();
-
+    
     m_libfile.onRead = e =>{
         if(e.current % (1024 * 128) == 20)
             postMessage(`${e.current}/${e.end}`)
     }
+    
 function getArrBuf(file) {
     return new Promise((resolve, reject) => {
         let fr = new FileReader();

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0905.02";
+self.SCRIPT_VERSIONS["renju"] = "v0905.03";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -861,7 +861,7 @@ var loadApp = () => { // 按顺序加载应用
                 ], false)
         })
         .then(() => {
-            window._loading.text("30%");
+            window._loading.text("35%");
             return loadScriptAll([
                 [SOURCE_FILES["checkerBoard"]],
                 [SOURCE_FILES["control"]],
@@ -896,7 +896,7 @@ var loadApp = () => { // 按顺序加载应用
                 ], true)
         })
         .then(() => {
-            window._loading.text("95%");
+            window._loading.text("91%");
             return loadFileAll([
                 [SOURCE_FILES["404_html"]],
                 [SOURCE_FILES["renju_html"]],
