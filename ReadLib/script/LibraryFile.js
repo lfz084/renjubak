@@ -30,22 +30,25 @@
             this.m_Version;
             this.m_MajorFileVersion = 0;
             this.m_MinorFileVersion = 0;
+
+            //event
+            this.onRead = undefined;
         }
     }
-    
-    LibraryFile.prototype.open = function (buffer, fileName, mode){
+
+    LibraryFile.prototype.open = function(buffer, fileName, mode) {
         this.m_mode = mode || this.m_mode;
         return (this.m_file.open(buffer, fileName) != 0);
     }
-    
-    LibraryFile.prototype.get = function (node) {
+
+    LibraryFile.prototype.get = function(node) {
         function Get_Node(node) {
             //console.log(`Get_Node`)
             node.setPos(new JPoint(0, 0));
             node.clearInformation();
-    
+
             let data = new Uint8Array(2);
-    
+
             let success = Get_Byte.call(this, data);
             //console.log(`success=${success}`)
             if (success) {
@@ -59,7 +62,7 @@
             }
             return success;
         }
-    
+
         function Get_Byte(data = new Uint8Array(2)) {
             //console.log(`Get_Byte`)
             data[0] = 0;
@@ -67,13 +70,16 @@
             if (this.m_indexStart >= this.m_indexEnd) {
                 //console.log("read")
                 let nBytesRead = this.m_file.read(this.m_buffer, BUFFERSIZE);
-                console.log(`nBytesRead=${nBytesRead}`)
-                console.log(`[${this.m_buffer}]`)
+                typeof this.onRead == "function" ?
+                    this.m_file.onRead = this.onRead :
+                    this.onRead = undefined;
+                //console.log(`nBytesRead=${nBytesRead}`)
+                //console.log(`[${this.m_buffer}]`)
                 if (nBytesRead == 0)
                 {
                     return false;
                 }
-                
+
                 this.m_indexEnd = nBytesRead - 1;
                 this.m_indexStart = 0;
             }
@@ -83,77 +89,77 @@
             //console.log(`{${data}}`)
             return true;
         }
-        
-        if(node.constructor.name == "MoveNode"){
+
+        if (node.constructor.name == "MoveNode") {
             return Get_Node.call(this, node)
         }
-        else if(node.constructor.name == "Uint8Array"){
+        else if (node.constructor.name == "Uint8Array") {
             return Get_Byte.call(this, node)
         }
     }
-    
+
     LibraryFile.prototype.close = function() {
-        try{
+        try {
             this.write();
             this.m_file.close();
         }
-        catch (err){}
+        catch (err) {}
     }
-    
-    LibraryFile.prototype.checkVersion = function () {
+
+    LibraryFile.prototype.checkVersion = function() {
         let VersionOk = false;
-    
+
         let header = new Uint8Array(HEADER_SIZE);
         header = [0xFF, "R".charCodeAt(), "e".charCodeAt(), "n".charCodeAt(), "L".charCodeAt(), "i".charCodeAt(), "b".charCodeAt(), 0xFF]
-        console.log(header)
+        //console.log(header)
         let buf = new Uint8Array(HEADER_SIZE);
-        console.log(buf)
+        //console.log(buf)
         let dwRead;
-    
+
         dwRead = this.m_file.read(buf, HEADER_SIZE);
-        console.log(dwRead)
-        console.log(buf)
-    
+        //console.log(dwRead)
+        //console.log(buf)
+
         if (dwRead == HEADER_SIZE) {
             let HeaderMatch = true;
-    
+
             for (let i = 0; i <= 7; i++) {
                 if (buf[i] != header[i]) {
                     HeaderMatch = false;
-                    console.log(`HeaderMatch = false`)
+                    //console.log(`HeaderMatch = false`)
                     break;
                 }
             }
-    
+
             if (HeaderMatch) {
                 this.m_MajorFileVersion = buf[MAJOR_FILE_VERSION_INDEX];
                 this.m_MinorFileVersion = buf[MINOR_FILE_VERSION_INDEX];
-    
+
                 if (100 * this.m_MajorFileVersion + this.m_MinorFileVersion <=
                     100 * MAJOR_FILE_VERSION + MINOR_FILE_VERSION) {
                     VersionOk = true;
-                    console.log(`VersionOk = true`)
+                    //console.log(`VersionOk = true`)
                 }
                 else {
-    
+
                 }
             }
             else if (buf[0] == CENTER) {
                 this.m_file.seekToBegin();
                 VersionOk = true;
-                console.log(`VersionOk = true`)
+                //console.log(`VersionOk = true`)
             }
         }
         if (!VersionOk) {
-    
+
         }
         console.log(`VersionOk=${VersionOk}`)
         return VersionOk;
     }
-    
-    LibraryFile.prototype.getVersion = function () {
+
+    LibraryFile.prototype.getVersion = function() {
         return this.m_Version;
     }
-    
+
     exports.LibraryFile = LibraryFile;
 })))

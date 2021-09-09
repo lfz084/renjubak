@@ -18,7 +18,7 @@
             this.NullItem = new Item(0, null);
             this.m_Stack = [];
             for (let i = 0; i < SIZE; i++) {
-                this.m_Stack[i] = this.NullItem;
+                this.m_Stack[i] = new Item(0, null);
             }
         }
     }
@@ -33,6 +33,7 @@
         this.m_Stack[this.m_nIndex].nMove = nMove;
         this.m_Stack[this.m_nIndex].pMove = pMove;
         this.m_nIndex++;
+        //printStack(this)
     }
 
     Stack.prototype.pop = function(nMove = [0], pMove = [null]) {
@@ -43,6 +44,15 @@
             nMove[0] = this.m_Stack[this.m_nIndex].nMove;
         if (typeof pMove == "object")
             pMove[0] = this.m_Stack[this.m_nIndex].pMove;
+        //printStack(this)
+    }
+    
+    function printStack(stack){
+        let rt = [];
+        for(let i=0; i< stack.m_nIndex; i++){
+            rt.push(stack.m_Stack[i].nMove)
+        }
+        console.log(`m_Stack = [${rt}]`)
     }
     
     exports.Stack = Stack;

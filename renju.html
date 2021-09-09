@@ -33,18 +33,18 @@
     <div id="mlog"></div>
     <script>
         let re1 = /\?(v|V)\=/;
-        window.reloadApp = function (){
+        window.reloadApp = function() {
             window.location.href = window.location.href.split("?")[0] + "?v=" + new Date().getTime();
         }
         let oldTime = window.location.href.split(re1)[2] || 0;
-        if ((new Date().getTime() - oldTime)/1000 > 300){
+        if ((new Date().getTime() - oldTime) / 1000 > 300) {
             reloadApp();
         }
     </script>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0903.11";
+        window.APP_VERSION = "v0905.02";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -78,6 +78,18 @@
             "docusign-white.svg": "./pic/docusign-white.svg",
             "icon.png": "https://lfz084.github.io/icon.png",
             "icon.ico": "https://lfz084.github.io/icon.ico",
+            
+            //"GB2312-UTF8": "./ReadLib/script/GB2312-UTF8.js",
+            //"UTF8-UTF16": "./ReadLib/script/UTF8-UTF16.js",
+            UNICODE2GBK: "./ReadLib/script/UNICODE2GBK.js",
+            JFile: "./ReadLib/script/JFile.js",
+            JPoint: "./ReadLib/script/JPoint.js",
+            LibraryFile: "./ReadLib/script/LibraryFile.js",
+            MoveList: "./ReadLib/script/MoveList.js",
+            MoveNode: "./ReadLib/script/MoveNode.js",
+            Stack: "./ReadLib/script/Stack.js",
+            RenLibDoc: "./ReadLib/script/RenLibDoc.js",
+            work_ReadLib: "./ReadLib/script/work_ReadLib.js",
         }
         window.SCRIPT_VERSIONS = {
             viewport: "???",
@@ -130,7 +142,7 @@
                                 mlog("renju.html removeAppCache ...")
                                 resolve();
                             })
-                            .catch(()=>{
+                            .catch(() => {
                                 resolve();
                             })
                     }
@@ -274,10 +286,10 @@
                     const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
                     alert(MSG)
                     removeAppCache()
-                        .then(()=>{
+                        .then(() => {
                             window.reloadApp()
                         })
-                        .catch(()=>{
+                        .catch(() => {
                             window.reloadApp()
                         })
                 })

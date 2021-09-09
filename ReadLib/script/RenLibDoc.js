@@ -71,7 +71,7 @@
     class CRenLibDoc {
         constructor() {
             this.m_MoveList = new MoveList();
-
+            this.m_file
         }
     }
 
@@ -116,7 +116,7 @@
         }
         strNew = bufferGBK2Unicode(strNew)
 
-        let n = strNew.indexOf(String.fromCharCode(10));
+        let n = -1//strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
         }
@@ -147,7 +147,7 @@
 
             strNew.push(buffer[1]);
         }
-        pStrBoardText[0] = bufferGBK2Unicode(strNew);
+        //pStrBoardText[0] = bufferGBK2Unicode(strNew);
         //console.log(pStrBoardText[0])
         /*
         let bufStr = new Uint8Array(pStrBoardText[0])
@@ -396,6 +396,7 @@
                 return false;
             }
             else {
+                
                 number++;
                 //console.log(`number=${number}`)
 
@@ -406,7 +407,7 @@
                     pCurrentMove = pNextMove;
                 }
                 else {
-                    console.log(`pNextMove=0}`)
+                    //console.log(`pNextMove=0}`)
                     pNextMove = new MoveNode(next);
 
                     this.addMove(pCurrentMove, pNextMove);
@@ -422,6 +423,7 @@
                 }
                 //console.log("list_add")
                 this.m_MoveList.add(pCurrentMove);
+                
             }
 
             if (next.isOldComment() || next.isNewComment()) {
@@ -453,7 +455,7 @@
                     nBoardTexts++;
                 }
             }
-
+            
             // Add attributes
             this.addAttributes(pCurrentMove, next, bMark, bMove, bStart);
             
@@ -462,7 +464,7 @@
             }
 
             if (next.isDown()) {
-                console.log(`m_Stack.push ${this.m_MoveList.index()}`)
+                //console.log(`m_Stack.push ${this.m_MoveList.index()}`)
                 m_Stack.push(this.m_MoveList.index());
             }
 
@@ -470,11 +472,12 @@
                 if (!m_Stack.isEmpty()) {
                     let nMove = [0];
                     m_Stack.pop(nMove);
-                    console.log(`m_Stack.pop ${nMove[0]-1}`)
+                    //console.log(`m_Stack.pop ${nMove[0]-1}`)
                     this.m_MoveList.setIndex(nMove[0] - 1);
                     pCurrentMove = this.m_MoveList.current();
                 }
             }
+            
         }
         console.log("loop <<")
         if (number > 0) {

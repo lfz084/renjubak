@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0903.11";
+self.SCRIPT_VERSIONS["renju"] = "v0905.02";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -844,7 +844,7 @@ var loadApp = () => { // 按顺序加载应用
                 ], true)
         })
         .then(() => {
-            window._loading.text("30%");
+            window._loading.text("20%");
             return loadScriptAll([ //顺序 同步加载
                 [SOURCE_FILES["viewport"], () => {
                     window.viewport1 = new view(dw);
@@ -861,7 +861,7 @@ var loadApp = () => { // 按顺序加载应用
                 ], false)
         })
         .then(() => {
-            window._loading.text("50%");
+            window._loading.text("30%");
             return loadScriptAll([
                 [SOURCE_FILES["checkerBoard"]],
                 [SOURCE_FILES["control"]],
@@ -874,20 +874,29 @@ var loadApp = () => { // 按顺序加载应用
                 ], true)
         })
         .then(() => {
-            window._loading.text("90%");
+            window._loading.text("60%");
             return loadScriptAll([
                 [SOURCE_FILES["PFSCMedium"]],
                 [SOURCE_FILES["PFSCHeavy"]],
                 ], true)
         })
         .then(() => {
-            window._loading.text("95%");
+            window._loading.text("75%");
             return loadScriptAll([
                 [SOURCE_FILES["worker"]],
+                [SOURCE_FILES["UNICODE2GBK"]],
+                [SOURCE_FILES["JFile"]],
+                [SOURCE_FILES["JPoint"]],
+                [SOURCE_FILES["LibraryFile"]],
+                [SOURCE_FILES["MoveList"]],
+                [SOURCE_FILES["MoveNode"]],
+                [SOURCE_FILES["Stack"]],
+                [SOURCE_FILES["RenLibDoc"]],
+                [SOURCE_FILES["work_ReadLib"]],
                 ], true)
         })
         .then(() => {
-            window._loading.text("99%");
+            window._loading.text("95%");
             return loadFileAll([
                 [SOURCE_FILES["404_html"]],
                 [SOURCE_FILES["renju_html"]],

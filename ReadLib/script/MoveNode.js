@@ -126,7 +126,7 @@
         this.mPos = PosToPoint(pos);
         this.mInfo = (this.mInfo & 0xFFFF00) | info;
         //console.log(`mInfo=${this.mInfo}, info=${info}`)
-        console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
+        //console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
     }
 
     MoveNode.prototype.getPosInfo = function(arrBuf = new Uint8Array(2)) {
@@ -138,13 +138,13 @@
         this.mInfo &= 0xFF;
         this.mInfo |= ((info2 << 8) | info1) << 8;
         //console.log(`mInfo=${this.mInfo}, info2=${info2}, info1=${info1}`)
-        
+        /*
         let s = ("000000000000000000000000"+this.mInfo.toString(2)).slice(-24),
             b1 = s.slice(0,8),
             b2 = s.slice(8,16),
             b3 = s.slice(16);
         console.warn(`${b1},${b2},${b3}`)
-        
+        */
     }
     
     MoveNode.prototype.getExtendedInfo = function(arrBuf = new Uint8Array(2)) {

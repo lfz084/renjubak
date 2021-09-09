@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0903.11";
+self.SCRIPT_VERSIONS["control"] = "v0905.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -268,21 +268,21 @@ window.control = (() => {
 
         cMenu = new button(cBd.parentNode, "select", 0, 0, 0, 0);
         cMenu.index = -1; // save cBoard click index;
-        cMenu.addOption(1, `${EMOJI_SEARCH} 找点`);
-        cMenu.addOption(2, `${EMOJI_QUESTION} 解题`);
-        cMenu.addOption(3, "新棋局");
-        cMenu.addOption(4, "添加标记");
-        cMenu.addOption(5, "清空标记");
-        cMenu.addOption(6, "分享图片");
-        cMenu.addOption(7, "分享原图");
-        cMenu.addOption(8, `下手为${EMOJI_ROUND_ONE}`);
-        cMenu.addOption(9, "重置手数");
-        cMenu.addOption(10, "显示手数");
-        cMenu.addOption(11, "隐藏手数");
-        cMenu.addOption(12, "输入代码");
-        cMenu.addOption(13, "输出代码");
-        cMenu.addOption(14, "输入图片");
-        cMenu.addOption(15, `${EMOJI_SCISSORSN} 截图`);
+        cMenu.addOption(1, "打开");
+        cMenu.addOption(2, `保存`);
+        cMenu.addOption(3, `${EMOJI_SEARCH} 找点`);
+        cMenu.addOption(4, `${EMOJI_QUESTION} 解题`);
+        cMenu.addOption(5, "新棋局");
+        cMenu.addOption(6, "添加标记");
+        cMenu.addOption(7, "清空标记");
+        cMenu.addOption(8, "分享图片");
+        cMenu.addOption(9, "分享原图");
+        cMenu.addOption(10, `下手为${EMOJI_ROUND_ONE}`);
+        cMenu.addOption(11, "重置手数");
+        cMenu.addOption(12, "显示手数");
+        cMenu.addOption(13, "隐藏手数");
+        cMenu.addOption(14, "输入代码");
+        cMenu.addOption(15, "输出代码");
         cMenu.addOption(16, `🔄 刷新页面`);
 
         cMenu.setonchange(function(but) {
@@ -292,62 +292,59 @@ window.control = (() => {
             let y = but.menu.offsetTop;
             switch (but.input.value * 1) {
                 case 1:
-                    cFindPoint.showMenu(x, y);
+                    cLoadImg.showMenu(x, y);
                     break;
                 case 2:
-                    cFindVCF.showMenu(x, y);
+                    cCutImage.showMenu(x, y);
                     break;
                 case 3:
-                    cNewGame.touchend();
+                    cFindPoint.showMenu(x, y);
                     break;
                 case 4:
+                    cFindVCF.showMenu(x, y);
+                    break;
+                case 5:
+                    cNewGame.touchend();
+                    break;
+                case 6:
                     if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) {
                         inputLabel(idx);
                     }
                     break;
-                case 5:
+                case 7:
                     cCleLb.touchend();
                     break;
-                case 6:
+                case 8:
                     cShareWhite.touchend();
                     break;
-                case 7:
+                case 9:
                     cShare.touchend();
                     break;
-                case 8:
+                case 10:
                     cNextone.touchend();
                     break;
-                case 9:
+                case 11:
                     cResetnum.touchend();
                     break;
-                case 10:
+                case 12:
                     cBd.showNum();
                     setShowNum(true);
                     cBd.isShowNum = getShowNum();
                     break;
-                case 11:
+                case 13:
                     cBd.hideNum();
                     setShowNum(false);
                     cBd.isShowNum = getShowNum();
                     break;
-                case 12:
+                case 14:
                     cInputcode.touchend();
                     break;
-                case 13:
-                    cOutputcode.touchend();
-                    break;
-                case 14:
-                    cLoadImg.input.click();
-                    break;
                 case 15:
-                    cCutImage.showMenu(x, y);
+                    cOutputcode.touchend();
                     break;
                 case 16:
                     typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload();
                     break;
-
-
-
             }
         });
         let p = { x: 0, y: 0 };
@@ -1171,12 +1168,12 @@ window.control = (() => {
                 return;
             }
             else if (msgStr.indexOf("caches") > -1) {
-            
+
                 window.logCaches();
                 return;
             }
             else if (msgStr.indexOf("cache") > -1) {
-            
+
                 logCache(window.APP_VERSION)
                 return;
             }
@@ -1226,28 +1223,33 @@ window.control = (() => {
                 inputCode, undefined, undefined, 10);
         });
 
-        cLoadImg = new button(renjuCmddiv, "file", w * 2.66, t, w, h);
+        let fileInput = document.createElement("input");
+        fileInput.setAttribute("type", "file"),
+            fileInput.style.display = "none",
+            renjuCmddiv.appendChild(fileInput);
+
+        cLoadImg = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cLoadImg.addOption(1, "打开 图片");
+        cLoadImg.addOption(2, "打开 lib 棋谱");
+        cLoadImg.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cLoadImg.show();
-        cLoadImg.input.accept = "image/*";
-        cLoadImg.setText("输入图片");
-        cLoadImg.setonchange(function() {
+        cLoadImg.setText("打开");
+        cLoadImg.setonchange(function(but) {
+            but.setText(`打开`);
             if (busy()) return;
-            cBd.drawLineEnd();
-            let reader = new FileReader();
-            let file = cLoadImg.input.files[0];
-            cLoadImg.input.value = "";
-            let img = cBd.bakImg;
-            img.src = null;
-            reader.readAsDataURL(file);
-            reader.onload = function() {
-                img.src = reader.result;
-            };
-            img.onload = function() {
-                img.onload = null;
-                cBd.oldXL = cBd.oldXR = 0;
-                putImg();
-            };
-            engine.postMsg("cancelFind");
+            switch (but.input.value * 1) {
+                case 1:
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = openImg;
+                    fileInput.click()
+                    break;
+                case 2:
+                    fileInput.accept = "application/lib";
+                    fileInput.onchange = openLib;
+                    fileInput.click()
+                    break;
+            }
+            but.input.value = 0;
         });
 
         function putImg() {
@@ -1283,20 +1285,46 @@ window.control = (() => {
             showLabel(`长按棋盘，拖动虚线对齐棋子`);
         }
 
+        function openImg() {
+            if (busy()) return;
+            cBd.drawLineEnd();
+            let reader = new FileReader();
+            let file = fileInput.files[0];
+            fileInput.value = "";
+            let img = cBd.bakImg;
+            img.src = null;
+            reader.onload = function() {
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+            img.onload = function() {
+                img.onload = null;
+                cBd.oldXL = cBd.oldXR = 0;
+                putImg();
+            };
+            engine.postMsg("cancelFind");
+        }
+
+        function openLib() {
+            
+        }
+
+
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
-        //cCutImage.addOption(0, "︾");
+        //cCutImage.addOption(0, "________图片________");
         //cCutImage.addOption(1, "分享图片");
-        cCutImage.addOption(2, "JPEG/(*.jpg)__压缩");
-        cCutImage.addOption(3, "PNG(*.png)__清晰");
-        cCutImage.addOption(4, "SVG/(*.svg)__矢量,无损");
-        cCutImage.addOption(5, "SVG/(*.svg.html__矢量，无损");
-        cCutImage.addOption(6, "PDF/(*.pdf)__矢量，无损");
-        //cCutImage.addOption(7, "︽");
+        cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩");
+        cCutImage.addOption(3, "PNG /(*.png) ____ 清晰");
+        cCutImage.addOption(4, "SVG /(*.svg) ____ 无损");
+        cCutImage.addOption(5, "HTML/(*.html) ___ 无损");
+        cCutImage.addOption(6, "PDF /(*.pdf) _____ 无损");
+        //cCutImage.addOption(7, "________棋谱________");
+        //cCutImage.addOption(8, "LIB /(*.lib) ______ 棋谱");
         cCutImage.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cCutImage.show();
-        cCutImage.setText(`${EMOJI_SCISSORSN} 截图`);
+        cCutImage.setText(`保存`);
         cCutImage.setonchange(function(but) {
-            but.setText(`${EMOJI_SCISSORSN} 截图`);
+            but.setText(`保存`);
             if (busy()) return;
             switch (but.input.value * 1) {
                 case 1:
@@ -1739,7 +1767,7 @@ window.control = (() => {
 
         //处理触摸开始事件
         function bodyTouchStart(evt) {
-        
+
             let touches = evt.changedTouches; //记录坐标，给continueSetCutDiv使用
             continueSetCutDivX = touches[0].pageX;
             continueSetCutDivY = touches[0].pageY;
@@ -1890,7 +1918,7 @@ window.control = (() => {
         }
 
         function bodyClick(x, y) {
-        
+
             let p = { x: 0, y: 0 };
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;

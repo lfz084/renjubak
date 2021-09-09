@@ -14,6 +14,9 @@
             //this.m_mode = UINT_MAX;
             this.m_buffer = [];
             this.m_fileName = "";
+
+            //event
+            this.onRead = undefined;
         }
     }
 
@@ -23,7 +26,7 @@
         this.m_end = buffer.byteLength;
         this.m_buffer = new DataView(buffer);
         this.m_fileName = fileName;
-        return this.m_end;
+        return this.m_end * 1;
     }
 
     JFile.prototype.close = function() {
@@ -43,6 +46,9 @@
             lpBuf[i] = this.m_buffer.getUint8(this.m_current++);
         }
         //console.log(`lpBuf = [${lpBuf}]`)
+        typeof this.onRead == "function" ?
+            this.onRead({ current: this.m_current, end: this.m_end }) :
+            this.onRead = undefined;
         return i;
     }
 
