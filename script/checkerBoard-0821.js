@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v0905.06";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v0905.07";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -1439,6 +1439,7 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.getAutoColor = function(msIndex) {
+        
         let i = msIndex > -1 ? msIndex : this.MSindex;
         const AUTOCOLOR = this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
         return this.autoColor || AUTOCOLOR;
@@ -3088,7 +3089,6 @@ window.checkerBoard = (function() {
     // 在棋盘上打印一个点
     checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum, refresh) {
 
-
         let p = tempp;
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
         let ctx = this.canvas.getContext("2d");
@@ -4240,6 +4240,7 @@ window.checkerBoard = (function() {
 
         //log(this.tree)
         if (this.unpacking || this.oldCode == "") return;
+    
         if (this.oldCode) {
 
             let MS = this.MS;
@@ -4271,7 +4272,10 @@ window.checkerBoard = (function() {
                     }
                 }
                 if (j == -1) {
-                    if (nd.defaultChildNode && lvl.level < 4) {
+                    if (nd.defaultChildNode && 
+                        nd.defaultChildNode[0] &&  
+                        lvl.level < 4) 
+                    {
                         nd = nd.defaultChildNode;
                         let loopNode = nd.childNode[0];
                         while (loopNode && loopNode.idx > -1) {
@@ -4439,7 +4443,7 @@ window.checkerBoard = (function() {
 
     // 在棋盘的一个点上面，摆一颗棋子
     checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
-
+        
         if (idx < 0) return;
         let i = this.MSindex + 1;
         if (this.oldCode) {

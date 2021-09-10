@@ -33,9 +33,8 @@
         this.m_Stack[this.m_nIndex].nMove = nMove;
         this.m_Stack[this.m_nIndex].pMove = pMove;
         this.m_nIndex++;
-        //printStack(this)
     }
-
+    
     Stack.prototype.pop = function(nMove = [0], pMove = [null]) {
         if (this.m_nIndex <= 0)
             throw `Stack.pop Error: Stack.m_nIndex <= 0`;
@@ -44,16 +43,22 @@
             nMove[0] = this.m_Stack[this.m_nIndex].nMove;
         if (typeof pMove == "object")
             pMove[0] = this.m_Stack[this.m_nIndex].pMove;
-        //printStack(this)
     }
     
-    function printStack(stack){
-        let rt = [];
-        for(let i=0; i< stack.m_nIndex; i++){
-            rt.push(stack.m_Stack[i].nMove)
+    
+    //------------------------------------    ------------------------------------
+
+    
+    Stack.prototype.toArray = function(name){
+        let nMove = [],
+            pMove = [];
+        for (let i = 0; i < this.m_nIndex; i++) {
+            nMove.push(this.m_Stack[i].nMove);
+            pMove.push(this.m_Stack[i].pMove)
         }
-        console.log(`m_Stack = [${rt}]`)
+        return name=="pMove"  ? pMove : nMove;
     }
+    
     
     exports.Stack = Stack;
 })))

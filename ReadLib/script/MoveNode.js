@@ -39,26 +39,23 @@
 
     function PosToPoint(pos) {
         //console.log(`pos=${pos}`)
-        let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         if (pos == 0) {
             return new JPoint(0, 0);
         }
         else {
-            let name = (alpha.charAt(pos % 16 - 1) + (15 - ~~(pos / 16))).toUpperCase();
-            //postMessage(name)
             return new JPoint(pos % 16, pos / 16 + 1)
         }
     }
 
     function PointToPos(point) {
-        if (isValidPoint(point)){
-            return 16 * (point.y-1) + point.x;
+        if (isValidPoint(point)) {
+            return 16 * (point.y - 1) + point.x;
         }
-        else{
+        else {
             return 0;
         }
     }
-    
+
     function isValidPoint(point) {
         return point.x >= 1 && point.x <= 15 && point.y >= 1 && point.y <= 15;
     }
@@ -67,7 +64,7 @@
 
     class MoveNode {
         constructor(mPos) {
-            let name = typeof mPos=="object" ? mPos.constructor.name : undefined;
+            let name = typeof mPos == "object" ? mPos.constructor.name : undefined;
             if (name == "JPoint") {
                 this.mPos = mPos;
                 this.mInfo = 0;
@@ -84,7 +81,7 @@
                 this.mPos = NullPoint;
                 this.mInfo = 0;
             }
-            
+
             this.mMatch = 0;
 
             this.mOneLineComment = "";
@@ -95,7 +92,8 @@
             this.mRight = 0;
         }
     }
-
+    
+    
     MoveNode.prototype.checkExtension = function() {
         this.setIsExtension((this.mInfo & 0xFFFF00) != 0);
     }
@@ -125,6 +123,7 @@
     MoveNode.prototype.setPosInfo = function(pos, info) {
         this.mPos = PosToPoint(pos);
         this.mInfo = (this.mInfo & 0xFFFF00) | info;
+        //postMessage(this.pos2Name(pos))
         //console.log(`mInfo=${this.mInfo}, info=${info}`)
         //console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
     }
@@ -133,7 +132,7 @@
         arrBuf[0] = PointToPos(this.mPos);
         arrBuf[1] = this.mInfo & 0xFF;
     }
-    
+
     MoveNode.prototype.setExtendedInfo = function(info2, info1) {
         this.mInfo &= 0xFF;
         this.mInfo |= ((info2 << 8) | info1) << 8;
@@ -146,155 +145,178 @@
         console.warn(`${b1},${b2},${b3}`)
         */
     }
-    
+
     MoveNode.prototype.getExtendedInfo = function(arrBuf = new Uint8Array(2)) {
-        arrBuf[0] = (this.mInfo >> 16) & 0xFF;  // info2
-        arrBuf[1] = (this.mInfo >> 8) & 0xFF;   //info1
+        arrBuf[0] = (this.mInfo >> 16) & 0xFF; // info2
+        arrBuf[1] = (this.mInfo >> 8) & 0xFF; //info1
     }
-    
+
     MoveNode.prototype.clearInformation = function() {
         this.mInfo = 0;
     }
-    
+
     MoveNode.prototype.isInformation = function() {
         return (this.mInfo & MASK) != 0;
     }
-    
+
     MoveNode.prototype.isDown = function() {
         return this.isValue(DOWN);
     }
-    
+
     MoveNode.prototype.setIsDown = function(value) {
         this.setIsValue(value, DOWN);
     }
-    
+
     MoveNode.prototype.isRight = function() {
         return this.isValue(RIGHT);
     }
-    
+
     MoveNode.prototype.setIsRight = function(value) {
         this.setIsValue(value, RIGHT);
     }
-    
+
     MoveNode.prototype.isOldComment = function() {
         return this.isValue(OLD_COMMENT);
     }
-    
+
     MoveNode.prototype.isNewComment = function() {
         return this.isValue(COMMENT);
     }
-    
+
     MoveNode.prototype.setIsNewComment = function(value) {
         this.setIsValue(value, COMMENT);
         this.setIsValue(false, OLD_COMMENT);
     }
-    
+
     MoveNode.prototype.isMark = function() {
         return this.isValue(MARK);
     }
-    
+
     MoveNode.prototype.setIsMark = function(value) {
         this.setIsValue(value, MARK);
     }
-    
+
     MoveNode.prototype.isStart = function() {
         return this.isValue(START);
     }
-    
+
     MoveNode.prototype.setIsStart = function(value) {
         this.setIsValue(value, START);
     }
-    
+
     MoveNode.prototype.isMove = function() {
         return !this.isValue(NO_MOVE);
     }
-    
+
     MoveNode.prototype.isPassMove = function() {
         let result = false;
-        if (this.isMove()){
-            result = this.mPos.x == 0 && this.mPos.y==0;
+        if (this.isMove()) {
+            result = this.mPos.x == 0 && this.mPos.y == 0;
         }
         return result;
     }
-    
+
     MoveNode.prototype.setIsMove = function(value) {
         this.setIsValue(!value, NO_MOVE);
     }
-    
+
     MoveNode.prototype.isExtension = function() {
         return this.isValue(EXTENSION);
     }
-    
+
     MoveNode.prototype.setIsExtension = function(value) {
         this.setIsValue(value, EXTENSION);
     }
-    
+
     MoveNode.prototype.setMatch = function(match) {
         this.mMatch = match;
     }
-    
+
     MoveNode.prototype.getMatch = function() {
         return this.mMatch;
     }
-    
+
     MoveNode.prototype.setDown = function(node) {
         this.mDown = node;
     }
-    
+
     MoveNode.prototype.getDown = function() {
         return this.mDown;
     }
-    
+
     MoveNode.prototype.setRight = function(node) {
         this.mRight = node;
     }
-    
+
     MoveNode.prototype.getRight = function() {
         return this.mRight;
     }
-    
+
     MoveNode.prototype.isOneLineComment = function() {
         return !!this.mOneLineComment;
     }
-    
+
     MoveNode.prototype.setOneLineComment = function(comment) {
         this.mOneLineComment = comment;
         this.setIsNewComment(this.isOneLineComment() || this.isMultiLineComment());
     }
-    
+
     MoveNode.prototype.getOneLineComment = function() {
         return this.mOneLineComment;
     }
-    
+
     MoveNode.prototype.isMultiLineComment = function() {
         return !!this.mMultiLineComment;
     }
-    
+
     MoveNode.prototype.setMultiLineComment = function(comment) {
         this.mMultiLineComment = comment;
         this.setIsNewComment(this.isOneLineComment() || this.isMultiLineComment());
     }
-    
+
     MoveNode.prototype.getMultiLineComment = function() {
         return this.mMultiLineComment;
     }
-    
+
     MoveNode.prototype.setIsBoardText = function(value) {
         this.setIsValue(value, BOARD_TEXT);
         this.checkExtension();
     }
-    
+
     MoveNode.prototype.isBoardText = function() {
         return this.isValue(BOARD_TEXT);
     }
-    
+
     MoveNode.prototype.setBoardText = function(text) {
         this.mBoardText = text;
         this.setIsBoardText(!!this.mBoardText);
     }
-    
+
     MoveNode.prototype.getBoardText = function() {
         return this.mBoardText;
+    }
+    
+    
+    //--------------------------------------------------------
+    
+    
+    MoveNode.prototype.pos2Name = function(pos) {
+        let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            mbArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        switch ((pos).constructor.name) {
+            case "Number":
+                if (pos >= 0 && pos < 225)
+                    return alpha.charAt(pos % 16 - 1).toUpperCase() + mbArr[(15 - parseInt(pos / 16) - 1)];
+            case "JPoint":
+                return alpha.charAt(pos.x - 1).toUpperCase() + mbArr[(15 - pos.y)];
+        }
+    }
+    
+    MoveNode.prototype.toRenjuNode = function(renjuNode = new RenjuNode()){
+        renjuNode.idx = this.mPos.x - 1 + (this.mPos.y - 1) * 15;
+        renjuNode.txt = this.getBoardText() || "○";
+        renjuNode.innerHTML = this.getOneLineComment() + "\n" + this.getMultiLineComment();
+        return renjuNode;
     }
 
     exports.MoveNode = MoveNode;

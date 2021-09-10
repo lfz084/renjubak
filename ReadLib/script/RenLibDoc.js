@@ -58,7 +58,7 @@
             return 0;
         }
     }
-    
+
     function isValidPoint(point) {
         return point.x >= 1 && point.x <= 15 && point.y >= 1 && point.y <= 15;
     }
@@ -115,8 +115,8 @@
             strNew.push(buffer[1]);
         }
         strNew = bufferGBK2Unicode(strNew)
-        postMessage(strNew)
-        let n = -1//strNew.indexOf(String.fromCharCode(10));
+        //postMessage(strNew)
+        let n = -1 //strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
         }
@@ -147,12 +147,12 @@
 
             strNew.push(buffer[1]);
         }
-        
-        //pStrBoardText[0] = bufferGBK2Unicode(strNew);
+        strNew.length > 3 ? strNew.length = 3 : strNew;
+        pStrBoardText[0] = bufferGBK2Unicode(strNew);
         //postMessage(strNew)
         //postMessage(`${strNew[0].toString(16)}${strNew[1].toString(16)} => ${pStrBoardText[0].charCodeAt(0).toString(16)}`)
         //postMessage(pStrBoardText[0])
-        
+
         /*
         let bufStr = new Uint8Array(pStrBoardText[0])
         let code = new Uint16Array([bufStr[0] << 8 | bufStr[1]])
@@ -170,39 +170,39 @@
 
         let isFound = false;
 
-        let pMove = this.m_MoveList.getRoot();
+        let pMove = [this.m_MoveList.getRoot()];
         this.m_MoveList.clearAll();
 
         let done = false;
 
-        while (!done){
-            if (pMove){
-                this.m_MoveList.add(pMove);
+        while (!done) {
+            if (pMove[0]) {
+                this.m_MoveList.add(pMove[0]);
 
-                if (pMove == pMoveToFind){
+                if (pMove[0] == pMoveToFind) {
                     isFound = true;
                     break;
                 }
 
-                if (pMove.getRight()){
-                    m_Stack.push(this.m_MoveList.index(), pMove.getRight());
+                if (pMove[0].getRight()) {
+                    m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
                 }
 
-                pMove = pMove.getDown();
+                pMove[0] = pMove[0].getDown();
             }
-            else if (!m_Stack.isEmpty()){
+            else if (!m_Stack.isEmpty()) {
                 let nMove = [0];
-                m_Stack.pop(nMove, [pMove]);
+                m_Stack.pop(nMove, pMove[0]);
                 this.m_MoveList.setIndex(nMove[0] - 1);
             }
-            else{
+            else {
                 this.m_MoveList.setRootIndex();
-                pMove = this.m_MoveList.current();
+                pMove[0] = this.m_MoveList.current();
                 done = true;
             }
         }
 
-        //m_Board.SetLastMove(pMove.getPos());
+        //m_Board.SetLastMove(pMove[0].getPos());
         //SetPreviousVariant();
 
         // Clear end of move list
@@ -211,10 +211,8 @@
         return isFound;
     }
 
-
-
     CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos) {
-    
+
         if (pMove.getDown()) {
             pMove = pMove.getDown();
 
@@ -234,11 +232,13 @@
         if (pMove.getDown() == 0) {
             //console.log("addMove 1")
             pMove.setDown(pNewMove);
+            //pNewMove.setRight(0);
         }
         else {
             //console.log("addMove 2")
             if (LessThan(pNewMove.getPos(), pMove.getDown().getPos())) {
                 //console.log("addMove 2.1")
+                pNewMove.setRight(pMove.getDown());
                 pMove.setDown(pNewMove);
             }
             else {
@@ -249,6 +249,7 @@
                     //console.log("addMove 2.3")
                     if (pMove.getRight() == 0) {
                         pMove.setRight(pNewMove);
+                        //pNewMove.setRight(0);
                         break;
                     }
                     else if (LessThan(pNewMove.getPos(), pMove.getRight().getPos())) {
@@ -400,12 +401,12 @@
                 return false;
             }
             else {
-                
+
                 number++;
                 //console.log(`number=${number}`)
 
                 pNextMove = this.getVariant(pCurrentMove, next.getPos());
-        
+
                 if (pNextMove) {
                     console.log(`pNextMove=${pNextMove}`)
                     pCurrentMove = pNextMove;
@@ -427,11 +428,11 @@
                 }
                 //console.log("list_add")
                 this.m_MoveList.add(pCurrentMove);
-                
+
             }
 
             if (next.isOldComment() || next.isNewComment()) {
-                
+
                 let pStrOneLine = [""];
                 let pStrMultiLine = [""];
 
@@ -459,10 +460,10 @@
                     nBoardTexts++;
                 }
             }
-            
+
             // Add attributes
             this.addAttributes(pCurrentMove, next, bMark, bMove, bStart);
-            
+
             if (bMark[0] || next.isMark()) {
                 nMarks++;
             }
@@ -481,9 +482,9 @@
                     pCurrentMove = this.m_MoveList.current();
                 }
             }
-            
+
         }
-        console.log("loop <<")
+        postMessage(`loop << number = ${number}`)
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();
@@ -522,5 +523,65 @@
         */
         return true;
     }
+
+
+    //-----------------------------------------------------------
+
+
+    CRenLibDoc.prototype.toRenjuTree = function(renjuTree = new RenjuTree()) {
+        let m_Stack = new Stack();
+
+        let pMove = [this.m_MoveList.getRoot()],
+            rNode = renjuTree,
+            r_MoveList = new MoveList();
+
+        this.m_MoveList.clearAll();
+
+        let done = false;
+        postMessage("copying...")
+        let t_start = new Date().getTime();
+        let number = 0;
+        while (!done) {
+            if (pMove[0]) {
+                number++
+                if (number < 100 || new Date().getTime() - t_start > 1000) {
+                    t_start = new Date().getTime();
+                    postMessage(`${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos}`)
+                    postMessage(`Stack = [${m_Stack.toArray("pMove")}]`)
+                }
+
+                if (this.m_MoveList.index() > -1) {
+                    rNode = pMove[0].toRenjuNode();
+                    r_MoveList.current().pushChildNode(rNode)
+                }
+
+                this.m_MoveList.add(pMove[0]);
+                r_MoveList.add(rNode)
+
+                if (pMove[0].getRight()) {
+                    //postMessage("stack push")
+                    m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
+                }
+
+                pMove[0] = pMove[0].getDown()
+            }
+            else if (!m_Stack.isEmpty()) {
+                let nMove = [0];
+                m_Stack.pop(nMove, pMove);
+                this.m_MoveList.setIndex(nMove[0] - 1);
+                r_MoveList.setIndex(nMove[0] - 1);
+            }
+            else {
+                this.m_MoveList.setRootIndex();
+                pMove[0] = this.m_MoveList.current();
+                done = true;
+            }
+        }
+        postMessage(`end number = ${number}, timer = ${new Date().getTime() - t_start}`)
+        this.m_MoveList.clearEnd();
+        return renjuTree;
+    }
+
+
     exports.CRenLibDoc = CRenLibDoc;
 })))

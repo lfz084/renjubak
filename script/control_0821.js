@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0905.06";
+self.SCRIPT_VERSIONS["control"] = "v0905.07";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1304,9 +1304,41 @@ window.control = (() => {
             };
             engine.postMsg("cancelFind");
         }
+        
+        function addLib(file){
+            let wk = new Worker("../ReadLib/script/work_ReadLib.js")
+            if (!wk) alert(`create Worker err`)
+            wk.onmessage = function(e) {
+                if (e.data.cmd && e.data.cmd=="addTree"){
+                    let nd = e.data.parameter;
+                    newGame();
+                    cBd.addTree(nd);
+                    while(nd.childNode.length==1){
+                        nd = nd.childNode[0];
+                        cBd.toNext(getShowNum())
+                    }
+                    wk.terminate();
+                    wk = null;
+                }
+                else{
+                    console.log(e.data)
+                }
+            };
+            wk.onerror = function(e) {
+                alert(`wk err: ${e.message}`)
+                wk.terminate();
+                wk = null;
+            }
+            wk.postMessage(file)
+        }
 
         function openLib() {
-            
+            if (busy()) return;
+            cBd.drawLineEnd();
+            let file = fileInput.files[0];
+            fileInput.value = "";
+            addLib(file);
+            engine.postMsg("cancelFind");
         }
 
 

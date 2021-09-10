@@ -9,31 +9,32 @@ if (self.importScripts)
         "./MoveList.js",
         "./MoveNode.js",
         "./Stack.js",
-        "./RenLibDoc.js")
+        "./RenLibDoc.js",
+        "../../script/RenjuTree.js")
 else
     throw new Error("self.importScripts is undefined")
 
 
-self.post = function (cmd, param) {
+self.post = function(cmd, param) {
     postMessage({ "cmd": cmd, "parameter": param });
 }
 
 
 let renLibDoc = new CRenLibDoc(),
     m_libfile = new LibraryFile();
-    
-    m_libfile.onRead = e =>{
-        if(e.current % (1024 * 128) == 20)
-            postMessage(`${e.current}/${e.end}`)
-    }
-    
+
+m_libfile.onRead = function(e) {
+    if (e.current % (1024 * 128) == 20)
+        postMessage(`${e.current}/${e.end}`)
+}
+
 function getArrBuf(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise(function(resolve, reject) {
         let fr = new FileReader();
-        fr.onload = () => {
+        fr.onload = function() {
             resolve(fr.result);
         }
-        fr.onerror = err => {
+        fr.onerror = function(err) {
             reject(err)
         }
         fr.readAsArrayBuffer(file);
@@ -44,27 +45,25 @@ function getArrBuf(file) {
 onmessage = function(e) {
     //postMessage(e.data)
     let file = e.data;
-    
+
     getArrBuf(file)
-        .then(buf => {
-            return new Promise((resolve, rejice) => {
-                try {
-                    if (m_libfile.open(buf)){
-                        renLibDoc.addLibrary(m_libfile)
-                    }
+        .then(function(buf) {
+            return new Promise(function(resolve, reject) {
+                if (m_libfile.open(buf)) {
+                    if (renLibDoc.addLibrary(m_libfile))
+                        resolve()
                     else
-                        throw new Error("m_libfile Open Error")
-                    resolve()
+                        reject(new Error("addLibrary Error"))
                 }
-                catch (err) {
-                    rejice(err.message)
-                }
+                else
+                    throw new Error("m_libfile Open Error")
             })
         })
-        .then(() => {
+        .then(function() {
             postMessage("finish")
+            postMessage({ cmd: "addTree", parameter: renLibDoc.toRenjuTree() });
         })
-        .catch(err => {
+        .catch(function(err) {
             postMessage(err)
         })
 }

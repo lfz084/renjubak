@@ -20902,6 +20902,11 @@ let UNICODE2GBK=new Array(
 '%FD%9A',	//%u9fa4 &#40868;
 '%FD%9B');	//%u9fa5 &#40869;
 
+let codeGBK2UNICODE = []; //code to code
+for(let i=UNICODE2GBK.length -1; i>=0; i--){
+    codeGBK2UNICODE[parseInt(UNICODE2GBK[i].split("%").join(""), 16)] = i + 19968;
+}
+
 //return GBK string; "军军" ==> "%BE%FC%BE%FC"
 function unicode2gbk(str){
     let gbk=""
@@ -20928,10 +20933,14 @@ function charPointGBK2GBK(arr){
         len==1 ? String.fromCharCode(arr[0]) :
         `%${arr[0].toString(16)}%${arr[1].toString(16)}`;
 }
+//  return GBK code;
+function charPointGBK2CODE(arr){
+    return arr.length==2 ? arr[0] << 8 | arr[1] : arr[0]
+}
 // return Unicode char; [190, 252] ==> "军"
 function charPointGBK2Unicode(arr){
     //postMessage(charGBK2Unicode(charPointGBK2GBK(arr)))
-    return charGBK2Unicode(charPointGBK2GBK(arr))
+    return String.fromCharCode(codeGBK2UNICODE[charPointGBK2CODE(arr)])
 }
 // return Unicode String;
 function bufferGBK2Unicode(buf){

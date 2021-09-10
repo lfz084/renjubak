@@ -1,4 +1,4 @@
-var VERSION = "v0905.06";
+var VERSION = "v0905.07";
 var myInit = {
     cache: "reload"
 };
@@ -34,7 +34,20 @@ let load = (() => {
         loading: (msg) => {
             let url = msg;
             let filename = url.split("/").pop();
-            if (["worker", "emoji", "Evaluator", "renju"].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
+            if (["worker",
+                "emoji",
+                "Evaluator",
+                "renju",
+                "UNICODE2GBK",
+                "JFile",
+                "JPoint",
+                "LibraryFile",
+                "MoveList",
+                "MoveNode",
+                "Stack",
+                "RenLibDoc",
+                "RenjuTree",
+            ].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);
             }
