@@ -90,10 +90,11 @@
 
             this.mDown = 0;
             this.mRight = 0;
+
         }
     }
-    
-    
+
+
     MoveNode.prototype.checkExtension = function() {
         this.setIsExtension((this.mInfo & 0xFFFF00) != 0);
     }
@@ -123,7 +124,7 @@
     MoveNode.prototype.setPosInfo = function(pos, info) {
         this.mPos = PosToPoint(pos);
         this.mInfo = (this.mInfo & 0xFFFF00) | info;
-        //postMessage(this.pos2Name(pos))
+        //post("warn",this.pos2Name(pos))
         //console.log(`mInfo=${this.mInfo}, info=${info}`)
         //console.info(("00000000"+this.mInfo.toString(2)).slice(-8))
     }
@@ -295,11 +296,11 @@
     MoveNode.prototype.getBoardText = function() {
         return this.mBoardText;
     }
-    
-    
+
+
     //--------------------------------------------------------
-    
-    
+
+
     MoveNode.prototype.pos2Name = function(pos) {
         let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             mbArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -311,11 +312,12 @@
                 return alpha.charAt(pos.x - 1).toUpperCase() + mbArr[(15 - pos.y)];
         }
     }
-    
-    MoveNode.prototype.toRenjuNode = function(renjuNode = new RenjuNode()){
+
+    MoveNode.prototype.toRenjuNode = function(renjuNode = new RenjuNode()) {
         renjuNode.idx = this.mPos.x - 1 + (this.mPos.y - 1) * 15;
         renjuNode.txt = this.getBoardText() || "○";
-        renjuNode.innerHTML = this.getOneLineComment() + "\n" + this.getMultiLineComment();
+        renjuNode.innerHTML = this.isOneLineComment() ? "<br>" + this.getOneLineComment() : "";
+        renjuNode.innerHTML +=  this.isMultiLineComment() ? "<br>" + String(this.getMultiLineComment()).split(String.fromCharCode(10)).join("<br>") : "";
         return renjuNode;
     }
 

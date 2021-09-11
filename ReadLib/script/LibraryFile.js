@@ -160,6 +160,18 @@
     LibraryFile.prototype.getVersion = function() {
         return this.m_Version;
     }
+    
+    
+    //------------------------------------------------
+    
+    
+    LibraryFile.prototype.current = function() {
+        return this.m_file.m_current;
+    }
+    
+    LibraryFile.prototype.end = function() {
+        return this.m_file.m_end;
+    }
 
     exports.LibraryFile = LibraryFile;
 })))

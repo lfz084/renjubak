@@ -1,6 +1,8 @@
 "use strict"
 if (self.importScripts)
     self.importScripts(
+        "../../script/IntervalPost.js",
+        "../../script/RenjuTree.js",
         "./UNICODE2GBK.js",
         //"./GB2312-UTF8.js",
         "./JFile.js",
@@ -9,24 +11,28 @@ if (self.importScripts)
         "./MoveList.js",
         "./MoveNode.js",
         "./Stack.js",
-        "./RenLibDoc.js",
-        "../../script/RenjuTree.js")
+        "./RenLibDoc.js",)
 else
     throw new Error("self.importScripts is undefined")
-
-
-self.post = function(cmd, param) {
-    postMessage({ "cmd": cmd, "parameter": param });
+/*
+cmd = [alert | log | warn | info | error | addTree | loading | finish ...]
+*/
+function post(cmd, param) {
+    if(typeof cmd == "object" && cmd.constructor.name=="Error")
+        postMessage(cmd)
+    else
+        postMessage({ "cmd": cmd, "parameter": param });
 }
 
 
 let renLibDoc = new CRenLibDoc(),
     m_libfile = new LibraryFile();
-
+/*
 m_libfile.onRead = function(e) {
     if (e.current % (1024 * 128) == 20)
-        postMessage(`${e.current}/${e.end}`)
+        post(`${e.current}/${e.end}`)
 }
+*/
 
 function getArrBuf(file) {
     return new Promise(function(resolve, reject) {
@@ -43,9 +49,7 @@ function getArrBuf(file) {
 
 
 onmessage = function(e) {
-    //postMessage(e.data)
     let file = e.data;
-
     getArrBuf(file)
         .then(function(buf) {
             return new Promise(function(resolve, reject) {
@@ -60,8 +64,8 @@ onmessage = function(e) {
             })
         })
         .then(function() {
-            postMessage("finish")
-            postMessage({ cmd: "addTree", parameter: renLibDoc.toRenjuTree() });
+            post("addTree", renLibDoc.toRenjuTree());
+            post("finish")
         })
         .catch(function(err) {
             postMessage(err)

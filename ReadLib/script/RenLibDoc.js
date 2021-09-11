@@ -50,6 +50,8 @@
     const XY_9_10 = 9 + 9 * 16;
     const XY_10_10 = 10 + 9 * 16;
 
+    let intervalPost = new IntervalPost();
+
     function PointToPos(point) {
         if (isValidPoint(point)) {
             return 16 * (point.y - 1) + point.x;
@@ -71,7 +73,7 @@
     class CRenLibDoc {
         constructor() {
             this.m_MoveList = new MoveList();
-            this.m_file
+            this.m_file;
         }
     }
 
@@ -115,8 +117,8 @@
             strNew.push(buffer[1]);
         }
         strNew = bufferGBK2Unicode(strNew)
-        //postMessage(strNew)
-        let n = -1 //strNew.indexOf(String.fromCharCode(10));
+        post("log", `${strNew}`)
+        let n = strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
         }
@@ -149,9 +151,9 @@
         }
         strNew.length > 3 ? strNew.length = 3 : strNew;
         pStrBoardText[0] = bufferGBK2Unicode(strNew);
-        //postMessage(strNew)
-        //postMessage(`${strNew[0].toString(16)}${strNew[1].toString(16)} => ${pStrBoardText[0].charCodeAt(0).toString(16)}`)
-        //postMessage(pStrBoardText[0])
+        //post("log", strNew)
+        //post("log", `${strNew[0].toString(16)}${strNew[1].toString(16)} => ${pStrBoardText[0].charCodeAt(0).toString(16)}`)
+        //post("log", pStrBoardText[0])
 
         /*
         let bufStr = new Uint8Array(pStrBoardText[0])
@@ -337,7 +339,7 @@
 
 
     CRenLibDoc.prototype.addLibrary = function(libFile, FullTree) {
-        console.log("addLibrary")
+        post("log", "addLibrary")
         if (!libFile.checkVersion()) return false;
 
         let m_Stack = new Stack();
@@ -347,12 +349,12 @@
         let pCurrentMove = 0;
 
         if (this.m_MoveList.isEmpty()) {
-            console.log("m_MoveList.isEmpty")
+            //console.log("m_MoveList.isEmpty")
             pCurrentMove = new MoveNode(NullPoint);
             this.m_MoveList.setRoot(pCurrentMove);
         }
         else {
-            console.log("m_MoveList.isEmpty = false")
+            //console.log("m_MoveList.isEmpty = false")
             pCurrentMove = this.m_MoveList.getRoot();
             this.m_MoveList.setRootIndex();
         }
@@ -375,11 +377,11 @@
 
         while (libFile.get(next)) {
             const Point = new JPoint(next.getPos());
-
+            intervalPost.post("loading", { current: libFile.current(), end: libFile.end() })
             if (checkRoot && Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
                 checkRoot = false;
-                console.log("checkRoot")
+                post("log", "checkRoot")
             }
             else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
                 // ERROR checking code
@@ -387,7 +389,7 @@
                 CString strMessage;
                 strMessage += Utils::GetString(IDS_MSG_LIBRARY_DATA, number);
                 strMessage += "\n";
-                strMessage += Utils::GetString(IDS_MSG_POSITION, next.getPos());
+                strMessage r+= Utils::GetString(IDS_MSG_POSITION, next.getPos());
                 strMessage += "\n\n";
                 strMessage += Utils::GetString(IDS_MSG_REPORT);
                 strMessage += "\n\n";
@@ -397,7 +399,7 @@
                 next.setPos(new JPoint(1, 1));
                 next.setIsMark(true);
                 //SetModifiedFlag();
-                console.error("Point err")
+                post("error", "Point err")
                 return false;
             }
             else {
@@ -408,7 +410,7 @@
                 pNextMove = this.getVariant(pCurrentMove, next.getPos());
 
                 if (pNextMove) {
-                    console.log(`pNextMove=${pNextMove}`)
+                    //console.log(`pNextMove=${pNextMove}`)
                     pCurrentMove = pNextMove;
                 }
                 else {
@@ -484,7 +486,7 @@
             }
 
         }
-        postMessage(`loop << number = ${number}`)
+        post("log", `loop << number = ${number}`)
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();
@@ -538,18 +540,14 @@
         this.m_MoveList.clearAll();
 
         let done = false;
-        postMessage("copying...")
+        post("log", "copying...")
         let t_start = new Date().getTime();
         let number = 0;
         while (!done) {
             if (pMove[0]) {
                 number++
-                if (number < 100 || new Date().getTime() - t_start > 1000) {
-                    t_start = new Date().getTime();
-                    postMessage(`${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos}`)
-                    postMessage(`Stack = [${m_Stack.toArray("pMove")}]`)
-                }
-
+                if (number < 15)
+                    post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
                 if (this.m_MoveList.index() > -1) {
                     rNode = pMove[0].toRenjuNode();
                     r_MoveList.current().pushChildNode(rNode)
@@ -559,7 +557,7 @@
                 r_MoveList.add(rNode)
 
                 if (pMove[0].getRight()) {
-                    //postMessage("stack push")
+                    if (number < 15) post("log", "stack push")
                     m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
                 }
 
@@ -577,7 +575,7 @@
                 done = true;
             }
         }
-        postMessage(`end number = ${number}, timer = ${new Date().getTime() - t_start}`)
+        post("log", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
         this.m_MoveList.clearEnd();
         return renjuTree;
     }

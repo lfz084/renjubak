@@ -399,7 +399,7 @@ window.checkerBoard = (function() {
         log(tree);
         this.tree = tree || new this.node();
         this.autoColor = this.tree.autoColor;
-        log(`addTrue ${this.autoColor}`)
+        log(`addTree ${this.autoColor}`)
         this.tree.moveNodes = [];
         this.tree.moveNodesIndex = -1;
         this.autoShow();
@@ -4334,10 +4334,17 @@ window.checkerBoard = (function() {
 
 
 
-
+            function getInnerHTML(nd){
+                while(nd){
+                    if(nd.innerHTML) return nd.innerHTML;
+                    nd = nd.parentNode;
+                }
+                return "";
+            }
+            
             function printChildNode(node, txt) {
                 let exWindow = control.getEXWindow();
-                exWindow.innerHTML(node.innerHTML || "");
+                exWindow.innerHTML(getInnerHTML(node) || "");
                 if (node.innerHTML) exWindow.openWindow();
                 printLines.call(this, node.lines);
                 for (let i = node.childNode.length - 1; i >= 0; i--) {

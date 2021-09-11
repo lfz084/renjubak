@@ -194,6 +194,14 @@ window.button = (() => {
         this.input.appendChild(op);
 
     };
+    
+    
+    // arr = [value, text,value, text...]
+    button.prototype.addOptions = function(arr) {
+        for(let i=0; i<arr.length; i+=2) {
+            this.addOption(arr[i], arr[i+1])
+        }
+    };
 
 
 

@@ -67,6 +67,13 @@
     JFile.prototype.getFileName = function() {
         return this.m_fileName;
     }
+    
+    
+    
+    //-----------------------------------------
+    
+    
+
 
     exports.JFile = JFile;
 })))

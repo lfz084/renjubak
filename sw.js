@@ -38,6 +38,8 @@ let load = (() => {
                 "emoji",
                 "Evaluator",
                 "renju",
+                "IntervalPost",
+                "RenjuTree",
                 "UNICODE2GBK",
                 "JFile",
                 "JPoint",
@@ -46,7 +48,7 @@ let load = (() => {
                 "MoveNode",
                 "Stack",
                 "RenLibDoc",
-                "RenjuTree",
+                "work_ReadLib",
             ].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);

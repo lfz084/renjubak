@@ -1,6 +1,7 @@
 self.SCRIPT_VERSIONS["viewport"] = "v0905.07";
 window.view = (function() {
     "use strict";
+    const SCALABLE = !(window.navigator.userAgent.indexOf("Lumia") + 1);  //windows Phone 
     function view(width) {
         let dw = document.documentElement.clientWidth;
         let dh = document.documentElement.clientHeight;
@@ -14,7 +15,7 @@ window.view = (function() {
         this.viewport = document.createElement("meta");
         this.viewport.setAttribute("name", "viewport");
         document.head.appendChild(this.viewport);
-        this.viewport.setAttribute("content", `width=${width}, initial-scale=${this.scale}, minimum-scale=${this.scale}, maximum-scale =${localhost ? this.scale * 5 : this.scale}, user-scalable=${localhost ? "yes" : "no"}`);
+        SCALABLE && this.viewport.setAttribute("content", `width=${width}, initial-scale=${this.scale}, minimum-scale=${this.scale}, maximum-scale =${localhost ? this.scale * 5 : this.scale}, user-scalable=${localhost ? "yes" : "no"}`);
     }
 
     view.prototype.resize = function(width, scalable) {
@@ -22,8 +23,8 @@ window.view = (function() {
         let self = this;
         width = width || self.width;
         scalable = scalable || self.scale;
-        self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
-        self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${localhost ? scalable * 5 : scalable}, user-scalable=${localhost ? "yes" : "no"}`);
+        SCALABLE && self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
+        SCALABLE && self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${localhost ? scalable * 5 : scalable}, user-scalable=${localhost ? "yes" : "no"}`);
         self.scrollTop();
     };
 
@@ -31,8 +32,8 @@ window.view = (function() {
         let self = this;
         width = width || self.width;
         scalable = scalable || self.scale;
-        self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
-        self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${scalable * 5}, user-scalable=yes`);
+        SCALABLE && self.viewport.setAttribute("content", `initial-scale=${scalable+0.01} `);
+        SCALABLE && self.viewport.setAttribute("content", `width=${width}, initial-scale=${scalable}, minimum-scale=${scalable}, maximum-scale =${scalable * 5}, user-scalable=yes`);
         self.scrollTop();
     };
 

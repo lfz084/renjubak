@@ -215,6 +215,7 @@ window.control = (() => {
 
 
     function newGame() {
+        engine.postMsg("cancelFind");
         let h1 = parseInt(cBd.width);
         let h2 = parseInt(cBd.canvas.height);
         cBd.cle();
@@ -230,7 +231,6 @@ window.control = (() => {
         parentNode.appendChild(renjuCmddiv);
         if (imgCmdDiv.parentNode) imgCmdDiv.parentNode.removeChild(imgCmdDiv);
         viewport1.resize();
-        engine.postMsg("cancelFind");
     }
 
 
@@ -268,25 +268,27 @@ window.control = (() => {
 
         cMenu = new button(cBd.parentNode, "select", 0, 0, 0, 0);
         cMenu.index = -1; // save cBoard click index;
-        cMenu.addOption(1, "打开");
-        cMenu.addOption(2, `保存`);
-        cMenu.addOption(3, `${EMOJI_SEARCH} 找点`);
-        cMenu.addOption(4, `${EMOJI_QUESTION} 解题`);
-        cMenu.addOption(5, "新棋局");
-        cMenu.addOption(6, "添加标记");
-        cMenu.addOption(7, "清空标记");
-        cMenu.addOption(8, "分享图片");
-        cMenu.addOption(9, "分享原图");
-        cMenu.addOption(10, `下手为${EMOJI_ROUND_ONE}`);
-        cMenu.addOption(11, "重置手数");
-        cMenu.addOption(12, "显示手数");
-        cMenu.addOption(13, "隐藏手数");
-        cMenu.addOption(14, "输入代码");
-        cMenu.addOption(15, "输出代码");
-        cMenu.addOption(16, `🔄 刷新页面`);
+        cMenu.addOptions([
+            1, "打开",
+            2, `保存`,
+            3, `${EMOJI_SEARCH} 找点`,
+            4, `${EMOJI_QUESTION} 解题`,
+            5, "新棋局",
+            6, "添加标记",
+            7, "清空标记",
+            8, "分享图片",
+            9, "分享原图",
+            10, `下手为${EMOJI_ROUND_ONE}`,
+            11, "重置手数",
+            12, "显示手数",
+            13, "隐藏手数",
+            14, "输入代码",
+            15, "输出代码",
+            16, `🔄 刷新页面`,
+        ])
 
         cMenu.setonchange(function(but) {
-            if (busy()) return;
+            if (isBusy()) return;
             let idx = but.idx;
             let x = but.menu.offsetLeft;
             let y = but.menu.offsetTop;
@@ -393,7 +395,7 @@ window.control = (() => {
         cStart.show();
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.toStart(getShowNum());
         });
 
@@ -401,7 +403,7 @@ window.control = (() => {
         cPrevious.show();
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.toPrevious(getShowNum());
         });
 
@@ -409,7 +411,7 @@ window.control = (() => {
         cNext.show();
         cNext.setText(">>");
         cNext.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.toNext(getShowNum());
         });
 
@@ -417,7 +419,7 @@ window.control = (() => {
         cEnd.show();
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.toEnd(getShowNum());
         });
 
@@ -433,7 +435,7 @@ window.control = (() => {
         cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
         cShownum.setonchange(function() {
             cShownum.setText(EMOJI_ROUND_ONE);
-            if (busy()) return;
+            if (isBusy()) return;
             switch (cShownum.input.value * 1) {
                 case 0:
                     setLis(0, !cShownum.menu.lis[0].checked);
@@ -485,7 +487,7 @@ window.control = (() => {
         cNewGame.show();
         cNewGame.setText("新棋局");
         cNewGame.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             newGame();
         });
 
@@ -499,7 +501,7 @@ window.control = (() => {
         cFlipY.show();
         cFlipY.setText("↔180°");
         cFlipY.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.boardFlipY(getShowNum());
         });
 
@@ -507,7 +509,7 @@ window.control = (() => {
         cCW.show();
         cCW.setText(" ↗90°");
         cCW.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.boardCW(getShowNum());
         });
 
@@ -516,7 +518,7 @@ window.control = (() => {
         cMoveL.setColor("black");
         cMoveL.setText("←");
         cMoveL.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.moveCheckerBoard("left");
         });
 
@@ -525,7 +527,7 @@ window.control = (() => {
         cMoveR.setColor("black");
         cMoveR.setText("→ ");
         cMoveR.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.moveCheckerBoard("right");
         });
 
@@ -534,7 +536,7 @@ window.control = (() => {
         cMoveT.setColor("black");
         cMoveT.setText(" ↑");
         cMoveT.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.moveCheckerBoard("top");
         });
 
@@ -543,7 +545,7 @@ window.control = (() => {
         cMoveB.setColor("black");
         cMoveB.setText("↓");
         cMoveB.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.moveCheckerBoard("bottom");
         });
 
@@ -556,7 +558,7 @@ window.control = (() => {
         cSelBlack.setText("黑先");
         cSelBlack.setChecked(1);
         cSelBlack.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             cSelChecked(cSelBlack);
         });
 
@@ -564,7 +566,7 @@ window.control = (() => {
         cSelWhite.show();
         cSelWhite.setText("白先");
         cSelWhite.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             cSelChecked(cSelWhite);
         });
 
@@ -599,7 +601,7 @@ window.control = (() => {
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
             but.setText("找点");
-            if (busy()) return;
+            if (isBusy()) return;
             if (but.input.value < 1 || !CALCULATE) {
                 but.input.value = 0;
                 return;
@@ -745,7 +747,7 @@ window.control = (() => {
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
             but.setText("解题");
-            if (busy()) return;
+            if (isBusy()) return;
             if (but.input.value < 1 || !CALCULATE) {
                 but.input.value = 0;
                 return;
@@ -872,6 +874,7 @@ window.control = (() => {
         //cCancelFind.setColor("red");
         cCancelFind.setontouchend(function(but) {
             engine.postMsg("cancelFind");
+            OpenLib.cancal()
         });
 
 
@@ -883,7 +886,7 @@ window.control = (() => {
         cAutoadd.setText(` ${EMOJI_ROUND_BLACK_WHITE} 棋`);
         cAutoadd.setChecked(1);
         cAutoadd.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cAutoadd);
         });
 
@@ -891,7 +894,7 @@ window.control = (() => {
         cAddblack.show();
         cAddblack.setText(` ${EMOJI_ROUND_BLACK} 棋`);
         cAddblack.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cAddblack);
         });
 
@@ -899,7 +902,7 @@ window.control = (() => {
         cAddwhite.show();
         cAddwhite.setText(` ${EMOJI_ROUND} 棋`);
         cAddwhite.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cAddwhite);
         });
 
@@ -919,7 +922,7 @@ window.control = (() => {
         cPrintVCF.setText("➩ VCF ");
         cPrintVCF.setonchange(function(but) {
             but.setText("➩ VCF ");
-            if (busy()) return;
+            if (isBusy()) return;
             if (but.input.value * 1) {
                 let color = getRenjuSelColor();
                 let arr = cBd.getPointArray([]);
@@ -951,7 +954,7 @@ window.control = (() => {
         cLba.show();
         cLba.setText(` ${EMOJI_SQUARE_BLACK} `);
         cLba.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cLba);
         });
 
@@ -959,7 +962,7 @@ window.control = (() => {
         cLbb.show();
         cLbb.setText(` ${EMOJI_ROUND_DOUBLE} `);
         cLbb.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cLbb);
         });
 
@@ -979,7 +982,7 @@ window.control = (() => {
         cLABC.show();
 
         cLABC.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cLABC);
         });
 
@@ -1045,7 +1048,7 @@ window.control = (() => {
         cNextone.setColor("black");
         cNextone.setText(`下手为${EMOJI_ROUND_ONE}`);
         cNextone.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.setResetNum(cBd.MSindex + 1);
             cBd.isShowNum = getShowNum();
         });
@@ -1059,7 +1062,7 @@ window.control = (() => {
         cLbc.show();
         cLbc.setText(` ${EMOJI_TRIANGLE_BLACK} `);
         cLbc.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cLbc);
         });
 
@@ -1068,7 +1071,7 @@ window.control = (() => {
         cLbd.show();
         cLbd.setText(` ${EMOJI_FORK} `);
         cLbd.setontouchend(function() {
-            //if (busy()) return;
+            //if (isBusy()) return;
             nSetChecked(cLbd);
         });
 
@@ -1097,7 +1100,7 @@ window.control = (() => {
         cLbColor.show();
         cLbColor.setText(`${EMOJI_PEN} 颜色`);
         cLbColor.setonchange(function(but) {
-            //if (busy()) return;
+            //if (isBusy()) return;
             but.setColor(lbColor[but.input.value].color);
             but.setText(`${EMOJI_PEN} 颜色`);
             cLba.setColor(lbColor[but.input.value].color);
@@ -1113,7 +1116,7 @@ window.control = (() => {
         cResetnum.setColor("black");
         cResetnum.setText(" 重置手数");
         cResetnum.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.setResetNum(0);
             setShowNum(true);
             cBd.isShowNum = getShowNum();
@@ -1196,7 +1199,7 @@ window.control = (() => {
 
         }
         cInputcode.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             let w = cBd.width * 0.8;
             let h = w;
             let l = (dw - w) / 2;
@@ -1211,7 +1214,7 @@ window.control = (() => {
         cOutputcode.setColor("black");
         cOutputcode.setText("输出代码");
         cOutputcode.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             let w = cBd.width * 0.8;
             let h = w;
             let l = (dw - w) / 2;
@@ -1236,7 +1239,7 @@ window.control = (() => {
         cLoadImg.setText("打开");
         cLoadImg.setonchange(function(but) {
             but.setText(`打开`);
-            if (busy()) return;
+            if (isBusy()) return;
             switch (but.input.value * 1) {
                 case 1:
                     fileInput.accept = "image/*";
@@ -1286,7 +1289,8 @@ window.control = (() => {
         }
 
         function openImg() {
-            if (busy()) return;
+            if (isBusy()) return;
+            engine.postMsg("cancelFind");
             cBd.drawLineEnd();
             let reader = new FileReader();
             let file = fileInput.files[0];
@@ -1302,43 +1306,123 @@ window.control = (() => {
                 cBd.oldXL = cBd.oldXR = 0;
                 putImg();
             };
-            engine.postMsg("cancelFind");
-        }
-        
-        function addLib(file){
-            let wk = new Worker("../ReadLib/script/work_ReadLib.js")
-            if (!wk) alert(`create Worker err`)
-            wk.onmessage = function(e) {
-                if (e.data.cmd && e.data.cmd=="addTree"){
-                    let nd = e.data.parameter;
-                    newGame();
-                    cBd.addTree(nd);
-                    while(nd.childNode.length==1){
-                        nd = nd.childNode[0];
-                        cBd.toNext(getShowNum())
-                    }
-                    wk.terminate();
-                    wk = null;
-                }
-                else{
-                    console.log(e.data)
-                }
-            };
-            wk.onerror = function(e) {
-                alert(`wk err: ${e.message}`)
-                wk.terminate();
-                wk = null;
-            }
-            wk.postMessage(file)
         }
 
+        let OpenLib = (function() {
+            let wk,
+                timer,
+                sTime,
+                tree;
+            const CMD = {
+                addTree: function(tree) {
+                    addTree(tree)
+                },
+                loading: function(data) {
+                    loading(data)
+                },
+                finish: function() {
+                    finish()
+                },
+                alert: function(msg) {
+                    alert(msg)
+                },
+                log: function(msg) {
+                    log(msg, "log")
+                },
+                warn: function(msg) {
+                    log(msg, "warn")
+                },
+                info: function(msg) {
+                    log(msg, "info")
+                },
+                error: function(msg) {
+                    log(msg, "error")
+                },
+            }
+
+            function load(file) {
+                setBusy(true);
+                wk.postMessage(file)
+                timer = setInterval(catchErr, 3000);
+                sTime = new Date().getTime()
+            }
+
+            function loading(data) {
+                let current = data.current,
+                    end = data.end
+                window._loading.open();
+                window._loading.text(~~(current / end * 10000) / 100 + "%");
+            }
+
+            function addTree(tree) {
+                function next(nd){
+                    if(nd.childNode.length == 1){
+                        nd = nd.childNode[0];
+                        cBd.toNext(getShowNum())
+                        setTimeout(()=>{next(nd)},100)
+                    }
+                }
+                let nd = tree;
+                newGame();
+                cBd.addTree(nd);
+                next(nd);
+            }
+
+            function finish() {
+                setBusy();
+                window._loading.close();
+                clearInterval(timer);
+                timer = null;
+                wk.terminate();
+                wk = null
+            }
+
+            function onError(err) {
+                alert(`wk err: ${err.message}`);
+                finish()
+            }
+
+            function catchErr() {
+                new Date().getTime() - sTime > 10 * 1000 ? onError(new Error("打开文件出错了: 解码过程出现错误")) : undefined
+            }
+
+            function otherMessage(message) {
+                log(message, "warn")
+            }
+
+            return {
+                addLib: function(file) {
+                    if (isBusy()) return;
+                    wk = new Worker("../ReadLib/script/work_ReadLib.js")
+                    wk.onmessage = function(e) {
+                        if (typeof e.data == "object") {
+                            sTime = new Date().getTime();
+                            //console.log(`${CMD[e.data.cmd] },${e.data.cmd }`)
+                            typeof CMD[e.data.cmd] == "function" ? CMD[e.data.cmd](e.data.parameter) :
+                                e.data.constructor.name == "Error" ? onError(e.data) : otherMessage(e.data);
+                        }
+                        else {
+                            otherMessage(e.data)
+                        }
+                    };
+                    wk.onerror = function(e) {
+                        onError(e);
+                    }
+                    wk ? load(file) : alert(`create Worker err`)
+                },
+                cancal: function(){
+                    finish()
+                }
+            }
+        })()
+
         function openLib() {
-            if (busy()) return;
+            if (isBusy()) return;
+            engine.postMsg("cancelFind");
             cBd.drawLineEnd();
             let file = fileInput.files[0];
             fileInput.value = "";
-            addLib(file);
-            engine.postMsg("cancelFind");
+            OpenLib.addLib(file);
         }
 
 
@@ -1357,7 +1441,7 @@ window.control = (() => {
         cCutImage.setText(`保存`);
         cCutImage.setonchange(function(but) {
             but.setText(`保存`);
-            if (busy()) return;
+            if (isBusy()) return;
             switch (but.input.value * 1) {
                 case 1:
                     share();
@@ -1396,7 +1480,7 @@ window.control = (() => {
         cShareWhite.setColor("black");
         cShareWhite.setText(" 分享图片");
         cShareWhite.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             share("white");
         });
 
@@ -1405,7 +1489,7 @@ window.control = (() => {
         cShare.setColor("black");
         cShare.setText(" 分享原图");
         cShare.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             share();
         });
 
@@ -1414,7 +1498,7 @@ window.control = (() => {
         cCleLb.setColor("black");
         cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             cBd.removeMarkLine("all");
             cBd.removeMarkArrow("all");
             cBd.cleLb("all");
@@ -1426,7 +1510,7 @@ window.control = (() => {
         cHelp.setColor("black");
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
-            if (busy()) return;
+            if (isBusy()) return;
             window.open("./help/renjuhelp/renjuhelp.html", "helpWindow");
         });
 
@@ -2494,7 +2578,7 @@ window.control = (() => {
 
     function renjuClick(x, y) {
 
-        if (busy()) return;
+        if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
         if (playModel == MODEL_RENJU) {
             if (idx > -1) {
@@ -2585,7 +2669,7 @@ window.control = (() => {
 
     function renjuDblClick(x, y) {
 
-        if (busy()) return;
+        if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
             // 触发快速悔棋
@@ -2609,7 +2693,7 @@ window.control = (() => {
 
     function renjuKeepTouch(x, y) {
 
-        if (busy()) return;
+        if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
         if (idx < 0) return;
         let w = cBd.width * 0.8;
@@ -2715,10 +2799,26 @@ window.control = (() => {
 
 
 
-    function busy() {
+    function isBusy() {
         let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
         if (busy) window._loading.open("busy", 1600);
         return busy;
+    }
+
+    function setBusy(value) {
+        if (value) {
+            cFindPoint.hide();
+            cFindVCF.hide();
+            let but = cFindVCF;
+            cCancelFind.move(but.left, but.top, but.width, but.height);
+        }
+        else {
+            cFindPoint.show();
+            cFindPoint.setText("找点");
+            cFindVCF.show();
+            cFindVCF.setText("解题");
+            cCancelFind.hide();
+        }
     }
 
 

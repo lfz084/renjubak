@@ -98,6 +98,7 @@ window.engine = (() => {
     }
 
     function callback() { // calculate end
+    
         if (work && typeof(work.terminate) == "function") {
             work.terminate();
             work = null

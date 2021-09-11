@@ -121,6 +121,8 @@ var loadApp = () => { // 按顺序加载应用
         s.fontSize = "15px";
         s.textAlign = "center";
         s.lineHeight = "25px";
+        s.background = "white";
+        s.opacity = 0.7;
         WIN_LOADING.appendChild(LABEL);
 
         return {
@@ -884,6 +886,8 @@ var loadApp = () => { // 按顺序加载应用
             window._loading.text("75%");
             return loadScriptAll([
                 [SOURCE_FILES["worker"]],
+                [SOURCE_FILES["IntervalPost"]],
+                [SOURCE_FILES["RenjuTree"]],
                 [SOURCE_FILES["UNICODE2GBK"]],
                 [SOURCE_FILES["JFile"]],
                 [SOURCE_FILES["JPoint"]],
