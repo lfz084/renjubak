@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.03";
+self.SCRIPT_VERSIONS["control"] = "v0912.05";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1309,7 +1309,8 @@ window.control = (() => {
         }
 
         let OpenLib = (function() {
-            let wk = new Worker("../ReadLib/script/work_ReadLib.js"),
+            let url = "../ReadLib/script/work_ReadLib.js",
+                wk = createWorker(url),
                 timer,
                 sTime,
                 pathStrack=[],
@@ -1347,6 +1348,31 @@ window.control = (() => {
                 error: function(msg) {
                     log(msg, "error")
                 },
+            }
+            
+            function createWorker(url){
+                let worker = new Worker(url)
+                worker.onmessage = function(e) {
+                    if (typeof e.data == "object") {
+                        sTime = new Date().getTime();
+                        //console.log(`${CMD[e.data.cmd] },${e.data.cmd }`)
+                        typeof CMD[e.data.cmd] == "function" ? CMD[e.data.cmd](e.data.parameter) :
+                            e.data.constructor.name == "Error" ? onError(e.data) : otherMessage(e.data);
+                    }
+                    else {
+                        otherMessage(e.data)
+                    }
+                };
+                worker.onerror = function(e) {
+                    onError(e);
+                }
+                log(`createWorker, wk=${worker}`, "info")
+                return worker;
+            }
+            
+            function removeWorker(worker){
+                worker.terminate();
+                worker = null;
             }
 
             function load(file) {
@@ -1392,13 +1418,13 @@ window.control = (() => {
                 window._loading.close();
                 clearInterval(timer);
                 timer = null;
-                wk.terminate();
-                wk = null;
-                wk = new Worker("../ReadLib/script/work_ReadLib.js")
+                removeWorker(wk);
+                wk = createWorker(url)
             }
 
             function onError(err) {
-                alert(`wk err: ${err.message || err}`);
+                alert(`WorKer Error: wk = ${wk.constructor.name},err = ${err.message || err}`);
+                log(`WorKer Error: wk = ${wk.constructor.name}, \nerr = ${err}, \nerr.message = ${err.message}`,"error")
                 finish()
             }
 
@@ -1413,21 +1439,7 @@ window.control = (() => {
             return {
                 addLib: function(file) {
                     if (isBusy()) return;
-                    wk.onmessage = function(e) {
-                        if (typeof e.data == "object") {
-                            sTime = new Date().getTime();
-                            //console.log(`${CMD[e.data.cmd] },${e.data.cmd }`)
-                            typeof CMD[e.data.cmd] == "function" ? CMD[e.data.cmd](e.data.parameter) :
-                                e.data.constructor.name == "Error" ? onError(e.data) : otherMessage(e.data);
-                        }
-                        else {
-                            otherMessage(e.data)
-                        }
-                    };
-                    wk.onerror = function(e) {
-                        onError(e);
-                    }
-                    wk ? load(file) : alert(`create Worker err`)
+                    load(file);
                 },
                 cancal: function(){
                     finish()
