@@ -56,7 +56,7 @@ onmessage = function(e) {
                         reject(new Error("addLibrary Error"))
                 }
                 else
-                    throw new Error("m_libfile Open Error")
+                    reject(new Error("m_libfile Open Error"))
             })
         })
         .then(function() {

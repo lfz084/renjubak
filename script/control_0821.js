@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.00";
+self.SCRIPT_VERSIONS["control"] = "v0912.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1397,7 +1397,7 @@ window.control = (() => {
             }
 
             function onError(err) {
-                alert(`wk err: ${err.message}`);
+                alert(`wk err: ${err.message || err}`);
                 finish()
             }
 

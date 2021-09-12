@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0912.00";
+self.SCRIPT_VERSIONS["renju"] = "v0912.01";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -137,7 +137,7 @@ var loadApp = () => { // 按顺序加载应用
                     clearTimeout(timer);
                 }
                 timer = setTimeout(() => {
-                    if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
+                    if (!lock && WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
                 }, _timeout || 30 * 1000);
             },
             close: () => { //关闭动画
