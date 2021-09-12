@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.01";
+self.SCRIPT_VERSIONS["control"] = "v0912.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1309,7 +1309,7 @@ window.control = (() => {
         }
 
         let OpenLib = (function() {
-            let wk,
+            let wk = new Worker("../ReadLib/script/work_ReadLib.js"),
                 timer,
                 sTime,
                 pathStrack=[],
@@ -1393,7 +1393,8 @@ window.control = (() => {
                 clearInterval(timer);
                 timer = null;
                 wk.terminate();
-                wk = null
+                wk = null;
+                wk = new Worker("../ReadLib/script/work_ReadLib.js")
             }
 
             function onError(err) {
@@ -1412,7 +1413,6 @@ window.control = (() => {
             return {
                 addLib: function(file) {
                     if (isBusy()) return;
-                    wk = new Worker("../ReadLib/script/work_ReadLib.js")
                     wk.onmessage = function(e) {
                         if (typeof e.data == "object") {
                             sTime = new Date().getTime();
