@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.07";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.071";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

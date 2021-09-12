@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.07";
+self.SCRIPT_VERSIONS["control"] = "v0912.071";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1310,6 +1310,7 @@ window.control = (() => {
 
         let OpenLib = (function() {
             let url = "../ReadLib/script/work_ReadLib.js",
+                errCount = 0,
                 wk = createWorker(url),
                 timer,
                 sTime,
@@ -1347,11 +1348,12 @@ window.control = (() => {
                 },
                 error: function(msg) {
                     log(msg, "error")
-                },
+                }
             }
             
             function createWorker(url){
-                let worker = new Worker(url)
+                if (errCount > 5) return;
+                let worker = new Worker(url);
                 worker.onmessage = function(e) {
                     if (typeof e.data == "object") {
                         sTime = new Date().getTime();
@@ -1365,9 +1367,9 @@ window.control = (() => {
                 };
                 worker.onerror = function(e) {
                     onError(e);
-                }
-                log(`createWorker, wk=${worker}`, "info")
-                return worker;
+                };
+                log(`createWorker, wk=${worker}`, "info");
+                return worker
             }
             
             function removeWorker(worker){
