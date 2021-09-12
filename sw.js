@@ -1,4 +1,4 @@
-var VERSION = "v0912.075";
+var VERSION = "v0912.09";
 var myInit = {
     cache: "reload"
 };
@@ -49,6 +49,7 @@ let load = (() => {
                 "Stack",
                 "RenLibDoc",
                 "work_ReadLib",
+                "RenjuLib"
             ].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
                 timer = setInterval(interval, 100);

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.075";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -343,7 +343,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.075";
 
     CRenLibDoc.prototype.addLibrary = function(libFile, FullTree) {
         post("log", "addLibrary")
-        if (!libFile.checkVersion()) return false;
+        if (!libFile.checkVersion()) {
+            throw new Error(`不是五子棋棋谱`)
+            return false;
+        }
 
         let m_Stack = new Stack();
 

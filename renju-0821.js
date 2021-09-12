@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0912.075";
+self.SCRIPT_VERSIONS["renju"] = "v0912.09";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -684,7 +684,7 @@ var loadApp = () => { // 按顺序加载应用
             //log(`searchUpData ---> ${count}`, "warn");
             upData()
                 .then(version => {
-                    log(`[${version}]`)
+                    //log(`[${version}]`)
                     version || setTimeout(search, TIMER_NEXT)
                 })
                 .catch(err => {
@@ -897,6 +897,7 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["Stack"]],
                 [SOURCE_FILES["RenLibDoc"]],
                 [SOURCE_FILES["work_ReadLib"]],
+                [SOURCE_FILES["RenjuLib"]]
                 ], true)
         })
         .then(() => {
