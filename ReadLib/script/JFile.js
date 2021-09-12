@@ -28,7 +28,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.05";
         this.m_buffer = new Uint8Array(buffer);
         this.m_fileName = fileName;
         return this.m_end * 1;
-    }
+    };
 
     JFile.prototype.close = function() {
         this.m_begin = 0;
@@ -36,7 +36,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.05";
         this.m_end = 0;
         this.m_buffer = [];
         this.m_fileName = "";
-    }
+    };
 
     JFile.prototype.read = function(lpBuf, nCount) {
         const BUF_LEN = lpBuf.length;
@@ -51,23 +51,23 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.05";
             this.onRead({ current: this.m_current, end: this.m_end }) :
             this.onRead = undefined;
         return i;
-    }
+    };
 
     JFile.prototype.seekToBegin = function() {
         this.m_begin = this.m_current;
-    }
+    };
 
     JFile.prototype.write = function() {
 
-    }
+    };
 
     JFile.prototype.getFilePath = function() {
 
-    }
+    };
 
     JFile.prototype.getFileName = function() {
         return this.m_fileName;
-    }
+    };
     
     
     

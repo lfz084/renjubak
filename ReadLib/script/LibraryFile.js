@@ -40,7 +40,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.05";
     LibraryFile.prototype.open = function(buffer, fileName, mode) {
         this.m_mode = mode || this.m_mode;
         return (this.m_file.open(buffer, fileName) != 0);
-    }
+    };
 
     LibraryFile.prototype.get = function(node) {
         function Get_Node(node) {
@@ -62,7 +62,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.05";
                 }
             }
             return success;
-        }
+        };
 
         function Get_Byte(data = new Uint8Array(2)) {
             //console.log(`Get_Byte`)
