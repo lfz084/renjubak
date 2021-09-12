@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.072";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.075";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -105,7 +105,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.072";
             this.m_file.close();
         }
         catch (err) {}
-    }
+    };
 
     LibraryFile.prototype.checkVersion = function() {
         let VersionOk = false;
@@ -156,11 +156,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.072";
         }
         console.log(`VersionOk=${VersionOk}`)
         return VersionOk;
-    }
+    };
 
     LibraryFile.prototype.getVersion = function() {
         return this.m_Version;
-    }
+    };
     
     
     //------------------------------------------------
@@ -168,11 +168,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.072";
     
     LibraryFile.prototype.current = function() {
         return this.m_file.m_current;
-    }
+    };
     
     LibraryFile.prototype.end = function() {
         return this.m_file.m_end;
-    }
+    };
 
     exports.LibraryFile = LibraryFile;
 })))

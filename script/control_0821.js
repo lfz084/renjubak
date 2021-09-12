@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.072";
+self.SCRIPT_VERSIONS["control"] = "v0912.075";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1309,12 +1309,12 @@ window.control = (() => {
         }
 
         let OpenLib = (function() {
-            let url = "./script/worker-0821.js", //"../ReadLib/script/work_ReadLib.js",
+            let url = "../ReadLib/script/work_ReadLib.js",
                 errCount = 0,
                 wk,
                 timer,
                 sTime,
-                pathStrack=[],
+                pathStrack = [],
                 tree;
             const CMD = {
                 addBranchArray: function(branchArray) {
@@ -1328,7 +1328,7 @@ window.control = (() => {
                 loading: function(data) {
                     loading(data)
                 },
-                createTree: function(data){
+                createTree: function(data) {
                     createTree(data)
                 },
                 finish: function() {
@@ -1350,8 +1350,8 @@ window.control = (() => {
                     log(msg, "error")
                 }
             }
-            
-            function createWorker(url){
+
+            function createWorker(url) {
                 if (errCount > 5) return;
                 let worker = new Worker(url);
                 worker.onmessage = function(e) {
@@ -1371,8 +1371,8 @@ window.control = (() => {
                 log(`createWorker, wk=${worker}`, "info");
                 return worker
             }
-            
-            function removeWorker(worker){
+
+            function removeWorker(worker) {
                 worker.terminate();
                 worker = null;
             }
@@ -1383,8 +1383,8 @@ window.control = (() => {
                 timer = setInterval(catchErr, 30000);
                 sTime = new Date().getTime()
             }
-            
-            function setLoading(message){
+
+            function setLoading(message) {
                 window._loading.open();
                 window._loading.text(message);
             }
@@ -1394,7 +1394,7 @@ window.control = (() => {
                     end = data.end
                 setLoading(~~(current / end * 10000) / 100 + "%");
             }
-            
+
             function createTree(data) {
                 let current = data.current,
                     end = data.end
@@ -1402,11 +1402,11 @@ window.control = (() => {
             }
 
             function addTree(tree) {
-                function next(nd){
-                    if(nd.childNode.length == 1){
+                function next(nd) {
+                    if (nd.childNode.length == 1) {
                         nd = nd.childNode[0];
                         cBd.toNext(getShowNum())
-                        setTimeout(()=>{next(nd)},0)
+                        setTimeout(() => { next(nd) }, 0)
                     }
                 }
                 let nd = tree;
@@ -1427,7 +1427,7 @@ window.control = (() => {
             function onError(err) {
                 errCount++;
                 alert(`WorKer Error: wk = ${wk.constructor.name},err = ${err.message || err}`);
-                log(`WorKer Error: wk = ${wk.constructor.name}, \nerr = ${err}, \nerr.message = ${err.message}`,"error")
+                log(`WorKer Error: wk = ${wk.constructor.name}, \nerr = ${err}, \nerr.message = ${err.message}`, "error")
                 finish()
             }
 
@@ -1438,15 +1438,15 @@ window.control = (() => {
             function otherMessage(message) {
                 log(message, "warn")
             }
-            
-            setTimeout(createWorker(url),0)
+
+            setTimeout(wk = createWorker(url), 0)
 
             return {
                 addLib: function(file) {
                     if (isBusy()) return;
                     load(file);
                 },
-                cancal: function(){
+                cancal: function() {
                     finish()
                 }
             }
