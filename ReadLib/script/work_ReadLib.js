@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0912.05";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0912.06";
 /*
 if (self.importScripts)
     self.importScripts(
@@ -32,20 +32,21 @@ function post(cmd, param) {
 let renLibDoc = new CRenLibDoc(),
     m_libfile = new LibraryFile();
 */
+/*
 function getArrBuf(file) {
     return new Promise(function(resolve, reject) {
         let fr = new FileReader();
         fr.onload = function() {
-            resolve(fr.result);
-        }
+            resolve(fr.result)
+        };
         fr.onerror = function(err) {
             reject(err)
-        }
-        fr.readAsArrayBuffer(file);
+        };
+        fr.readAsArrayBuffer(file)
     });
 }
-
-
+*/
+/*
 onmessage = function(e) {
     let file = e.data;
     getArrBuf(file)
@@ -80,3 +81,4 @@ onmessage = function(e) {
         })
         
 }
+*/
