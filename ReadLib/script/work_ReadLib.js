@@ -15,7 +15,7 @@ if (self.importScripts)
 else
     throw new Error("self.importScripts is undefined")
 /*
-cmd = [alert | log | warn | info | error | addTree | loading | finish ...]
+cmd = [alert | log | warn | info | error | addBranch | addBranchArray | createTree | addTree | loading | finish ...]
 */
 function post(cmd, param) {
     if(typeof cmd == "object" && cmd.constructor.name=="Error")
@@ -64,7 +64,22 @@ onmessage = function(e) {
             })
         })
         .then(function() {
-            post("addTree", renLibDoc.toRenjuTree());
+            return new Promise(function(resolve, reject) {
+                try{
+                    /*
+                    post("alert",1)
+                    new Uint8Array(1024*1024*512)
+                    post("alert",2)
+                    */
+                    post("addTree",renLibDoc.toRenjuTree());
+                    resolve()
+                }
+                catch(err){
+                    reject(err)
+                }
+            })
+        })
+        .then(function() {
             post("finish")
         })
         .catch(function(err) {

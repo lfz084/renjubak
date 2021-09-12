@@ -74,6 +74,8 @@
         constructor() {
             this.m_MoveList = new MoveList();
             this.m_file;
+            
+            this.nodeCount = 0;
         }
     }
 
@@ -486,10 +488,12 @@
             }
 
         }
-        post("log", `loop << number = ${number}`)
+        post("loading", { current: libFile.current(), end: libFile.end() })
+        post("info", `loop << number = ${number}`)
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();
+            this.nodeCount = number;
         }
 
         //m_Board.setLastMove(Center);
@@ -542,40 +546,60 @@
         let done = false;
         post("log", "copying...")
         let t_start = new Date().getTime();
-        let number = 0;
+        let number = 0,
+            removeCount = 0;
         while (!done) {
+            intervalPost.post("createTree", {current: number, end: this.nodeCount})
             if (pMove[0]) {
-                number++
-                if (number < 15)
-                    post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
+                number++ 
+                //if (number < 0) post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
+                
                 if (this.m_MoveList.index() > -1) {
                     rNode = pMove[0].toRenjuNode();
                     r_MoveList.current().pushChildNode(rNode)
                 }
-
+                
                 this.m_MoveList.add(pMove[0]);
                 r_MoveList.add(rNode)
 
                 if (pMove[0].getRight()) {
-                    if (number < 15) post("log", "stack push")
+                    //if (number < 0) post("log", "stack push")
                     m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
                 }
 
                 pMove[0] = pMove[0].getDown()
             }
             else if (!m_Stack.isEmpty()) {
-                let nMove = [0];
+                let nMove = [0],
+                    count = number - removeCount;
                 m_Stack.pop(nMove, pMove);
                 this.m_MoveList.setIndex(nMove[0] - 1);
                 r_MoveList.setIndex(nMove[0] - 1);
+                /*
+                if (count > 1024 * 16) {
+                    let node = r_MoveList.current(),
+                        path = node.childNode[0].getPath(),
+                        addBranchArray = [];
+                    for (let i = 0; i < node.childNode.length; i++) {
+                        addBranchArray.push(new RenjuBranch(path, node.childNode.splice(0, 1)[0]))
+                    }
+
+                    //post("addBranchArray", addBranchArray);
+                    post(1);
+                    removeCount += count;
+                }
+                */
             }
             else {
                 this.m_MoveList.setRootIndex();
+                r_MoveList.setRootIndex();
                 pMove[0] = this.m_MoveList.current();
                 done = true;
+                //post(number - removeCount);
             }
         }
-        post("log", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
+        post("createTree", {current: number-1, end: this.nodeCount})
+        post("info", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
         this.m_MoveList.clearEnd();
         return renjuTree;
     }

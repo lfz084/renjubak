@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0905.07";
+self.SCRIPT_VERSIONS["control"] = "v0911.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1312,13 +1312,22 @@ window.control = (() => {
             let wk,
                 timer,
                 sTime,
+                pathStrack=[],
                 tree;
             const CMD = {
+                addBranchArray: function(branchArray) {
+                    pathStrack = pathStrack.concat(branchArray)
+                    log(branchArray)
+                },
                 addTree: function(tree) {
+                    //new RenjuTree(tree).addBranchArray(pathStrack)
                     addTree(tree)
                 },
                 loading: function(data) {
                     loading(data)
+                },
+                createTree: function(data){
+                    createTree(data)
                 },
                 finish: function() {
                     finish()
@@ -1343,15 +1352,25 @@ window.control = (() => {
             function load(file) {
                 setBusy(true);
                 wk.postMessage(file)
-                timer = setInterval(catchErr, 3000);
+                timer = setInterval(catchErr, 15000);
                 sTime = new Date().getTime()
+            }
+            
+            function setLoading(message){
+                window._loading.open();
+                window._loading.text(message);
             }
 
             function loading(data) {
                 let current = data.current,
                     end = data.end
-                window._loading.open();
-                window._loading.text(~~(current / end * 10000) / 100 + "%");
+                setLoading(~~(current / end * 10000) / 100 + "%");
+            }
+            
+            function createTree(data) {
+                let current = data.current,
+                    end = data.end
+                setLoading(`${current} / ${end}`);
             }
 
             function addTree(tree) {
@@ -1359,7 +1378,7 @@ window.control = (() => {
                     if(nd.childNode.length == 1){
                         nd = nd.childNode[0];
                         cBd.toNext(getShowNum())
-                        setTimeout(()=>{next(nd)},100)
+                        setTimeout(()=>{next(nd)},0)
                     }
                 }
                 let nd = tree;
@@ -2811,6 +2830,8 @@ window.control = (() => {
             cFindVCF.hide();
             let but = cFindVCF;
             cCancelFind.move(but.left, but.top, but.width, but.height);
+            let lb = cFindPoint;
+            lbTime.move(lb.left, lb.top, lb.width, lb.height, ~~(parseInt(lb.width) / 4) + "px");
         }
         else {
             cFindPoint.show();
@@ -2818,6 +2839,7 @@ window.control = (() => {
             cFindVCF.show();
             cFindVCF.setText("解题");
             cCancelFind.hide();
+            lbTime.close()
         }
     }
 
