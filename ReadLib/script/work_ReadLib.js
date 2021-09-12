@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0912.06";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0912.07";
 /*
 if (self.importScripts)
     self.importScripts(
@@ -20,14 +20,14 @@ else
 /*
 cmd = [alert | log | warn | info | error | addBranch | addBranchArray | createTree | addTree | loading | finish ...]
 */
-
+/*
 function post(cmd, param) {
     if(typeof cmd == "object" && cmd.constructor.name=="Error")
         postMessage(cmd)
     else
         postMessage({ "cmd": cmd, "parameter": param })
 }
-
+*/
 /*
 let renLibDoc = new CRenLibDoc(),
     m_libfile = new LibraryFile();

@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v0912.06";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v0912.07";
 const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
