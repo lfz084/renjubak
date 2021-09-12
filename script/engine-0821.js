@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v0912.02";
+self.SCRIPT_VERSIONS["engine"] = "v0912.03";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;

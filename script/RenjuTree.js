@@ -1,3 +1,4 @@
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0912.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
