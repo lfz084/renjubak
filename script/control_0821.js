@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0911.01";
+self.SCRIPT_VERSIONS["control"] = "v0912.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1352,7 +1352,7 @@ window.control = (() => {
             function load(file) {
                 setBusy(true);
                 wk.postMessage(file)
-                timer = setInterval(catchErr, 15000);
+                timer = setInterval(catchErr, 30000);
                 sTime = new Date().getTime()
             }
             
