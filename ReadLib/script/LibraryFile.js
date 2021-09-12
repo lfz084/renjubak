@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.071";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.072";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

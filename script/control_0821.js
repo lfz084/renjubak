@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.071";
+self.SCRIPT_VERSIONS["control"] = "v0912.072";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1309,9 +1309,9 @@ window.control = (() => {
         }
 
         let OpenLib = (function() {
-            let url = "../ReadLib/script/work_ReadLib.js",
+            let url = "./script/worker-0821.js", //"../ReadLib/script/work_ReadLib.js",
                 errCount = 0,
-                wk = createWorker(url),
+                wk,
                 timer,
                 sTime,
                 pathStrack=[],
@@ -1425,6 +1425,7 @@ window.control = (() => {
             }
 
             function onError(err) {
+                errCount++;
                 alert(`WorKer Error: wk = ${wk.constructor.name},err = ${err.message || err}`);
                 log(`WorKer Error: wk = ${wk.constructor.name}, \nerr = ${err}, \nerr.message = ${err.message}`,"error")
                 finish()
@@ -1437,6 +1438,8 @@ window.control = (() => {
             function otherMessage(message) {
                 log(message, "warn")
             }
+            
+            setTimeout(createWorker(url),0)
 
             return {
                 addLib: function(file) {
