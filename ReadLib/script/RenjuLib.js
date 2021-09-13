@@ -135,7 +135,7 @@ window.RenjuLib = (() => {
         let nd = tree;
         newGame();
         cBoard.addTree(nd);
-        next(nd);
+        setTimeout(()=>next(nd),1000);
     }
 
     function finish() {

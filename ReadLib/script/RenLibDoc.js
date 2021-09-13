@@ -119,6 +119,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
             strNew.push(buffer[1]);
         }
+    
         strNew = bufferGBK2Unicode(strNew)
         post("log", `${strNew}`)
         let n = strNew.indexOf(String.fromCharCode(10));
@@ -152,6 +153,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
             strNew.push(buffer[1]);
         }
+        
         strNew.length > 3 ? strNew.length = 3 : strNew;
         pStrBoardText[0] = bufferGBK2Unicode(strNew);
         //post("log", strNew)
@@ -383,7 +385,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
         while (libFile.get(next)) {
             const Point = new JPoint(next.getPos());
-            intervalPost.post("loading", { current: libFile.current(), end: libFile.end() })
+            intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end })
             if (checkRoot && Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
                 checkRoot = false;
