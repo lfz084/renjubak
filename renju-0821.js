@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0912.09";
+self.SCRIPT_VERSIONS["renju"] = "v0928.02";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -99,8 +99,6 @@ var loadApp = () => { // 按顺序加载应用
         s.left = (DW - 150) / 2 + "px";
         s.top = (DH - 150) / 2 + "px";
         s.zIndex = 0xffffff;
-        //s.background = "#777";
-        //s.opacity = "0.68";
         s.transform = `scale(${Math.min(DW, DH)/430})`;
         WIN_LOADING.setAttribute("class", "finish");
 
@@ -121,7 +119,7 @@ var loadApp = () => { // 按顺序加载应用
         s.fontSize = "15px";
         s.textAlign = "center";
         s.lineHeight = "25px";
-        s.background = "white";
+        s.background = "none";
         s.opacity = 0.7;
         WIN_LOADING.appendChild(LABEL);
 
@@ -149,11 +147,13 @@ var loadApp = () => { // 按顺序加载应用
                 timer = setTimeout(() => {
                     if (WIN_LOADING.parentNode) WIN_LOADING.parentNode.removeChild(WIN_LOADING);
                     LABEL.innerHTML = "";
+                    LABEL.style.background = "none";
                 }, 500);
             },
             lock: (value = false) => { lock = value }, //锁定后，不开打开或关闭
             text: (text = "") => { //动画标题，可以用来显示进度百分百
                 LABEL.innerHTML = text;
+                if(text) LABEL.style.background = "white";
             },
         };
     })();

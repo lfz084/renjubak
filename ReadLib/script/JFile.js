@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0928.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -27,7 +27,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.09";
         this.m_end = buffer.byteLength;
         this.m_buffer = new Uint8Array(buffer);
         this.m_fileName = fileName;
-        return this.m_end * 1;
+        return this.m_end;
     };
 
     JFile.prototype.close = function() {
@@ -52,6 +52,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.09";
             this.onRead = undefined;
         return i;
     };
+    
+    JFile.prototype.seek = function(current) {
+        if (current < 0 || current >= this.m_end)
+            throw new Error("JFile seek() error")
+        this.m_current = current;
+    };
 
     JFile.prototype.seekToBegin = function() {
         this.m_begin = this.m_current;
@@ -68,6 +74,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v0912.09";
     JFile.prototype.getFileName = function() {
         return this.m_fileName;
     };
+    
     
     
     

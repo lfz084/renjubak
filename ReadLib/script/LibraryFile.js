@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0928.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -71,18 +71,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.09";
             if (this.m_indexStart >= this.m_indexEnd) {
                 //console.log("read")
                 let nBytesRead = this.m_file.read(this.m_buffer, BUFFERSIZE);
+                //console.log(`nBytesRead=${nBytesRead}`)
+                //console.log(`[${this.m_buffer}]`)
+                if (nBytesRead == 0) return false;
+
+                this.m_indexEnd = nBytesRead;
+                this.m_indexStart = 0;
+
                 typeof this.onRead == "function" ?
                     this.m_file.onRead = this.onRead :
                     this.onRead = undefined;
-                //console.log(`nBytesRead=${nBytesRead}`)
-                //console.log(`[${this.m_buffer}]`)
-                if (nBytesRead == 0)
-                {
-                    return false;
-                }
-
-                this.m_indexEnd = nBytesRead - 1;
-                this.m_indexStart = 0;
             }
             //console.log(`{${[this.m_buffer[this.m_indexStart], this.m_buffer[this.m_indexStart+1]]}}`)
             data[0] = this.m_buffer[this.m_indexStart++];
@@ -101,10 +99,24 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.09";
 
     LibraryFile.prototype.close = function() {
         try {
-            this.write();
+            //this.write();
             this.m_file.close();
         }
         catch (err) {}
+    };
+
+    LibraryFile.prototype.seek = function(current) {
+        this.m_file.seek(current);
+
+        let nBytesRead = this.m_file.read(this.m_buffer, BUFFERSIZE);
+        if (nBytesRead == 0) return false;
+
+        this.m_indexEnd = nBytesRead;
+        this.m_indexStart = 0;
+
+        typeof this.onRead == "function" ?
+            this.m_file.onRead = this.onRead :
+            this.onRead = undefined;
     };
 
     LibraryFile.prototype.checkVersion = function() {
@@ -161,15 +173,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryFile"] = "v0912.09";
     LibraryFile.prototype.getVersion = function() {
         return this.m_Version;
     };
-    
-    
+
+
     //------------------------------------------------
-    
-    
+
+
     LibraryFile.prototype.current = function() {
         return this.m_file.m_current;
     };
-    
+
     LibraryFile.prototype.end = function() {
         return this.m_file.m_end;
     };

@@ -44,7 +44,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v0912.09";
+        window.APP_VERSION = "v0928.02";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -78,7 +78,7 @@
             "docusign-white.svg": "./pic/docusign-white.svg",
             "icon.png": "https://lfz084.github.io/icon.png",
             "icon.ico": "https://lfz084.github.io/icon.ico",
-            
+
             IntervalPost: "script/IntervalPost.js",
             RenjuTree: "script/RenjuTree.js",
             UNICODE2GBK: "./ReadLib/script/UNICODE2GBK.js",
@@ -106,7 +106,10 @@
             renju: "???"
         };
         window.UPDATA_INFO = {
-            "v0912.09": ["更新说明:增加了lib棋谱读取功能，适合读取一些小棋谱。建议打开1MB以下的棋谱，5M以内勉强可以应付。以后会支持打开更大的棋谱"]
+            "v0912.00": ["更新说明:增加了lib棋谱读取功能，适合读取一些小棋谱。建议打开1MB以下的棋谱，5M以内勉强可以应付。以后会支持打开更大的棋谱"],
+            "v0928.02": ["支持lib棋谱增加到 30M",
+                         "打开大棋谱时间缩短 30%",
+                         "暂时还不支持显示对称点",]
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0912.09";
+self.SCRIPT_VERSIONS["control"] = "v0928.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -29,20 +29,22 @@ window.control = (() => {
     setTimeout(function() {
         //alert(MAX_THREAD_NUM);
     }, 3000);
-    const MODEL_RENJU = 0;
-    const MODEL_LOADIMG = 1;
-    const MODEL_LINE_EDIT = 2;
-    const MODEL_ARROW_EDIT = 3;
-    const MODEL_UNPACK_TREE = 4;
-    const MODEL_UNPACK_THREEPOINT = 5;
-    const MODEL_UNPACK_FOULPOINT = 6;
-    let cBd;
-    let engine;
-    let msg;
-    let closeMsg;
-    let appData;
-    let dw;
-    let dh;
+    const MODEL_RENJU = 0,
+        MODEL_LOADIMG = 1,
+        MODEL_LINE_EDIT = 2,
+        MODEL_ARROW_EDIT = 3,
+        MODEL_UNPACK_TREE = 4,
+        MODEL_UNPACK_THREEPOINT = 5,
+        MODEL_UNPACK_FOULPOINT = 6,
+        MODEL_RENLIB = 7;
+
+    let cBd,
+        engine,
+        msg,
+        closeMsg,
+        appData,
+        dw,
+        dh;
 
     let playModel = MODEL_RENJU;
     let oldPlayModel = playModel;
@@ -57,66 +59,66 @@ window.control = (() => {
         { "colName": "暗灰标记", "color": "#483D8B" },
         { "colName": "暗绿标记", "color": "#556B2F" },
         ];
-    let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"];
-    let parentNode;
-    let renjuCmddiv = null;
-    let imgCmdDiv = null;
+    let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"],
+        parentNode,
+        renjuCmddiv = null,
+        imgCmdDiv = null,
 
-    let cLockImg = {};
-    let cPutBoard = null;
-    let cAutoPut = null;
-    let cCleAll = null;
-    let cShownum = null;
-    let setShowNum = function() {};
-    let getShowNum = function() {};
-    let cNewGame = null;
-    let cLocknum = null;
-    let cAutoadd = null;
-    let cAddblack = null;
-    let cAddwhite = null;
-    let cAddblack2 = null;
-    let cAddwhite2 = null;
-    let cLba = null;
-    let cLbb = null;
-    let cLbc = null;
-    let cLbd = null;
-    let cLbColor = null;
-    let cBack = null;
-    let cResetnum = null;
-    let cReset = null;
-    let cNextone = null;
-    let cInputcode = null;
-    let cOutputcode = null;
-    let cStart = null;
-    let cEnd = null;
-    let cPrevious = null;
-    let cNext = null;
-    let cFlipX = null;
-    let cFlipY = null;
-    let cCW = null;
-    let cCCW = null;
-    let cLABC = null;
-    let cMoveL = null;
-    let cMoveR = null;
-    let cMoveT = null;
-    let cMoveB = null;
-    let cCutImage = null;
-    let cSelBlack = null;
-    let cSelWhite = null;
-    let cPrintVCF = null;
-    let cFindPoint = null;
-    let cFindVCF = null;
-    let cCancelFind = null;
-    let cObjVCF = { arr: [], winMoves: [], color: 0, time: false }; // 保存VCF分支
-    let cLoadImg = null;
-    let cSLTX = null;
-    let cSLTY = null;
-    let cShare = null;
-    let cShareWhite = null;
-    let cCleLb = null;
-    let cHelp = null;
-    let exWindow;
-    let isCancelMenuClick = false; //iOS 长按弹出棋盘菜单后会触发click事件。
+        cLockImg = {},
+        cPutBoard = null,
+        cAutoPut = null,
+        cCleAll = null,
+        cShownum = null,
+        setShowNum = function() {},
+        getShowNum = function() {},
+        cNewGame = null,
+        cLocknum = null,
+        cAutoadd = null,
+        cAddblack = null,
+        cAddwhite = null,
+        cAddblack2 = null,
+        cAddwhite2 = null,
+        cLba = null,
+        cLbb = null,
+        cLbc = null,
+        cLbd = null,
+        cLbColor = null,
+        cBack = null,
+        cResetnum = null,
+        cReset = null,
+        cNextone = null,
+        cInputcode = null,
+        cOutputcode = null,
+        cStart = null,
+        cEnd = null,
+        cPrevious = null,
+        cNext = null,
+        cFlipX = null,
+        cFlipY = null,
+        cCW = null,
+        cCCW = null,
+        cLABC = null,
+        cMoveL = null,
+        cMoveR = null,
+        cMoveT = null,
+        cMoveB = null,
+        cCutImage = null,
+        cSelBlack = null,
+        cSelWhite = null,
+        cPrintVCF = null,
+        cFindPoint = null,
+        cFindVCF = null,
+        cCancelFind = null,
+        cObjVCF = { arr: [], winMoves: [], color: 0, time: false }, // 保存VCF分支
+        cLoadImg = null,
+        cSLTX = null,
+        cSLTY = null,
+        cShare = null,
+        cShareWhite = null,
+        cCleLb = null,
+        cHelp = null,
+        exWindow,
+        isCancelMenuClick = false; //iOS 长按弹出棋盘菜单后会触发click事件。
     const setTop = (() => {
         let topMark = document.createElement("div");
         document.body.appendChild(topMark);
@@ -231,6 +233,7 @@ window.control = (() => {
         parentNode.appendChild(renjuCmddiv);
         if (imgCmdDiv.parentNode) imgCmdDiv.parentNode.removeChild(imgCmdDiv);
         viewport1.resize();
+        RenjuLib.closeLib();
     }
 
 
@@ -1314,7 +1317,7 @@ window.control = (() => {
             cBd.drawLineEnd();
             let file = fileInput.files[0];
             fileInput.value = "";
-            RenjuLib.addLib(file);
+            RenjuLib.openLib(file);
         }
 
 
@@ -1511,13 +1514,14 @@ window.control = (() => {
                 "saveContinueData": appData.saveContinueData,
                 "saveData": appData.saveData,
             });
-            
+
             RenjuLib.reset({
                 isBusy: isBusy,
                 setBusy: setBusy,
                 newGame: newGame,
                 cBoard: cBd,
-                getShowNum: getShowNum
+                getShowNum: getShowNum,
+                setPlayModel: (model) => { playModel = model}
             });
 
             let continueData = appData.loadContinueData(cBd);
@@ -2480,11 +2484,11 @@ window.control = (() => {
 
         if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
-        if (playModel == MODEL_RENJU) {
+        if (playModel == MODEL_RENJU || playModel == MODEL_RENLIB) {
             if (idx > -1) {
                 let cmds = getRenjuCmd();
                 let arr = cBd.getPointArray([]);
-                if (cBd.oldCode) cmds.type = TYPE_NUMBER;
+                if (cBd.oldCode || playModel == MODEL_RENLIB) cmds.type = TYPE_NUMBER;
                 if (cBd.threePoints && cBd.threePoints.arr) {
                     if (cBd.threePoints.index > -1) {
                         cBd.printThreePoints();
@@ -2502,7 +2506,7 @@ window.control = (() => {
                             //点击棋子，触发悔棋
                             cBd.cleNb(idx, cmds.showNum);
                         }
-                        else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
+                        else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playModel == MODEL_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
                             // 添加棋子  wNb(idx,color,showNum)
                             let isF = isFoul(idx % 15, parseInt(idx / 15), arr);
                             cBd.wNb(idx, "auto", cmds.showNum, undefined, isF);
@@ -2869,10 +2873,12 @@ window.control = (() => {
 
     return {
         "getPlayModel": () => { return playModel },
+        "setPlayModel": (model) => { playModel = model},
         "renjuModel": MODEL_RENJU,
         "imgModel": MODEL_LOADIMG,
         "lineModel": MODEL_LINE_EDIT,
         "arrowModel": MODEL_ARROW_EDIT,
+        "libModel": MODEL_RENLIB,
         "cLockImgChecked": () => { return cLockImg.checked; },
         "cAddwhite2Checked": () => { return cAddwhite2.checked; },
         "putCheckerBoard": putCheckerBoard,

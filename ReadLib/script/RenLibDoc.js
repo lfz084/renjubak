@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0928.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -75,7 +75,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
         constructor() {
             this.m_MoveList = new MoveList();
             this.m_file;
-            
+
             this.nodeCount = 0;
         }
     }
@@ -119,7 +119,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
             strNew.push(buffer[1]);
         }
-    
+
         strNew = bufferGBK2Unicode(strNew)
         post("log", `${strNew}`)
         let n = strNew.indexOf(String.fromCharCode(10));
@@ -153,7 +153,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
             strNew.push(buffer[1]);
         }
-        
         strNew.length > 3 ? strNew.length = 3 : strNew;
         pStrBoardText[0] = bufferGBK2Unicode(strNew);
         //post("log", strNew)
@@ -384,8 +383,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
         let next = new MoveNode();
 
         while (libFile.get(next)) {
+
             const Point = new JPoint(next.getPos());
-            intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end })
+            intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (checkRoot && Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
                 checkRoot = false;
@@ -494,8 +494,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
             }
 
         }
-        post("loading", { current: libFile.current(), end: libFile.end() })
-        post("info", `loop << number = ${number}`)
+
+        post("loading", { current: libFile.current(), end: libFile.end(), count: number });
+        post("info", `loop << number = ${number}`);
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();
@@ -525,6 +526,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
                 this.findMoveNode(pFirstMove);
             }
         }
+
         /*
         strInfo += Utils::GetString(IDS_INFO_COMMENTS, nComments);
         strInfo += Utils::GetString(IDS_INFO_BOARD_TEXTS, nBoardTexts);
@@ -538,6 +540,280 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
 
 
     //-----------------------------------------------------------
+    CRenLibDoc.prototype.getBranchNodes = function(path) {
+
+        class Node {
+            constructor(idx, txt = "") {
+                this.idx = idx;
+                this.txt = txt;
+            }
+        }
+
+        function Point2Idx(point) {
+            return point.x - 1 + (point.y - 1) * 15;
+        }
+
+        function getIdx(pMove) {
+            return pMove.mPos.x - 1 + (pMove.mPos.y - 1) * 15;
+        }
+        
+        function findNode(pMove, idx) {
+            while (pMove) {
+                if (pMove.getPos().x - 1 + (pMove.getPos().y - 1) * 15 === idx) {
+                    return pMove;
+                }
+                else if (pMove.getRight()) {
+                    pMove = pMove.getRight();
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+
+        function getInnerHTML(pMove) {
+            let iHTML = pMove.isOneLineComment() ? "<br>" + pMove.getOneLineComment() : "";
+            iHTML += pMove.isMultiLineComment() ? "<br>" + String(pMove.getMultiLineComment()).split(String.fromCharCode(10)).join("<br>") : "";
+            return iHTML;
+        }
+        
+        function searchInnerHTML(path = []){
+            let pMove = this.m_MoveList.getRoot(),
+                innerHTML = getInnerHTML(this.m_MoveList.getRoot());
+            for (let i = 0; i < path.length; i++) {
+                if (pMove.getDown()) {
+                    pMove = pMove.getDown();
+                    pMove = findNode(pMove, path[i]);
+                    if (pMove) {
+                        innerHTML = getInnerHTML(pMove) || innerHTML;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else{
+                    break;
+                }
+            }
+            return innerHTML;
+        }
+
+        function getTXT(pMove) {
+            return pMove.getBoardText() || "○";
+        }
+
+        function getNodes(pMove) {
+            let nodes = [];
+            if (!pMove) return nodes;
+            pMove = pMove.getDown();
+            while (pMove) {
+                nodes.push(new Node(getIdx(pMove), getTXT(pMove)));
+                pMove = pMove.getRight();
+            }
+            return nodes;
+        }
+
+        function getChildPaths(pMove, path) {
+            let paths = [];
+            pMove = pMove.getDown();
+            while (pMove) {
+                paths.push(path.concat([getIdx(pMove)]))
+                pMove = pMove.getRight();
+            }
+            return paths;
+        }
+
+        function getPositionInfo(path) {
+            let done = false,
+                pMove = this.m_MoveList.getRoot().getDown(),
+                moveList = [],
+                moveStack = [];
+
+            while (!done) {
+                if (pMove) {
+                    let idx = path.indexOf(getIdx(pMove));
+                    moveList.push(getIdx(pMove));
+
+                    if (pMove.getRight() &&
+                        moveList.length <= path.length
+                    ) {
+                        moveStack.push({ pMove: pMove.getRight(), length: moveList.length - 1 });
+                    }
+
+                    if (idx > -1 &&
+                        moveList.length <= path.length &&
+                        moveList.length % 2 === (idx + 1) % 2
+                    ) {
+                        if (moveList.length === path.length) {
+                            return { pMove: pMove, path: moveList };
+                        }
+                        pMove = pMove.getDown();
+                    }
+                    else {
+                        pMove = 0;
+                    }
+                }
+                else if (moveStack.length) {
+                    let node = moveStack.pop();
+                    pMove = node.pMove;
+                    moveList.length = node.length;
+                }
+                else {
+                    done = true;
+                }
+            }
+        }
+
+        let done = false,
+            pMove = this.m_MoveList.getRoot().getDown(),
+            innerHTML = getInnerHTML(this.m_MoveList.getRoot()),
+            nodes = [],
+            jointNodes = [],
+            jointNode = null,
+            moveList = [],
+            moveStack = [];
+
+        //info = getPositionInfo.call(this, path);
+        /*
+        if (info) {
+            nodes = getNodes(info.pMove);
+            innerHTML = getInnerHTML(info.pMove) || innerHTML;
+        }
+        */
+        innerHTML = searchInnerHTML.call(this, path) || innerHTML;
+
+        while (!done) {
+            //post("error", `${moveList}, [${pMove}]`)
+            //post("log", jointNode)
+            if (pMove) {
+                let idx = path.indexOf(getIdx(pMove));
+                moveList.push(getIdx(pMove));
+
+                if (pMove.getRight() &&
+                    moveList.length <= path.length + 1
+                ) {
+                    //post("log", `push >> ${getIdx(pMove.getRight())}, ${moveList.length - 1}`)
+                    moveStack.push({ pMove: pMove.getRight(), length: moveList.length - 1 });
+                    //post("log", `${moveStack}`)
+                }
+
+                if (moveList.length % 2 === (path.length + 1) % 2) {
+                    if (idx === -1 ||
+                        moveList.length % 2 !== (idx + 1) % 2
+                    ) {
+                        if (!jointNode) {
+                            jointNode = { pMove: pMove, length: moveList.length - 1 }
+                        }
+                        else {
+                            //post("log", "continue1")
+                            pMove = null;
+                            continue;
+                        }
+                    }
+                }
+                else {
+                    if (idx === -1 ||
+                        moveList.length % 2 !== (idx + 1) % 2
+                    ) {
+                        //post("log", "continue2")
+                        pMove = false;
+                        continue;
+                    }
+                }
+
+
+                if ((idx === -1 ||
+                        moveList.length % 2 === (idx + 1) % 2) &&
+                    moveList.length <= path.length + 1
+                ) {
+                    if (moveList.length === path.length + 1) {
+                        //post("log", moveList)
+                        //post("log", path)
+                        //post("alert")
+                        if (idx === -1) {
+                            nodes.push(new Node(getIdx(pMove), getTXT(pMove)));
+                        }
+                        else {
+                            jointNodes.push(new Node(getIdx(jointNode.pMove), getTXT(pMove)));
+                        }
+                    }
+                    pMove = pMove.getDown();
+                }
+                else {
+                    //post("log", "<<<")
+                    pMove = 0;
+                }
+            }
+            else if (moveStack.length) {
+                let node = moveStack.pop();
+                pMove = node.pMove;
+                moveList.length = node.length;
+                if (jointNode && moveList.length <= jointNode.length) jointNode = null;
+                //post("log", moveStack)
+                //post("info", `${node.length}, [${moveList}]`)
+            }
+            else {
+                done = true;
+                //post("alert")
+            }
+        }
+        post("log", nodes)
+        post("log", jointNodes)
+        return { nodes: jointNodes.concat(nodes), innerHTML: innerHTML };
+    }
+
+    /*
+    function findNode(pMove, idx) {
+        while (pMove) {
+            if (pMove.getPos().x - 1 + (pMove.getPos().y - 1) * 15 === idx) {
+                return pMove;
+            }
+            else if (pMove.getRight()) {
+                pMove = pMove.getRight();
+            }
+            else {
+                return null;
+            }
+        }
+    }
+    
+    for (let i = 0; i < path.length; i++) {
+        if (pMove.getDown()) {
+            pMove = pMove.getDown();
+            pMove = findNode(pMove, path[i]);
+            if (pMove) {
+                innerHTML = getInnerHTML(pMove) || innerHTML;
+                if (i === path.length - 1)
+                    return { nodes: getNodes(pMove), innerHTML: innerHTML };
+            }
+            else {
+                return { nodes: [], innerHTML: "" };
+            }
+        }
+        else {
+            return { nodes: [], innerHTML: "" };
+        }
+    }
+    */
+
+
+    CRenLibDoc.prototype.getAutoMove = function() {
+        function getIdx(pMove) {
+            return pMove.mPos.x - 1 + (pMove.mPos.y - 1) * 15;
+        }
+        let pMove = this.m_MoveList.getRoot(),
+            path = [];
+        while (pMove.getDown()) {
+            pMove = pMove.getDown();
+            if (!pMove.getRight()) {
+                path.push(getIdx(pMove));
+            }
+            else {
+                break;
+            }
+        }
+        return path;
+    }
 
 
     CRenLibDoc.prototype.toRenjuTree = function(renjuTree = new RenjuTree()) {
@@ -555,16 +831,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
         let number = 0,
             removeCount = 0;
         while (!done) {
-            intervalPost.post("createTree", {current: number, end: this.nodeCount})
+            intervalPost.post("createTree", { current: number, end: this.nodeCount })
             if (pMove[0]) {
-                number++ 
+                number++
                 //if (number < 0) post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
-                
+
                 if (this.m_MoveList.index() > -1) {
                     rNode = pMove[0].toRenjuNode();
                     r_MoveList.current().pushChildNode(rNode)
                 }
-                
+
                 this.m_MoveList.add(pMove[0]);
                 r_MoveList.add(rNode)
 
@@ -581,20 +857,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
                 m_Stack.pop(nMove, pMove);
                 this.m_MoveList.setIndex(nMove[0] - 1);
                 r_MoveList.setIndex(nMove[0] - 1);
-                /*
-                if (count > 1024 * 16) {
-                    let node = r_MoveList.current(),
-                        path = node.childNode[0].getPath(),
-                        addBranchArray = [];
-                    for (let i = 0; i < node.childNode.length; i++) {
-                        addBranchArray.push(new RenjuBranch(path, node.childNode.splice(0, 1)[0]))
-                    }
-
-                    //post("addBranchArray", addBranchArray);
-                    post(1);
-                    removeCount += count;
-                }
-                */
             }
             else {
                 this.m_MoveList.setRootIndex();
@@ -604,7 +866,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0912.09";
                 //post(number - removeCount);
             }
         }
-        post("createTree", {current: number-1, end: this.nodeCount})
+        post("createTree", { current: number - 1, end: this.nodeCount })
         post("info", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
         this.m_MoveList.clearEnd();
         return renjuTree;

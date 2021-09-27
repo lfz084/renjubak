@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["viewport"] = "v0912.09";
+self.SCRIPT_VERSIONS["viewport"] = "v0928.02";
 window.view = (function() {
     "use strict";
     const SCALABLE = !(window.navigator.userAgent.indexOf("Lumia") + 1);  //windows Phone 

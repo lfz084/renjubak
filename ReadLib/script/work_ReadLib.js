@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0912.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0928.02";
 
 if (self.importScripts)
     self.importScripts(
@@ -13,7 +13,7 @@ if (self.importScripts)
         "./MoveNode.js",
         "./Stack.js",
         "./RenLibDoc.js"
-        )
+    )
 else
     throw new Error("self.importScripts is undefined")
 
@@ -22,7 +22,7 @@ cmd = [alert | log | warn | info | error | addBranch | addBranchArray | createTr
 */
 
 function post(cmd, param) {
-    if(typeof cmd == "object" && cmd.constructor.name=="Error")
+    if (typeof cmd == "object" && cmd.constructor.name == "Error")
         postMessage(cmd)
     else
         postMessage({ "cmd": cmd, "parameter": param })
@@ -45,16 +45,18 @@ function getArrBuf(file) {
     });
 }
 
-onmessage = function(e) {
-    let file = e.data;
+function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
             return new Promise(function(resolve, reject) {
                 if (m_libfile.open(buf)) {
-                    if (renLibDoc.addLibrary(m_libfile))
+                    if (renLibDoc.addLibrary(m_libfile)) {
+                        post("finish");
                         resolve()
+                    }
                     else
                         reject(new Error("addLibrary Error"))
+                    m_libfile.close();
                 }
                 else
                     reject(new Error("m_libfile Open Error"))
@@ -62,20 +64,48 @@ onmessage = function(e) {
         })
         .then(function() {
             return new Promise(function(resolve, reject) {
-                try{
-                    post("addTree",renLibDoc.toRenjuTree());
+                try {
+                    let path = renLibDoc.getAutoMove();
+                    if (path.length) {
+                        post("autoMove", path);
+                    }
+                    else {
+                        let position = [];
+                        for (let i = 0; i < 15; i++) {
+                            position[i] = [];
+                            for (let j = 0; j < 15; j++) {
+                                position[i][j] = 0;
+                            }
+                        }
+                        getBranchNodes({ path: [], position: position })
+                    }
                     resolve()
                 }
-                catch(err){
+                catch (err) {
                     reject(err)
                 }
             })
         })
-        .then(function() {
-            post("finish")
-        })
         .catch(function(err) {
             postMessage(err)
         })
-        
+}
+
+function getBranchNodes(param) {
+    let rt = renLibDoc.getBranchNodes(param.path);
+    rt.position = param.position;
+    post("showCBoard", rt);
+}
+
+let bf = [];
+const CMD = {
+    openLib: openLib,
+    getBranchNodes: getBranchNodes
+}
+onmessage = function(e) {
+    if (e.data) {
+        let cmd = e.data.cmd,
+            param = e.data.parameter;
+        typeof CMD[cmd] == "function" && CMD[cmd](param);
+    }
 }

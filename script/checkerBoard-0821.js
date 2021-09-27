@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v0912.09";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v0928.02";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -411,7 +411,7 @@ window.checkerBoard = (function() {
 
         let playmodel = control.getPlayModel();
         //log(`playmofel=${control.getPlayModel()}`)
-        if (playmodel != control.renjuModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
+        if (playmodel != control.renjuModel && playmodel != control.libModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
 
         if (this.timerAutoShow) {
             clearTimeout(this.timerAutoShow);
@@ -428,6 +428,10 @@ window.checkerBoard = (function() {
         function show() {
             if (cBoard.oldCode) {
                 cBoard.unpackTree();
+            }
+            else if(playmodel == control.libModel){
+                log("autoshow")
+                RenjuLib.getBranchNodes({path:cBoard.MS.slice(0, cBoard.MSindex+1), position:cBoard.getPointArray()});
             }
             else {
                 //log(`isShowAutoLine=${findMoves()+1 ? false : cBoard.isShowAutoLine}`)
@@ -1502,7 +1506,7 @@ window.checkerBoard = (function() {
 
 
     // 传一个一维 空数组进来转成二维数组，把当前棋盘MS记录写入数组
-    checkerBoard.prototype.getPointArray = function(arrobj) {
+    checkerBoard.prototype.getPointArray = function(arrobj=[]) {
 
         arrobj.length = this.SLTY;
         for (let i = 0; i < arrobj.length; i++) {
