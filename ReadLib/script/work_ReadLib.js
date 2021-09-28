@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0928.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0929.01";
 
 if (self.importScripts)
     self.importScripts(
