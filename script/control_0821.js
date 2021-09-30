@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0929.01";
+self.SCRIPT_VERSIONS["control"] = "v0929.03";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -877,7 +877,7 @@ window.control = (() => {
         //cCancelFind.setColor("red");
         cCancelFind.setontouchend(function(but) {
             engine.postMsg("cancelFind");
-            RenjuLib.cancal()
+            RenjuLib.isLoading() && RenjuLib.cancal();
         });
 
 
@@ -1197,6 +1197,16 @@ window.control = (() => {
                 }
                 return;
             }
+            else if ((/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr)) {
+                let sPoint = (/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr),
+                    x = String(sPoint).split(/[{x:,y}]/)[3],
+                    y = String(sPoint).split(/[{x:,y}]/)[6];
+                RenjuLib.setCenterPos({ x: x * 1, y: y * 1 })
+            }
+            else if ((/\d+路/).exec(msgStr)) {
+                let num = String((/\d+路/).exec(msgStr)).split("路")[0];
+                RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
+            }
 
             cBd.unpackCode(getShowNum(), msgStr);
 
@@ -1230,13 +1240,28 @@ window.control = (() => {
         });
 
         let fileInput = document.createElement("input");
-        fileInput.setAttribute("type", "file"),
-            fileInput.style.display = "none",
-            renjuCmddiv.appendChild(fileInput);
+        fileInput.setAttribute("type", "file");
+        fileInput.style.display = "none";
+        renjuCmddiv.appendChild(fileInput);
+
+        function setLibSize() {
+            let w = cBd.width * 0.8;
+            let h;
+            let l = (dw - w) / 2;
+            let t = dh / 7;
+            let color = getRenjuLbColor();
+            // 设置弹窗，让用户手动输入标记
+            msg("15路 棋盘棋谱", "input", l, t, w, h, "设置", undefined, function(msgStr) {
+                let num = String((/\d+路/).exec(msgStr)).split("路")[0];
+                RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
+            });
+        }
+
 
         cLoadImg = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cLoadImg.addOption(1, "打开 图片");
         cLoadImg.addOption(2, "打开 lib 棋谱");
+        cLoadImg.addOption(3, "设置小棋盘棋谱");
         cLoadImg.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cLoadImg.show();
         cLoadImg.setText("打开");
@@ -1253,6 +1278,9 @@ window.control = (() => {
                     fileInput.accept = "application/lib";
                     fileInput.onchange = openLib;
                     fileInput.click()
+                    break;
+                case 3:
+                    setLibSize()
                     break;
             }
             but.input.value = 0;
@@ -1521,7 +1549,7 @@ window.control = (() => {
                 newGame: newGame,
                 cBoard: cBd,
                 getShowNum: getShowNum,
-                setPlayModel: (model) => { playModel = model}
+                setPlayModel: (model) => { playModel = model }
             });
 
             let continueData = appData.loadContinueData(cBd);
@@ -2873,7 +2901,7 @@ window.control = (() => {
 
     return {
         "getPlayModel": () => { return playModel },
-        "setPlayModel": (model) => { playModel = model},
+        "setPlayModel": (model) => { playModel = model },
         "renjuModel": MODEL_RENJU,
         "imgModel": MODEL_LOADIMG,
         "lineModel": MODEL_LINE_EDIT,

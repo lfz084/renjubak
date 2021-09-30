@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v0929.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v0929.03";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -40,6 +40,7 @@ window.RenjuLib = (() => {
         cBoard,
         getShowNum,
         setPlayModel,
+        isLoading = false,
         lock = false;
 
     const MODEL_RENLIB = 7;
@@ -84,8 +85,8 @@ window.RenjuLib = (() => {
         error: function(msg) {
             log(msg, "error");
         },
-        showCBoard: function(data) {
-            showCBoard(data);
+        showBranchs: function(data) {
+            showBranchs(data);
         },
         autoMove: function(data) {
             autoMove(data);
@@ -122,6 +123,7 @@ window.RenjuLib = (() => {
         setBusy(true);
         wk && removeWorker();
         enable = false;
+        isLoading = true;
         wk = createWorker();
         wk.postMessage({ cmd: "openLib", parameter: file });
         timer = setInterval(catchErr, 1000);
@@ -137,7 +139,7 @@ window.RenjuLib = (() => {
         let current = data.current,
             end = data.end,
             count = data.count;
-        setLoading(`${~~(current / end * 10000) / 100}%  /  ${count}`);
+        setLoading(`${~~(current / end * 100)}%  /  ${count}`);
     }
     /*
     function createTree(data) {
@@ -165,6 +167,7 @@ window.RenjuLib = (() => {
         window._loading.close();
         clearInterval(timer);
         timer = null;
+        isLoading = false;
     }
 
     function onError(err) {
@@ -185,7 +188,7 @@ window.RenjuLib = (() => {
         log(message, "warn");
     }
 
-    function showCBoard(data) {
+    function showBranchs(data) {
         let nodes = data.nodes,
             innerHTML = data.innerHTML;
         //log(data)
@@ -193,7 +196,8 @@ window.RenjuLib = (() => {
 
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
-            cBoard.wLb(nodes[i].idx, nodes[i].txt, "black");
+            !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position) &&
+                cBoard.wLb(nodes[i].idx, nodes[i].txt, "black");
         }
         let exWindow = control.getEXWindow();
         exWindow.innerHTML(innerHTML);
@@ -242,11 +246,15 @@ window.RenjuLib = (() => {
             enable = false;
             //wk = createWorker();
         },
-        getBranchNodes: function(param) {
-            if (enable) {
-                //log(param)
-                wk.postMessage({ cmd: "getBranchNodes", parameter: param })
-            }
+        showBranchs: function(param) {
+            enable && wk.postMessage({ cmd: "showBranchs", parameter: param })
+        },
+        isLoading: function(){
+            return isLoading;
+        },
+        setCenterPos: function(point){
+            enable && wk.postMessage({ cmd: "setCenterPos", parameter: point })
+            !enable && alert(`没有打开lib文件，不能修改棋谱参数`)
         }
     }
 })()

@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0929.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v0929.03";
 
 if (self.importScripts)
     self.importScripts(
@@ -77,7 +77,7 @@ function openLib(file) {
                                 position[i][j] = 0;
                             }
                         }
-                        getBranchNodes({ path: [], position: position })
+                        showBranchs({ path: [], position: position })
                     }
                     resolve()
                 }
@@ -91,16 +91,21 @@ function openLib(file) {
         })
 }
 
-function getBranchNodes(param) {
+function showBranchs(param) {
     let rt = renLibDoc.getBranchNodes(param.path);
     rt.position = param.position;
-    post("showCBoard", rt);
+    post("showBranchs", rt);
+}
+
+function setCenterPos(point){
+    renLibDoc.setCenterPos(point);
 }
 
 let bf = [];
 const CMD = {
     openLib: openLib,
-    getBranchNodes: getBranchNodes
+    showBranchs: showBranchs,
+    setCenterPos: setCenterPos
 }
 onmessage = function(e) {
     if (e.data) {

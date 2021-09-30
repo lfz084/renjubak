@@ -133,18 +133,28 @@
             INPUT_FILE.click()
         };
         BUT_TEXT.onclick = () => {
+            alert("text")
             TEXTBOX.value = loadAsText();
         };
         BUT_CODE.onclick = () => {
+            alert("code")
             TEXTBOX.value = loadAsCode();
         };
         BUT_NEXT.onclick = () => {
             let file = INPUT_FILE.files[0];
-            wk.postMessage(file);
+            getArrBuf(file)
+                .then(buf => {
+                    dataView = new DataView(buf, 0, buf.byteLength)
+                })
+            //wk.postMessage(file);
         };
         INPUT_FILE.onchange = () => {
             let file = INPUT_FILE.files[0];
-            wk.postMessage(file);
+            getArrBuf(file)
+                .then(buf => {
+                    dataView = new DataView(buf, 0, buf.byteLength)
+                })
+            //wk.postMessage(file);
         }
 
         function loadAsText(start = 0, end = 100) {
@@ -152,6 +162,7 @@
             for (let i = start; i < end; i++) {
                 txt += String.fromCharCode(dataView.getInt8(i));
             }
+            console.log(txt)
             return txt;
         }
 
@@ -160,16 +171,16 @@
             for (let i = start; i < end; i++) {
                 txt += ("00000000" + dataView.getUint8(i).toString(2)).slice(-8) + " ";
             }
+            console.log(txt)
             return txt;
         }
 
         document.body.onload = () => {
             vConsole = new VConsole();
-            console.log(codeGBK2UNICODE)
+            //console.log(codeGBK2UNICODE)
             //alert(charPointGBK2Unicode([190, 252]))
             //new MoveNode(new MoveNode())
         }
-    
     </script>
 </body>
 

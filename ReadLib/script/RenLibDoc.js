@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -71,6 +71,97 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
     }
 
 
+    //-------------------------------------------
+
+    let centerPos = { x: 8, y: 8 };
+
+    function Point2Idx(point) {
+        return point.x - 1 + (point.y - 1) * 15;
+    }
+
+    function Idx2Point(idx) {
+        let x = idx % 15,
+            y = ~~(idx / 15);
+        return { x: x + 1, y: y + 1 }
+    }
+
+    function getIdx(pMove) {
+        return pMove.mPos.x - 1 + (pMove.mPos.y - 1) * 15;
+    }
+
+    function rotate90(point) {
+        let x = centerPos.x - point.x,
+            y = centerPos.y - point.y;
+        return { x: centerPos.x + y, y: centerPos.y - x }
+    }
+
+    function rotate180(point) {
+        let x = centerPos.x - point.x,
+            y = centerPos.y - point.y;
+        return { x: centerPos.x + x, y: centerPos.y + y }
+    }
+
+    function rotate270(point) {
+        let x = centerPos.x - point.x,
+            y = centerPos.y - point.y;
+        return { x: centerPos.x - y, y: centerPos.y + x }
+    }
+
+    function reflectX(point) {
+        return { x: point.x, y: centerPos.y * 2 - point.y }
+    }
+
+    function normalizeCoord(point, nMatch) {
+        switch (nMatch) {
+            case 0:
+            case 4:
+                break;
+            case 1:
+            case 5:
+                point = rotate270(point);
+                break;
+            case 2:
+            case 6:
+                point = rotate180(point);
+                break;
+            case 3:
+            case 7:
+                point = rotate90(point);
+                break;
+        }
+        if (nMatch > 3) point = reflectX(point);
+        return point;
+    }
+
+    function transposeCoord(point, nMatch) {
+        if (nMatch > 3) point = reflectX(point);
+        switch (nMatch) {
+            case 0:
+            case 4:
+                break;
+            case 1:
+            case 5:
+                point = rotate90(point);
+                break;
+            case 2:
+            case 6:
+                point = rotate180(point);
+                break;
+            case 3:
+            case 7:
+                point = rotate270(point);
+                break;
+        }
+        return point;
+    }
+
+    class Node {
+        constructor(idx, txt = "") {
+            this.idx = idx;
+            this.txt = txt;
+        }
+    }
+
     class CRenLibDoc {
         constructor() {
             this.m_MoveList = new MoveList();
@@ -78,6 +169,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
 
             this.nodeCount = 0;
         }
+    }
+    
+    CRenLibDoc.prototype.setCenterPos = function(point) {
+        centerPos.x = point.x;
+        centerPos.y = point.y;
+        post("alert", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
     }
 
     CRenLibDoc.prototype.readOldComment = function(libFile, pStrOneLine = [], pStrMultiLine = []) {
@@ -542,100 +639,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
     //-----------------------------------------------------------
     CRenLibDoc.prototype.getBranchNodes = function(path) {
 
-        class Node {
-            constructor(idx, txt = "") {
-                this.idx = idx;
-                this.txt = txt;
-            }
-        }
-
-        function Point2Idx(point) {
-            return point.x - 1 + (point.y - 1) * 15;
-        }
-
-        function Idx2Point(idx) {
-            let x = idx % 15,
-                y = ~~(idx / 15);
-            return { x: x + 1, y: y + 1 }
-        }
-
-        function getIdx(pMove) {
-            return pMove.mPos.x - 1 + (pMove.mPos.y - 1) * 15;
-        }
-
-        function rotate90(point) {
-            let x = 8 - point.x,
-                y = 8 - point.y;
-            return { x: 8 + y, y: 8 - x }
-        }
-
-        function rotate180(point) {
-            let x = 8 - point.x,
-                y = 8 - point.y;
-            return { x: 8 + x, y: 8 + y }
-        }
-
-        function rotate270(point) {
-            let x = 8 - point.x,
-                y = 8 - point.y;
-            return { x: 8 - y, y: 8 + x }
-        }
-
-        function reflectX(point) {
-            return { x: point.x, y: 16 - point.y }
-        }
-
-        function normalizeCoord(point, nMatch) {
-            switch (nMatch) {
-                case 0:
-                case 4:
-                    break;
-                case 1:
-                case 5:
-                    point = rotate270(point);
-                    break;
-                case 2:
-                case 6:
-                    point = rotate180(point);
-                    break;
-                case 3:
-                case 7:
-                    point = rotate90(point);
-                    break;
-            }
-            if (nMatch > 3) point = reflectX(point);
-            return point;
-        }
-
-        function transposeCoord(point, nMatch) {
-            if (nMatch > 3) point = reflectX(point);
-            switch (nMatch) {
-                case 0:
-                case 4:
-                    break;
-                case 1:
-                case 5:
-                    point = rotate90(point);
-                    break;
-                case 2:
-                case 6:
-                    point = rotate180(point);
-                    break;
-                case 3:
-                case 7:
-                    point = rotate270(point);
-                    break;
-            }
-            return point;
-        }
-
         function normalizeNodes(nodes, nMatch) {
             let idx,
                 txt,
                 rt = [];
             for (let i = 0; i < nodes.length; i++) {
                 idx = Point2Idx(normalizeCoord(Idx2Point(nodes[i].idx), nMatch))
-                txt = nodes[i].txt //"●";
+                txt = nodes[i].txt; //nMatch>0 && nodes[i].txt == "○" ? "●" : nodes[i].txt; 
                 rt[i] = new Node(idx, txt);
             }
             return rt;
@@ -669,15 +679,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
             return iHTML;
         }
 
-        function searchInnerHTML(path = []) {
+        function searchInnerHTMLInfo(path = []) {
             let pMove = this.m_MoveList.getRoot(),
-                innerHTML = getInnerHTML(this.m_MoveList.getRoot());
+                innerHTMLInfo = { innerHTML: getInnerHTML(this.m_MoveList.getRoot()), depth: -1 };
             for (let i = 0; i < path.length; i++) {
                 if (pMove.getDown()) {
                     pMove = pMove.getDown();
                     pMove = findNode(pMove, path[i]);
                     if (pMove) {
-                        innerHTML = getInnerHTML(pMove) || innerHTML;
+                        let innerHTML = getInnerHTML(pMove);
+                        if (innerHTML && i === path.length - 1) innerHTMLInfo = { innerHTML: innerHTML, depth: i };
                     }
                     else {
                         break;
@@ -687,22 +698,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
                     break;
                 }
             }
-            return innerHTML;
+            return innerHTMLInfo;
         }
 
         function getTXT(pMove) {
             return pMove.getBoardText() || "○";
-        }
-
-        function getNodes(pMove) {
-            let nodes = [];
-            if (!pMove) return nodes;
-            pMove = pMove.getDown();
-            while (pMove) {
-                nodes.push(new Node(getIdx(pMove), getTXT(pMove)));
-                pMove = pMove.getRight();
-            }
-            return nodes;
         }
 
         function pushNodes(nodes1, nodes2) {
@@ -721,7 +721,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
         function _getBranchNodes(path) {
             let done = false,
                 pMove = this.m_MoveList.getRoot().getDown(),
-                innerHTML = getInnerHTML(this.m_MoveList.getRoot()),
                 nodes = [],
                 jointNodes = [],
                 jointNode = null,
@@ -793,41 +792,28 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.01";
         }
 
         let done = false,
-            pMove = this.m_MoveList.getRoot().getDown(),
-            innerHTML = getInnerHTML(this.m_MoveList.getRoot()),
+            //pMove = this.m_MoveList.getRoot().getDown(),
+            innerHTMLInfo = { innerHTML: "", depth: -2 },
             nodes = [],
             PH,
             NS,
             normalizeNS;
-
-        innerHTML = searchInnerHTML.call(this, path) || innerHTML;
-        
+        post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
         for (let i = 0; i < 8; i++) {
+            //if (i==1) break;
             PH = transposePath(path, i);
-            post("log", `${PH}`);
+            //post("log",`i=${i}, path=[${PH}]`)
             NS = _getBranchNodes.call(this, PH);
-            post("info", _getBranchNodes.call(this, PH));
+            //post("log",NS)
             normalizeNS = normalizeNodes(NS, i);
-            post("warn", normalizeNodes(NS, i));
+            //post("log",normalizeNS)
             nodes = pushNodes(nodes, normalizeNS);
+            let info = searchInnerHTMLInfo.call(this, PH);
+            if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
         }
         
-        return { nodes: nodes, innerHTML: innerHTML };
+        return { nodes: nodes, innerHTML: innerHTMLInfo.innerHTML };
     }
-
-    /*
-    function getChildPaths(pMove, path) {
-        let paths = [];
-        pMove = pMove.getDown();
-        while (pMove) {
-            paths.push(path.concat([getIdx(pMove)]))
-            pMove = pMove.getRight();
-        }
-        return paths;
-    }
-    
-    
-    */
 
 
     CRenLibDoc.prototype.getAutoMove = function() {

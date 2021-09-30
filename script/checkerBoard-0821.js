@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v0929.01";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v0929.03";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -397,7 +397,7 @@ window.checkerBoard = (function() {
         this.resetNum = 0;
         this.oldCode = code; //要放在循环之后，不要改变顺序
         log(tree);
-        this.tree = tree || new this.node();
+        this.tree = new RenjuTree(tree || new this.node());
         this.autoColor = this.tree.autoColor;
         log(`addTree ${this.autoColor}`)
         this.tree.moveNodes = [];
@@ -431,7 +431,8 @@ window.checkerBoard = (function() {
             }
             else if(playmodel == control.libModel){
                 log("autoshow")
-                RenjuLib.getBranchNodes({path:cBoard.MS.slice(0, cBoard.MSindex+1), position:cBoard.getPointArray()});
+                RenjuLib.showBranchs({path:cBoard.MS.slice(0, cBoard.MSindex+1), position:cBoard.getPointArray()});
+                cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
             }
             else {
                 //log(`isShowAutoLine=${findMoves()+1 ? false : cBoard.isShowAutoLine}`)
@@ -590,6 +591,7 @@ window.checkerBoard = (function() {
             for (let i = 0; i < bMS.length; i++) {
                 this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
             }
+            this.autoShow(100);
         }
 
     };
@@ -814,6 +816,7 @@ window.checkerBoard = (function() {
             for (let i = 0; i < bMS.length; i++) {
                 this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
             }
+            this.autoShow(100);
         }
 
     };
@@ -4246,7 +4249,7 @@ window.checkerBoard = (function() {
         if (this.unpacking || this.oldCode == "") return;
     
         if (this.oldCode) {
-
+            //log(this.tree.getBranchNodes(this.MS.slice(0, this.MSindex+1)))
             let MS = this.MS;
             let MSindex = this.MSindex;
             let moveNodes = this.tree.moveNodes;

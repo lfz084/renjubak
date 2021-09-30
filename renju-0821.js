@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v0929.01";
+self.SCRIPT_VERSIONS["renju"] = "v0929.03";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -698,6 +698,9 @@ var loadApp = () => { // 按顺序加载应用
     }
 
     function autoShowUpDataInformation() {
+        function lineWrap(str){
+            return str.split(/\\n|<br>/).join("\n")
+        }
         if ("localStorage" in window) {
             const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
             if (OLD_VERDION != window.APP_VERSION &&
@@ -715,7 +718,7 @@ var loadApp = () => { // 按顺序加载应用
                     Msg += `\n\t_____________________ `;
                     Msg += `\n\t版本： ${window.APP_VERSION}\n`;
                     for (let i = 0; i < infoArr.length; i++)
-                        Msg += `\n\t${strLen(i+1, 2)}. ${infoArr[i]}`
+                        Msg += `\n\t${strLen(i+1, 2)}. ${lineWrap(infoArr[i])}`
                     Msg += `\n\t_____________________ `;
                 }
                 lineNum==1 ? showLabel(Msg): msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
