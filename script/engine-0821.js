@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v0929.03";
+self.SCRIPT_VERSIONS["engine"] = "v1006.00";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -479,6 +479,7 @@ window.engine = (() => {
                                 works[i] = createWork({
                                     "addTree": (p) => {
                                         if (tree) {
+                                            p.node.childNode[0].parentNode = tree;
                                             tree.childNode.push(p.node.childNode[0]);
                                         }
                                         else {

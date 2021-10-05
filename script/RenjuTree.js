@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1006.00";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -14,14 +14,14 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
         path.splice(0, 1);
         return path;
     }
-    
+
     function getRoot(node) {
         while (node.parentNode) {
             node = node.parentNode;
         }
         return node;
     }
-    
+
     function getDown(node) {
         if (node.childNode.length)
             return node.childNode[0];
@@ -29,13 +29,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
             return node.defaultChildNode[0];
         return null;
     }
-    
+
     function getRight(self) {
         let parentNode = self.parentNode;
         if (parentNode) {
-            let nodes = self.childNode.concat(self.defaultChildNode || [])
-            for(let i=0; i < nodes.length; i++){
-                if(nodes[i] === self) return nodes[i+1] || null;
+            let nodes = parentNode.childNode;
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i] === self) return nodes[i + 1] || null;
             }
         }
         else {
@@ -61,7 +61,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
         }
         return null;
     }
-    
+
 
     function pushChildNode(parentNode, childNode) {
         parentNode.childNode.push(childNode);
@@ -175,12 +175,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
 
 
     class RenjuNode {
-        constructor(idx = `-1`, parentNode, childNode = []) {
+        constructor(idx = `-1`, parentNode, childNode = [], defaultChildNode = []) {
             if (typeof idx == "object") {
                 let object = idx;
                 this.parentNode = object.parentNode;
                 this.childNode = object.childNode || [];
-                //this.defaultChildNode = object.defaultChildNode || [];
+                this.defaultChildNode = object.defaultChildNode || [];
                 this.idx = object.idx || -1;
                 this.txt = object.txt || "";
                 //this.txtColor = object.txtColor || "black";
@@ -189,7 +189,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
             else {
                 this.parentNode = parentNode;
                 this.childNode = childNode;
-                //this.defaultChildNode = [];
+                this.defaultChildNode = defaultChildNode;
                 this.idx = idx;
                 this.txt = "";
                 //this.txtColor = "black";
@@ -274,19 +274,19 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
             }
         }
     }
-    
+
     RenjuTree.prototype.getPath = function() {
         return getPath(this)
     }
-    
+
     RenjuTree.prototype.getRoot = function() {
         return getRoot(this);
     }
-    
+
     RenjuTree.prototype.getDown = function() {
         return getDown(this);
     }
-    
+
     RenjuTree.prototype.getRight = function() {
         return getRight(this);
     }
@@ -372,20 +372,23 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
 
         function _getBranchNodes(path) {
             let done = false,
-                pMove = this,
+                pMove = getDown(this),
                 nodes = [],
                 jointNodes = [],
                 jointNode = null,
                 moveList = [],
-                moveStack = [];
+                moveStack = [],
+                defaultNode;
             while (!done) {
+                console.error(`${pMove}, ${pMove && pMove.idx} [${moveList}]`)
                 if (pMove) {
                     let idx = path.indexOf(pMove.idx);
                     moveList.push(pMove.idx);
-                    console.error(moveList)
+                    console.log(`getRight ${getRight(pMove)}`)
                     if (getRight(pMove) &&
                         moveList.length <= path.length + 1
                     ) {
+                        //console.log(`stack push ${getRight(pMove).idx}`)
                         moveStack.push({ pMove: getRight(pMove), length: moveList.length - 1 });
                     }
 
@@ -434,6 +437,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
                 else if (moveStack.length) {
                     let node = moveStack.pop();
                     pMove = node.pMove;
+                    //console.log(`stack pop ${pMove.idx}`)
                     moveList.length = node.length;
                     if (jointNode && moveList.length <= jointNode.length) jointNode = null;
                 }
@@ -450,24 +454,23 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v0929.03";
             nodes = [],
             PH,
             NS,
-            normalizeNS;
+            normalizeNS,
+            defaultNode;
 
-        for (let i = 0; i < 8; i++) {
-            console.log(path)
+        for (let i = 0; i < 1; i++) {
             PH = transposePath(path, i);
-            console.log(PH)
+            //console.log(PH)
             NS = _getBranchNodes.call(this, PH);
-            console.log(NS)
+            console.info(NS[0] && NS[0].idx)
             normalizeNS = normalizeNodes(NS, i);
+            //console.log(`i=${i}, ${NS[0].idx}`)
             nodes = pushNodes(nodes, normalizeNS);
-            console.log(nodes)
             let info = searchInnerHTMLInfo.call(this, PH);
             if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
         }
 
         return { nodes: nodes, innerHTML: innerHTMLInfo.innerHTML };
     }
-
 
 
     exports.RenjuNode = RenjuNode;

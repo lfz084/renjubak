@@ -26,7 +26,7 @@
             width: 950px;
             height: 1000px;
             border: solid black 1px;
-            display: none;
+            display: block;
         }
 
         input {
@@ -50,10 +50,11 @@
         <button id="but_file">loadFile</button>
         <button id="but_text">text</button>
         <button id="but_code">code</button>
-        <button id="but_next">next</button>
-        <button id="but_8">utf-8</button>
-        <button id="but_16">utf-16</button>
-        <input id="file" type="file" />
+        <button id="but_next"> >> </button>
+        <button id="but_previous">
+            << </button>
+                <button id="but_start"> ||<< </button>
+                        <input id="file" type="file" />
     </div>
     <div>
         <textarea id="textBox">
@@ -102,12 +103,15 @@
             BUT_TEXT = document.getElementById("but_text"),
             BUT_CODE = document.getElementById("but_code"),
             BUT_NEXT = document.getElementById("but_next"),
-            BUT_8 = document.getElementById("but_8"),
-            BUT_16 = document.getElementById("but_16"),
+            BUT_PREVIOUS = document.getElementById("but_previous"),
+            BUT_START = document.getElementById("but_start"),
             INPUT_FILE = document.getElementById("file"),
-            TEXTBOX = document.getElementById("textBox");
+            TEXTBOX = document.getElementById("textBox"),
+            LOAD_LENGTH = 2048;
         let arrBuf,
             dataView,
+            currentDataView,
+            dataViewLength,
             vConsole,
             m_libfile = new LibraryFile();
 
@@ -123,59 +127,95 @@
                 fr.readAsArrayBuffer(file);
             });
         }
-        BUT_8.onclick = () => {
-            alert(charset = "utf-8")
+
+        function loadBuffer() {
+            if (BUT_TEXT.selected) {
+                BUT_TEXT.onclick();
+            }
+            else {
+                BUT_CODE.onclick();
+            }
         }
-        BUT_16.onclick = () => {
-            alert(charset = "utf-16")
+
+        BUT_PREVIOUS.onclick = () => {
+            currentDataView - LOAD_LENGTH > 0 ?
+                currentDataView -= LOAD_LENGTH :
+                currentDataView = 0;
+            loadBuffer();
+        }
+        BUT_START.onclick = () => {
+            currentDataView = 0;
+            loadBuffer();
         }
         BUT_FILE.onclick = () => {
             INPUT_FILE.click()
         };
         BUT_TEXT.onclick = () => {
-            alert("text")
-            TEXTBOX.value = loadAsText();
+            let start = currentDataView,
+                end = currentDataView + LOAD_LENGTH < dataViewLength ?
+                currentDataView + LOAD_LENGTH - 1 :
+                dataViewLength - 1,
+                txt = loadAsText();
+            BUT_TEXT.selected = true;
+            BUT_CODE.selected = false;
+            TEXTBOX.value = `start = ${start} end = ${end} << \n${txt}`;
+            //alert("<< txt\n" + txt)
         };
         BUT_CODE.onclick = () => {
-            alert("code")
-            TEXTBOX.value = loadAsCode();
+            let start = currentDataView,
+                end = currentDataView + LOAD_LENGTH < dataViewLength ?
+                currentDataView + LOAD_LENGTH - 1 :
+                dataViewLength - 1,
+                code = loadAsCode();
+            BUT_TEXT.selected = false;
+            BUT_CODE.selected = true;
+            TEXTBOX.value = `start = ${start}, end = ${end} << \n${code}`;
+            //alert("<<  code\n" + code)
         };
         BUT_NEXT.onclick = () => {
-            let file = INPUT_FILE.files[0];
-            getArrBuf(file)
-                .then(buf => {
-                    dataView = new DataView(buf, 0, buf.byteLength)
-                })
-            //wk.postMessage(file);
+            currentDataView + LOAD_LENGTH < dataViewLength &&
+                (currentDataView += LOAD_LENGTH);
+            loadBuffer();
         };
         INPUT_FILE.onchange = () => {
             let file = INPUT_FILE.files[0];
             getArrBuf(file)
                 .then(buf => {
-                    dataView = new DataView(buf, 0, buf.byteLength)
+                    dataView = new DataView(buf, 0, buf.byteLength);
+                    currentDataView = 0;
+                    dataViewLength = buf.byteLength;
                 })
             //wk.postMessage(file);
         }
 
-        function loadAsText(start = 0, end = 100) {
-            let txt = "";
-            for (let i = start; i < end; i++) {
-                txt += String.fromCharCode(dataView.getInt8(i));
+        function loadAsText(start = 0, end = LOAD_LENGTH) {
+            let txt = "",
+                i;
+            for (i = start; i < end; i++) {
+                if (i + currentDataView >= dataViewLength) {
+                    break;
+                }
+                txt += String.fromCharCode(dataView.getInt8(i + currentDataView));
             }
-            console.log(txt)
+            //console.log(txt)
             return txt;
         }
 
-        function loadAsCode(start = 0, end = 100) {
-            let txt = "";
-            for (let i = start; i < end; i++) {
-                txt += ("00000000" + dataView.getUint8(i).toString(2)).slice(-8) + " ";
+        function loadAsCode(start = 0, end = LOAD_LENGTH) {
+            let txt = "",
+                i;
+            for (i = start; i < end; i++) {
+                if (i + currentDataView >= dataViewLength) {
+                    break;
+                }
+                txt += ("00000000" + dataView.getUint8(i + currentDataView).toString(2)).slice(-8) + " ";
             }
-            console.log(txt)
+            //console.log(txt)
             return txt;
         }
 
         document.body.onload = () => {
+            TEXTBOX.readOnly = true;
             vConsole = new VConsole();
             //console.log(codeGBK2UNICODE)
             //alert(charPointGBK2Unicode([190, 252]))

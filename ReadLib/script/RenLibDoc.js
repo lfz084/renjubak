@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -156,9 +156,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
     }
 
     class Node {
-        constructor(idx, txt = "") {
+        constructor(idx, txt = "", color = "black") {
             this.idx = idx;
             this.txt = txt;
+            this.color = color;
         }
     }
 
@@ -170,7 +171,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
             this.nodeCount = 0;
         }
     }
-    
+
     CRenLibDoc.prototype.setCenterPos = function(point) {
         centerPos.x = point.x;
         centerPos.y = point.y;
@@ -316,7 +317,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
 
     CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos) {
 
-        if (pMove.getDown()) {
+        let current = this.m_MoveList.index();
+        for (let i = 0; i <= current; i++) { // 兼容 Rapfi 制谱
+            let pM = this.m_MoveList.get(i);
+            if (pM.getPos().x == Pos.x && pM.getPos().y == Pos.y) {
+                post("log", "Rapfi");
+                return pM;
+            }
+        }
+        if (pMove.getDown()) { //RenLib 3.6 标准
             pMove = pMove.getDown();
 
             if (pMove.getPos().x == Pos.x && pMove.getPos().y == Pos.y) return pMove;
@@ -482,11 +491,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
         while (libFile.get(next)) {
 
             const Point = new JPoint(next.getPos());
+            //post("log", next.getPos())
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
-            if (checkRoot && Point.x == NullPoint.x && Point.y == NullPoint.y) {
+            if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
-                checkRoot = false;
-                post("log", "checkRoot")
+                post("log", "Skip root node")
+                if (checkRoot)
+                    checkRoot = false;
+                else
+                    continue;
             }
             else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
                 // ERROR checking code
@@ -508,7 +521,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
                 return false;
             }
             else {
-
                 number++;
                 //console.log(`number=${number}`)
 
@@ -646,7 +658,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
             for (let i = 0; i < nodes.length; i++) {
                 idx = Point2Idx(normalizeCoord(Idx2Point(nodes[i].idx), nMatch))
                 txt = nodes[i].txt; //nMatch>0 && nodes[i].txt == "○" ? "●" : nodes[i].txt; 
-                rt[i] = new Node(idx, txt);
+                rt[i] = new Node(idx, txt, nMatch > 0 ? "green" : "black");
             }
             return rt;
         }
@@ -768,7 +780,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
                                 nodes.push(new Node(getIdx(pMove), getTXT(pMove)));
                             }
                             else {
-                                jointNodes.push(new Node(getIdx(jointNode.pMove), getTXT(pMove)));
+                                jointNodes.push(new Node(getIdx(jointNode.pMove), getTXT(pMove), "Purple"));
                             }
                         }
                         pMove = pMove.getDown();
@@ -811,7 +823,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v0929.03";
             let info = searchInnerHTMLInfo.call(this, PH);
             if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
         }
-        
+
         return { nodes: nodes, innerHTML: innerHTMLInfo.innerHTML };
     }
 

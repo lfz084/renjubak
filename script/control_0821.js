@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v0929.03";
+self.SCRIPT_VERSIONS["control"] = "v1006.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1206,6 +1206,9 @@ window.control = (() => {
             else if ((/\d+路/).exec(msgStr)) {
                 let num = String((/\d+路/).exec(msgStr)).split("路")[0];
                 RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
+            }
+            else if(msgStr.indexOf("colour")+1){
+                RenjuLib.colour()
             }
 
             cBd.unpackCode(getShowNum(), msgStr);

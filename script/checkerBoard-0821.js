@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v0929.03";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1006.00";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -411,7 +411,10 @@ window.checkerBoard = (function() {
 
         let playmodel = control.getPlayModel();
         //log(`playmofel=${control.getPlayModel()}`)
-        if (playmodel != control.renjuModel && playmodel != control.libModel && playmodel != control.arrowModel && playmodel != control.lineModel) return;
+        if (playmodel != control.renjuModel &&
+            playmodel != control.libModel &&
+            playmodel != control.arrowModel &&
+            playmodel != control.lineModel) return;
 
         if (this.timerAutoShow) {
             clearTimeout(this.timerAutoShow);
@@ -429,9 +432,9 @@ window.checkerBoard = (function() {
             if (cBoard.oldCode) {
                 cBoard.unpackTree();
             }
-            else if(playmodel == control.libModel){
+            else if (playmodel == control.libModel) {
                 log("autoshow")
-                RenjuLib.showBranchs({path:cBoard.MS.slice(0, cBoard.MSindex+1), position:cBoard.getPointArray()});
+                RenjuLib.showBranchs({ path: cBoard.MS.slice(0, cBoard.MSindex + 1), position: cBoard.getPointArray() });
                 cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
             }
             else {
@@ -1446,7 +1449,7 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.getAutoColor = function(msIndex) {
-        
+
         let i = msIndex > -1 ? msIndex : this.MSindex;
         const AUTOCOLOR = this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
         return this.autoColor || AUTOCOLOR;
@@ -1509,7 +1512,7 @@ window.checkerBoard = (function() {
 
 
     // 传一个一维 空数组进来转成二维数组，把当前棋盘MS记录写入数组
-    checkerBoard.prototype.getPointArray = function(arrobj=[]) {
+    checkerBoard.prototype.getPointArray = function(arrobj = []) {
 
         arrobj.length = this.SLTY;
         for (let i = 0; i < arrobj.length; i++) {
@@ -4006,8 +4009,8 @@ window.checkerBoard = (function() {
         // 设置字体
         ctx.font = "bolder " + parseInt(w * 1.08) + "px  mHeiTi";
         // 由棋子颜色决定字体颜色
-        ctx.fillStyle = this.notShowLastNum ? 
-            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor : 
+        ctx.fillStyle = this.notShowLastNum ?
+            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor :
             color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
         if (showNum) { // 显示数字
             // 判断最后一手是否高亮显示
@@ -4098,11 +4101,13 @@ window.checkerBoard = (function() {
         }
         else {
             if (this.oldCode) { // auto move
+
                 let moveNodes = this.tree.moveNodes;
                 let moveNodesIndex = this.tree.moveNodesIndex;
                 let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
                 let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
                 this.wNb(idx, "auto", isShowNum, undefined, undefined, 100);
+
             }
         }
     };
@@ -4128,12 +4133,14 @@ window.checkerBoard = (function() {
             }
             else {
                 if (this.oldCode) { // auto move
+
                     let moveNodes = this.tree.moveNodes;
                     let moveNodesIndex = this.tree.moveNodesIndex;
                     let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
                     let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
                     //log(`index=${moveNodesIndex}, idx=${idx}`)
                     this.wNb(idx, "auto", isShowNum, undefined, undefined, timer);
+
                 }
                 //if (this.oldCode == "") this.addTree();
             }
@@ -4244,33 +4251,71 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.unpackTree = function() {
+        
+        function getInnerHTML(nd) {
+            while (nd) {
+                if (nd.innerHTML) return nd.innerHTML;
+                nd = nd.parentNode;
+            }
+            return "";
+        }
 
+        function printChildNode(node, txt) {
+            let exWindow = control.getEXWindow();
+            exWindow.innerHTML(getInnerHTML(node) || "");
+            if (node.innerHTML) exWindow.openWindow();
+            printLines.call(this, node.lines);
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");
+            }
+        }
+
+        function printLines(lines = []) {
+            for (let i = lines.length - 1; i >= 0; i--) {
+                this.createMarkLine(lines[i].start, lines[i].end, lines[i].color);
+            }
+        }
+
+        function getTxT(node, idx) {
+            let txt;
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                if (node.childNode[i].idx == idx) {
+                    txt = node.childNode[i].txt;
+                    break;
+                }
+            }
+            return txt;
+        }
+
+        function getChildNode(node, idx) {
+            for (let i = node.childNode.length - 1; i >= 0; i--) {
+                if (node.childNode[i].idx == idx) return node.childNode[i];
+            }
+        }
         //log(this.tree)
         if (this.unpacking || this.oldCode == "") return;
-    
-        if (this.oldCode) {
-            //log(this.tree.getBranchNodes(this.MS.slice(0, this.MSindex+1)))
-            let MS = this.MS;
-            let MSindex = this.MSindex;
-            let moveNodes = this.tree.moveNodes;
-            let moveNodesIndex = this.tree.moveNodesIndex;
 
+        if (this.oldCode) {
+            let nodes = null, //this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1)),
+                MS = this.MS,
+                MSindex = this.MSindex,
+                moveNodes = this.tree.moveNodes,
+                moveNodesIndex = this.tree.moveNodesIndex,
+                arr = this.getPointArray(getArr([])),
+                newarr = getArr([]);
+            //log(nodes, "info")
             this.unpacking = true;
             this.cleLb("all");
             this.removeMarkLine("all");
-            let arr = this.getPointArray(getArr([]));
-            let newarr = getArr([]);
+
             findFoulPoint(arr, newarr);
             if (!this.autoColor) this.printArray(newarr, EMOJI_FOUL, "red");
-            let nd;
-            let txt = MSindex % 2 ? "W" : "L";
-            let lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
+            let nd,
+                txt = MSindex % 2 ? "W" : "L",
+                lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
 
             if (MSindex - 1 == moveNodesIndex) {
-                //let i = 0; //unpackTree
-                //for (i = 0; i <= MSindex; i++) {
                 nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
-                //log(nd)
                 let j = 0; //find idx
                 for (j = nd.childNode.length - 1; j >= 0; j--) {
                     if (nd.childNode[j].idx == MS[MSindex]) {
@@ -4279,9 +4324,9 @@ window.checkerBoard = (function() {
                     }
                 }
                 if (j == -1) {
-                    if (nd.defaultChildNode && 
-                        nd.defaultChildNode[0] &&  
-                        lvl.level < 4) 
+                    if (lvl.level < 4 &&
+                        nd.defaultChildNode &&
+                        nd.defaultChildNode.childNode[0])
                     {
                         nd = nd.defaultChildNode;
                         let loopNode = nd.childNode[0];
@@ -4295,15 +4340,10 @@ window.checkerBoard = (function() {
                     }
                     else {
                         nd = null;
-                        //break; // not find idx
                     }
                 }
-                //}
 
-                if (nd) { // print points
-                    //printChildNode.call(this, nd, txt);
-                }
-                else {
+                if (!nd) {
                     if (MSindex % 2) {
                         if (lvl.level >= 4 && lvl.p) {
                             //log(moveNodes[moveNodes.length - 1])
@@ -4311,21 +4351,17 @@ window.checkerBoard = (function() {
                             let cNd = getChildNode(moveNodes[moveNodes.length - 1], this.MS[this.MSindex]);
                             txt = cNd ? cNd.txt : "?";
                             nd.childNode[0].txt = txt;
-                            //printChildNode.call(this, nd, txt);
                             nd.childNode = [];
                         }
                         else {
-                            //alert("else 1")
                             nd = new Node();
                         }
                     }
                     else {
                         if (this.tree.keyMap.has(getKey(arr))) {
                             nd = this.tree.keyMap.get(getKey(arr));
-                            //printChildNode.call(this, nd, txt);
                         }
                         else {
-                            //alert("else 2")
                             nd = new Node();
                         }
                     }
@@ -4337,51 +4373,23 @@ window.checkerBoard = (function() {
 
             this.tree.moveNodesIndex = MSindex;
             printChildNode.call(this, moveNodes[MSindex] || this.tree, txt);
+            //printChildNodes.call(this, nodes, txt),
             this.unpacking = false;
 
-
-
-            function getInnerHTML(nd){
-                while(nd){
-                    if(nd.innerHTML) return nd.innerHTML;
-                    nd = nd.parentNode;
-                }
-                return "";
-            }
-            
-            function printChildNode(node, txt) {
+            /*
+            function printChildNodes(nodes, txt) {
                 let exWindow = control.getEXWindow();
-                exWindow.innerHTML(getInnerHTML(node) || "");
-                if (node.innerHTML) exWindow.openWindow();
-                printLines.call(this, node.lines);
-                for (let i = node.childNode.length - 1; i >= 0; i--) {
-                    this.wLb(node.childNode[i].idx, node.childNode[i].txt || txt, node.childNode[i].txtColor || "black");
+                exWindow.innerHTML(nodes.innerHTML || "");
+                if (nodes.innerHTML) exWindow.openWindow();
+                nodes = nodes.nodes;
+                for (let i = 0; i < nodes.length; i++) {
+                    this.wLb(nodes[i].idx, nodes[i].txt || txt, nodes[i].txtColor || "black");
                 }
+                if (this.MSindex + 1 === this.MS.length &&
+                    nodes[0] &&
+                    nodes[0].idx > -1) this.MS.push(nodes[0].idx);
             }
-
-            function printLines(lines = []) {
-                for (let i = lines.length - 1; i >= 0; i--) {
-                    this.createMarkLine(lines[i].start, lines[i].end, lines[i].color);
-                }
-            }
-
-            function getTxT(node, idx) {
-                let txt;
-                for (let i = node.childNode.length - 1; i >= 0; i--) {
-                    if (node.childNode[i].idx == idx) {
-                        txt = node.childNode[i].txt;
-                        break;
-                    }
-                }
-                return txt;
-            }
-
-            function getChildNode(node, idx) {
-                for (let i = node.childNode.length - 1; i >= 0; i--) {
-                    if (node.childNode[i].idx == idx) return node.childNode[i];
-                }
-            }
-
+            */
         }
     }
 
@@ -4457,7 +4465,7 @@ window.checkerBoard = (function() {
 
     // 在棋盘的一个点上面，摆一颗棋子
     checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
-        
+
         if (idx < 0) return;
         let i = this.MSindex + 1;
         if (this.oldCode) {

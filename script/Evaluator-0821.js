@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v0929.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1006.00";
 const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
@@ -2217,8 +2217,6 @@ function findMoves(FailMoves, move) {
     for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
         if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
     }
-
     return (i >= 0) ? true : false;
-
 }
 

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v0929.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1006.00";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -41,7 +41,8 @@ window.RenjuLib = (() => {
         getShowNum,
         setPlayModel,
         isLoading = false,
-        lock = false;
+        lock = false,
+        colour = false;
 
     const MODEL_RENLIB = 7;
 
@@ -190,15 +191,23 @@ window.RenjuLib = (() => {
 
     function showBranchs(data) {
         let nodes = data.nodes,
-            innerHTML = data.innerHTML;
+            innerHTML = data.innerHTML,
+            nextMove = { idx: -1, level: -2 },
+            level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
         //log(data)
         if (!isEqual(data.position, cBoard.getPointArray())) return;
 
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
-            !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position) &&
-                cBoard.wLb(nodes[i].idx, nodes[i].txt, "black");
+            if (!isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
+                cBoard.wLb(nodes[i].idx, nodes[i].txt, colour ? nodes[i].color : "black");
+                if (nextMove.level < level.indexOf(nodes[i].txt)) {
+                    nextMove.level = level.indexOf(nodes[i].txt);
+                    nextMove.idx = nodes[i].idx;
+                }
+            }
         }
+        if (cBoard.MSindex + 1 === cBoard.MS.length && nextMove.idx > -1) cBoard.MS.push(nextMove.idx);
         let exWindow = control.getEXWindow();
         exWindow.innerHTML(innerHTML);
         if (innerHTML) exWindow.openWindow();
@@ -249,12 +258,15 @@ window.RenjuLib = (() => {
         showBranchs: function(param) {
             enable && wk.postMessage({ cmd: "showBranchs", parameter: param })
         },
-        isLoading: function(){
+        isLoading: function() {
             return isLoading;
         },
-        setCenterPos: function(point){
-            enable && wk.postMessage({ cmd: "setCenterPos", parameter: point })
+        setCenterPos: function(point) {
+            enable && wk.postMessage({ cmd: "setCenterPos", parameter: point });
             !enable && alert(`没有打开lib文件，不能修改棋谱参数`)
+        },
+        colour: function() {
+            colour = !colour;
         }
     }
 })()
