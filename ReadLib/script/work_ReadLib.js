@@ -13,7 +13,7 @@ if (self.importScripts){
         "./MoveNode.js",
         "./Stack.js"
     );
-    if(WebAssembly && typeof WebAssembly.instantiate == "function"){
+    if(false && WebAssembly && typeof WebAssembly.instantiate == "function"){
         self.importScripts("./RenLibDoc_wasm.js");
     }
     else{
@@ -35,8 +35,7 @@ function post(cmd, param) {
 }
 
 
-let renLibDoc = new CRenLibDoc(),
-    m_libfile = new LibraryFile();
+let renLibDoc = new CRenLibDoc();
 
 function getArrBuf(file) {
     return new Promise(function(resolve, reject) {
@@ -54,15 +53,9 @@ function getArrBuf(file) {
 function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
-            return new Promise(function(resolve, reject) {
-                if (renLibDoc.addLibrary(buf, m_libfile)) {
-                    post("finish");
-                    resolve()
-                }
-                else
-                    reject(new Error("addLibrary Error"))
-                m_libfile.close();
-            })
+             let rt = renLibDoc.addLibrary(buf);
+             post("finish");
+             return rt;
         })
         .then(function() {
             return new Promise(function(resolve, reject) {

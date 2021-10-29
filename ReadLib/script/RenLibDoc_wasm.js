@@ -70,7 +70,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         return PointToPos(Left) < PointToPos(Right);
     }
 
-
     //-------------------------------------------
 
     let centerPos = { x: 8, y: 8 };
@@ -155,6 +154,160 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         return point;
     }
 
+    //------------------ WebAssembly ---------------------
+
+    function grow(pages = 100) {
+        try {
+            memory.grow(pages);
+            let size = 1024 * 64 * pages,
+                len = size / 4,
+                buf = new Uint32Array(memory.buffer, memory.buffer.byteLength - size, len);
+            for (let i = 0; i < len; i++) {
+                buf[i] = 0;
+            }
+            post(`log`,`memory.grow(${pages}), buffer size = ${memory.buffer.byteLength/1024/1024}M`);
+            return pages;
+        }
+        catch (err) {
+            post(`error`, `${err}`);
+        }
+    }
+
+    function getBranchNodes(path) {
+        try {
+            let x, y,
+                uint8 = new Uint8Array(memory.buffer, 67648, 1024);
+            for (let i = 0; i < path.length; i++) {
+                x = path[i] % 15 + 1;
+                y = ~~(path[i] / 15) + 1;
+                uint8[i * 2] = x;
+                uint8[i * 2 + 1] = y;
+            }
+            exports._Z14getBranchNodesP6CPointi(67648, path.length);
+            post(`log`, `getBranchNodes end`);
+        }
+        catch (err) {
+            post(`error`, `${err}`);
+        }
+    }
+
+    function main() {
+        setTimeout(() => {
+            INPUT_CURRENT.value = exports._Z13getDataBufferv();
+            INPUT_LOADSIZE.value = load_length;
+            printBuffer();
+            log(buf2String(memory.buffer, exports._Z12getLogBufferv()));
+            document.querySelector('.sequence-memory').innerText = `${memory.buffer.byteLength/1024/1024}M`;
+        }, 1000);
+        try {
+            startTime = new Date().getTime();
+            document.querySelector('.sequence-time').innerText = `......`;
+            //exports._Z14test_newCPointj(1024*1024*8);
+            //exports._Z16test_newMoveNodej(1024*1024);
+            //log(exports._Z10test_Stacki(1024*1024));
+            //log(`getVariant = ${exports._Z15test_getVariantv()}`);
+            (grow(~~(LIB_SIZE / 1024 / 64 / 6 * 28) + 1),
+                log(`checkVersion = ${exports._Z12checkVersionv()}`),
+                log(`loadAllMoveNode() = ${exports._Z15loadAllMoveNodev()}`),
+                log(`createRenjuTree = ${exports._Z15createRenjuTreev()}`),
+                log(`getAutoMove = ${exports._Z11getAutoMovev()}`));
+            getBranchNodes([112, 98, 128, 126, 160, 96]);
+            document.querySelector('.sequence-time').innerText = ` ${new Date().getTime() - startTime}`;
+        }
+        catch (err) {
+            alert(err);
+            log(err);
+        }
+
+    }
+
+    const FREE_BUFFER_ADDRESS = 65536 * 158;
+    let current_Data = 0,
+        libData = new Uint8Array([255, 82, 101, 110, 76, 105, 98, 255, 3, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 120, 0, 121, 128, 106, 192, 91, 192, 76, 64, 122, 128, 107, 192, 92, 192, 77, 64, 123, 0, 108, 192, 93, 192, 78, 64]),
+        LIB_SIZE = libData.length;
+    let exports,
+        memory = new WebAssembly.Memory({ initial: 256, maximum: 256 * 256 }),
+        current = FREE_BUFFER_ADDRESS,
+        importObject = {
+            env: {
+                memcpy: function(param1, param2, param3) {
+                    log(`memcpy: start=${param1}, value=${param2}, length=${param3}`);
+                    let buf = new Uint8Array(memory.buffer, 0, memory.buffer.byteLength);
+                    for (let i = 0; i < param3; i++) {
+                        buf[param1 + i] = buf[param2 + i];
+                    }
+                    return param1;
+                },
+                memset: function(param1, param2, param3) {
+                    log(`memset: start=${param1}, value=${param2}, length=${param3}`);
+                    let buf = new Uint8Array(memory.buffer, param1, param3);
+                    for (let i = 0; i < param3; i++) {
+                        buf[i] = param2;
+                    }
+                    return param1;
+                },
+                _Z9getBufferPhj: function(pBuffer, size) {
+                    if (size == 0) return 0;
+                    if (current_Data < LIB_SIZE) {
+                        let i = 0,
+                            uintArray = new Uint8Array(memory.buffer, pBuffer, size);
+                        for (i = 0; i < size; i++) {
+                            if (current_Data >= LIB_SIZE) break;
+                            uintArray[i] = libData[current_Data++];
+                        }
+                        log(`pBuffer = ${pBuffer}, size = ${size}, rt = ${i}`);
+                        return i;
+                    }
+                    else {
+                        log(`pBuffer = ${pBuffer}, size = ${size}, rt = ${0}`);
+                        return 0;
+                    }
+                },
+                emscripten_resize_heap: function(...arg) {
+                    alert(`reset_heap ${arg}`);
+                },
+                _Z4growj: grow,
+            }
+        };
+    //从远程加载一个WASM的模块，并将该模块中的内容转换成二进制数据
+    let startTime = new Date().getTime(),
+        url = "../out/test.wasm";
+    document.querySelector('.sequence-url').innerText = url;
+    fetch(url)
+        .then(response => {
+            document.querySelector('.sequence-response').innerText = `${response}`;
+            return response.arrayBuffer()
+        })
+        .then(bytes => {
+            document.querySelector('.sequence-bytes').innerText = `${bytes}`;
+            //通过浏览器提供的标准WebAssembly接口来编译和初始化一个Wasm模块
+            return WebAssembly.instantiate(bytes, importObject);
+        })
+        .then(results => {
+            exports = results.instance.exports;
+            memory = exports.memory;
+
+            //输出下载，编译及实例化模块花费的时间
+            document.querySelector('.sequence-time').innerText = ` ${new Date().getTime() - startTime}`;
+            document.querySelector('.sequence-memory').innerText = `${memory.buffer.byteLength/1024/1024}M`;
+            document.querySelector('.sequence-message').innerText = exports._Z4initv();
+
+            //取出从Wasm模块中导出的函数
+            log(Object.keys(exports).join("\n<br>"));
+            log(`out_buffer address : ${exports._Z12getOutBufferv()}`);
+            log(`in_buffer address : ${exports._Z11getInBufferv()}`);
+            log(`log_buffer address : ${exports._Z12getLogBufferv()}`);
+            log(`error_buffer address : ${exports._Z14getErrorBufferv()}`);
+            log(`comment_buffer address : ${exports._Z16getCommentBufferv()}`);
+            log(`boardText_buffer address : ${exports._Z18getBoardTextBufferv()}`);
+            log(`libFile_buffer address : ${exports._Z16getLibFileBufferv()}`);
+            log(`data_buffer address : ${exports._Z13getDataBufferv()}`);
+
+            //main();
+        });
+        
+    //------------------ Doc ------------------------- 
+
     class Node {
         constructor(idx, txt = "", color = "black") {
             this.idx = idx;
@@ -166,7 +319,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
     class CRenLibDoc {
         constructor() {
             this.m_MoveList = new MoveList();
-            this.m_file;
+            this.m_file = new JFile();
 
             this.nodeCount = 0;
         }
@@ -253,7 +406,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
     }
 
 
-    CRenLibDoc.prototype.addLibrary = function(libFile, FullTree) {
+    CRenLibDoc.prototype.addLibrary = function(buf) {
+
+        if (!libFile.open(buf)) {
+            throw new Error("libFile Open Error");
+            return false;
+        }
+
         post("log", "addLibrary")
         if (!libFile.checkVersion()) {
             throw new Error(`不是五子棋棋谱`)

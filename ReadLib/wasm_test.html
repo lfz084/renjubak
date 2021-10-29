@@ -296,7 +296,7 @@
             };
         //从远程加载一个WASM的模块，并将该模块中的内容转换成二进制数据
         let startTime = new Date().getTime(),
-            url = "../out/test.wasm";
+            url = "script/RenLib.wasm";
         document.querySelector('.sequence-url').innerText = url;
         fetch(url)
             .then(response => {

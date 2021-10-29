@@ -313,6 +313,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveNode"] = "v1006.00";
                 return alpha.charAt(pos.x - 1).toUpperCase() + mbArr[(15 - pos.y)];
         }
     }
+    
+    MoveNode.prototype.getName = function() {
+        return this.pos2Name(this.getPos());
+    }
 
     MoveNode.prototype.toRenjuNode = function(renjuNode = new RenjuNode()) {
         renjuNode.idx = this.mPos.x - 1 + (this.mPos.y - 1) * 15;

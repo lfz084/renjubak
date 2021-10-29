@@ -448,17 +448,19 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
     }
 
 
-    CRenLibDoc.prototype.addLibrary = function(buf, libFile, FullTree) {
+    CRenLibDoc.prototype.addLibrary = function(buf) {
+        
+        let libFile = new LibraryFile();
         
         if (!libFile.open(buf)) {
             throw new Error("libFile Open Error");
-            return false;
+            return Promise.reject();
         }
-            
+
         post("log", "addLibrary")
         if (!libFile.checkVersion()) {
             throw new Error(`不是五子棋棋谱`)
-            return false;
+            return Promise.reject();
         }
 
         let m_Stack = new Stack();
@@ -501,23 +503,26 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
-                post("log", "Skip root node")
+                post("log", `Skip root node, number=${number}, m_Stack.isEmpty=${m_Stack.isEmpty()}`)
                 if (checkRoot)
                     checkRoot = false;
-                else
+                else{
+                    //pCurrentMove = this.m_MoveList.getRoot();
+                    //this.m_MoveList.setRootIndex();
                     continue;
+                }
             }
             else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
                 next.setPos(new JPoint(1, 1));
                 next.setIsMark(true);
                 //SetModifiedFlag();
                 post("error", "Point err")
-                return false;
+                return Promise.reject();
             }
             else {
                 number++;
                 //console.log(`number=${number}`)
-
+                //number<1000 && post("log", `${next.getName()},${getIdx(next)}, isDown=${next.isDown}`);
                 pNextMove = this.getVariant(pCurrentMove, next.getPos());
 
                 if (pNextMove) {
@@ -590,9 +595,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
                 if (!m_Stack.isEmpty()) {
                     let nMove = [0];
                     m_Stack.pop(nMove);
-                    //console.log(`m_Stack.pop ${nMove[0]-1}`)
                     this.m_MoveList.setIndex(nMove[0] - 1);
                     pCurrentMove = this.m_MoveList.current();
+                    //nMove[0]<=1 && post("log",`m_Stack.pop nMove=${nMove[0]-1}, pMove=${pCurrentMove.getName()}`);
                 }
             }
 
@@ -600,6 +605,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
 
         post("loading", { current: libFile.current(), end: libFile.end(), count: number });
         post("info", `loop << number = ${number}`);
+
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();
@@ -608,18 +614,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
 
         let strInfo;
 
-        if (FullTree) {
-            //strInfo = Utils::GetString(IDS_READ_MOVES, nNewMoves);
+        if (pFirstMove) {
+            //console.log("findMoveNode")
+            this.findMoveNode(pFirstMove);
         }
-        else {
-            if (pFirstMove) {
-                //console.log("findMoveNode")
-                this.findMoveNode(pFirstMove);
-            }
-        }
-        
-        libFile.close();
-        return true;
+
+        return Promise.resolve(true);
     }
 
 
@@ -786,7 +786,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             NS,
             normalizeNS;
         post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 1; i++) {
             //if (i==1) break;
             PH = transposePath(path, i);
             //post("log",`i=${i}, path=[${PH}]`)
