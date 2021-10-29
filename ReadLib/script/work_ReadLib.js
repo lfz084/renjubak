@@ -1,7 +1,7 @@
 "use strict"
 if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1006.00";
 
-if (self.importScripts)
+if (self.importScripts){
     self.importScripts(
         "../../script/IntervalPost.js",
         "../../script/RenjuTree.js",
@@ -11,9 +11,15 @@ if (self.importScripts)
         "./LibraryFile.js",
         "./MoveList.js",
         "./MoveNode.js",
-        "./Stack.js",
-        "./RenLibDoc.js"
-    )
+        "./Stack.js"
+    );
+    if(WebAssembly && typeof WebAssembly.instantiate == "function"){
+        self.importScripts("./RenLibDoc_wasm.js");
+    }
+    else{
+        self.importScripts("./RenLibDoc.js");
+    }
+}
 else
     throw new Error("self.importScripts is undefined")
 
@@ -49,17 +55,13 @@ function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
             return new Promise(function(resolve, reject) {
-                if (m_libfile.open(buf)) {
-                    if (renLibDoc.addLibrary(m_libfile)) {
-                        post("finish");
-                        resolve()
-                    }
-                    else
-                        reject(new Error("addLibrary Error"))
-                    m_libfile.close();
+                if (renLibDoc.addLibrary(buf, m_libfile)) {
+                    post("finish");
+                    resolve()
                 }
                 else
-                    reject(new Error("m_libfile Open Error"))
+                    reject(new Error("addLibrary Error"))
+                m_libfile.close();
             })
         })
         .then(function() {
@@ -97,7 +99,7 @@ function showBranchs(param) {
     post("showBranchs", rt);
 }
 
-function setCenterPos(point){
+function setCenterPos(point) {
     renLibDoc.setCenterPos(point);
 }
 

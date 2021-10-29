@@ -13,7 +13,7 @@
 
         button {
             font-size: 30px;
-            width: 150px;
+            width: 130px;
             height: 50px;
             border: solid black 1px;
         }
@@ -50,6 +50,7 @@
         <button id="but_file">loadFile</button>
         <button id="but_text">text</button>
         <button id="but_code">code</button>
+        <button id="but_bytes"> bytes </button>
         <button id="but_next"> >> </button>
         <button id="but_previous">
             << </button>
@@ -62,7 +63,7 @@
         </textarea>
     </div>
     <script>
-        alert("ver0905.03")
+        //alert("ver0905.03")
         let charset = "utf-8";
         let xx = new GB2312UTF8();
         let renLibDoc = new CRenLibDoc();
@@ -102,12 +103,13 @@
         const BUT_FILE = document.getElementById("but_file"),
             BUT_TEXT = document.getElementById("but_text"),
             BUT_CODE = document.getElementById("but_code"),
+            BUT_BYTES = document.getElementById("but_bytes"),
             BUT_NEXT = document.getElementById("but_next"),
             BUT_PREVIOUS = document.getElementById("but_previous"),
             BUT_START = document.getElementById("but_start"),
             INPUT_FILE = document.getElementById("file"),
             TEXTBOX = document.getElementById("textBox"),
-            LOAD_LENGTH = 2048;
+            LOAD_LENGTH = 4096;
         let arrBuf,
             dataView,
             currentDataView,
@@ -132,8 +134,11 @@
             if (BUT_TEXT.selected) {
                 BUT_TEXT.onclick();
             }
-            else {
+            else if(BUT_CODE.selected){
                 BUT_CODE.onclick();
+            }
+            else{
+                BUT_BYTES.onclick();
             }
         }
 
@@ -158,7 +163,8 @@
                 txt = loadAsText();
             BUT_TEXT.selected = true;
             BUT_CODE.selected = false;
-            TEXTBOX.value = `start = ${start} end = ${end} << \n${txt}`;
+            BUT_BYTES.selected = false;
+            TEXTBOX.value = `start = ${start} end = ${end} << pageSize = ${LOAD_LENGTH}\n${txt}`;
             //alert("<< txt\n" + txt)
         };
         BUT_CODE.onclick = () => {
@@ -169,7 +175,20 @@
                 code = loadAsCode();
             BUT_TEXT.selected = false;
             BUT_CODE.selected = true;
-            TEXTBOX.value = `start = ${start}, end = ${end} << \n${code}`;
+            BUT_BYTES.selected = false;
+            TEXTBOX.value = `start = ${start}, end = ${end} << pageSize = ${LOAD_LENGTH}\n${code}`;
+            //alert("<<  code\n" + code)
+        };
+        BUT_BYTES.onclick = () => {
+            let start = currentDataView,
+                end = currentDataView + LOAD_LENGTH < dataViewLength ?
+                currentDataView + LOAD_LENGTH - 1 :
+                dataViewLength - 1,
+                bytes = loadAsBytes();
+            BUT_TEXT.selected = false;
+            BUT_CODE.selected = false;
+            BUT_BYTES.selected = true;
+            TEXTBOX.value = `start = ${start}, end = ${end} << pageSize = ${LOAD_LENGTH}\n${bytes}`;
             //alert("<<  code\n" + code)
         };
         BUT_NEXT.onclick = () => {
@@ -185,6 +204,7 @@
                     currentDataView = 0;
                     dataViewLength = buf.byteLength;
                 })
+                .then(loadBuffer)
             //wk.postMessage(file);
         }
 
@@ -209,6 +229,19 @@
                     break;
                 }
                 txt += ("00000000" + dataView.getUint8(i + currentDataView).toString(2)).slice(-8) + " ";
+            }
+            //console.log(txt)
+            return txt;
+        }
+        
+        function loadAsBytes(start = 0, end = LOAD_LENGTH) {
+            let txt = "",
+                i;
+            for (i = start; i < end; i++) {
+                if (i + currentDataView >= dataViewLength) {
+                    break;
+                }
+                txt += `${dataView.getUint8(i + currentDataView)},`;
             }
             //console.log(txt)
             return txt;

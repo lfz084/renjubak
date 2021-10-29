@@ -178,23 +178,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         post("alert", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
     }
 
-    CRenLibDoc.prototype.readOldComment = function(libFile, pStrOneLine = [], pStrMultiLine = []) {
-
-        function msb(ch) {
-            return (ch & 0x80);
-        }
-
-        let buffer = new Uint8Array(2);
-        pStrOneLine[0] = "";
-        pStrMultiLine[0] = "";
-
-        while (true) {
-            libFile.get(buffer);
-            if (msb(buffer[0]) || msb(buffer[1])) break;
-        }
-
-    }
-
     CRenLibDoc.prototype.readNewComment = function(libFile, pStrOneLine = [0], pStrMultiLine = [0]) {
         let buffer = new Uint8Array(2),
             strNew = [];
@@ -269,192 +252,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         */
     }
 
-    CRenLibDoc.prototype.findMoveNode = function(pMoveToFind) {
-        let m_Stack = new Stack();
 
-        let isFound = false;
-
-        let pMove = [this.m_MoveList.getRoot()];
-        this.m_MoveList.clearAll();
-
-        let done = false;
-
-        while (!done) {
-            if (pMove[0]) {
-                this.m_MoveList.add(pMove[0]);
-
-                if (pMove[0] == pMoveToFind) {
-                    isFound = true;
-                    break;
-                }
-
-                if (pMove[0].getRight()) {
-                    m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
-                }
-
-                pMove[0] = pMove[0].getDown();
-            }
-            else if (!m_Stack.isEmpty()) {
-                let nMove = [0];
-                m_Stack.pop(nMove, pMove[0]);
-                this.m_MoveList.setIndex(nMove[0] - 1);
-            }
-            else {
-                this.m_MoveList.setRootIndex();
-                pMove[0] = this.m_MoveList.current();
-                done = true;
-            }
-        }
-
-        //m_Board.SetLastMove(pMove[0].getPos());
-        //SetPreviousVariant();
-
-        // Clear end of move list
-        this.m_MoveList.clearEnd();
-
-        return isFound;
-    }
-
-    CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos) {
-
-        let current = this.m_MoveList.index();
-        for (let i = 0; i <= current; i++) { // 兼容 Rapfi 制谱
-            let pM = this.m_MoveList.get(i);
-            if (pM.getPos().x == Pos.x && pM.getPos().y == Pos.y) {
-                post("log", "Rapfi");
-                return pM;
-            }
-        }
-        if (pMove.getDown()) { //RenLib 3.6 标准
-            pMove = pMove.getDown();
-
-            if (pMove.getPos().x == Pos.x && pMove.getPos().y == Pos.y) return pMove;
-
-            while (pMove.getRight()) {
-                pMove = pMove.getRight();
-                if (pMove.getPos().x == Pos.x && pMove.getPos().y == Pos.y) return pMove;
-            }
-        }
-
-        return 0;
-    }
-
-    CRenLibDoc.prototype.addMove = function(pMove = new MoveNode(), pNewMove = new MoveNode()) {
-        //console.log("addMove")
-        if (pMove.getDown() == 0) {
-            //console.log("addMove 1")
-            pMove.setDown(pNewMove);
-            //pNewMove.setRight(0);
-        }
-        else {
-            //console.log("addMove 2")
-            if (LessThan(pNewMove.getPos(), pMove.getDown().getPos())) {
-                //console.log("addMove 2.1")
-                pNewMove.setRight(pMove.getDown());
-                pMove.setDown(pNewMove);
-            }
-            else {
-                //console.log("addMove 2.2")
-                pMove = pMove.getDown();
-
-                while (true) {
-                    //console.log("addMove 2.3")
-                    if (pMove.getRight() == 0) {
-                        pMove.setRight(pNewMove);
-                        //pNewMove.setRight(0);
-                        break;
-                    }
-                    else if (LessThan(pNewMove.getPos(), pMove.getRight().getPos())) {
-                        pNewMove.setRight(pMove.getRight());
-                        pMove.setRight(pNewMove);
-                        break;
-                    }
-                    pMove = pMove.getRight();
-                }
-            }
-        }
-    }
-
-    CRenLibDoc.prototype.addComment = function(pMove, pStrOneLine = "", pStrMultiLine = "") {
-        let isComment = false;
-
-        if (pStrOneLine) {
-            isComment = true;
-
-            if (!pMove.getOneLineComment()) {
-                pMove.setOneLineComment(pStrOneLine);
-            }
-            /*
-            else if (pMove.getOneLineComment() != pStrOneLine[0]){
-                m_SearchList.Add(SearchItem(pMove, pStrOneLine, SearchItem::ONE_LINE_COMMENT));
-            }*/
-        }
-
-        if (pStrMultiLine) {
-            isComment = true;
-
-            if (!pMove.getMultiLineComment()) {
-                pMove.setMultiLineComment(pStrMultiLine);
-            }
-            /*
-            else if (pMove.getMultiLineComment() != pStrMultiLine[0] &&
-                !Sgf::equalComment(pMove - > getMultiLineComment(), pStrMultiLine))
-            {
-                m_SearchList.Add(SearchItem(pMove, pStrMultiLine, SearchItem::MULTI_LINE_COMMENT));
-            }*/
-        }
-
-        return isComment;
-    }
-
-    CRenLibDoc.prototype.addBoardText = function(pMove, boardText = "") {
-        let isBoardText = false;
-
-        if (boardText) {
-            isBoardText = true;
-
-            if (!pMove.getBoardText()) {
-                pMove.setBoardText(boardText);
-            }
-            /*
-            else if (pMove.getBoardText() != boardText){
-                m_SearchList.Add(SearchItem(pMove, boardText, SearchItem::BOARD_TEXT));
-            }*/
-        }
-
-        return isBoardText;
-    }
-
-    CRenLibDoc.prototype.addAttributes = function(pMove, pFrom, bMark = [], bMove = [], bStart = []) {
-
-        bMark[0] = false;
-        bMove[0] = false;
-        bStart[0] = false;
-
-        if (pFrom.isMark() && !pMove.isMark()) {
-            bMark[0] = true;
-            pMove.setIsMark(bMark[0]);
-        }
-
-        if (pFrom.isMove() && !pMove.isMove()) {
-            bMove[0] = true;
-            pMove.setIsMove(bMove[0]);
-        }
-
-        if (pFrom.isStart() && !pMove.isStart()) {
-            bStart[0] = true;
-            pMove.setIsStart(bStart[0]);
-        }
-    }
-
-
-    CRenLibDoc.prototype.addLibrary = function(buf, libFile, FullTree) {
-        
-        if (!libFile.open(buf)) {
-            throw new Error("libFile Open Error");
-            return false;
-        }
-            
+    CRenLibDoc.prototype.addLibrary = function(libFile, FullTree) {
         post("log", "addLibrary")
         if (!libFile.checkVersion()) {
             throw new Error(`不是五子棋棋谱`)
@@ -508,6 +307,18 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
                     continue;
             }
             else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
+                // ERROR checking code
+                /*
+                CString strMessage;
+                strMessage += Utils::GetString(IDS_MSG_LIBRARY_DATA, number);
+                strMessage += "\n";
+                strMessage r+= Utils::GetString(IDS_MSG_POSITION, next.getPos());
+                strMessage += "\n\n";
+                strMessage += Utils::GetString(IDS_MSG_REPORT);
+                strMessage += "\n\n";
+                strMessage += Utils::GetString(IDS_MSG_NOTE);
+                Utils::ShowMessage(strMessage, Utils::GetString(IDS_CAP_ADD_TABLE), MB_ICONERROR);
+                */
                 next.setPos(new JPoint(1, 1));
                 next.setIsMark(true);
                 //SetModifiedFlag();
@@ -606,19 +417,38 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             this.nodeCount = number;
         }
 
+        //m_Board.setLastMove(Center);
+        //SetPreviousVariant();
+
         let strInfo;
 
         if (FullTree) {
             //strInfo = Utils::GetString(IDS_READ_MOVES, nNewMoves);
         }
         else {
+            /*
+            strInfo = Utils::GetString(IDS_ADDED_MOVES, nNewMoves, number);
+            
+            if (nNewMoves || nComments || nMarks)
+            {
+                m_eMode = UPDATE_MODE;
+                SetModifiedFlag();  
+            }
+            */
             if (pFirstMove) {
                 //console.log("findMoveNode")
                 this.findMoveNode(pFirstMove);
             }
         }
-        
-        libFile.close();
+
+        /*
+        strInfo += Utils::GetString(IDS_INFO_COMMENTS, nComments);
+        strInfo += Utils::GetString(IDS_INFO_BOARD_TEXTS, nBoardTexts);
+        strInfo += Utils::GetString(IDS_INFO_MARKS, nMarks);
+        strInfo += Utils::GetString(IDS_INFO_FROM, libFile.GetFilePath());
+
+        SetPaneText(strInfo);
+        */
         return true;
     }
 
@@ -820,64 +650,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         }
         return path;
     }
-
-
-    CRenLibDoc.prototype.toRenjuTree = function(renjuTree = new RenjuTree()) {
-        let m_Stack = new Stack();
-
-        let pMove = [this.m_MoveList.getRoot()],
-            rNode = renjuTree,
-            r_MoveList = new MoveList();
-
-        this.m_MoveList.clearAll();
-
-        let done = false;
-        post("log", "copying...")
-        let t_start = new Date().getTime();
-        let number = 0,
-            removeCount = 0;
-        while (!done) {
-            intervalPost.post("createTree", { current: number, end: this.nodeCount })
-            if (pMove[0]) {
-                number++
-                //if (number < 0) post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
-
-                if (this.m_MoveList.index() > -1) {
-                    rNode = pMove[0].toRenjuNode();
-                    r_MoveList.current().pushChildNode(rNode)
-                }
-
-                this.m_MoveList.add(pMove[0]);
-                r_MoveList.add(rNode)
-
-                if (pMove[0].getRight()) {
-                    //if (number < 0) post("log", "stack push")
-                    m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
-                }
-
-                pMove[0] = pMove[0].getDown()
-            }
-            else if (!m_Stack.isEmpty()) {
-                let nMove = [0],
-                    count = number - removeCount;
-                m_Stack.pop(nMove, pMove);
-                this.m_MoveList.setIndex(nMove[0] - 1);
-                r_MoveList.setIndex(nMove[0] - 1);
-            }
-            else {
-                this.m_MoveList.setRootIndex();
-                r_MoveList.setRootIndex();
-                pMove[0] = this.m_MoveList.current();
-                done = true;
-                //post(number - removeCount);
-            }
-        }
-        post("createTree", { current: number - 1, end: this.nodeCount })
-        post("info", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
-        this.m_MoveList.clearEnd();
-        return renjuTree;
-    }
-
 
     exports.CRenLibDoc = CRenLibDoc;
 })))
