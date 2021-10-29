@@ -300,7 +300,20 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveNode"] = "v1006.00";
 
 
     //--------------------------------------------------------
-
+    
+    MoveNode.prototype.Info2Code = function(){
+        let s = "",
+            i = 0;
+        i = (this.mInfo >> 24) & 0xFF;
+        s += ("00000000" + i.toString(2)).slice(-8) + " ";
+        i = (this.mInfo >> 16) & 0xFF;
+        s += ("00000000" + i.toString(2)).slice(-8) + " ";
+        i = (this.mInfo >> 8) & 0xFF;
+        s += ("00000000" + i.toString(2)).slice(-8) + " ";
+        i = this.mInfo & 0xFF;
+        s += ("00000000" + i.toString(2)).slice(-8) + " ";
+        return s;
+    }
 
     MoveNode.prototype.pos2Name = function(pos) {
         let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",

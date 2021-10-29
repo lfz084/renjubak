@@ -522,7 +522,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             else {
                 number++;
                 //console.log(`number=${number}`)
-                //number<1000 && post("log", `${next.getName()},${getIdx(next)}, isDown=${next.isDown}`);
+                number<100 && post("log", `${next.getName()}, ${next.Info2Code()}, isDown=${next.isDown()}, isRight=${next.isRight()}`);
                 pNextMove = this.getVariant(pCurrentMove, next.getPos());
 
                 if (pNextMove) {
