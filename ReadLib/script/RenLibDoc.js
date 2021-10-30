@@ -500,6 +500,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
 
             const Point = new JPoint(next.getPos());
             //post("log", next.getPos())
+            number<150 && post("log", `${number}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
@@ -522,7 +523,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             else {
                 number++;
                 //console.log(`number=${number}`)
-                number<100 && post("log", `${next.getName()}, ${next.Info2Code()}, isDown=${next.isDown()}, isRight=${next.isRight()}`);
+                
                 pNextMove = this.getVariant(pCurrentMove, next.getPos());
 
                 if (pNextMove) {
@@ -585,6 +586,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             if (bMark[0] || next.isMark()) {
                 nMarks++;
             }
+            
+            number<150 && next.isDown() && next.isRight() && post("error", number );
 
             if (next.isDown()) {
                 //console.log(`m_Stack.push ${this.m_MoveList.index()}`)
