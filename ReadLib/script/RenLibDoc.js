@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -219,7 +219,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         }
 
         strNew = bufferGBK2Unicode(strNew)
-        post("log", `${strNew}`)
+        //post("log", `${strNew}`)
         let n = strNew.indexOf(String.fromCharCode(10));
         if (n == -1) {
             pStrOneLine[0] = strNew;
@@ -315,13 +315,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         return isFound;
     }
 
-    CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos) {
+    CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos, number = -1) {
 
         let current = this.m_MoveList.index();
         for (let i = 0; i <= current; i++) { // 兼容 Rapfi 制谱
             let pM = this.m_MoveList.get(i);
             if (pM.getPos().x == Pos.x && pM.getPos().y == Pos.y) {
-                post("log", "Rapfi");
+                let sPath = "";
+                //for(let j=1; j<=i; j++){ sPath += `${this.m_MoveList.get(j).getName()}, `}
+                //post("log", `Rapfi number=${number}, ${current} << ${i}\n${sPath}`);
                 return pM;
             }
         }
@@ -495,23 +497,41 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
         let checkRoot = true;
 
         let next = new MoveNode();
+        
+        /*let list = [];
+        function isEq(m_list){
+            if(m_list.index()==list.length){
+                for(let i=0; i<list.length; i++){
+                    //post("info", `${list[i].getName()} == ${m_list.get(i+1).getName()}`)
+                    if(list[i]!=m_list.get(i+1)) return false;
+                }
+                return true;
+            }
+            else{
+                return false;
+            }
+        }*/
 
         while (libFile.get(next)) {
 
             const Point = new JPoint(next.getPos());
             //post("log", next.getPos())
-            number<150 && post("log", `${number}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
+            number<1000 && post("log", `${number}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
+            /*if(number < 752201 && this.m_MoveList.index()==3 && (!isEq(this.m_MoveList))){
+                let s = `${number}, `;
+                list.length = 0;
+                for(let i=1; i<=this.m_MoveList.index(); i++){
+                    s += this.m_MoveList.get(i).getName() + ",";
+                    list.push(this.m_MoveList.get(i));
+                }
+                post("log", s);
+            }*/
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
-                post("log", `Skip root node, number=${number}, m_Stack.isEmpty=${m_Stack.isEmpty()}`)
+                //post("log", `Skip root node, number=${number}, m_Stack.isEmpty=${m_Stack.isEmpty()}\n ${next.Info2Code()}`)
                 if (checkRoot)
                     checkRoot = false;
-                else{
-                    //pCurrentMove = this.m_MoveList.getRoot();
-                    //this.m_MoveList.setRootIndex();
-                    continue;
-                }
             }
             else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
                 next.setPos(new JPoint(1, 1));
@@ -524,7 +544,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
                 number++;
                 //console.log(`number=${number}`)
                 
-                pNextMove = this.getVariant(pCurrentMove, next.getPos());
+                pNextMove = this.getVariant(pCurrentMove, next.getPos(), number);
 
                 if (pNextMove) {
                     //console.log(`pNextMove=${pNextMove}`)
@@ -587,11 +607,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
                 nMarks++;
             }
             
-            number<150 && next.isDown() && next.isRight() && post("error", number );
+            //number<150 && next.isDown() && next.isRight() && post("error", number );
 
             if (next.isDown()) {
                 //console.log(`m_Stack.push ${this.m_MoveList.index()}`)
-                m_Stack.push(this.m_MoveList.index());
+                // Rapfi 制谱的棋谱 Root 节点 会添加 isDown属性，导致终结者打不开棋谱 index() > 0 避开这个bug
+                this.m_MoveList.index() > 0 && m_Stack.push(this.m_MoveList.index());
             }
 
             if (next.isRight()) {
@@ -789,7 +810,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1006.00";
             NS,
             normalizeNS;
         post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 8; i++) {
             //if (i==1) break;
             PH = transposePath(path, i);
             //post("log",`i=${i}, path=[${PH}]`)

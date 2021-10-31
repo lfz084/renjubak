@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1006.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1031.01";
 
 if (self.importScripts){
     self.importScripts(
@@ -13,7 +13,7 @@ if (self.importScripts){
         "./MoveNode.js",
         "./Stack.js"
     );
-    if(false && WebAssembly && typeof WebAssembly.instantiate == "function"){
+    if(0 && WebAssembly && typeof WebAssembly.instantiate == "function"){
         self.importScripts("./RenLibDoc_wasm.js");
     }
     else{
@@ -54,8 +54,11 @@ function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
              let rt = renLibDoc.addLibrary(buf);
-             post("finish");
              return rt;
+        })
+        .then(function(){
+            post("finish");
+            return Promise.resolve();
         })
         .then(function() {
             return new Promise(function(resolve, reject) {
@@ -92,15 +95,21 @@ function showBranchs(param) {
     post("showBranchs", rt);
 }
 
-function setCenterPos(point) {
+function setCenterPos(point) {  
     renLibDoc.setCenterPos(point);
+}
+
+function setBufferScale(scl){ // WebAssembly only
+    typeof renLibDoc.setBufferScale == "function" &&
+        renLibDoc.setBufferScale(scl);
 }
 
 let bf = [];
 const CMD = {
     openLib: openLib,
     showBranchs: showBranchs,
-    setCenterPos: setCenterPos
+    setCenterPos: setCenterPos,
+    setBufferScale: setBufferScale
 }
 onmessage = function(e) {
     if (e.data) {

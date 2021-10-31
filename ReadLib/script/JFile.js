@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1006.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1031.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -75,7 +75,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1006.00";
         return this.m_fileName;
     };
     
-    
+    JFile.prototype.byteLength = function() {
+        return this.m_end;
+    };
     
     
     //-----------------------------------------

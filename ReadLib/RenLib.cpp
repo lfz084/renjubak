@@ -8,6 +8,8 @@ typedef char* CString;
 
 extern UINT getBuffer(BYTE* pBuf, UINT size);
 extern UINT grow(UINT pages);
+extern void loading(UINT current, UINT end);
+
 /*
 UINT getBuffer(BYTE* pBuf, UINT size){
     static UINT current=0;
@@ -1174,6 +1176,53 @@ struct Node{
     UINT color;
 };
 
+struct InnerHTMLInfo{
+    char* innerHTML;
+    int depth;
+};
+
+void findNode(MoveNode*& pMove, CPoint Pos) {
+    while (pMove) {
+        if (pMove->mPos == Pos) {
+            break;
+        }
+        else if (pMove->mRight) {
+            pMove = pMove->mRight;
+        }
+        else {
+            pMove = 0;
+            break;
+        }
+    }
+}
+
+void searchInnerHTMLInfo(CPoint* posArr, UINT len) {
+    MoveNode* pMove = rootMoveNode;
+    CPoint* pPos = (CPoint*)in_buffer;
+    struct InnerHTMLInfo* innerHTMLInfo = (struct InnerHTMLInfo*)out_buffer;
+    innerHTMLInfo->innerHTML = pMove->mOneLineComment;
+    innerHTMLInfo->depth =  -1;
+    
+    for (UINT i = 0; i < len; i++) {
+        if (pMove->mDown) {
+            pMove = pMove->mDown;
+            findNode(pMove, pPos[i]);
+            if (pMove){
+                if(pMove->mOneLineComment && i == len - 1) {
+                    innerHTMLInfo->innerHTML = pMove->mOneLineComment;
+                    innerHTMLInfo->depth = i;
+                }
+            }
+            else {
+                break;
+           }
+        }
+        else {
+            break;
+        }
+    }
+}
+
 int indexOf(CPoint Pos, CPoint* posArr, int len){
     for(int i=0; i<len; i++){
         if(posArr[i] == Pos) return i;
@@ -1208,7 +1257,7 @@ void getBranchNodes(CPoint* posArr, int len){
                     if(idx > -1 && idx%2 == (listLength-1)%2){
                         pMove = pMove->mDown;
                     }
-                    else if(idx == -1 && jointNode.pMove == 0 && idx%2 == len%2){
+                    else if(idx == -1 && jointNode.pMove == 0 && listLength%2 == (len+1)%2){
                         jointNode.nMove = listLength;
                         jointNode.pMove = pMove;
                         pMove = pMove->mDown;
@@ -1218,11 +1267,20 @@ void getBranchNodes(CPoint* posArr, int len){
                     }
                 }
                 else if(listLength == len + 1){
-                    pNode->mPos = idx==-1 ? pMove->mPos : jointNode.pMove->mPos;
-                    pNode->txt = pMove->mBoardText;
-                    pNode->color = 0;
-                    pNode++;
-                    (*count)++;
+                    if(idx>=0){
+                        pNode->mPos = jointNode.pMove->mPos;
+                        pNode->txt = pMove->mBoardText;
+                        pNode->color = 0;
+                        pNode++;
+                        (*count)++;
+                    }
+                    else if(idx==-1 && jointNode.pMove==0){
+                        pNode->mPos = pMove->mPos;
+                        pNode->txt = pMove->mBoardText;
+                        pNode->color = 0;
+                        pNode++;
+                        (*count)++;
+                    }
                     pMove = 0;
                 }
             //}
@@ -1248,13 +1306,6 @@ void getBranchNodes(CPoint* posArr, int len){
 //-------------------- RenLib Tree ------------------
 
 UINT m_MoveNode_count = 0;
-
-void copyStr(CString str, UINT len){
-    char* nStr = (char*)newBuffer(len);
-    for(UINT i=0; i<len; i++){
-        nStr[i] = str[i];
-    }
-}
 
 bool checkVersion(){
     if(m_file->CheckVersion()){
@@ -1282,7 +1333,7 @@ bool checkVersion(){
 UINT loadAllMoveNode(){
     m_MoveNode_count = 0;
     MoveNode* next = (MoveNode*)newBuffer(sizeof(MoveNode));
-    log("next = newMoveNode()");
+    //log("next = newMoveNode()");
     int len = 0;
     char* str;
     while(m_file->Get(*next)){
@@ -1320,7 +1371,7 @@ UINT loadAllMoveNode(){
         }
         next = (MoveNode*)newBuffer(sizeof(MoveNode));
     }
-    log("loadAllMoveNode end");
+    //log("loadAllMoveNode end");
     return m_MoveNode_count;
 }
 
@@ -1331,14 +1382,18 @@ bool createRenjuTree(){
     MoveNode* pCurrentMove = rootMoveNode;
     MoveNode* pNextMove = 0;
     MoveNode* next = pCurrentMove;
+    
+    m_MoveList->SetRootIndex();
+    
     for(UINT i=1; i<m_MoveNode_count; i++){
         next++;
-        log(next->getName());
+        //log(next->getName());
+        if(i%1000000==0) loading(i, m_MoveNode_count);
+        
         CPoint Point(next->mPos);
                     
         if (Point == NullPoint) {
             //log(STR_SKIP_ROOT_NODE);
-            continue;
         }
         else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
             //log(STR_CHECKING_CODE_ERR);
@@ -1360,18 +1415,18 @@ bool createRenjuTree(){
             }
             //log(STR_GETVARIANT);
             m_MoveList->Add(pCurrentMove);
-            
-            if (next->isDown()) {
-                m_Stack->Push(m_MoveList->Index());
-            }
-            
-            if (next->isRight()) {
-                if (!m_Stack->IsEmpty()) {
-                    int nMove = 0;
-                    m_Stack->Pop(nMove);
-                    m_MoveList->SetIndex(nMove - 1);
-                    pCurrentMove = m_MoveList->Current();
-                }
+        }
+        
+        if (next->isDown()) {
+            if(m_MoveList->Index() > 0) m_Stack->Push(m_MoveList->Index());
+        }
+                    
+        if (next->isRight()) {
+            if (!m_Stack->IsEmpty()) {
+                int nMove = 0;
+                m_Stack->Pop(nMove);
+                m_MoveList->SetIndex(nMove - 1);
+                pCurrentMove = m_MoveList->Current();
             }
         }
     }

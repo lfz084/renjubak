@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1006.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1031.01";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -42,7 +42,8 @@ window.RenjuLib = (() => {
         setPlayModel,
         isLoading = false,
         lock = false,
-        colour = false;
+        colour = false,
+        buffer_scale = 28/6;
 
     const MODEL_RENLIB = 7;
 
@@ -93,6 +94,11 @@ window.RenjuLib = (() => {
             autoMove(data);
         }
     };
+    
+    function setBufferScale(scl = 28 / 6) {
+        buffer_scale = scl;
+        alert(`已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
+    }
 
     function createWorker() {
         if (errCount > 5) return;
@@ -126,6 +132,7 @@ window.RenjuLib = (() => {
         enable = false;
         isLoading = true;
         wk = createWorker();
+        wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale });
         wk.postMessage({ cmd: "openLib", parameter: file });
         timer = setInterval(catchErr, 1000);
         sTime = new Date().getTime();
@@ -139,8 +146,11 @@ window.RenjuLib = (() => {
     function loading(data) {
         let current = data.current,
             end = data.end,
-            count = data.count;
-        setLoading(`${~~(current / end * 100)}%  /  ${count}`);
+            count = data.count,
+            message = `${~~(current / end * 100)}%`;
+            if(typeof count=="number") message += `  /  ${count}`;
+        setLoading(message);
+        sTime = new Date().getTime();
     }
     /*
     function createTree(data) {
@@ -256,7 +266,7 @@ window.RenjuLib = (() => {
             //wk = createWorker();
         },
         showBranchs: function(param) {
-            enable && wk.postMessage({ cmd: "showBranchs", parameter: param })
+            enable && wk.postMessage({ cmd: "showBranchs", parameter: param });
         },
         isLoading: function() {
             return isLoading;
@@ -267,6 +277,7 @@ window.RenjuLib = (() => {
         },
         colour: function() {
             colour = !colour;
-        }
+        },
+        setBufferScale: setBufferScale
     }
 })()

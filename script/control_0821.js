@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1006.00";
+self.SCRIPT_VERSIONS["control"] = "v1031.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1246,6 +1246,18 @@ window.control = (() => {
         fileInput.setAttribute("type", "file");
         fileInput.style.display = "none";
         renjuCmddiv.appendChild(fileInput);
+        
+        function setBufferScale() {
+            let w = cBd.width * 0.8;
+            let h;
+            let l = (dw - w) / 2;
+            let t = dh / 7;
+            // 设置弹窗，让用户手动输入标记
+            msg("5倍内存, 默认 lib 文件大小的 28/6 倍", "input", l, t, w, h, "设置", undefined, function(msgStr) {
+                let num = String((/\d+倍/).exec(msgStr)).split("倍")[0];
+                RenjuLib.setBufferScale(num)
+            });
+        }
 
         function setLibSize() {
             let w = cBd.width * 0.8;
@@ -1264,7 +1276,8 @@ window.control = (() => {
         cLoadImg = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cLoadImg.addOption(1, "打开 图片");
         cLoadImg.addOption(2, "打开 lib 棋谱");
-        cLoadImg.addOption(3, "设置小棋盘棋谱");
+        cLoadImg.addOption(3, "设置内存大小");
+        cLoadImg.addOption(4, "设置小棋盘棋谱");
         cLoadImg.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cLoadImg.show();
         cLoadImg.setText("打开");
@@ -1283,6 +1296,9 @@ window.control = (() => {
                     fileInput.click()
                     break;
                 case 3:
+                    setBufferScale()
+                    break;
+                case 4:
                     setLibSize()
                     break;
             }
