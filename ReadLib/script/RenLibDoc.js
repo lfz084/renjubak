@@ -506,7 +506,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
         let next = new MoveNode();
         
-        /*let list = [];
+        let list = [];
         function isEq(m_list){
             if(m_list.index()==list.length){
                 for(let i=0; i<list.length; i++){
@@ -518,14 +518,14 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
             else{
                 return false;
             }
-        }*/
+        }
 
         while (libFile.get(next)) {
 
             const Point = new JPoint(next.getPos());
             //post("log", next.getPos())
             
-            /*if(number < 752201 && this.m_MoveList.index()==3 && (!isEq(this.m_MoveList))){
+            if((1 || number < 752201) && this.m_MoveList.index()==2 && (!isEq(this.m_MoveList))){
                 let s = `${number}, `;
                 list.length = 0;
                 for(let i=1; i<=this.m_MoveList.index(); i++){
@@ -533,7 +533,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
                     list.push(this.m_MoveList.get(i));
                 }
                 post("log", s);
-            }*/
+            }
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
