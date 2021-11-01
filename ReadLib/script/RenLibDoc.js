@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -325,16 +325,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
     CRenLibDoc.prototype.getVariant = function(pMove = new MoveNode(), Pos, number = -1) {
 
-        let current = this.m_MoveList.index();
+        /*let current = this.m_MoveList.index();
         for (let i = 0; i <= current; i++) { // 兼容 Rapfi 制谱
             let pM = this.m_MoveList.get(i);
             if (pM.getPos().x == Pos.x && pM.getPos().y == Pos.y) {
                 let sPath = "";
-                //for(let j=1; j<=i; j++){ sPath += `${this.m_MoveList.get(j).getName()}, `}
-                //post("log", `Rapfi number=${number}, ${current} << ${i}\n${sPath}`);
+                for(let j=0; j<=current; j++){ sPath += `${this.m_MoveList.get(j).getName()}, `}
+                post("info", `Rapfi number=${number}, <${pM.pos2Name(Pos)}>, ${current} << ${i}\n${sPath}`);
                 return pM;
             }
-        }
+        }*/
         if (pMove.getDown()) { //RenLib 3.6 标准
             pMove = pMove.getDown();
 
@@ -525,15 +525,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
             const Point = new JPoint(next.getPos());
             //post("log", next.getPos())
             
-            if((1 || number < 752201) && this.m_MoveList.index()==2 && (!isEq(this.m_MoveList))){
-                let s = `${number}, `;
-                list.length = 0;
-                for(let i=1; i<=this.m_MoveList.index(); i++){
-                    s += this.m_MoveList.get(i).getName() + ",";
-                    list.push(this.m_MoveList.get(i));
-                }
-                post("log", s);
-            }
             intervalPost.post("loading", { current: libFile.m_file.m_current, end: libFile.m_file.m_end, count: number })
             if (Point.x == NullPoint.x && Point.y == NullPoint.y) {
                 // Skip root node
@@ -578,8 +569,17 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
             }
             
+            if ((1 || number < 752201) && this.m_MoveList.index() == 1 && (!isEq(this.m_MoveList))) {
+                let s = `${number}, `;
+                list.length = 0;
+                for (let i = 1; i <= this.m_MoveList.index(); i++) {
+                    s += this.m_MoveList.get(i).getName() + ",";
+                    list.push(this.m_MoveList.get(i));
+                }
+                post("log", s);
+            }
             number == post_number_start && post("info", `MoveList: ${this.m_MoveList.getNames()}`);
-            number>= post_number_start && number<post_number_start+ 900 && post("log", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
+            number>= post_number_start && number<post_number_start+ 500 && post("log", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
 
             if (next.isOldComment() || next.isNewComment()) {
 
@@ -587,7 +587,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
                 let pStrMultiLine = [""];
 
                 if (next.isOldComment()) {
-                    //console.log("readOldComment")
+                    post("warn",  `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
                     this.readOldComment(libFile, pStrOneLine, pStrMultiLine);
                 }
                 else if (next.isNewComment()) {
@@ -616,6 +616,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
             if (bMark[0] || next.isMark()) {
                 nMarks++;
+                post("info", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
             }
             
             //number<150 && next.isDown() && next.isRight() && post("error", number );
@@ -634,7 +635,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
                     pCurrentMove = this.m_MoveList.current();
                     //nMove[0]<=1 && post("log",`m_Stack.pop nMove=${nMove[0]-1}, pMove=${pCurrentMove.getName()}`);
                 }
+                else{
+                    this.m_MoveList.setRootIndex();
+                    pCurrentMove = this.m_MoveList.getRoot();
+                }
             }
+            
+            //if(number>=7432830) break;
 
         }
 

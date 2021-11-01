@@ -1108,15 +1108,15 @@ private:
         }
     }
     
-    MoveNode* getVariant(MoveList* m_MoveList, CPoint  Pos){
-            
+    MoveNode* getVariant(/*MoveList* m_MoveList*/MoveNode* pMove, CPoint  Pos){
+        /*   
         int i = 0;
         int current = m_MoveList->Index();
         MoveNode* pMove;
         while(i <= current){ //      兼容 Rapfi 制谱
             pMove = m_MoveList->Get(i++);
             if (pMove->mPos == Pos) return pMove;
-        }
+        }*/
             
         if (pMove->mDown) { //RenLib 3.6 标准
             pMove = pMove->mDown;
@@ -1158,7 +1158,7 @@ bool test_getVariant(){
     m_MoveList->Add(p1);
     log("getVariant()");
     
-    getVariant(m_MoveList, p1->getPos());
+    getVariant(/*m_MoveList*/p, p1->getPos());
     log("getVariant return <<");
     return true;
 }
@@ -1401,7 +1401,7 @@ bool createRenjuTree(){
         }
         else {
             //log(STR_GETVARIANT);
-            pNextMove = getVariant(m_MoveList, next->mPos);
+            pNextMove = getVariant(/*m_MoveList*/pCurrentMove, next->mPos);
             if (pNextMove) {
                 pCurrentMove = pNextMove;
                 if(pCurrentMove->mOneLineComment==0) pCurrentMove->mOneLineComment = next->mOneLineComment;
@@ -1428,10 +1428,115 @@ bool createRenjuTree(){
                 m_MoveList->SetIndex(nMove - 1);
                 pCurrentMove = m_MoveList->Current();
             }
+            else{
+                m_MoveList->SetRootIndex();
+                pCurrentMove = m_MoveList->GetRoot();
+            }
         }
     }
     return true;
 }
+
+int addLibrary(){
+    
+    //log("next = newMoveNode()");
+    int len = 0;
+    char* str;
+    
+    bool bMark = false;
+    bool bMove = false;
+    bool bStart = false;
+    
+    if(!checkVersion()) return -1;
+    m_MoveNode_count = 0;
+    
+    MoveNode* pCurrentMove = rootMoveNode;
+    MoveNode* pNextMove = 0;
+    MoveNode* next = (MoveNode*)newBuffer(sizeof(MoveNode));
+    
+    while(m_file->Get(*next)){
+        m_MoveNode_count++;
+        //log(next->getName());
+                
+        CPoint Point(next->mPos);
+                            
+        if (Point == NullPoint) {
+            //log(STR_SKIP_ROOT_NODE);
+        }
+        else if ((Point.x != 0 || Point.y != 0) && (Point.x < 1 || Point.x > 15 || Point.y < 1 || Point.y > 15)) {
+            //log(STR_CHECKING_CODE_ERR);
+            return -m_MoveNode_count;
+        }
+        else {
+            //log(STR_GETVARIANT);
+            pNextMove = getVariant(/*m_MoveList*/pCurrentMove, next->mPos);
+            if (pNextMove) {
+                pCurrentMove = pNextMove;
+            }
+            else {
+                pNextMove = next;
+                addMove(pCurrentMove, pNextMove);
+                pCurrentMove = pNextMove;
+            }
+            //log(STR_GETVARIANT);
+            m_MoveList->Add(pCurrentMove);
+        }
+        
+        if (next->isOldComment()){
+            //log("readOldComment");
+            str = (char*)in_buffer;
+            readOldComment(str);
+        }
+            
+        if(next->isNewComment()) {
+            //log("readNewComment");
+            str = (char*)&comment_buffer[current_comment_buffer];
+            len = readNewComment(str);
+            str = findString((char*)&comment_buffer, current_comment_buffer, str, len);
+            if(str==0){
+                str = (char*)&comment_buffer[current_comment_buffer];
+                current_comment_buffer+=len;
+            }
+            if(pCurrentMove->mOneLineComment==0) pCurrentMove->setOneLineComment(str);
+        }
+            
+        if (next->isBoardText()) {
+            //log("readBoardText");
+            str = (char*)&boardText_buffer[current_boardText_buffer];
+            len = readBoardText(str);
+            str = findString((char*)&boardText_buffer, current_boardText_buffer, str, len);
+            if(str==0){
+                str = (char*)&boardText_buffer[current_boardText_buffer];
+                current_boardText_buffer+=len;
+            }
+            if(pCurrentMove->mBoardText==0) pCurrentMove->setBoardText(str);
+        }
+        
+        addAttributes(pCurrentMove, next, bMark, bMove, bStart);
+        
+        if (next->isDown()) {
+            if(m_MoveList->Index() > 0) m_Stack->Push(m_MoveList->Index());
+        }
+        
+        if (next->isRight()) {
+            if (!m_Stack->IsEmpty()) {
+                int nMove = 0;
+                m_Stack->Pop(nMove);
+                m_MoveList->SetIndex(nMove - 1);
+                pCurrentMove = m_MoveList->Current();
+            }
+            else{
+                m_MoveList->SetRootIndex();
+                pCurrentMove = m_MoveList->GetRoot();
+            }
+        }
+        
+        next = (MoveNode*)newBuffer(sizeof(MoveNode));
+    }
+    //log("loadAllMoveNode end");
+    return m_MoveNode_count;
+}
+
 
 
 

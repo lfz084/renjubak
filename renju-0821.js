@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1031.01";
+self.SCRIPT_VERSIONS["renju"] = "v1031.02";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -846,6 +846,7 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["PFSCMedium1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_woff"]],
+                [SOURCE_FILES["RenLib_wasm"]]  //WebAssembly
                 ], true)
         })
         .then(() => {
@@ -900,7 +901,8 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["Stack"]],
                 [SOURCE_FILES["RenLibDoc"]],
                 [SOURCE_FILES["work_ReadLib"]],
-                [SOURCE_FILES["RenjuLib"]]
+                [SOURCE_FILES["RenjuLib"]],
+                [SOURCE_FILES["RenLibDoc_wasm"]]
                 ], true)
         })
         .then(() => {

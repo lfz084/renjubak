@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1031.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1031.02";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -44,7 +44,7 @@ window.RenjuLib = (() => {
         lock = false,
         colour = false,
         buffer_scale = 28/6,
-        post_number_start = 0;
+        post_number_start = 999999999;
 
     const MODEL_RENLIB = 7;
 

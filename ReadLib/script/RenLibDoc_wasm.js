@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -383,6 +383,18 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
                     return Promise.reject(new Error("libFile Open Error"));
                 }
             })
+            /*.then(function(){
+                let rt = wasm_exports._Z10addLibraryv();
+                if(rt>-1){
+                    return Promise.resolve();
+                }
+                else if(rt==-1){
+                    return Promise.reject(new Error(`不是五子棋棋谱`));
+                }
+                else{
+                    return Promise.reject(new Error(`Point err: ${rt}`));
+                }
+            })*/
             .then(function() {
                 if (wasm_exports._Z12checkVersionv())
                     return Promise.resolve();
@@ -445,7 +457,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
         }
         
         function getInnerHTMLInfo(pBuffer){
-            let innerHTML = getComment(getUINT(pBuffer)),
+            let innerHTML = `<br><br>${getComment(getUINT(pBuffer)).split("\n").join("<br>")}<br><br>`,
                 depth = getINT(pBuffer+4);
             return { innerHTML: innerHTML, depth: depth };
         }

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1031.01";
+self.SCRIPT_VERSIONS["control"] = "v1031.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -393,7 +393,8 @@ window.control = (() => {
         let menuWidth = sw * 0.8;
         let menuFontSize = sw / 20;
 
-
+        w = sw / 5;
+        
         cStart = new button(renjuCmddiv, "button", w * 0, t, w, h);
         cStart.show();
         cStart.setText("‖<<");
@@ -402,7 +403,7 @@ window.control = (() => {
             cBd.toStart(getShowNum());
         });
 
-        cPrevious = new button(renjuCmddiv, "button", w * 1.6, t, w, h);
+        cPrevious = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
         cPrevious.show();
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
@@ -410,7 +411,7 @@ window.control = (() => {
             cBd.toPrevious(getShowNum());
         });
 
-        cNext = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
+        cNext = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
         cNext.show();
         cNext.setText(">>");
         cNext.setontouchend(function() {
@@ -418,15 +419,72 @@ window.control = (() => {
             cBd.toNext(getShowNum());
         });
 
-        cEnd = new button(renjuCmddiv, "button", w * 4.8, t, w, h);
+        cEnd = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
         cEnd.show();
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
             if (isBusy()) return;
             cBd.toEnd(getShowNum());
         });
+        
+        t = t + h * 1.5;
+        
+        cMoveL = new button(renjuCmddiv, "button", w * 0, t, w, h);
+        cMoveL.show();
+        cMoveL.setColor("black");
+        cMoveL.setText("←");
+        cMoveL.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.moveCheckerBoard("left");
+        });
 
-        cShownum = new button(renjuCmddiv, "select", w * 6.4, t, w, h);
+        cMoveR = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
+        cMoveR.show();
+        cMoveR.setColor("black");
+        cMoveR.setText("→ ");
+        cMoveR.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.moveCheckerBoard("right");
+        });
+
+        cMoveT = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
+        cMoveT.show();
+        cMoveT.setColor("black");
+        cMoveT.setText(" ↑");
+        cMoveT.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.moveCheckerBoard("top");
+        });
+
+        cMoveB = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
+        cMoveB.show();
+        cMoveB.setColor("black");
+        cMoveB.setText("↓");
+        cMoveB.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.moveCheckerBoard("bottom");
+        });
+
+
+        t = t + h * 1.5;
+
+        cFlipY = new button(renjuCmddiv, "button", w * 0, t, w, h);
+        cFlipY.show();
+        cFlipY.setText("↔180°");
+        cFlipY.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.boardFlipY(getShowNum());
+        });
+
+        cCW = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
+        cCW.show();
+        cCW.setText(" ↗90°");
+        cCW.setontouchend(function() {
+            if (isBusy()) return;
+            cBd.boardCW(getShowNum());
+        });
+        
+        cShownum = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
         cShownum.addOption(2, "显示线路");
@@ -486,70 +544,12 @@ window.control = (() => {
             return cShownum.menu.lis[0].checked;
         }
 
-        cNewGame = new button(renjuCmddiv, "button", w * 8, t, w, h);
+        cNewGame = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
         cNewGame.show();
         cNewGame.setText("新棋局");
         cNewGame.setontouchend(function() {
             if (isBusy()) return;
             newGame();
-        });
-
-
-        w = sw / 9;
-        t = t + h * 1.5;
-
-
-
-        cFlipY = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cFlipY.show();
-        cFlipY.setText("↔180°");
-        cFlipY.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.boardFlipY(getShowNum());
-        });
-
-        cCW = new button(renjuCmddiv, "button", w * 1.6, t, w, h);
-        cCW.show();
-        cCW.setText(" ↗90°");
-        cCW.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.boardCW(getShowNum());
-        });
-
-        cMoveL = new button(renjuCmddiv, "button", w * 3.2, t, w, h);
-        cMoveL.show();
-        cMoveL.setColor("black");
-        cMoveL.setText("←");
-        cMoveL.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.moveCheckerBoard("left");
-        });
-
-        cMoveR = new button(renjuCmddiv, "button", w * 4.8, t, w, h);
-        cMoveR.show();
-        cMoveR.setColor("black");
-        cMoveR.setText("→ ");
-        cMoveR.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.moveCheckerBoard("right");
-        });
-
-        cMoveT = new button(renjuCmddiv, "button", w * 6.4, t, w, h);
-        cMoveT.show();
-        cMoveT.setColor("black");
-        cMoveT.setText(" ↑");
-        cMoveT.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.moveCheckerBoard("top");
-        });
-
-        cMoveB = new button(renjuCmddiv, "button", w * 8, t, w, h);
-        cMoveB.show();
-        cMoveB.setColor("black");
-        cMoveB.setText("↓");
-        cMoveB.setontouchend(function() {
-            if (isBusy()) return;
-            cBd.moveCheckerBoard("bottom");
         });
 
 

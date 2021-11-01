@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1031.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1031.02";
 
 if (self.importScripts){
     self.importScripts(
@@ -13,7 +13,7 @@ if (self.importScripts){
         "./MoveNode.js",
         "./Stack.js"
     );
-    if(0 && WebAssembly && typeof WebAssembly.instantiate == "function"){
+    if(WebAssembly && typeof WebAssembly.instantiate == "function"){
         self.importScripts("./RenLibDoc_wasm.js");
     }
     else{
