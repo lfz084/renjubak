@@ -104,12 +104,18 @@ function setBufferScale(scl){ // WebAssembly only
         renLibDoc.setBufferScale(scl);
 }
 
+function setPostStart(start = 0){  // test Lib File
+    typeof renLibDoc.setPostStart == "function" &&
+        renLibDoc.setPostStart(start);
+}
+
 let bf = [];
 const CMD = {
     openLib: openLib,
     showBranchs: showBranchs,
     setCenterPos: setCenterPos,
-    setBufferScale: setBufferScale
+    setBufferScale: setBufferScale,
+    setPostStart: setPostStart
 }
 onmessage = function(e) {
     if (e.data) {

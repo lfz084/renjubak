@@ -43,7 +43,8 @@ window.RenjuLib = (() => {
         isLoading = false,
         lock = false,
         colour = false,
-        buffer_scale = 28/6;
+        buffer_scale = 28/6,
+        post_number_start = 0;
 
     const MODEL_RENLIB = 7;
 
@@ -99,6 +100,11 @@ window.RenjuLib = (() => {
         buffer_scale = scl;
         alert(`已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
     }
+    
+    function setPostStart(start = 0){
+        post_number_start = start;
+        alert(`post_number_start = ${post_number_start}`);
+    }
 
     function createWorker() {
         if (errCount > 5) return;
@@ -132,8 +138,9 @@ window.RenjuLib = (() => {
         enable = false;
         isLoading = true;
         wk = createWorker();
-        wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale });
-        wk.postMessage({ cmd: "openLib", parameter: file });
+        Promise.resolve(wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale }))
+            .then(()=> Promise.resolve(wk.postMessage({ cmd: "setPostStart", parameter: post_number_start })))
+            .then(()=> Promise.resolve(wk.postMessage({ cmd: "openLib", parameter: file })))
         timer = setInterval(catchErr, 1000);
         sTime = new Date().getTime();
     }
@@ -278,6 +285,7 @@ window.RenjuLib = (() => {
         colour: function() {
             colour = !colour;
         },
-        setBufferScale: setBufferScale
+        setBufferScale: setBufferScale,
+        setPostStart: setPostStart
     }
 })()

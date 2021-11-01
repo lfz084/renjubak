@@ -69,8 +69,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
     function LessThan(Left, Right) {
         return PointToPos(Left) < PointToPos(Right);
     }
-
-
+    
+    //---------------post seting -----------------
+    
+    let post_number_start = 0;  // addLibrary
+    
     //-------------------------------------------
 
     let centerPos = { x: 8, y: 8 };
@@ -170,6 +173,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
             this.nodeCount = 0;
         }
+    }
+    
+    CRenLibDoc.prototype.setPostStart = function(start = 0) {
+        post_number_start = start;
+        post("info", `post_number_start = ${post_number_start}`);
     }
 
     CRenLibDoc.prototype.setCenterPos = function(point) {
@@ -516,7 +524,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
 
             const Point = new JPoint(next.getPos());
             //post("log", next.getPos())
-            number<1000 && post("log", `${number}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
+            
             /*if(number < 752201 && this.m_MoveList.index()==3 && (!isEq(this.m_MoveList))){
                 let s = `${number}, `;
                 list.length = 0;
@@ -569,6 +577,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.01";
                 this.m_MoveList.add(pCurrentMove);
 
             }
+            
+            number == post_number_start && post("info", `MoveList: ${this.m_MoveList.getNames()}`);
+            number>= post_number_start && number<post_number_start+ 900 && post("log", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
 
             if (next.isOldComment() || next.isNewComment()) {
 

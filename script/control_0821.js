@@ -1207,6 +1207,10 @@ window.control = (() => {
                 let num = String((/\d+路/).exec(msgStr)).split("路")[0];
                 RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
             }
+            else if((/postStart\(\d+\)/).exec(msgStr)){
+                let num = String((/postStart\(\d+\)/).exec(msgStr)).split(/[postStart\(\)]/)[10] || 0;
+                RenjuLib.setPostStart(num*1);
+            }
             else if(msgStr.indexOf("colour")+1){
                 RenjuLib.colour()
             }

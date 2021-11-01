@@ -114,6 +114,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveList"] = "v1031.01";
     MoveList.prototype.index = function() {
         return this.m_nIndex;
     };
+    
+    //-----------------------------------------------
+    
+    MoveList.prototype.getNames = function(){
+        let names = "";
+        for(let i=1; i<=this.m_nIndex; i++){
+            names += `${this.get(i).getName()}, `;
+        }
+        return names;
+    }
 
 
     exports.MoveList = MoveList;
