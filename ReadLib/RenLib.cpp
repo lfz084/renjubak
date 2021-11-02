@@ -1230,11 +1230,19 @@ int indexOf(CPoint Pos, CPoint* posArr, int len){
     return -1;
 }
 
+int indexOfNode(CPoint Pos, struct Node* nodes, int len){
+    for(int i=0; i<len; i++){
+        if(nodes[i].mPos == Pos) return i;
+    }
+    return -1;
+}
+
 void getBranchNodes(CPoint* posArr, int len){
     bool done = false;
     int* count = (int*)out_buffer;
     *count = 0;
-    struct Node* pNode = (struct Node*)&out_buffer[4];
+    struct Node* Nodes = (struct Node*)&out_buffer[4];
+    struct Node* pNode = Nodes;
     MoveNode* pMove = rootMoveNode->mDown;
     MoveNode** moveList = (MoveNode**)&in_buffer[1024];
     int listLength = 0;
@@ -1268,18 +1276,36 @@ void getBranchNodes(CPoint* posArr, int len){
                 }
                 else if(listLength == len + 1){
                     if(idx>=0){
-                        pNode->mPos = jointNode.pMove->mPos;
-                        pNode->txt = pMove->mBoardText;
-                        pNode->color = 0;
-                        pNode++;
-                        (*count)++;
+                        int idxNode = indexOfNode(jointNode.pMove->mPos, Nodes, *count);
+                        if(idxNode>-1){
+                            if(Nodes[idxNode].txt==0){
+                                Nodes[idxNode].txt = pMove->mBoardText;
+                                Nodes[idxNode].color = 0;
+                            }
+                        }
+                        else{
+                            pNode->mPos = jointNode.pMove->mPos;
+                            pNode->txt = pMove->mBoardText;
+                            pNode->color = 0;
+                            pNode++;
+                            (*count)++;
+                        }
                     }
                     else if(idx==-1 && jointNode.pMove==0){
-                        pNode->mPos = pMove->mPos;
-                        pNode->txt = pMove->mBoardText;
-                        pNode->color = 0;
-                        pNode++;
-                        (*count)++;
+                        int idxNode = indexOfNode(pMove->mPos, Nodes, *count);
+                        if(idxNode>-1){
+                            if(Nodes[idxNode].txt==0){
+                                Nodes[idxNode].txt = pMove->mBoardText;
+                                Nodes[idxNode].color = 0;
+                            }
+                        }
+                        else{
+                            pNode->mPos = pMove->mPos;
+                            pNode->txt = pMove->mBoardText;
+                            pNode->color = 0;
+                            pNode++;
+                            (*count)++;
+                        }
                     }
                     pMove = 0;
                 }

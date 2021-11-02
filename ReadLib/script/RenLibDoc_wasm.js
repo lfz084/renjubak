@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -444,21 +444,26 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.02";
         }
 
         function pushNodes(nodes1, nodes2) {
-            function hasNode(nodes, node) {
+            function indexOf(nodes, node) {
                 for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i].idx === node.idx) return true
+                    if (nodes[i].idx == node.idx) return i;
                 }
-                return false;
+                return -1;
             }
             for (let i = nodes2.length - 1; i >= 0; i--) {
-                if (hasNode(nodes1, nodes2[i])) nodes2.splice(i, 1);
+                let idx = indexOf(nodes1, nodes2[i]);
+                if(idx>-1){
+                    nodes1[idx].txt== "○" && (nodes1[idx].txt = nodes2[i].txt);
+                    nodes2.splice(i, 1);
+                }
             }
             return nodes1.concat(nodes2);
         }
         
         function getInnerHTMLInfo(pBuffer){
-            let innerHTML = `<br><br>${getComment(getUINT(pBuffer)).split("\n").join("<br>")}<br><br>`,
+            let innerHTML = getComment(getUINT(pBuffer)),
                 depth = getINT(pBuffer+4);
+            innerHTML && (innerHTML = `<br><br>${innerHTML.split("\n").join("<br>")}<br>`);
             return { innerHTML: innerHTML, depth: depth };
         }
 
