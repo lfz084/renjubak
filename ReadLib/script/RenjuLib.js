@@ -138,9 +138,9 @@ window.RenjuLib = (() => {
         enable = false;
         isLoading = true;
         wk = createWorker();
-        Promise.resolve(wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale }))
-            .then(()=> Promise.resolve(wk.postMessage({ cmd: "setPostStart", parameter: post_number_start })))
-            .then(()=> Promise.resolve(wk.postMessage({ cmd: "openLib", parameter: file })))
+        wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale });
+        wk.postMessage({ cmd: "setPostStart", parameter: post_number_start });
+        wk.postMessage({ cmd: "openLib", parameter: file });
         timer = setInterval(catchErr, 1000);
         sTime = new Date().getTime();
     }

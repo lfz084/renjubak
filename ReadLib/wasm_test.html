@@ -288,6 +288,8 @@
                             return 0;
                         }
                     },
+                    _Z7loadingjj: function(current, end){
+                    },
                     emscripten_resize_heap: function(...arg) {
                         alert(`reset_heap ${arg}`);
                     },
@@ -354,7 +356,7 @@
                     resolve(fr.result);
                 }
                 fr.onerror = err => {
-                    reject(err)
+                    reject(err);
                 }
                 fr.readAsArrayBuffer(file);
             });
