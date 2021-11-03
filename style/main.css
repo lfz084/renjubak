@@ -192,17 +192,85 @@ hr {
 
 @-webkit-keyframes hideHelpWindow {
     0% {
-        opacity: 0.937;
+        opacity: 0;
     }
 
     100% {
-        opacity: 0;
+        opacity: 0.937;
     }
 }
 
 @-moz-keyframes hideHelpWindow {
     0% {
+        opacity: 0;
+    }
+
+    100% {
         opacity: 0.937;
+    }
+}
+
+@keyframes hideHelpWindow {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0.937;
+    }
+}
+
+.showEXWindow {
+    -webkit-animation: showEXWindow 500ms ease-in;
+    -moz-animation: showEXWindow 500ms ease-in;
+    animation: showEXWindow 500ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes showEXWindow{
+    0% {
+        opacity: 0;
+    }
+    
+    100% {
+        opacity: 0.937;
+    }
+}
+
+@-moz-keyframes showEXWindow{
+    0% {
+        opacity: 0;
+    }
+    
+    100% {
+        opacity: 0.937;
+    }
+}
+
+@keyframes showEXWindow {
+    0% {
+        opacity: 0;
+    }
+    
+    100% {
+        opacity: 0.937;
+    }
+}
+
+.hideEXWindow {
+    -webkit-animation: hideEXWindow 500ms ease-in;
+    -moz-animation: hideEXWindow 500ms ease-in;
+    animation: hideEXWindow 500ms ease-in;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes hideEXWindow {
+    0% {
+        opacity: 0.75;
     }
 
     100% {
@@ -210,9 +278,19 @@ hr {
     }
 }
 
-@keyframes hideHelpWindow {
+@-moz-keyframes hideEXWindow {
     0% {
-        opacity: 0.937;
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes hideEXWindow {
+    0% {
+        opacity: 0.75;
     }
 
     100% {

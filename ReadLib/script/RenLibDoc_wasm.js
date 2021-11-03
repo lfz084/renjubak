@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -253,15 +253,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.01";
     
     function grow(pages = 100) {
         try {
-            memory.grow(pages);
-            let size = 1024 * 64 * pages,
+            memory.grow(pages)
+            /*let size = 1024 * 64 * pages,
                 len = size / 4,
                 buf = new Uint32Array(memory.buffer, memory.buffer.byteLength - size, len);
             for (let i = 0; i < len; i++) {
                 buf[i] = 0;
             }
             post(`warn`, `memory.grow(${pages}), buffer size = ${memory.buffer.byteLength/1024/1024}M`);
-            return pages;
+            */return pages;
         }
         catch (err) {
             post(`alert`, `申请 ${~~(pages/16)+1}M 内存失败，请确保你的手机有足够的空闲内存`);
@@ -335,7 +335,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.01";
                 in_buffer = wasm_exports._Z11getInBufferv();
                 log_buffer = wasm_exports._Z12getLogBufferv();
                 data_buffer = wasm_exports._Z13getDataBufferv();
-                wasm_exports._Z4initv();
             });
     }
 
@@ -372,6 +371,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.01";
     CRenLibDoc.prototype.addLibrary = function(buf) {
 
         return loadWASM("./RenLib.wasm")
+            .then(function(){
+                wasm_exports._Z4initj(buf.byteLength);
+            })
             .then(function() {
                 post("warn", `buffer_scale = ${buffer_scale}`);
                 if(!grow(~~(buf.byteLength / 1024 / 64 * buffer_scale) + 1))

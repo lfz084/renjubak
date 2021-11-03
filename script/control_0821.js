@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1101.01";
+self.SCRIPT_VERSIONS["control"] = "v1101.03";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1561,12 +1561,14 @@ window.control = (() => {
             function openWindow() {
                 if (EX_WINDOW.parentNode) return;
                 resetStyle();
+                EX_WINDOW.setAttribute("class", "showEXWindow");
                 document.body.appendChild(EX_WINDOW); //插入body内，保证a标签可以工作。因为renjuCmddiv.parentNode屏蔽了浏览器触摸click
             }
 
             function closeWindow() {
-                IFRAME.innerHTML = undefined;
-                if (EX_WINDOW.parentNode) EX_WINDOW.parentNode.removeChild(EX_WINDOW);
+                IFRAME.innerHTML = "";
+                EX_WINDOW.setAttribute("class", "hideEXWindow");
+                if (EX_WINDOW.parentNode) setTimeout(()=>EX_WINDOW.parentNode.removeChild(EX_WINDOW),350);
             }
 
             function setHTML(iHtml) {

@@ -226,12 +226,17 @@
             }, 1000);
             try {
                 startTime = new Date().getTime();
-                document.querySelector('.sequence-time').innerText = `......`;
+                document.querySelector('.sequence-message').innerText = exports._Z4initj(LIB_SIZE);
+                
+                log(`comment_buffer address : ${exports._Z16getCommentBufferv()}`);
+                log(`boardText_buffer address : ${exports._Z18getBoardTextBufferv()}`);
+                log(`data_buffer address : ${exports._Z13getDataBufferv()}`);
+
                 //exports._Z14test_newCPointj(1024*1024*8);
                 //exports._Z16test_newMoveNodej(1024*1024);
                 //log(exports._Z10test_Stacki(1024*1024));
                 //log(`getVariant = ${exports._Z15test_getVariantv()}`);
-                (grow(~~(LIB_SIZE/1024/64/6*28)+1),
+                (grow(~~(LIB_SIZE/1024/64*5)+1),
                     log(`checkVersion = ${exports._Z12checkVersionv()}`),
                     log(`loadAllMoveNode() = ${exports._Z15loadAllMoveNodev()}`),
                     log(`createRenjuTree = ${exports._Z15createRenjuTreev()}`),
@@ -317,19 +322,15 @@
                 //输出下载，编译及实例化模块花费的时间
                 document.querySelector('.sequence-time').innerText = ` ${new Date().getTime() - startTime}`;
                 document.querySelector('.sequence-memory').innerText = `${memory.buffer.byteLength/1024/1024}M`;
-                document.querySelector('.sequence-message').innerText = exports._Z4initv();
-
+                //document.querySelector('.sequence-message').innerText = exports._Z4initj(LIB_SIZE);
                 //取出从Wasm模块中导出的函数
                 log(Object.keys(exports).join("\n<br>"));
                 log(`out_buffer address : ${exports._Z12getOutBufferv()}`);
                 log(`in_buffer address : ${exports._Z11getInBufferv()}`);
                 log(`log_buffer address : ${exports._Z12getLogBufferv()}`);
                 log(`error_buffer address : ${exports._Z14getErrorBufferv()}`);
-                log(`comment_buffer address : ${exports._Z16getCommentBufferv()}`);
-                log(`boardText_buffer address : ${exports._Z18getBoardTextBufferv()}`);
                 log(`libFile_buffer address : ${exports._Z16getLibFileBufferv()}`);
-                log(`data_buffer address : ${exports._Z13getDataBufferv()}`);
-
+                
                 //main();
             });
     </script>

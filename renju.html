@@ -44,7 +44,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1101.01";
+        window.APP_VERSION = "v1101.03";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -117,9 +117,9 @@
             "v1006.00": ["更新内容: 兼容 Rapfi制谱 保存的 lib棋谱。"],
             "v1031.02": ["重写了lib棋谱的解码程序,打开速度不再蜗牛",
                          "已经支持打开 100M 以上的lib棋谱",
-                         "调整了部分按键位置"
-                        ],
-            "v1101.01": ["更新内容: 提高了lib文件打开速度"]
+                         "调整了部分按键位置"],
+            "v1101.03": ["更新内容: 再次优化lib文件打开速度。",
+                         "要体验快速模式,需要浏览器支持 WebAssembly"]
                         
         }
         window.checkScriptVersion = function(filename) {

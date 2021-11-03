@@ -76,13 +76,14 @@ char MoveNode_Name_buffer[4] = {0};
 char bit32_buffer[4] = {0};
 
 UINT current_log_buffer = 0;
-UINT current_err_buffer = 0;
-UINT current_comment_buffer = 0;
-UINT current_boardText_buffer = 0;
-UINT current_data_buffer = 3;
-UINT end_data_buffer = 4;
+UINT current_err_buffer = 1;
+UINT current_comment_buffer = 2;
+UINT current_boardText_buffer = 3;
+UINT current_data_buffer = 4;
+UINT end_data_buffer = 5;
+
 const UINT skip_data_pages = 32;
-const UINT start_data_buffer = _PAGE_SIZE * skip_data_pages; //skip 128 page
+//const UINT start_data_buffer = _PAGE_SIZE * skip_data_pages; //skip 128 page
 
 BYTE out_buffer[_IO_BUFFER_SIZE] = {0};
 char _empty1[_ONE_KB] = {0};
@@ -94,14 +95,12 @@ char _empty3[_ONE_KB] = {0};
 BYTE err_buffer[_ERR_BUFFER_SIZE] ={0}; // 1M
 char _empty4[_ONE_KB] = {0};
 
-BYTE comment_buffer[_COMMENT_BUFFER_SIZE] = {0};
-char _empty5[_ONE_KB] = {0};
-BYTE boardText_buffer[_BOARDTEXT_BUFFER_SIZE] = {0};
-char _empty6[_ONE_KB] = {0};
-
 BYTE libFile_buffer[_LIBFILE_BUFFER_SIZE] = {0};
 char _empty7[_ONE_KB] = {0};
-BYTE data_buffer[_PAGE_SIZE] = {0};
+
+BYTE* comment_buffer;
+BYTE* boardText_buffer;
+BYTE* data_buffer;
 
 //---------------158 page-----------------------
 
@@ -229,7 +228,8 @@ BYTE* getBoardTextBuffer(){
 //}
 
 BYTE* getDataBuffer(){
-    return data_buffer + start_data_buffer;
+    //return data_buffer + start_data_buffer;
+    return data_buffer;
 }
 
 BYTE* newBuffer(UINT size){
@@ -1608,13 +1608,25 @@ int addLibrary(){
     //return 101;
 //}
 
-int init(){
+int init(UINT bytesLength){
     log("wasm >> init");
+    UINT comment_buffer_size = _ONE_MB*2;
+    UINT boardText_buffer_size = bytesLength / 7 * 4;
+    UINT buffer_pages = (comment_buffer_size + boardText_buffer_size) / _PAGE_SIZE + 1;
+    
+    grow(skip_data_pages + buffer_pages);
+    
     current_log_buffer = 0;
     current_err_buffer = 0;
-    grow(skip_data_pages);
-    current_data_buffer = start_data_buffer;
-    end_data_buffer = current_data_buffer;
+    current_comment_buffer = 0;
+    current_boardText_buffer = 0;
+    current_data_buffer = 0;
+    end_data_buffer = 0;
+    
+    comment_buffer = skip_data_pages*_PAGE_SIZE + libFile_buffer + _LIBFILE_BUFFER_SIZE + _ONE_KB;
+    boardText_buffer = comment_buffer + comment_buffer_size + _ONE_KB;
+    data_buffer = boardText_buffer + boardText_buffer_size + _ONE_KB;
+        
     log("reset m_Stack");
     m_Stack = (Stack*)newBuffer(sizeof(Stack));
     m_Stack->ClearAll();
