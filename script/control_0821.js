@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1031.03";
+self.SCRIPT_VERSIONS["control"] = "v1101.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -191,13 +191,11 @@ window.control = (() => {
         return false;
     }
 
-
     function cSelChecked(chk) {
         cSelBlack.setChecked(0);
         cSelWhite.setChecked(0);
         chk.setChecked(1);
     }
-
 
     function nSetChecked(chk) {
         cLba.setChecked(0);
@@ -214,7 +212,6 @@ window.control = (() => {
             cBd.drawLineEnd();
         }
     }
-
 
     function newGame() {
         engine.postMsg("cancelFind");
@@ -262,6 +259,119 @@ window.control = (() => {
         }
         return nArr;
     }
+
+    function checkCommand(msgStr) {
+        if (msgStr.indexOf("add") > -1) { // printMoves  || add Num
+            let add = msgStr.indexOf("add");
+            let str = msgStr.slice(add > -1 ? add + 3 : 0);
+            let mv = []; //save moves
+            let st = 0;
+            let end = str.indexOf(",", st + 1);
+            while (end > -1) {
+                mv.push(Number(str.slice(st, end)));
+                st = end + 1;
+                end = str.indexOf(",", st + 1);
+            }
+            mv.push(Number(str.slice(st)));
+            for (let i = mv.length - 1; i >= 0; i--) { // if err exit
+                if (!mv[i]) return true;
+            }
+            let color = getRenjuSelColor();
+            if (add > -1) { // add Num
+                for (let i = 0; i < mv.length; i++) {
+                    cBd.wNb(mv[i], "auto", true, undefined, undefined, 100);
+                }
+            }
+            else { //printMoves
+                cBd.printMoves(mv, color);
+            }
+            return true;
+        }
+        else if (msgStr.indexOf("color==") > -1) {
+
+            let st = msgStr.indexOf("color==");
+            let color = Number(msgStr.slice(st + 7, st + 8));
+            st = msgStr.indexOf("[");
+            let end = msgStr.indexOf("]");
+            if (st > -1 && end - st >= 2) {
+                let str = msgStr.slice(st + 1, end);
+                let mv = [];
+                st = 0;
+                end = str.indexOf(",", st + 1);
+                while (end > -1) {
+                    mv.push(Number(str.slice(st, end)));
+                    st = end + 1;
+                    end = str.indexOf(",", st + 1);
+                }
+                mv.push(Number(str.slice(st)));
+                cBd.printMoves(mv, color);
+                return;
+            }
+        }
+        else if (msgStr.indexOf("debug") > -1) {
+
+            if (vConsole == null) {
+                vConsole = new VConsole();
+                appData.setKey("debug", true);
+            }
+            return;
+        }
+        else if (msgStr.indexOf("close") > -1) {
+
+            if (vConsole) {
+                vConsole.destroy();
+                appData.setKey("debug", false);
+            }
+            vConsole = null;
+            return;
+        }
+        else if (msgStr.indexOf("caches") > -1) {
+
+            window.logCaches();
+            return;
+        }
+        else if (msgStr.indexOf("cache") > -1) {
+
+            logCache(window.APP_VERSION)
+            return;
+        }
+        else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
+
+            cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
+            cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
+            cBd.cutImg.src = "./icon.png";
+            cBd.parentNode.appendChild(cBd.cutImg);
+            let pNode = renjuCmddiv.parentNode;
+            pNode.removeChild(renjuCmddiv);
+            cBd.cutImg.ontouchend = cBd.cutImg.onclick = function() {
+                cBd.parentNode.removeChild(cBd.cutImg);
+                pNode.appendChild(renjuCmddiv);
+            }
+            return;
+        }
+        else if ((/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr)) {
+            let sPoint = (/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr),
+                x = String(sPoint).split(/[{x:,y}]/)[3],
+                y = String(sPoint).split(/[{x:,y}]/)[6];
+            RenjuLib.setCenterPos({ x: x * 1, y: y * 1 })
+        }
+        else if ((/\d+路/).exec(msgStr)) {
+            let num = String((/\d+路/).exec(msgStr)).split("路")[0];
+            RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
+        }
+        else if ((/postStart\(\d+\)/).exec(msgStr)) {
+            let num = String((/postStart\(\d+\)/).exec(msgStr)).split(/[postStart\(\)]/)[10] || 0;
+            RenjuLib.setPostStart(num * 1);
+        }
+        else if (msgStr.indexOf("colour") + 1) {
+            RenjuLib.colour()
+        }
+        else {
+            return false;
+        }
+        return true;
+    }
+
 
 
 
@@ -394,7 +504,7 @@ window.control = (() => {
         let menuFontSize = sw / 20;
 
         w = sw / 5;
-        
+
         cStart = new button(renjuCmddiv, "button", w * 0, t, w, h);
         cStart.show();
         cStart.setText("‖<<");
@@ -426,9 +536,9 @@ window.control = (() => {
             if (isBusy()) return;
             cBd.toEnd(getShowNum());
         });
-        
+
         t = t + h * 1.5;
-        
+
         cMoveL = new button(renjuCmddiv, "button", w * 0, t, w, h);
         cMoveL.show();
         cMoveL.setColor("black");
@@ -483,7 +593,7 @@ window.control = (() => {
             if (isBusy()) return;
             cBd.boardCW(getShowNum());
         });
-        
+
         cShownum = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
@@ -1133,89 +1243,11 @@ window.control = (() => {
         cInputcode.show();
         cInputcode.setColor("black");
         cInputcode.setText("输入代码");
-        let inputCode = function(msgStr) {
+
+        function inputCode(msgStr) {
             // 成功设置棋盘 ，就开始解析棋盘摆盘
-            if (msgStr.indexOf("color==") > -1) {
-
-                let st = msgStr.indexOf("color==");
-                let color = Number(msgStr.slice(st + 7, st + 8));
-                st = msgStr.indexOf("[");
-                let end = msgStr.indexOf("]");
-                if (st > -1 && end - st >= 2) {
-                    let str = msgStr.slice(st + 1, end);
-                    let mv = [];
-                    st = 0;
-                    end = str.indexOf(",", st + 1);
-                    while (end > -1) {
-                        mv.push(Number(str.slice(st, end)));
-                        st = end + 1;
-                        end = str.indexOf(",", st + 1);
-                    }
-                    mv.push(Number(str.slice(st)));
-                    cBd.printMoves(mv, color);
-                    return;
-                }
-            }
-            else if (msgStr.indexOf("debug") > -1) {
-
-                if (vConsole == null) {
-                    vConsole = new VConsole();
-                    appData.setKey("debug", true);
-                }
-                return;
-            }
-            else if (msgStr.indexOf("close") > -1) {
-
-                if (vConsole) {
-                    vConsole.destroy();
-                    appData.setKey("debug", false);
-                }
-                vConsole = null;
-                return;
-            }
-            else if (msgStr.indexOf("caches") > -1) {
-
-                window.logCaches();
-                return;
-            }
-            else if (msgStr.indexOf("cache") > -1) {
-
-                logCache(window.APP_VERSION)
-                return;
-            }
-            else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
-
-                cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
-                cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
-                cBd.cutImg.src = "./icon.png";
-                cBd.parentNode.appendChild(cBd.cutImg);
-                let pNode = renjuCmddiv.parentNode;
-                pNode.removeChild(renjuCmddiv);
-                cBd.cutImg.ontouchend = cBd.cutImg.onclick = function() {
-                    cBd.parentNode.removeChild(cBd.cutImg);
-                    pNode.appendChild(renjuCmddiv);
-                }
-                return;
-            }
-            else if ((/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr)) {
-                let sPoint = (/{x:\d+\.*\d*,y:\d+\.*\d*}/).exec(msgStr),
-                    x = String(sPoint).split(/[{x:,y}]/)[3],
-                    y = String(sPoint).split(/[{x:,y}]/)[6];
-                RenjuLib.setCenterPos({ x: x * 1, y: y * 1 })
-            }
-            else if ((/\d+路/).exec(msgStr)) {
-                let num = String((/\d+路/).exec(msgStr)).split("路")[0];
-                RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
-            }
-            else if((/postStart\(\d+\)/).exec(msgStr)){
-                let num = String((/postStart\(\d+\)/).exec(msgStr)).split(/[postStart\(\)]/)[10] || 0;
-                RenjuLib.setPostStart(num*1);
-            }
-            else if(msgStr.indexOf("colour")+1){
-                RenjuLib.colour()
-            }
-
-            cBd.unpackCode(getShowNum(), msgStr);
+            !checkCommand(msgStr) &&
+                cBd.unpackCode(getShowNum(), msgStr);
 
         }
         cInputcode.setontouchend(function() {
@@ -1250,16 +1282,16 @@ window.control = (() => {
         fileInput.setAttribute("type", "file");
         fileInput.style.display = "none";
         renjuCmddiv.appendChild(fileInput);
-        
+
         function setBufferScale() {
             let w = cBd.width * 0.8;
             let h;
             let l = (dw - w) / 2;
             let t = dh / 7;
             // 设置弹窗，让用户手动输入标记
-            msg("5倍内存, 默认 lib 文件大小的 28/6 倍", "input", l, t, w, h, "设置", undefined, function(msgStr) {
+            msg("5.5倍内存, (默认 lib 文件大小的 5倍)", "input", l, t, w, h, "设置", undefined, function(msgStr) {
                 let num = String((/\d+倍/).exec(msgStr)).split("倍")[0];
-                RenjuLib.setBufferScale(num)
+                RenjuLib.setBufferScale(num * 1)
             });
         }
 
@@ -1364,6 +1396,7 @@ window.control = (() => {
 
         function openLib() {
             if (isBusy()) return;
+            newGame();
             engine.postMsg("cancelFind");
             cBd.drawLineEnd();
             let file = fileInput.files[0];
@@ -2716,33 +2749,7 @@ window.control = (() => {
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
         msg("", "input", l, t, w, h, "输入标记", undefined, function(msgStr) {
-                if (msgStr.length > 3) { // printMoves  || add Num
-                    let add = msgStr.indexOf("add");
-                    let str = msgStr.slice(add > -1 ? add + 3 : 0);
-                    let mv = []; //save moves
-                    let st = 0;
-                    let end = str.indexOf(",", st + 1);
-                    while (end > -1) {
-                        mv.push(Number(str.slice(st, end)));
-                        st = end + 1;
-                        end = str.indexOf(",", st + 1);
-                    }
-                    mv.push(Number(str.slice(st)));
-                    for (let i = mv.length - 1; i >= 0; i--) { // if err exit
-                        if (!mv[i]) return;
-                    }
-                    let color = getRenjuSelColor();
-                    if (add > -1) { // add Num
-                        for (let i = 0; i < mv.length; i++) {
-                            cBd.wNb(mv[i], "auto", true, undefined, undefined, 100);
-                        }
-                    }
-                    else { //printMoves
-                        cBd.printMoves(mv, color);
-                    }
-                    return;
-                }
-
+                if (checkCommand(msgStr)) return;
                 let str = msgStr.substr(0, 3);
                 cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
                 if (str != "" && str != " ") cBd.wLb(idx, str, color);

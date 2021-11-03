@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1031.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1101.01";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -43,7 +43,7 @@ window.RenjuLib = (() => {
         isLoading = false,
         lock = false,
         colour = false,
-        buffer_scale = 28/6,
+        buffer_scale = 5,
         post_number_start = 999999999;
 
     const MODEL_RENLIB = 7;
@@ -96,7 +96,7 @@ window.RenjuLib = (() => {
         }
     };
     
-    function setBufferScale(scl = 28 / 6) {
+    function setBufferScale(scl = 5) {
         buffer_scale = scl;
         alert(`已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
     }
@@ -199,7 +199,7 @@ window.RenjuLib = (() => {
     }
 
     function catchErr() {
-        new Date().getTime() - sTime > 30 * 1000 ? onError(new Error("打开文件出错了: 解码过程出现错误")) : undefined;
+        new Date().getTime() - sTime > 60 * 1000 ? onError(new Error("打开文件出错了: 解码过程出现错误")) : undefined;
     }
 
     function otherMessage(message) {

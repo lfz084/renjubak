@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1031.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1101.01";
 
 if (self.importScripts){
     self.importScripts(
@@ -13,7 +13,7 @@ if (self.importScripts){
         "./MoveNode.js",
         "./Stack.js"
     );
-    if(WebAssembly && typeof WebAssembly.instantiate == "function"){
+    if("WebAssembly" in self && typeof WebAssembly.instantiate == "function"){
         self.importScripts("./RenLibDoc_wasm.js");
     }
     else{
@@ -54,38 +54,36 @@ function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
              let rt = renLibDoc.addLibrary(buf);
-             return rt;
+             return Promise.resolve(rt);
         })
         .then(function(){
             post("finish");
             return Promise.resolve();
         })
         .then(function() {
-            return new Promise(function(resolve, reject) {
-                try {
-                    let path = renLibDoc.getAutoMove();
-                    if (path.length) {
-                        post("autoMove", path);
-                    }
-                    else {
-                        let position = [];
-                        for (let i = 0; i < 15; i++) {
-                            position[i] = [];
-                            for (let j = 0; j < 15; j++) {
-                                position[i][j] = 0;
-                            }
+            try {
+                let path = renLibDoc.getAutoMove();
+                if (path.length) {
+                    post("autoMove", path);
+                }
+                else {
+                    let position = [];
+                    for (let i = 0; i < 15; i++) {
+                        position[i] = [];
+                        for (let j = 0; j < 15; j++) {
+                            position[i][j] = 0;
                         }
-                        showBranchs({ path: [], position: position })
                     }
-                    resolve()
+                    showBranchs({ path: [], position: position })
                 }
-                catch (err) {
-                    reject(err)
-                }
-            })
+                Promise.resolve();
+            }
+            catch (err) {
+                Promise.rejecte(err);
+            }
         })
         .catch(function(err) {
-            postMessage(err)
+            postMessage(err);
         })
 }
 

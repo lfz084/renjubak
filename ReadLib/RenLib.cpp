@@ -30,14 +30,15 @@ UINT getBuffer(BYTE* pBuf, UINT size){
     return rt;
 }
 */
-const UINT _ONE_KB = 1024;
-const UINT _PAGE_SIZE = 1024*64; //64K
+const UINT _ONE_KB = 1024; //1KB
+const UINT _PAGE_SIZE = _ONE_KB*64; //64K
+const UINT _ONE_MB = _ONE_KB*1024; //1MB
 const UINT _IO_BUFFER_SIZE = _PAGE_SIZE;
-const UINT _ERR_BUFFER_SIZE = _PAGE_SIZE*16;
-const UINT _LOG_BUFFER_SIZE = _PAGE_SIZE*16*8;
-const UINT _COMMENT_BUFFER_SIZE = _PAGE_SIZE*16;
-const UINT _BOARDTEXT_BUFFER_SIZE = _PAGE_SIZE*16;
-const UINT _LIBFILE_BUFFER_SIZE = _PAGE_SIZE*16*8;
+const UINT _ERR_BUFFER_SIZE = _ONE_MB;
+const UINT _LOG_BUFFER_SIZE = _ONE_MB*2;
+const UINT _COMMENT_BUFFER_SIZE = _ONE_MB*2;
+const UINT _BOARDTEXT_BUFFER_SIZE = _ONE_MB*64;
+const UINT _LIBFILE_BUFFER_SIZE = _ONE_MB;
 
 char _empty0[_ONE_KB] = {0};
 
@@ -1333,6 +1334,10 @@ void getBranchNodes(CPoint* posArr, int len){
 
 UINT m_MoveNode_count = 0;
 
+UINT* getMoveNodeCountBuffer(){
+    return &m_MoveNode_count;
+}
+
 bool checkVersion(){
     if(m_file->CheckVersion()){
         m_MoveList->ClearAll();
@@ -1376,24 +1381,45 @@ UINT loadAllMoveNode(){
             //log("readNewComment");
             str = (char*)&comment_buffer[current_comment_buffer];
             len = readNewComment(str);
-            str = findString((char*)&comment_buffer, current_comment_buffer, str, len);
-            if(str==0){
-                str = (char*)&comment_buffer[current_comment_buffer];
+            if(len && (_COMMENT_BUFFER_SIZE >= current_comment_buffer+len)){
+                next->setOneLineComment(str);
                 current_comment_buffer+=len;
             }
-            next->setOneLineComment(str);
+            /*
+            if(_COMMENT_BUFFER_SIZE > current_comment_buffer+len){
+                str = findString((char*)&comment_buffer, current_comment_buffer, str, len);
+                if(str==0){
+                    str = (char*)&comment_buffer[current_comment_buffer];
+                    current_comment_buffer+=len;
+                }
+                next->setOneLineComment(str);
+            }
+            */
         }
             
         if (next->isBoardText()) {
             //log("readBoardText");
             str = (char*)&boardText_buffer[current_boardText_buffer];
             len = readBoardText(str);
-            str = findString((char*)&boardText_buffer, current_boardText_buffer, str, len);
-            if(str==0){
-                str = (char*)&boardText_buffer[current_boardText_buffer];
+            if(len && (_BOARDTEXT_BUFFER_SIZE > current_boardText_buffer+len)){
+                if(len>6){
+                    str[4] = 0;
+                    str[5] = 0;
+                    len = 6;
+                }
+                next->setBoardText(str);
                 current_boardText_buffer+=len;
             }
-            next->setBoardText(str);
+            /*
+            if(_BOARDTEXT_BUFFER_SIZE > current_boardText_buffer+len){
+                str = findString((char*)&boardText_buffer, current_boardText_buffer, str, len);
+                if(str==0){
+                    str = (char*)&boardText_buffer[current_boardText_buffer];
+                    current_boardText_buffer+=len;
+                }
+                next->setBoardText(str);
+            }
+            */
         }
         next = (MoveNode*)newBuffer(sizeof(MoveNode));
     }
@@ -1414,7 +1440,7 @@ bool createRenjuTree(){
     for(UINT i=1; i<m_MoveNode_count; i++){
         next++;
         //log(next->getName());
-        if(i%1000000==0) loading(i, m_MoveNode_count);
+        if(i%300000==0) loading(i, m_MoveNode_count);
         
         CPoint Point(next->mPos);
                     
@@ -1518,24 +1544,25 @@ int addLibrary(){
             //log("readNewComment");
             str = (char*)&comment_buffer[current_comment_buffer];
             len = readNewComment(str);
-            str = findString((char*)&comment_buffer, current_comment_buffer, str, len);
-            if(str==0){
-                str = (char*)&comment_buffer[current_comment_buffer];
+            if(len && (_COMMENT_BUFFER_SIZE >= current_comment_buffer+len)){
+                next->setOneLineComment(str);
                 current_comment_buffer+=len;
             }
-            if(pCurrentMove->mOneLineComment==0) pCurrentMove->setOneLineComment(str);
         }
             
         if (next->isBoardText()) {
             //log("readBoardText");
             str = (char*)&boardText_buffer[current_boardText_buffer];
             len = readBoardText(str);
-            str = findString((char*)&boardText_buffer, current_boardText_buffer, str, len);
-            if(str==0){
-                str = (char*)&boardText_buffer[current_boardText_buffer];
+            if(len && (_BOARDTEXT_BUFFER_SIZE > current_boardText_buffer+len)){
+                if(len>6){
+                    str[4] = 0;
+                    str[5] = 0;
+                    len = 6;
+                }
+                next->setBoardText(str);
                 current_boardText_buffer+=len;
             }
-            if(pCurrentMove->mBoardText==0) pCurrentMove->setBoardText(str);
         }
         
         addAttributes(pCurrentMove, next, bMark, bMove, bStart);

@@ -44,7 +44,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1031.03";
+        window.APP_VERSION = "v1101.01";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -115,10 +115,12 @@
             "v0929.02": ["更新说明: lib 棋谱已支持显示对称点。之前因为不支持对称点，导致很多棋谱分支显示不完整的bug已被修复。"],
             "v0929.03": ["更新说明: 增加 设置 lib棋谱棋盘大小 的功能。修复了 小棋盘棋谱 不能正确显示对称点的bug"],
             "v1006.00": ["更新内容: 兼容 Rapfi制谱 保存的 lib棋谱。"],
-            "v1031.03": ["重写了lib棋谱的解码程序,打开速度不再蜗牛",
+            "v1031.02": ["重写了lib棋谱的解码程序,打开速度不再蜗牛",
                          "已经支持打开 100M 以上的lib棋谱",
                          "调整了部分按键位置"
-                        ]
+                        ],
+            "v1101.01": ["更新内容: 提高了lib文件打开速度"]
+                        
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1031.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1101.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -52,6 +52,29 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1031.03";
             this.onRead = undefined;
         return i;
     };
+    
+    /*JFile.prototype.putBuffer = function(buffer, start, size){
+        const BUF_LEN = buffer.byteLength;
+        let rt = this.m_current + BUF_LEN <= this.m_end ? BUF_LEN : this.m_end - this.m_current,
+            uint8,
+            uint8Src,
+            uint8_len = rt % 4,
+            uint32,
+            uint32Src,
+            uint32_len = ~~(rt/4);
+        
+        uint32_len && (uint32 = new Uint32Array(buffer, start, uint32_len),
+            uint8Src = new Uint32Array());
+        for(let i=0; i<uint32_len; i++){
+            
+        }
+        
+        uint8_len && (uint8 = new Uint8Array(buffer, start + 4*uint32_len, uint8_len));
+        for(let i=0; i<uint8_len; i++){
+            
+        }
+        return rt;
+    };*/
     
     JFile.prototype.seek = function(current) {
         if (current < 0 || current >= this.m_end)

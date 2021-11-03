@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -405,7 +405,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.03";
                 let number = wasm_exports._Z15loadAllMoveNodev(),
                     dataSize = 1008 + 908 + number * 28;
                 if(memory.buffer.byteLength < data_buffer + dataSize)
-                    throw new Error(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
+                    return Promise.reject(new Error(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`));
                 if(number)
                     return Promise.resolve();
                 else
@@ -416,6 +416,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.03";
                     return Promise.resolve();
                 else
                     return Promise.reject(new Error(`createRenjuTree Error`));
+            })
+            .catch(function(err){
+                return Promise.reject(err);
             })
     }
 
@@ -463,7 +466,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1031.03";
         function getInnerHTMLInfo(pBuffer){
             let innerHTML = getComment(getUINT(pBuffer)),
                 depth = getINT(pBuffer+4);
-            innerHTML && (innerHTML = `<br><br>${innerHTML.split("\n").join("<br>")}<br>`);
+            innerHTML && (innerHTML = `<br><br>${innerHTML.split("\n").join("<br>")}<br><br>`);
             return { innerHTML: innerHTML, depth: depth };
         }
 

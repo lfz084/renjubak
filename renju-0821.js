@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1031.03";
+self.SCRIPT_VERSIONS["renju"] = "v1101.01";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
