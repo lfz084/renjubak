@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1101.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.01";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -44,7 +44,8 @@ window.RenjuLib = (() => {
         lock = false,
         colour = false,
         buffer_scale = 5,
-        post_number_start = 999999999;
+        post_number_start = 999999999,
+        centerPos = {x:8, y:8};
 
     const MODEL_RENLIB = 7;
 
@@ -98,12 +99,17 @@ window.RenjuLib = (() => {
     
     function setBufferScale(scl = 5) {
         buffer_scale = scl;
-        alert(`已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
+        showLabel(`设置${scl}倍内存,1M的lib文件会占用${scl}M内存`);
     }
     
     function setPostStart(start = 0){
         post_number_start = start;
         alert(`post_number_start = ${post_number_start}`);
+    }
+    
+    function setCenterPos(point = {x:8, y:8}) {
+        centerPos = point;
+        enable && showLabel(`棋谱中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`);
     }
 
     function createWorker() {
@@ -216,7 +222,7 @@ window.RenjuLib = (() => {
 
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
-            if (!isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
+            if (cBoard.size < 14 || !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
                 cBoard.wLb(nodes[i].idx, nodes[i].txt, colour ? nodes[i].color : "black");
                 if (nextMove.level < level.indexOf(nodes[i].txt)) {
                     nextMove.level = level.indexOf(nodes[i].txt);
@@ -237,8 +243,8 @@ window.RenjuLib = (() => {
     }
 
     function isEqual(arr1, arr2) {
-        for (let i = 0; i < 15; i++) {
-            for (let j = 0; j < 15; j++) {
+        for (let i = 0; i < arr1.length; i++) {
+            for (let j = 0; j < arr1[i].length; j++) {
                 if (arr1[i][j] != arr2[i][j])
                     return false;
             }
@@ -273,15 +279,13 @@ window.RenjuLib = (() => {
             //wk = createWorker();
         },
         showBranchs: function(param) {
-            enable && wk.postMessage({ cmd: "showBranchs", parameter: param });
+            enable && (wk.postMessage({ cmd: "setCenterPos", parameter: centerPos }),
+                wk.postMessage({ cmd: "showBranchs", parameter: param }))
         },
         isLoading: function() {
             return isLoading;
         },
-        setCenterPos: function(point) {
-            enable && wk.postMessage({ cmd: "setCenterPos", parameter: point });
-            !enable && alert(`没有打开lib文件，不能修改棋谱参数`)
-        },
+        setCenterPos: setCenterPos,
         colour: function() {
             colour = !colour;
         },

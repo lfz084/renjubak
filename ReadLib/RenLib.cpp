@@ -623,6 +623,8 @@ void test_newCPoint(UINT count){
         
         BYTE        mMatch;            // position search
         
+        //BYTE        mBoardTextLen;
+        
         UINT        mInfo;             // information
     
         CString        mOneLineComment;   // one line comment
@@ -1614,7 +1616,7 @@ int init(UINT bytesLength){
     UINT boardText_buffer_size = bytesLength / 7 * 4;
     UINT buffer_pages = (comment_buffer_size + boardText_buffer_size) / _PAGE_SIZE + 1;
     
-    grow(skip_data_pages + buffer_pages);
+    //grow(skip_data_pages + buffer_pages);
     
     current_log_buffer = 0;
     current_err_buffer = 0;
@@ -1629,10 +1631,10 @@ int init(UINT bytesLength){
         
     log("reset m_Stack");
     m_Stack = (Stack*)newBuffer(sizeof(Stack));
-    m_Stack->ClearAll();
+    //m_Stack->ClearAll();
     log("reset m_MoveList");
     m_MoveList = (MoveList*)newBuffer(sizeof(MoveList));
-    m_MoveList->ClearAll();
+    //m_MoveList->ClearAll();
     log("reset m_file");
     m_file = (LibraryFile*)newBuffer(sizeof(LibraryFile));
         

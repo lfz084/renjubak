@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["appData"] = "v1101.03";
+self.SCRIPT_VERSIONS["appData"] = "v1108.01";
 window.appData = (() => {
     "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
@@ -20,11 +20,13 @@ window.appData = (() => {
 
     let saveData = (cBd) => {
         //console.log("saveData");
-        let moves;
-        let whiteMoves;
-        let blackMoves;
-        let firstColor;
-        let resetNum;
+        let moves,
+            whiteMoves,
+            blackMoves,
+            firstColor,
+            resetNum,
+            cBoardSize = cBd.size,
+            coordinateType = cBd.coordinateType;
         if (cBd.oldCode) {
             let codeStr = cBd.oldCode;
             let st = 0;
@@ -60,6 +62,8 @@ window.appData = (() => {
             localStorage.setItem("blackMoves", blackMoves);
             localStorage.setItem("resetNum", resetNum);
             localStorage.setItem("firstColor", firstColor);
+            localStorage.setItem("cBoardSize", cBoardSize);
+            localStorage.setItem("coordinateType", coordinateType);
             timerSave = null;
             //log("保存棋谱:" + moves);
         }
@@ -67,16 +71,21 @@ window.appData = (() => {
 
     let loadData = (cBd) => {
         //console.log("loadData");
-        let firstColor = localStorage.getItem("firstColor");
-        let resetNum = localStorage.getItem("resetNum");
-        let moves = localStorage.getItem("moves");
-        let whiteMoves = localStorage.getItem("whiteMoves");
-        let blackMoves = localStorage.getItem("blackMoves");
+        let firstColor = localStorage.getItem("firstColor"),
+            resetNum = localStorage.getItem("resetNum"),
+            moves = localStorage.getItem("moves"),
+            whiteMoves = localStorage.getItem("whiteMoves"),
+            blackMoves = localStorage.getItem("blackMoves"),
+            cBoardSize = localStorage.getItem("cBoardSize"),
+            coordinateType = localStorage.getItem("coordinateType");
+            
         /*
         console.log(moves)
         console.log(blackMoves)
         console.log(whiteMoves)
         */
+        if ((cBoardSize != "undefined") && cBoardSize) cBd.setSize(parseInt(cBoardSize));
+        if ((coordinateType != "undefined") && coordinateType) cBd.setCoordinate(parseInt(coordinateType));
         if ((firstColor != "undefined") && firstColor) cBd.firstColor = firstColor;
         if (parseInt(resetNum) > 0) cBd.resetNum = parseInt(resetNum);
         if (cBd.setMoves(moves)) cBd.unpackMoves(true);

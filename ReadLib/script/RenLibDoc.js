@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1108.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -183,7 +183,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
     CRenLibDoc.prototype.setCenterPos = function(point) {
         centerPos.x = point.x;
         centerPos.y = point.y;
-        post("alert", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
+        post("warn", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
     }
 
     CRenLibDoc.prototype.readOldComment = function(libFile, pStrOneLine = [], pStrMultiLine = []) {
@@ -646,8 +646,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
         }
 
         post("loading", { current: libFile.current(), end: libFile.end(), count: number });
-        post("info", `loop << number = ${number}`);
-
+        post("info", `loop << number = ${number}, nNewMoves = ${nNewMoves}`);
+        libFile.close();
         if (number > 0) {
             this.m_MoveList.setRootIndex();
             this.m_MoveList.clearEnd();

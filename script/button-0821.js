@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["button"] = "v1101.03";
+self.SCRIPT_VERSIONS["button"] = "v1108.01";
 window.button = (() => {
 
     "use strict";
@@ -289,8 +289,8 @@ window.button = (() => {
                 input.selectedIndex = i; // input.onchange();
                 //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
                 if (muWindow.parentNode) {
-                    but.hideMenu(closeAnimation ? ANIMATION_TIMEOUT : ANIMATION_TIMEOUT, !closeAnimation ? but.change : null);
-                    if (closeAnimation) but.change();
+                    but.hideMenu(closeAnimation ? ANIMATION_TIMEOUT : ANIMATION_TIMEOUT, null/*!closeAnimation ? but.change : null*/);
+                    /*if (closeAnimation)*/ but.change();
                 }
             };
         }

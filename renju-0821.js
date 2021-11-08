@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1101.03";
+self.SCRIPT_VERSIONS["renju"] = "v1108.01";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -64,7 +64,6 @@ var loadApp = () => { // 按顺序加载应用
     window.closeNoSleep = () => {}; //关闭防休眠
     let cBoard = null; //棋盘对象
 
-
     window.alert = function(name) { //更改默认标题
         const IFRAME = document.createElement('IFRAME');
         IFRAME.style.display = 'none';
@@ -73,7 +72,7 @@ var loadApp = () => { // 按顺序加载应用
         window.frames[0].window.alert(name);
         IFRAME.parentNode.removeChild(IFRAME);
     };
-
+    
     window._loading = (function() { //控制加载动画
         let timer = null;
         const WIN_LOADING = document.createElement("div"),
@@ -318,7 +317,6 @@ var loadApp = () => { // 按顺序加载应用
             .catch(err => {
                 log(`---更新离线缓存失败---> ${err.message}`, "error")
             })
-            
     }
 
     function loadCss(url) { //加载css

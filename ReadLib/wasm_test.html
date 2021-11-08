@@ -190,7 +190,7 @@
                     buf[i] = 0;
                 }
                 document.querySelector('.sequence-memory').innerText = `${memory.buffer.byteLength/1024/1024}M`;
-                log(`memory.grow(${pages}), buffer size = ${memory.buffer.byteLength/1024/1024}M`);
+                log(`memory.grow(${pages}), ${pages/16}M, buffer size = ${memory.buffer.byteLength/1024/1024}M`);
                 return pages;
             }
             catch(err){
@@ -215,6 +215,26 @@
                 alert(err);
             }
         }
+        
+        function maxMemory(bufSize, scl){
+            try {
+                let pages = ~~(bufSize/1024/64*scl)+1;
+                log(`try memory.grow(${pages}), ${pages/16}M`);
+                memory.grow(pages);
+                return pages/16;
+            }
+            catch(err){
+                return maxMemory(bufSize, scl-0.1);
+            }
+        }
+        
+        function resetBuffer(libSize, scl){
+            let data_buf = exports._Z13getDataBufferv(),
+                data_buf_size = ~~(libSize * scl) + 1,
+                bufSize = data_buf + data_buf_size,
+                pages = ~~((bufSize - memory.buffer.byteLength)/1024/64) + 1;
+            return grow(pages);
+        }
 
         function main() {
             setTimeout(() => {
@@ -236,7 +256,9 @@
                 //exports._Z16test_newMoveNodej(1024*1024);
                 //log(exports._Z10test_Stacki(1024*1024));
                 //log(`getVariant = ${exports._Z15test_getVariantv()}`);
-                (grow(~~(LIB_SIZE/1024/64*5)+1),
+                (/*grow(~~(LIB_SIZE/1024/64*5)+1),*/
+                alert(maxMemory(LIB_SIZE, 8)),
+                /*resetBuffer(LIB_SIZE, 5),*/
                     log(`checkVersion = ${exports._Z12checkVersionv()}`),
                     log(`loadAllMoveNode() = ${exports._Z15loadAllMoveNodev()}`),
                     log(`createRenjuTree = ${exports._Z15createRenjuTreev()}`),
@@ -298,7 +320,7 @@
                     emscripten_resize_heap: function(...arg) {
                         alert(`reset_heap ${arg}`);
                     },
-                    _Z4growj: grow,
+                    _Z4growj: ()=>0,
                 }
             };
         //从远程加载一个WASM的模块，并将该模块中的内容转换成二进制数据

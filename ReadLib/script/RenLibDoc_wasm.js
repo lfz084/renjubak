@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1108.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -164,8 +164,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
     function getUINT(pBuffer) {
         return new Uint32Array(memory.buffer, pBuffer, 1)[0];
     }
-    
-    function getINT(pBuffer){
+
+    function getINT(pBuffer) {
         return new Int32Array(memory.buffer, pBuffer, 1)[0];
     }
 
@@ -200,31 +200,31 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
         buf[0] = point.x;
         buf[1] = point.y;
     }
-    
-    function getNode(pBuffer) {
+
+    function getNode(pBuffer, defaultTxT) {
         let buf = new Uint8Array(memory.buffer, pBuffer, NODE_SIZE),
             idx = Point2Idx(getPoint(pBuffer)),
-            txt = getBoardText(getUINT(pBuffer + 4)) || "○";
+            txt = getBoardText(getUINT(pBuffer + 4)) || defaultTxT;
         return new Node(idx, txt);
     }
-    
-    function getNodes(pBuffer = out_buffer){
+
+    function getNodes(pBuffer = out_buffer, defaultTxT) {
         let len = new Uint32Array(memory.buffer, pBuffer, 1)[0],
             nodes = [];
-        for(let i=0; i<len; i++){
-            nodes.push(getNode(pBuffer+4+i*NODE_SIZE));
+        for (let i = 0; i < len; i++) {
+            nodes.push(getNode(pBuffer + 4 + i * NODE_SIZE, defaultTxT));
         }
         return nodes;
     }
-    
-    function Path2Points(path){
+
+    function Path2Points(path) {
         let points = [];
-        for(let i=0; i<path.length; i++){
+        for (let i = 0; i < path.length; i++) {
             points.push(Idx2Point(path[i]));
         }
         return points;
     }
-    
+
     function getPath(path = []) {
         try {
             let len = getUINT(out_buffer);
@@ -242,15 +242,15 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
     function putPath(path) {
         try {
             let points = Path2Points(path);
-            for(let i=0; i<path.length; i++){
-                putPoint(in_buffer+i*POINT_SIZE, points[i]);
+            for (let i = 0; i < path.length; i++) {
+                putPoint(in_buffer + i * POINT_SIZE, points[i]);
             }
         }
         catch (err) {
             post(`error`, `${err}`);
         }
     }
-    
+
     function grow(pages = 100) {
         try {
             memory.grow(pages)
@@ -261,16 +261,39 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
                 buf[i] = 0;
             }
             post(`warn`, `memory.grow(${pages}), buffer size = ${memory.buffer.byteLength/1024/1024}M`);
-            */return pages;
+            */
+            return pages;
         }
         catch (err) {
-            post(`alert`, `申请 ${~~(pages/16)+1}M 内存失败，请确保你的手机有足够的空闲内存`);
+            post(`error`, `申请 ${~~(pages/16)+1}M 内存失败，请确保你的手机有足够的空闲内存`);
             return 0;
         }
     }
-    
+
+    function resetBuffer(libSize, scl) {
+        let data_buf = wasm_exports._Z13getDataBufferv(),
+            data_buf_size = ~~(libSize * scl) + 1,
+            bufSize = data_buf + data_buf_size,
+            pages = ~~((bufSize - memory.buffer.byteLength) / 1024 / 64) + 1;
+        return grow(pages);
+    }
+
+    function maxMemory(bufSize, scl) {
+        return new Promise((resolve, reject) => {
+            function max(bufSize, scl) {
+                let pages = resetBuffer(bufSize,scl);
+                scl -= 0.1;
+                if(pages) resolve(pages);
+                else if(scl>3)setTimeout(()=>max(bufSize, scl),0);
+                else reject(new Error(`手机空闲内存太小了,请关闭后台应用释放内存`));
+            }
+            max(bufSize, scl);
+        });
+    }
+
+
     let jFile = new JFile(),
-        buffer_scale = 28/6,
+        buffer_scale = 28 / 6,
         wasm_exports,
         memory,
         out_buffer,
@@ -297,16 +320,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
                     return param1;
                 },
                 _Z9getBufferPhj: function(pBuffer, size) {
-                    post("loading", { current: jFile.m_current, end: jFile.m_end*1.1});
+                    post("loading", { current: jFile.m_current, end: jFile.m_end * 1.1 });
                     let buf = new Uint8Array(memory.buffer, pBuffer, size),
                         rt = jFile.read(buf, size);
                     post("log", `pBuffer = ${pBuffer}, size = ${size}, rt = ${rt}`);
                     return rt;
                 },
-                _Z7loadingjj: function(current, end){
-                    post("loading", { current: current, end: end});
+                _Z7loadingjj: function(current, end) {
+                    post("loading", { current: current, end: end });
                 },
-                _Z4growj: grow,
+                _Z4growj: () => 0,
             }
         };
 
@@ -360,9 +383,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
     CRenLibDoc.prototype.setCenterPos = function(point) {
         centerPos.x = point.x;
         centerPos.y = point.y;
-        post("alert", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
+        post("warn", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
     }
-    
+
     CRenLibDoc.prototype.setBufferScale = function(scl = 28 / 6) {
         buffer_scale = scl;
         post("warn", `已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
@@ -371,13 +394,20 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
     CRenLibDoc.prototype.addLibrary = function(buf) {
 
         return loadWASM("./RenLib.wasm")
-            .then(function(){
+            .then(function() {
                 wasm_exports._Z4initj(buf.byteLength);
             })
-            .then(function() {
+            .then(function(){
+                post(`log`, `maxMemory`);
+                return maxMemory(buf.byteLength, buffer_scale);
+                /*
                 post("warn", `buffer_scale = ${buffer_scale}`);
-                if(!grow(~~(buf.byteLength / 1024 / 64 * buffer_scale) + 1))
+                if (!resetBuffer(buf.byteLength, buffer_scale))
                     return Promise.reject(new Error("grow Error"));
+                    */
+            })
+            .then(function(pages) {
+                post(`warn`, `申请 ${~~(pages/16)+1}M 内存 OK`);
                 if (jFile.open(buf)) {
                     return Promise.resolve();
                 }
@@ -406,9 +436,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
             .then(function() {
                 let number = wasm_exports._Z15loadAllMoveNodev(),
                     dataSize = 1008 + 908 + number * 28;
-                if(memory.buffer.byteLength < data_buffer + dataSize)
+                if (memory.buffer.byteLength < data_buffer + dataSize)
                     return Promise.reject(new Error(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`));
-                if(number)
+                if (number)
                     return Promise.resolve();
                 else
                     return Promise.reject(new Error(`loadAllMoveNode Error`));
@@ -419,7 +449,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
                 else
                     return Promise.reject(new Error(`createRenjuTree Error`));
             })
-            .catch(function(err){
+            .then(function(){
+                return Promise.resolve(jFile.close());
+            })
+            .catch(function(err) {
                 return Promise.reject(err);
             })
     }
@@ -434,7 +467,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
                 rt = [];
             for (let i = 0; i < nodes.length; i++) {
                 idx = Point2Idx(normalizeCoord(Idx2Point(nodes[i].idx), nMatch))
-                txt = nodes[i].txt; //nMatch>0 && nodes[i].txt == "○" ? "●" : nodes[i].txt; 
+                txt = nodes[i].txt;
                 rt[i] = new Node(idx, txt, nMatch > 0 ? "green" : "black");
             }
             return rt;
@@ -457,22 +490,22 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
             }
             for (let i = nodes2.length - 1; i >= 0; i--) {
                 let idx = indexOf(nodes1, nodes2[i]);
-                if(idx>-1){
-                    nodes1[idx].txt== "○" && (nodes1[idx].txt = nodes2[i].txt);
+                if (idx > -1) {
+                    !nodes1[idx].txt && (nodes1[idx].txt = nodes2[i].txt);
                     nodes2.splice(i, 1);
                 }
             }
             return nodes1.concat(nodes2);
         }
-        
-        function getInnerHTMLInfo(pBuffer){
+
+        function getInnerHTMLInfo(pBuffer) {
             let innerHTML = getComment(getUINT(pBuffer)),
-                depth = getINT(pBuffer+4);
+                depth = getINT(pBuffer + 4);
             innerHTML && (innerHTML = `<br><br>${innerHTML.split("\n").join("<br>")}<br><br>`);
             return { innerHTML: innerHTML, depth: depth };
         }
 
-       
+
         let done = false,
             //pMove = this.m_MoveList.getRoot().getDown(),
             innerHTMLInfo = { innerHTML: "", depth: -2 },
@@ -487,7 +520,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
             putPath(PH);
             //post("log",`${new Uint8Array(memory.buffer, in_buffer, path.length*POINT_SIZE)}`);
             wasm_exports._Z14getBranchNodesP6CPointi(in_buffer, path.length);
-            NS = getNodes(out_buffer);
+            NS = getNodes(out_buffer, path.length % 2 ? "○" : "●");
             //post("log",NS)
             normalizeNS = normalizeNodes(NS, i);
             //post("log",normalizeNS)
@@ -504,7 +537,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1101.03";
         let len = wasm_exports._Z11getAutoMovev(),
             path = [];
         for (let i = 0; i < len; i++) {
-            path.push(Point2Idx(getPoint(out_buffer+i*2)));
+            path.push(Point2Idx(getPoint(out_buffer + i * 2)));
         }
         return path;
     }

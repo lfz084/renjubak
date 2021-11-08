@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1101.03";
+self.SCRIPT_VERSIONS["engine"] = "v1108.01";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -210,7 +210,7 @@ window.engine = (() => {
             //log(cmd);
             let cmdList = {
                 "cancelFind": () => {
-                    for (let i = cBd.SLTX * cBd.SLTY - 1; i >= 0; i--) {
+                    for (let i = 15 * 15 - 1; i >= 0; i--) {
                         if (typeof(cBd.P[i].text) == "number" || cBd.P[i].text == EMOJI_ROUND_BLACK || cBd.P[i].text == "⊙") {
                             cleLb(i);
                         }

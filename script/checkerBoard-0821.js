@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1101.03";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.01";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -10,6 +10,13 @@ window.checkerBoard = (function() {
     const TYPE_WHITE = 4; // 无序号 添加的黑棋
     const TYPE_MOVE = 5; //VCF手顺
     const TYPE_MARK_FOUL = 6;
+
+    const COORDINATE_ALL = 0;
+    const COORDINATE_LEFT_UP = 1;
+    const COORDINATE_RIGHT_UP = 2;
+    const COORDINATE_RIGHT_DOWN = 3;
+    const COORDINATE_LEFT_DOWN = 4;
+    const COORDINATE_NONE = 5;
 
     function log(param, type = "log") {
         const command = {
@@ -223,8 +230,10 @@ window.checkerBoard = (function() {
         this.oldYB = 0;
         this.gW = 0; //棋盘格子宽度,浮点数
         this.gH = 0; //棋盘格子高度,浮点数
-        this.SLTX = 15;
-        this.SLTY = 15; //默认是15×15棋盘;
+        this.size = 15;
+        this.coordinateType = COORDINATE_ALL;
+        this.SLTX = this.size;
+        this.SLTY = this.SLTX; //默认是15×15棋盘;
         this.searchIdx = []; // 记录正在计算的点
         this.searchPoints = [];
         for (let i = 0; i < 225; i++) {
@@ -382,7 +391,7 @@ window.checkerBoard = (function() {
         this.firstColor = tree ? tree.firstColor : null || "white";
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
-                let idx = y * this.SLTX + x;
+                let idx = y * 15 + x;
                 switch (arr[y][x]) {
                     case 1:
                         this.wNb(idx, "black", undefined, TYPE_BLACK, undefined, 100);
@@ -445,9 +454,11 @@ window.checkerBoard = (function() {
         }
 
         function findMoves() {
-            for (let i = 0; i < cBoard.SLTX * cBoard.SLTY; i++) {
-                if (cBoard.P[i].type == TYPE_MOVE) {
-                    return i;
+            for (let i = 0; i < cBoard.SLTX; i++) {
+                for(let j = 0; j < cBoard.SLTY; j++){
+                    if (cBoard.P[i + j*15].type == TYPE_MOVE) {
+                        return i;
+                    }
                 }
             }
             return -1;
@@ -544,14 +555,15 @@ window.checkerBoard = (function() {
             let y;
             let nx;
             let ny;
-
-            for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-                if (this.P[idx].type == TYPE_WHITE) {
-                    wMS.push(idx);
-                }
-                else if (this.P[idx].type == TYPE_BLACK) {
-                    bMS.push(idx);
+            for(let x = 0; x < this.SLTX; x++){
+                for (let y = 0; y < this.SLTY; y++) {
+                    let idx = x + y*15;
+                    if (this.P[idx].type == TYPE_WHITE) {
+                        wMS.push(idx);
+                    }
+                    else if (this.P[idx].type == TYPE_BLACK) {
+                        bMS.push(idx);
+                    }
                 }
             }
 
@@ -562,11 +574,11 @@ window.checkerBoard = (function() {
 
                     idx = tMS1[i];
 
-                    y = parseInt(idx / this.SLTX);
+                    y = parseInt(idx / 15);
                     nx = this.SLTY - 1 - y; // 新的 x坐标是原来 y坐标的翻转;
-                    ny = idx % this.SLTX; // 旋转后新的 y坐标是原来的 x坐标
+                    ny = idx % 15; // 旋转后新的 y坐标是原来的 x坐标
 
-                    idx = ny * this.SLTX + nx;
+                    idx = ny * 15 + nx;
                     tMS[i] = idx;
 
                 }
@@ -616,13 +628,15 @@ window.checkerBoard = (function() {
         let nx;
         let ny;
 
-        for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-            if (this.P[idx].type == TYPE_WHITE) {
-                wMS.push(idx);
-            }
-            else if (this.P[idx].type == TYPE_BLACK) {
-                bMS.push(idx);
+        for (let x = 0; x < this.SLTX; x++) {
+            for (let y = 0; y < this.SLTY; y++) {
+                let idx = x + y * 15;
+                if (this.P[idx].type == TYPE_WHITE) {
+                    wMS.push(idx);
+                }
+                else if (this.P[idx].type == TYPE_BLACK) {
+                    bMS.push(idx);
+                }
             }
         }
 
@@ -633,12 +647,12 @@ window.checkerBoard = (function() {
 
                 idx = tMS1[i]; // 取得旧的index
                 // 新的 x坐标是原来 y坐标;   
-                nx = parseInt(idx / this.SLTX);
+                nx = parseInt(idx / 15);
                 // 旋转后新的 y坐标是原来的 x坐标翻转
-                x = idx % this.SLTX;
+                x = idx % 15;
                 ny = this.SLTX - 1 - x;
                 // 求得新的index，暂时保存
-                idx = ny * this.SLTX + nx;
+                idx = ny * 15 + nx;
                 tMS[i] = idx;
 
             }
@@ -687,13 +701,15 @@ window.checkerBoard = (function() {
         let nx;
         let ny;
 
-        for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-            if (this.P[idx].type == TYPE_WHITE) {
-                wMS.push(idx);
-            }
-            else if (this.P[idx].type == TYPE_BLACK) {
-                bMS.push(idx);
+        for (let x = 0; x < this.SLTX; x++) {
+            for (let y = 0; y < this.SLTY; y++) {
+                let idx = x + y * 15;
+                if (this.P[idx].type == TYPE_WHITE) {
+                    wMS.push(idx);
+                }
+                else if (this.P[idx].type == TYPE_BLACK) {
+                    bMS.push(idx);
+                }
             }
         }
 
@@ -704,11 +720,11 @@ window.checkerBoard = (function() {
 
                 idx = tMS1[i]; // 取得旧的index
 
-                nx = idx % this.SLTX; // 新的 x坐标是原来 x坐标不变;
-                y = parseInt(idx / this.SLTX);
+                nx = idx % 15; // 新的 x坐标是原来 x坐标不变;
+                y = parseInt(idx / 15);
                 ny = this.SLTY - 1 - y; // 旋转后新的 y坐标是原来的 y坐标翻转;
 
-                idx = ny * this.SLTX + nx;
+                idx = ny * 15 + nx;
                 tMS[i] = idx;
 
             }
@@ -769,13 +785,15 @@ window.checkerBoard = (function() {
             let nx;
             let ny;
 
-            for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-
-                if (this.P[idx].type == TYPE_WHITE) {
-                    wMS.push(idx);
-                }
-                else if (this.P[idx].type == TYPE_BLACK) {
-                    bMS.push(idx);
+            for (let x = 0; x < this.SLTX; x++) {
+                for (let y = 0; y < this.SLTY; y++) {
+                    let idx = x + y * 15;
+                    if (this.P[idx].type == TYPE_WHITE) {
+                        wMS.push(idx);
+                    }
+                    else if (this.P[idx].type == TYPE_BLACK) {
+                        bMS.push(idx);
+                    }
                 }
             }
 
@@ -786,11 +804,11 @@ window.checkerBoard = (function() {
 
                     idx = tMS1[i]; // 取得旧的index              
 
-                    x = idx % this.SLTX;
+                    x = idx % 15;
                     nx = this.SLTX - 1 - x; // 新的 x坐标是原来 x坐标的翻转;
-                    ny = parseInt(idx / this.SLTX); // 新的 y坐标是原来的 y坐标不变;
+                    ny = parseInt(idx / 15); // 新的 y坐标是原来的 y坐标不变;
 
-                    idx = ny * this.SLTX + nx;
+                    idx = ny * 15 + nx;
                     tMS[i] = idx;
 
                 }
@@ -873,7 +891,7 @@ window.checkerBoard = (function() {
     checkerBoard.prototype.cleLb = function(idx) {
 
         if (typeof(idx) == "string" && idx == "all") {
-            for (let i = 0; i < this.SLTX * this.SLTY; i++) {
+            for (let i = 0; i < 15 * 15; i++) {
                 if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
                     this.clePoint(i);
                     refreshLine.call(this, i);
@@ -944,7 +962,7 @@ window.checkerBoard = (function() {
 
     checkerBoard.prototype.cletLbMoves = function() {
 
-        for (let i = 0; i < this.SLTX * this.SLTY; i++) {
+        for (let i = 0; i < 15 * 15; i++) {
             if (this.P[i].type == TYPE_MOVE) {
                 this.cleLb(i);
             }
@@ -1114,16 +1132,16 @@ window.checkerBoard = (function() {
 
     checkerBoard.prototype.createMarkArrow = function(start, end, color) {
 
-        let x1 = start % this.SLTX;
-        let y1 = parseInt(start / this.SLTX);
-        let x2 = end % this.SLTX;
-        let y2 = parseInt(end / this.SLTX);
+        let x1 = start % 15;
+        let y1 = parseInt(start / 15);
+        let x2 = end % 15;
+        let y2 = parseInt(end / 15);
         let direction;
         let P = [];
         let n;
         if (x1 == x2 && y1 != y2) {
             direction = start > end ? 2 : 6;
-            n = direction == 2 ? 0 - this.SLTX : this.SLTX;
+            n = direction == 2 ? 0 - 15 : 15;
         }
         else if (y1 == y2 && x1 != x2) {
             direction = start > end ? 0 : 4;
@@ -1131,7 +1149,7 @@ window.checkerBoard = (function() {
         }
         else if (Math.abs(y1 - y2) == Math.abs(x1 - x2) && x1 != x2) {
             direction = start > end ? (x1 > x2 ? 1 : 3) : (x1 > x2 ? 7 : 5);
-            n = direction == 1 ? 0 - this.SLTX - 1 : direction == 3 ? 0 - this.SLTX + 1 : direction == 5 ? this.SLTX + 1 : this.SLTX - 1;
+            n = direction == 1 ? 0 - 15 - 1 : direction == 3 ? 0 - 15 + 1 : direction == 5 ? 15 + 1 : 15 - 1;
         }
         else {
             return;
@@ -1149,17 +1167,17 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.createMarkLine = function(start, end, color, lines) {
-        let x1 = start % this.SLTX;
-        let y1 = parseInt(start / this.SLTX);
-        let x2 = end % this.SLTX;
-        let y2 = parseInt(end / this.SLTX);
+        let x1 = start % 15;
+        let y1 = parseInt(start / 15);
+        let x2 = end % 15;
+        let y2 = parseInt(end / 15);
         let direction;
         let P = [];
         let n;
         lines = lines || this.LINES;
         if (x1 == x2 && y1 != y2) {
             direction = start > end ? 2 : 6;
-            n = direction == 2 ? 0 - this.SLTX : this.SLTX;
+            n = direction == 2 ? 0 - 15 : 15;
         }
         else if (y1 == y2 && x1 != x2) {
             direction = start > end ? 0 : 4;
@@ -1167,7 +1185,7 @@ window.checkerBoard = (function() {
         }
         else if (Math.abs(y1 - y2) == Math.abs(x1 - x2) && x1 != x2) {
             direction = start > end ? (x1 > x2 ? 1 : 3) : (x1 > x2 ? 7 : 5);
-            n = direction == 1 ? 0 - this.SLTX - 1 : direction == 3 ? 0 - this.SLTX + 1 : direction == 5 ? this.SLTX + 1 : this.SLTX - 1;
+            n = direction == 1 ? 0 - 15 - 1 : direction == 3 ? 0 - 15 + 1 : direction == 5 ? 15 + 1 : 15 - 1;
         }
         else {
             return;
@@ -1246,8 +1264,8 @@ window.checkerBoard = (function() {
             this.startIdx = idx;
             this.drawLine.startPoint.setAttribute("class", "startPoint");
 
-            let x = idx % this.SLTX;
-            let y = parseInt(idx / this.SLTX);
+            let x = idx % 15;
+            let y = parseInt(idx / 15);
             let lw = x;
             let rw = this.SLTX - 1 - x;
             let uh = y;
@@ -1468,13 +1486,13 @@ window.checkerBoard = (function() {
         let p = tempp;
         p.setxy(x, y); // page 坐标 转 canvas 坐标
         this.xyPageToObj(p, this.canvas);
-        x = p.x + parseInt(this.gW / 2);
-        y = p.y + parseInt(this.gH / 2);
-        i = parseInt((x - this.XL) / this.gW);
+        x = p.x + ~~(this.gW / 2);
+        y = p.y + ~~(this.gH / 2);
+        i = ~~((x - this.XL) / this.gW);
         if (i == this.SLTX) i--;
-        j = parseInt((y - this.YT) / this.gH);
+        j = ~~((y - this.YT) / this.gH);
         if (j == this.SLTY) j--;
-        return parseInt(this.SLTX * j + i);
+        return ~~(15 * j + i);
 
     };
 
@@ -1494,9 +1512,12 @@ window.checkerBoard = (function() {
 
         var ml = "";
         if (type == TYPE_WHITE || type == TYPE_BLACK) {
-            for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-                if (this.P[idx].type == type) {
-                    ml += this.indexToName(idx);
+            for(let x = 0; x < this.SLTX; x++){
+                for(let y = 0; y < this.SLTY; y++){
+                    let idx = x + y * 15;
+                    if (this.P[idx].type == type) {
+                        ml += this.indexToName(idx);
+                    }
                 }
             }
         }
@@ -1519,23 +1540,21 @@ window.checkerBoard = (function() {
             arrobj[i] = [];
         }
 
-        let x;
-        let y;
-        for (let idx = 0; idx < this.SLTX * this.SLTY; idx++) {
-            x = idx % this.SLTX;
-            y = parseInt(idx / this.SLTX);
-
-            if (this.P[idx].type == TYPE_NUMBER) {
-                arrobj[y][x] = this.P[idx].color == this.bNumColor ? 1 : 2;
-            }
-            else if (this.P[idx].type == TYPE_WHITE) {
-                arrobj[y][x] = 2;
-            }
-            else if (this.P[idx].type == TYPE_BLACK) {
-                arrobj[y][x] = 1;
-            }
-            else {
-                arrobj[y][x] = 0;
+        for(let x = 0; x < this.SLTX; x++){
+            for(let y = 0; y < this.SLTY; y++){
+                let idx = x + y * 15;
+                if (this.P[idx].type == TYPE_NUMBER) {
+                    arrobj[y][x] = this.P[idx].color == this.bNumColor ? 1 : 2;
+                }
+                else if (this.P[idx].type == TYPE_WHITE) {
+                    arrobj[y][x] = 2;
+                }
+                else if (this.P[idx].type == TYPE_BLACK) {
+                    arrobj[y][x] = 1;
+                }
+                else {
+                    arrobj[y][x] = 0;
+                }
             }
         }
         return arrobj;
@@ -1559,7 +1578,7 @@ window.checkerBoard = (function() {
 
         for (let i = this.SLTY - 1; i >= 0; i--) {
             for (let j = this.SLTX - 1; j >= 0; j--) {
-                idx = i * this.SLTX + j;
+                idx = i * 15 + j;
                 rgb = getPointColor(idx, this);
                 //alert(rgb.r+"\n"+rgb.g+"\n"+rgb.b);
                 cNum = (rgb.r + rgb.g + rgb.b) / 3;
@@ -1597,7 +1616,7 @@ window.checkerBoard = (function() {
         }
         for (let i = this.SLTY - 1; i >= 0; i--) {
             for (let j = this.SLTX - 1; j >= 0; j--) {
-                idx = i * this.SLTX + j;
+                idx = i * 15 + j;
                 if (Math.abs(arr[i][j] - max) < (wBoard || max > 250 ? 20 : 50)) {
                     //arr[i][j] = 2;
                     this.P[idx].printNb(EMOJI_STAR_BLACK, "white", this.gW, this.gH, this.wNumColor);
@@ -1667,8 +1686,8 @@ window.checkerBoard = (function() {
             function isLine(cnum, cboard) {
                 let tx;
                 let ty; //网格的x，y 线
-                let x = idx % cboard.SLTX;
-                let y = parseInt(idx / cboard.SLTX);
+                let x = idx % 15;
+                let y = parseInt(idx / 15);
                 let count = 0; // 记录黑点
                 let c;
                 for (let i = 0; i < w; i++) {
@@ -1700,15 +1719,15 @@ window.checkerBoard = (function() {
 
                 // 针对白底棋盘，搜索棋盘网格线
                 if (y == null) {
-                    x = idx % cboard.SLTX;
-                    y = parseInt(idx / cboard.SLTX);
+                    x = idx % 15;
+                    y = parseInt(idx / 15);
                 }
 
                 if (x == 0) {
                     if (idx == 0) {
                         if (right() && buttom()) return true;
                     }
-                    else if (idx == cboard.SLTX * (cboard.SLTY - 1)) {
+                    else if (idx == 15 * (cboard.SLTY - 1)) {
                         if (right() && top()) return true;
                     }
                     else {
@@ -1719,7 +1738,7 @@ window.checkerBoard = (function() {
                     if (idx == cboard.SLTX - 1) {
                         if (left() && buttom()) return true;
                     }
-                    else if (idx == cboard.SLTX * cboard.SLTY - 1) {
+                    else if (idx == 15 * cboard.SLTY - 1) {
                         if (left() && top()) return true;
                     }
                     else {
@@ -1853,17 +1872,17 @@ window.checkerBoard = (function() {
             lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
             x1 = this.P[i].x * size;
             y1 = this.P[i].y * size;
-            x2 = this.P[i + (this.SLTY - 1) * this.SLTX].x * size;
-            y2 = this.P[i + (this.SLTY - 1) * this.SLTX].y * size;
+            x2 = this.P[i + (this.SLTY - 1) * 15].x * size;
+            y2 = this.P[i + (this.SLTY - 1) * 15].y * size;
             svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />`;
         }
         // 划横线
         for (let j = 0; j < this.SLTY; j++) {
             lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = this.P[j * this.SLTX].x * size;
-            y1 = this.P[j * this.SLTX].y * size;
-            x2 = this.P[j * this.SLTX + this.SLTX - 1].x * size;
-            y2 = this.P[j * this.SLTX + this.SLTX - 1].y * size;
+            x1 = this.P[j * 15].x * size;
+            y1 = this.P[j * 15].y * size;
+            x2 = this.P[j * 15 + this.SLTX - 1].x * size;
+            y2 = this.P[j * 15 + this.SLTX - 1].y * size;
             svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />`;
         }
         //画星位
@@ -1884,7 +1903,7 @@ window.checkerBoard = (function() {
         //打印棋盘坐标
         let m;
         for (let i = 0; i < this.SLTX; i++) {
-            for (let j = 0; j <= this.SLTX * (this.SLTY - 1); j += this.SLTX * (this.SLTY - 1)) {
+            for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
 
                 m = j == 0 ? -this.gH : this.gH;
                 x1 = this.P[i + j].x * size;
@@ -1897,8 +1916,8 @@ window.checkerBoard = (function() {
             for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
 
                 m = j == 0 ? -this.gW : this.gW;
-                x1 = (this.P[i * this.SLTX + j].x + m) * size;
-                y1 = this.P[i * this.SLTX + j].y * size;
+                x1 = (this.P[i * 15 + j].x + m) * size;
+                y1 = this.P[i * 15 + j].y * size;
                 svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
 
             }
@@ -1908,61 +1927,63 @@ window.checkerBoard = (function() {
         svgText += getDrawLines.call(this, this.autoLines);
 
         // 打印棋子，和标记
-        for (let i = 0; i < this.SLTY * this.SLTX; i++) {
-            let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-            if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
-                lineWidth = w / 25;
-                svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
-                /*
-                 if (this.P[i].type==TYPE_NUMBER) {
-                     let color = this.P[i].color=="white" ? "black" : "white";
-                     svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
-                 }
-                */
-            }
-            else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
-                svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
-                //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
-            }
-
-            let txt = this.P[i].text;
-            let color = this.P[i].color;
-            color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-            if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
-                txt = parseInt(this.P[i].text) - this.resetNum;
-                txt = parseInt(txt) < 1 ? "" : txt;
-                txt = showNum ? txt : "";
-                //color = this.P[i].color == this.wNumColor ? "black" : "white";
-                if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
-                    color = this.notShowLastNum ? color : "#ff6666";
-                    txt = !showNum && !this.notShowLastNum ? "◤" : txt;
-
+        for(let x = 0; x < this.SLTX; x++){
+            for(let y = 0; y < this.SLTY; y++){
+                let i = x + y * 15,
+                    w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
+                if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
+                    lineWidth = w / 25;
+                    svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
+                    /*
+                    if (this.P[i].type==TYPE_NUMBER) {
+                        let color = this.P[i].color=="white" ? "black" : "white";
+                        svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+                    }
+                    */
                 }
-            }
+                else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
+                    svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
+                    //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
+                }
 
-            let fontsize = parseInt(w * 1.08);
-            x1 = this.P[i].x;
-            y1 = this.P[i].y;
-            if (txt.length == 1) { // 两位数数数字不需要放大字体
-                let code = txt.charCodeAt();
-                // 再把一位数字排除
-                if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                    if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
-                        fontsize = parseInt(w * 1.1);
-                    }
-                    else if (txt == "◤") {
-                        x1 -= w * 0.15;
-                        y1 -= w * 0.15;
-                    }
-                    else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-                        fontsize = parseInt(w * 1.5);
+                let txt = this.P[i].text;
+                let color = this.P[i].color;
+                color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
+                if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
+                    txt = parseInt(this.P[i].text) - this.resetNum;
+                    txt = parseInt(txt) < 1 ? "" : txt;
+                    txt = showNum ? txt : "";
+                    //color = this.P[i].color == this.wNumColor ? "black" : "white";
+                    if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
+                        color = this.notShowLastNum ? color : "#ff6666";
+                        txt = !showNum && !this.notShowLastNum ? "◤" : txt;
                     }
                 }
+
+                let fontsize = parseInt(w * 1.08);
+                x1 = this.P[i].x;
+                y1 = this.P[i].y;
+                if (txt.length == 1) { // 两位数数数字不需要放大字体
+                    let code = txt.charCodeAt();
+                    // 再把一位数字排除
+                    if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
+                        if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
+                            fontsize = parseInt(w * 1.1);
+                        }
+                        else if (txt == "◤") {
+                            x1 -= w * 0.15;
+                            y1 -= w * 0.15;
+                        }
+                        else { // 把数字和特殊标记排除，其它一位字符统一放大字体
+                            fontsize = parseInt(w * 1.5);
+                        }
+                    }
+                }
+                else if (txt.length == 3) {
+                    fontsize = parseInt(w * 0.9);
+                }
+                svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
             }
-            else if (txt.length == 3) {
-                fontsize = parseInt(w * 0.9);
-            }
-            svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
         }
 
         svgText += getDrawArrow.call(this, this.ARROWS);
@@ -2039,9 +2060,9 @@ window.checkerBoard = (function() {
     // P 数组的index ，转字母数字坐标
     checkerBoard.prototype.indexToName = function(idx) {
 
-        let x = (idx % this.SLTX);
-        let y = parseInt(idx / this.SLTY);
-        return (this.alpha.charAt(x) + (15 - y)).toLowerCase();
+        let x = (idx % 15);
+        let y = parseInt(idx / 15);
+        return (this.alpha.charAt(x) + (this.SLTY - y)).toLowerCase();
     };
 
 
@@ -2074,7 +2095,7 @@ window.checkerBoard = (function() {
         let x = name.toLowerCase().charCodeAt() - "a".charCodeAt();
         name = name.substr(1);
         let y = this.SLTY - name; //转换成第一行为0，依次为1,2,3...
-        return x + y * this.SLTX;
+        return x + y * 15;
 
     };
 
@@ -2100,68 +2121,68 @@ window.checkerBoard = (function() {
             let idx;
             switch (move) {
                 case "left":
-                    for (i = 0; i < this.SLTX * this.SLTY; i += this.SLTX) {
+                    for (i = 0; i < 15 * 15; i += 15) {
                         if (this.P[i].type != TYPE_EMPTY) break;
                     }
-                    if (i < this.SLTX * this.SLTY) return;
+                    if (i < 15 * 15) return;
                     // 转换MS数组
+                    this.MS.length = this.MSindex + 1;
                     for (i = 0; i < this.MS.length; i++) {
-                        this.MS.length = this.MSindex + 1;
                         this.MS[i] = this.MS[i] - 1;
                     }
                     // 复制棋盘每个落子点
-                    for (i = 1; i < this.SLTX; i++) {
-                        for (j = 0; j < this.SLTY; j++) {
-                            idx = i + j * this.SLTX;
+                    for (i = 1; i < 15; i++) {
+                        for (j = 0; j < 15; j++) {
+                            idx = i + j * 15;
                             copyP(this, idx - 1, idx);
                         }
                     }
                     break;
                 case "right":
-                    for (i = this.SLTX - 1; i < this.SLTX * this.SLTY; i += this.SLTX) {
+                    for (i = 15 - 1; i < 15 * 15; i += 15) {
                         if (this.P[i].type != TYPE_EMPTY) break;
                     }
-                    if (i < this.SLTX * this.SLTY) return;
+                    if (i < 15 * 15) return;
+                    this.MS.length = this.MSindex + 1;
                     for (i = 0; i < this.MS.length; i++) {
-                        this.MS.length = this.MSindex + 1;
                         this.MS[i] = this.MS[i] + 1;
                     }
-                    for (i = this.SLTX - 2; i >= 0; i--) {
-                        for (j = 0; j < this.SLTY; j++) {
-                            idx = i + j * this.SLTX;
+                    for (i = 15 - 2; i >= 0; i--) {
+                        for (j = 0; j < 15; j++) {
+                            idx = i + j * 15;
                             copyP(this, idx + 1, idx);
                         }
                     }
                     break;
                 case "top":
-                    for (i = 0; i < this.SLTX; i++) {
+                    for (i = 0; i < 15; i++) {
                         if (this.P[i].type != TYPE_EMPTY) break;
                     }
-                    if (i < this.SLTX) return;
+                    if (i < 15) return;
+                    this.MS.length = this.MSindex + 1;
                     for (i = 0; i < this.MS.length; i++) {
-                        this.MS.length = this.MSindex + 1;
-                        this.MS[i] = this.MS[i] - this.SLTX;
+                        this.MS[i] = this.MS[i] - 15;
                     }
-                    for (i = 1; i < this.SLTY; i++) {
-                        for (j = 0; j < this.SLTX; j++) {
-                            idx = i * this.SLTY + j;
-                            copyP(this, idx - this.SLTX, idx);
+                    for (i = 1; i < 15; i++) {
+                        for (j = 0; j < 15; j++) {
+                            idx = i * 15 + j;
+                            copyP(this, idx - 15, idx);
                         }
                     }
                     break;
                 case "bottom":
-                    for (i = this.SLTX * (this.SLTY - 1); i < this.SLTX * this.SLTY; i++) {
+                    for (i = 15 * (15 - 1); i < 15 * 15; i++) {
                         if (this.P[i].type != TYPE_EMPTY) break;
                     }
-                    if (i < this.SLTX * this.SLTY) return;
+                    if (i < 15 * 15) return;
+                    this.MS.length = this.MSindex + 1;
                     for (i = 0; i < this.MS.length; i++) {
-                        this.MS.length = this.MSindex + 1;
-                        this.MS[i] = this.MS[i] + this.SLTX;
+                        this.MS[i] = this.MS[i] + 15;
                     }
-                    for (i = this.SLTY - 2; i >= 0; i--) {
-                        for (j = 0; j < this.SLTX; j++) {
-                            idx = i * this.SLTY + j;
-                            copyP(this, idx + this.SLTX, idx);
+                    for (i = 15 - 2; i >= 0; i--) {
+                        for (j = 0; j < 15; j++) {
+                            idx = i * 15 + j;
+                            copyP(this, idx + 15, idx);
                         }
                     }
                     break;
@@ -2177,6 +2198,7 @@ window.checkerBoard = (function() {
 
         // 复制一个点，同时打印出来
         function copyP(board, idx, idx1) {
+            board.clePoint(idx);
             board.P[idx].text = board.P[idx1].text;
             board.P[idx].type = board.P[idx1].type;
             board.P[idx].color = board.P[idx1].color;
@@ -2216,7 +2238,7 @@ window.checkerBoard = (function() {
             for (let x = 0; x < this.SLTX; x++) {
 
                 if (arr[y][x] > 0) {
-                    this.wLb(y * this.SLTX + x, txt, color, undefined, false);
+                    this.wLb(y * 15 + x, txt, color, undefined, false);
                 }
             }
         }
@@ -2696,9 +2718,11 @@ window.checkerBoard = (function() {
     //  用虚线表示棋子的位置
     checkerBoard.prototype.printBorder = function() {
 
-        for (let i = 0; i < this.SLTX * this.SLTY; i++)
-        {
-            if (this.P[i] != null) this.P[i].printBorder(this.gW, this.gH);
+        for(let y = 0; y < this.SLTY; y++){
+            for(let x = 0; x < this.SLTX; x++){
+                let i = x + y * 15;
+                if (this.P[i] != null) this.P[i].printBorder(this.gW, this.gH);
+            }
         }
 
     };
@@ -2721,7 +2745,7 @@ window.checkerBoard = (function() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         for (let i = 0; i < this.SLTX; i++) {
-            for (let j = 0; j <= this.SLTX * (this.SLTY - 1); j += this.SLTX * (this.SLTY - 1)) {
+            for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
 
                 m = j == 0 ? -this.gH : this.gH;
                 p.setxy(this.P[i + j].x, this.P[i + j].y + m);
@@ -2735,7 +2759,7 @@ window.checkerBoard = (function() {
             for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
 
                 m = j == 0 ? -this.gW : this.gW;
-                p.setxy(this.P[i * this.SLTX + j].x + m, this.P[i * this.SLTX + j].y);
+                p.setxy(this.P[i * 15 + j].x + m, this.P[i * 15 + j].y);
 
                 ctx.fillText(String(this.SLTY - i), p.x, p.y);
 
@@ -2744,22 +2768,11 @@ window.checkerBoard = (function() {
         }
         ctx = null;
     };
-
-
-
-    // 画空棋盘
-    checkerBoard.prototype.printCheckerBoard = function() {
-
-        this.SLTX = 15;
-        this.SLTY = this.SLTX;
+    
+    
+    
+    checkerBoard.prototype.printEmptyCBoard = function(){
         let canvas = this.bakCanvas; // 准备在后台画棋盘
-        let siz = (this.SLTX - 1) * 9 / 14 + 2;
-        this.XL = parseInt(parseInt(this.width) / siz);
-        this.XR = parseInt(parseInt(this.width) / siz * (siz - 1));
-        this.YT = parseInt(parseInt(this.height) / siz);
-        this.YB = parseInt(parseInt(this.height) / siz * (siz - 1));
-
-        this.resetP(this.XL, this.XR, this.YT, this.YB);
         // 画图之前，设置画布大小
         canvas.width = parseInt(this.width);
         canvas.height = parseInt(this.height);
@@ -2774,17 +2787,17 @@ window.checkerBoard = (function() {
             p.setxy(this.P[i].x, this.P[i].y);
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[i + (this.SLTY - 1) * this.SLTX].x, this.P[i + (this.SLTY - 1) * this.SLTX].y);
+            p.setxy(this.P[i + (this.SLTY - 1) * 15].x, this.P[i + (this.SLTY - 1) * 15].y);
             ctx.lineTo(p.x, p.y);
             ctx.stroke();
         }
         // 划横线
         for (let j = 0; j < this.SLTY; j++) {
             ctx.lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
-            p.setxy(this.P[j * this.SLTX].x, this.P[j * this.SLTX].y);
+            p.setxy(this.P[j * 15].x, this.P[j * 15].y);
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[j * this.SLTX + this.SLTX - 1].x, this.P[j * this.SLTX + this.SLTX - 1].y);
+            p.setxy(this.P[j * 15 + this.SLTX - 1].x, this.P[j * 15 + this.SLTX - 1].y);
             ctx.lineTo(p.x, p.y);
             ctx.stroke();
         }
@@ -2811,9 +2824,10 @@ window.checkerBoard = (function() {
 
         }
 
-        this.printCoordinate(); // 打印棋盘坐标
+        this.printCoordinate(); // 打印棋盘坐标=
 
         //把后台的图片显示出来
+        
         let canvas2 = this.canvas;
         ctx = null;
         ctx = canvas2.getContext("2d");
@@ -2823,13 +2837,55 @@ window.checkerBoard = (function() {
         canvas2.style.height = canvas.height + "px";
         //图片转移后，重新设置每个点的坐标
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-        /*this.XL += canvas2.offsetLeft - canvas.offsetLeft ;
-        this.XR += canvas2.offsetLeft - canvas.offsetLeft ;
-        this.YT += canvas2.offsetTop - canvas.offsetTop ;
-        this.YB += canvas2.offsetTop - canvas.offsetTop ;
-        this.resetP();*/
+        
+    };
 
-        //this.printBorder();
+
+
+    // 画空棋盘
+    checkerBoard.prototype.printCheckerBoard = function() {
+
+        this.SLTX = this.size;
+        this.SLTY = this.SLTX;
+        let padding = this.coordinateType < 1 ? ~~(parseInt(this.width) / (this.SLTX + 2) * 1.5) :
+            this.coordinateType < 5 ? ~~(parseInt(this.width) / (this.SLTX + 1) * 1.5) :
+            ~~(parseInt(this.width) / this.SLTX / 2);
+        switch (this.coordinateType) {
+            case COORDINATE_ALL:
+            case COORDINATE_NONE:
+                this.XL = padding;
+                this.XR = parseInt(this.width) - padding;
+                this.YT = padding;
+                this.YB = parseInt(this.height) - padding;
+                break;
+            case COORDINATE_LEFT_UP:
+                this.XL = padding;
+                this.XR = parseInt(this.width) - ~~(padding/3);
+                this.YT = padding;
+                this.YB = parseInt(this.height) - ~~(padding/3);
+                break;
+            case COORDINATE_RIGHT_UP:
+                this.XL = ~~(padding/3);
+                this.XR = parseInt(this.width) - padding;
+                this.YT = padding;
+                this.YB = parseInt(this.height) - ~~(padding/3);
+                break;
+            case COORDINATE_RIGHT_DOWN:
+                this.XL = ~~(padding/3);
+                this.XR = parseInt(this.width) - padding;
+                this.YT = ~~(padding/3);
+                this.YB = parseInt(this.height) - padding;
+                break;
+            case COORDINATE_LEFT_DOWN:
+                this.XL = padding;
+                this.XR = parseInt(this.width) - ~~(padding/3);
+                this.YT = ~~(padding/3);
+                this.YB = parseInt(this.height) - padding;
+                break;
+        }
+
+        this.resetP(this.XL, this.XR, this.YT, this.YB);
+        this.printEmptyCBoard();
     };
 
 
@@ -2843,7 +2899,7 @@ window.checkerBoard = (function() {
         this.printMovesTimer = nowTimer;
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
-                idx = y * this.SLTX + x;
+                idx = y * 15 + x;
                 if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
                     this.cleLb(idx);
                 }
@@ -2900,8 +2956,8 @@ window.checkerBoard = (function() {
             lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
             x1 = left + this.P[i].x * size;
             y1 = top + this.P[i].y * size;
-            x2 = left + this.P[i + (this.SLTY - 1) * this.SLTX].x * size;
-            y2 = top + this.P[i + (this.SLTY - 1) * this.SLTX].y * size;
+            x2 = left + this.P[i + (this.SLTY - 1) * 15].x * size;
+            y2 = top + this.P[i + (this.SLTY - 1) * 15].y * size;
 
             doc.setLineWidth(lineWidth);
             doc.setDrawColor(0, 0, 0);
@@ -2911,10 +2967,10 @@ window.checkerBoard = (function() {
         // 划横线
         for (let j = 0; j < this.SLTY; j++) {
             lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = left + this.P[j * this.SLTX].x * size;
-            y1 = top + this.P[j * this.SLTX].y * size;
-            x2 = left + this.P[j * this.SLTX + this.SLTX - 1].x * size;
-            y2 = top + this.P[j * this.SLTX + this.SLTX - 1].y * size;
+            x1 = left + this.P[j * 15].x * size;
+            y1 = top + this.P[j * 15].y * size;
+            x2 = left + this.P[j * 15 + this.SLTX - 1].x * size;
+            y2 = top + this.P[j * 15 + this.SLTX - 1].y * size;
 
             doc.setLineWidth(lineWidth);
             doc.setDrawColor(0, 0, 0);
@@ -2943,7 +2999,7 @@ window.checkerBoard = (function() {
         //打印棋盘坐标
         let m;
         for (let i = 0; i < this.SLTX; i++) {
-            for (let j = 0; j <= this.SLTX * (this.SLTY - 1); j += this.SLTX * (this.SLTY - 1)) {
+            for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
 
                 m = j == 0 ? -this.gH : this.gH;
                 x1 = left + this.P[i + j].x * size;
@@ -2960,8 +3016,8 @@ window.checkerBoard = (function() {
             for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
 
                 m = j == 0 ? -this.gW : this.gW;
-                x1 = left + (this.P[i * this.SLTX + j].x + m) * size;
-                y1 = top + this.P[i * this.SLTX + j].y * size;
+                x1 = left + (this.P[i * 15 + j].x + m) * size;
+                y1 = top + this.P[i * 15 + j].y * size;
                 y1 += (this.gW * 0.5 * 0.35) * size;
                 doc.setFont(fontName_normal, "normal", "normal");
                 doc.setTextColor(0, 0, 0);
@@ -2972,124 +3028,125 @@ window.checkerBoard = (function() {
         }
 
         // 打印棋子，和标记
-        for (let i = 0; i < this.SLTY * this.SLTX; i++) {
-            let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-            if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
-                lineWidth = w / 25;
-                doc.setLineWidth(lineWidth * size);
-                doc.setDrawColor(0, 0, 0);
-                if (this.P[i].color == this.wNumColor) {
-                    doc.setFillColor(255, 255, 255);
-                }
-                else {
-                    doc.setFillColor(0, 0, 0);
-                }
-                x1 = left + this.P[i].x * size;
-                y1 = top + this.P[i].y * size;
-                doc.circle(x1, y1, w * size, "DF");
-                //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
-            }
-            else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
-                doc.setLineWidth(3 * size);
-                if (this.P[i].bkColor) {
-                    doc.setDrawColor(187, 187, 187);
-                    doc.setFillColor(187, 187, 187);
-                }
-                else {
-                    doc.setDrawColor(255, 255, 255);
-                    doc.setFillColor(255, 255, 255);
-                }
-                x1 = left + this.P[i].x * size;
-                y1 = top + this.P[i].y * size;
-                doc.circle(x1, y1, this.P[i].bkColor ? w * size : this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
-                //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
-            }
-
-            let txt = this.P[i].text;
-            let color = this.P[i].color;
-            color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-            if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
-                txt = parseInt(this.P[i].text) - this.resetNum;
-                txt = parseInt(txt) < 1 ? "" : txt;
-                txt = showNum ? txt : "";
-                //color = this.P[i].color == this.wNumColor ? "black" : "white";
-                if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
-                    color = this.notShowLastNum ? color : "#ff6666";
-                    txt = !showNum && !this.notShowLastNum ? "◤" : txt;
-
-                }
-            }
-
-            let fontsize = w * 1.08;
-            x1 = this.P[i].x;
-            y1 = this.P[i].y;
-            if (txt.length == 1) { // 两位数数数字不需要放大字体
-                let code = txt.charCodeAt();
-                // 再把一位数字排除
-                if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                    if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
-                        fontsize = w * 1.1;
+        for(let y = 0; y < this.SLTY; y++) {
+            for(let x = 0; x < this.SLTX; x++) {
+                let i = x + y * 15,
+                    w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
+                if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
+                    lineWidth = w / 25;
+                    doc.setLineWidth(lineWidth * size);
+                    doc.setDrawColor(0, 0, 0);
+                    if (this.P[i].color == this.wNumColor) {
+                        doc.setFillColor(255, 255, 255);
                     }
-                    else if (txt == "◤") {
-                        x1 -= w * 0.15;
-                        y1 -= w * 0.15;
+                    else {
+                        doc.setFillColor(0, 0, 0);
                     }
-                    else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-                        fontsize = w * 1.5;
+                    x1 = left + this.P[i].x * size;
+                    y1 = top + this.P[i].y * size;
+                    doc.circle(x1, y1, w * size, "DF");
+                    //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
+                }
+                else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
+                    doc.setLineWidth(3 * size);
+                    if (this.P[i].bkColor) {
+                        doc.setDrawColor(187, 187, 187);
+                        doc.setFillColor(187, 187, 187);
+                    }
+                    else {
+                        doc.setDrawColor(255, 255, 255);
+                        doc.setFillColor(255, 255, 255);
+                    }
+                    x1 = left + this.P[i].x * size;
+                    y1 = top + this.P[i].y * size;
+                    doc.circle(x1, y1, this.P[i].bkColor ? w * size : this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
+                    //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
+                }
+
+                let txt = this.P[i].text;
+                let color = this.P[i].color;
+                color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
+                if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
+                    txt = parseInt(this.P[i].text) - this.resetNum;
+                    txt = parseInt(txt) < 1 ? "" : txt;
+                    txt = showNum ? txt : "";
+                    //color = this.P[i].color == this.wNumColor ? "black" : "white";
+                    if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
+                        color = this.notShowLastNum ? color : "#ff6666";
+                        txt = !showNum && !this.notShowLastNum ? "◤" : txt;
                     }
                 }
-            }
-            else if (txt.length == 3) {
-                fontsize = parseInt(w * 0.9);
-            }
 
-            switch (String(color)) {
-                case "white":
-                    doc.setTextColor(255, 255, 255);
-                    break;
-                case "black":
-                    doc.setTextColor(0, 0, 0);
-                    break;
-                case "red":
+                let fontsize = w * 1.08;
+                x1 = this.P[i].x;
+                y1 = this.P[i].y;
+                if (txt.length == 1) { // 两位数数数字不需要放大字体
+                    let code = txt.charCodeAt();
+                    // 再把一位数字排除
+                    if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
+                        if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
+                            fontsize = w * 1.1;
+                        }
+                        else if (txt == "◤") {
+                            x1 -= w * 0.15;
+                            y1 -= w * 0.15;
+                        }
+                        else { // 把数字和特殊标记排除，其它一位字符统一放大字体
+                            fontsize = w * 1.5;
+                        }
+                    }
+                }
+                else if (txt.length == 3) {
+                    fontsize = parseInt(w * 0.9);
+                }
+
+                switch (String(color)) {
+                    case "white":
+                        doc.setTextColor(255, 255, 255);
+                        break;
+                    case "black":
+                        doc.setTextColor(0, 0, 0);
+                        break;
+                    case "red":
+                        doc.setTextColor(255, 0, 0);
+                        break;
+                    case "green":
+                        doc.setTextColor(0, 180, 0);
+                        break;
+                    case "#ff6666":
+                        doc.setTextColor(255, 0, 0);
+                        break;
+                    case "#9e9999":
+                        doc.setTextColor(157, 153, 153);
+                        break;
+                    case "#3333ff":
+                        doc.setTextColor(0, 0, 255);
+                        break;
+                    case "blue":
+                        doc.setTextColor(0, 0, 255);
+                        break;
+                    case "#000000":
+                        doc.setTextColor(0, 0, 0);
+                        break;
+                    case "#ffffff":
+                        doc.setTextColor(255, 255, 255);
+                        break;
+                    case "#bbbbbb":
+                        doc.setTextColor(187, 187, 187);
+                        break;
+                }
+                if (txt == EMOJI_FOUL) { // 不支持的字符
+                    txt = "×";
                     doc.setTextColor(255, 0, 0);
-                    break;
-                case "green":
-                    doc.setTextColor(0, 180, 0);
-                    break;
-                case "#ff6666":
-                    doc.setTextColor(255, 0, 0);
-                    break;
-                case "#9e9999":
-                    doc.setTextColor(157, 153, 153);
-                    break;
-                case "#3333ff":
-                    doc.setTextColor(0, 0, 255);
-                    break;
-                case "blue":
-                    doc.setTextColor(0, 0, 255);
-                    break;
-                case "#000000":
-                    doc.setTextColor(0, 0, 0);
-                    break;
-                case "#ffffff":
-                    doc.setTextColor(255, 255, 255);
-                    break;
-                case "#bbbbbb":
-                    doc.setTextColor(187, 187, 187);
-                    break;
-
+                }
+                doc.setFont(fontName_bold, "normal", "normal");
+                doc.setFontSize(parseInt(fontsize * size));
+                x1 = left + x1 * size;
+                y1 = top + y1 * size;
+                y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
+                doc.text(String(txt), x1, y1, "center");
+                //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
             }
-            if (txt == EMOJI_FOUL) { // 不支持的字符
-                txt = "×";
-                doc.setTextColor(255, 0, 0);
-            }
-            doc.setFont(fontName_bold, "normal", "normal");
-            doc.setFontSize(parseInt(fontsize * size));
-            x1 = left + x1 * size;
-            y1 = top + y1 * size;
-            y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
-            doc.text(String(txt), x1, y1, "center");
-            //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
         }
 
     };
@@ -3238,67 +3295,9 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.refreshCheckerBoard = function() {
-        let canvas = this.bakCanvas;
-        let ctx = canvas.getContext("2d");
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = this.lineColor;
-        let p = tempp;
-        // 划竖线
-        for (let i = 0; i < this.SLTX; i++) {
-            ctx.lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
-            p.setxy(this.P[i].x, this.P[i].y);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[i + (this.SLTY - 1) * this.SLTX].x, this.P[i + (this.SLTY - 1) * this.SLTX].y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-        // 划横线
-        for (let j = 0; j < this.SLTY; j++) {
-            ctx.lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
-            p.setxy(this.P[j * this.SLTX].x, this.P[j * this.SLTX].y);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[j * this.SLTX + this.SLTX - 1].x, this.P[j * this.SLTX + this.SLTX - 1].y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-        ctx.stroke();
-        //画星位
-        if (this.SLTX == 15 && this.SLTY == 15) {
-
-            for (let i = 48; i < 225; i += 120) {
-                for (let j = 0; j < 9; j += 8) {
-                    p.setxy(this.P[i + j].x, this.P[i + j].y);
-                    ctx.beginPath();
-                    ctx.fillStyle = this.lineColor;
-                    ctx.arc(p.x, p.y, parseInt(canvas.width) / 1000 * 6, 0, 2 * Math.PI);
-                    ctx.fill();
-                    //ctx.stroke();
-                }
-            }
-            p.setxy(this.P[112].x, this.P[112].y);
-            ctx.beginPath();
-            ctx.fillStyle = this.lineColor;
-            ctx.arc(p.x, p.y, parseInt(canvas.width) / 1000 * 6, 0, 2 * Math.PI);
-            ctx.fill();
-            //ctx.stroke();
-
-        }
-
-        this.printCoordinate(); // 打印棋盘坐标
-
-        //把后台的图片显示出来
-        let canvas2 = this.canvas;
-        ctx = null;
-        ctx = canvas2.getContext("2d");
-        canvas2.width = canvas.width;
-        canvas2.height = canvas.height;
-        canvas2.style.width = canvas.width + "px";
-        canvas2.style.height = canvas.height + "px";
-        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-
+        
+        this.printEmptyCBoard();
+        
         for (let idx = this.P.length - 1; idx >= 0; idx--) {
             if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) {
                 let txt = this.P[idx].text;
@@ -3319,7 +3318,6 @@ window.checkerBoard = (function() {
         this.refreshMarkLine("all");
         this.refreshMarkArrow("all");
         this.autoShow();
-
     }
 
 
@@ -3421,17 +3419,17 @@ window.checkerBoard = (function() {
         this.gW = (xR - xL) / (SLTX - 1);
         this.gH = (yB - yT) / (SLTY - 1);
 
-        for (j = 0; j < SLTY; j++)
+        for (j = 0; j < 15; j++)
         {
-            y = j == (SLTY - 1) ? yB : parseInt(this.gH * j) + yT;
-            for (i = 0; i < SLTX; i++)
+            y = parseInt(this.gH * j) + yT;
+            for (i = 0; i < 15; i++)
             {
-                x = i == (SLTX - 1) ? xR : parseInt(this.gW * i) + xL;
-                l = j * SLTX + i;
+                x = parseInt(this.gW * i) + xL;
+                l = j * 15 + i;
                 this.P[l].setxy(x, y);
             }
         }
-
+        console.log(this.P)
     };
 
 
@@ -3689,8 +3687,16 @@ window.checkerBoard = (function() {
 
         if (passResetP) return;
         this.resetP(this.XL, this.XR, this.YT, this.YB);
-
     };
+    
+    
+    
+    checkerBoard.prototype.setCoordinate = function(coordinateType){
+        if(coordinateType<0 || coordinateType>5) return;
+        this.coordinateType = coordinateType;
+        this.printCheckerBoard();
+        this.refreshCheckerBoard();
+    }
 
 
 
@@ -3783,6 +3789,23 @@ window.checkerBoard = (function() {
         this.resetNum = parseInt(num);
         this.showNum();
     };
+
+
+
+    checkerBoard.prototype.setSize = function(size = 15) {
+        size = parseInt(size);
+        size = size < 6 ? 6 : size > 15 ? 15 : size;
+        this.size = size;
+        this.printCheckerBoard();
+        this.refreshCheckerBoard();
+        if (this.threePoints.arr) {
+            this.cleThreePoints();
+            this.autoShow();
+        }
+        else if(this.oldCode){
+            this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
+        }
+    }
 
 
 
@@ -3893,7 +3916,7 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.showAutoLine = function(display, notChange) {
-
+        if(this.size<15) return; 
         for (let i = this.autoLines.length - 1; i >= 0; i--) {
             this.removeMarkLine(i, this.autoLines);
         }
@@ -3925,7 +3948,7 @@ window.checkerBoard = (function() {
             for (let y = this.SLTY - 1; y >= 0; y--) {
                 for (let x = this.SLTX - 1; x >= 0; x--) {
                     if (newarr[y][x]) {
-                        let lines = getLines(x + this.SLTX * y, color, arr, level);
+                        let lines = getLines(x + 15 * y, color, arr, level);
                         for (let i = lines.length - 1; i >= 0; i--) {
                             this.createMarkLine(lines[i].start, lines[i].end, level >= 4 ? "#330077" : "#777700", this.autoLines);
                         }
@@ -3957,11 +3980,11 @@ window.checkerBoard = (function() {
         if (display) {
             let arr = cBoard.getPointArray(getArr([]));
             let newarr = getArr([]);
-            findFoulPoint(arr, newarr);
+            this.size==15 && findFoulPoint(arr, newarr);
             for (let y = 0; y < this.SLTY; y++) {
                 for (let x = 0; x < this.SLTX; x++) {
                     if (newarr[y][x] > 0) {
-                        let idx = x + this.SLTX * y;
+                        let idx = x + 15 * y;
                         this.P[idx].color = "red";
                         this.P[idx].bkColor = null;
                         this.P[idx].type = TYPE_MARK_FOUL;
@@ -4119,7 +4142,7 @@ window.checkerBoard = (function() {
 
         if (this.threePoints.arr) {
             if (this.threePoints.index == -1) {
-                for (let i = 0; i < this.SLTX * this.SLTY; i++) {
+                for (let i = 0; i < 15 * 15; i++) {
                     if (this.threePoints.points[i]) {
                         this.printThreePointMoves(i);
                         break;
@@ -4251,7 +4274,7 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.unpackTree = function() {
-        
+
         function getInnerHTML(nd) {
             while (nd) {
                 if (nd.innerHTML) return nd.innerHTML;
@@ -4347,7 +4370,7 @@ window.checkerBoard = (function() {
                     if (MSindex % 2) {
                         if (lvl.level >= 4 && lvl.p) {
                             //log(moveNodes[moveNodes.length - 1])
-                            nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * this.SLTX + lvl.p.x }]);
+                            nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * 15 + lvl.p.x }]);
                             let cNd = getChildNode(moveNodes[moveNodes.length - 1], this.MS[this.MSindex]);
                             txt = cNd ? cNd.txt : "?";
                             nd.childNode[0].txt = txt;
@@ -4405,7 +4428,7 @@ window.checkerBoard = (function() {
         this.resetNum = 0;
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
-                let idx = x + this.SLTX * y;
+                let idx = x + 15 * y;
                 switch (String(arrobj[y][x])) {
                     case "0":
                         this.clePoint(idx);
@@ -4467,6 +4490,14 @@ window.checkerBoard = (function() {
     checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
 
         if (idx < 0) return;
+        if (this.P[idx].type != TYPE_EMPTY) {
+            if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
+                this.cleLb(idx);
+            }
+            else {
+                this.cleNb(idx);
+            }
+        }
         let i = this.MSindex + 1;
         if (this.oldCode) {
             if (color != "auto") return;
@@ -4552,5 +4583,13 @@ window.checkerBoard = (function() {
     window.TYPE_WHITE = TYPE_WHITE; // 无序号 添加的黑棋
     window.TYPE_MOVE = TYPE_MOVE; //VCF手顺
     window.TYPE_MARK_FOUL = TYPE_MARK_FOUL;
+
+    window.COORDINATE_ALL = COORDINATE_ALL;
+    window.COORDINATE_LEFT_UP = COORDINATE_LEFT_UP;
+    window.COORDINATE_RIGHT_UP = COORDINATE_RIGHT_UP;
+    window.COORDINATE_RIGHT_DOWN = COORDINATE_RIGHT_DOWN;
+    window.COORDINATE_LEFT_DOWN = COORDINATE_LEFT_DOWN;
+    window.COORDINATE_NONE = COORDINATE_NONE;
+
     return checkerBoard;
 })();
