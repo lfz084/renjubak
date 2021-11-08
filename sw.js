@@ -1,4 +1,4 @@
-var VERSION = "v1108.01";
+var VERSION = "v1108.02";
 var myInit = {
     cache: "reload"
 };

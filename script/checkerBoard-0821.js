@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.01";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.02";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -1207,13 +1207,30 @@ window.checkerBoard = (function() {
 
         if (!refresh) this.P[idx].cle(); // 清除点的数据
         // 棋盘上打印空点
-        let p = tempp;
+        let p = tempp,
+            ctx = this.canvas.getContext("2d"),
+            x,
+            y;
         p.setxy(this.P[idx].x, this.P[idx].y);
-        let ctx = this.canvas.getContext("2d");
         width = width || this.gW + 1;
         height = height || this.gH + 1;
-        //log(`wid=${width}, hei=${height}`)
-        ctx.drawImage(this.bakCanvas, p.x - (width / 2), p.y - (height / 2), width, height, p.x - (width / 2), p.y - (height / 2), width, height);
+        x = p.x - (width / 2);
+        y = p.y - (height / 2);
+        if(x < 0) {
+            width += x;
+            x = 0;
+        }
+        if(y < 0) {
+            height += y;
+            y = 0;
+        }
+        if(x + width > this.bakCanvas.width) {
+            width = this.bakCanvas.width - x;
+        }
+        if(y + height > this.bakCanvas.height) {
+            height = this.bakCanvas.height - y;
+        }
+        ctx.drawImage(this.bakCanvas, x, y, width, height, x, y, width, height);
         ctx = null;
         if (appData.renjuSave && !refresh) appData.renjuSave(this);
     };
