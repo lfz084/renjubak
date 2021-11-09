@@ -193,6 +193,10 @@ window.checkerBoard = (function() {
     //定义一个棋盘
     function checkerBoard(parentNode, left, top, width, height) {
 
+        if (!width || !height) {
+            width = dw < dh ? dw + "px" : dh + "px";
+            height = this.viewBox.style.width;
+        }
         this.parentNode = parentNode;
         this.left = parseInt(left);
         this.top = parseInt(top);
@@ -280,14 +284,8 @@ window.checkerBoard = (function() {
         this.scale = 1;
         this.viewBox = d.createElement("div");
         this.viewBox.style.position = "absolute";
-        if (width == null || height == null) {
-            this.viewBox.style.width = dw < dh ? dw + "px" : dh + "px";
-            this.viewBox.style.height = this.viewBox.style.width;
-        }
-        else {
-            this.viewBox.style.width = parseInt(width) + "px";
-            this.viewBox.style.height = parseInt(height) + "px";
-        }
+        this.viewBox.style.width = parseInt(this.width) + "px";
+        this.viewBox.style.height = parseInt(this.height) + "px";
         this.viewBox.style.left = parseInt(left) + "px";
         this.viewBox.style.top = parseInt(top) + "px";
         //this.viewBox.style.background = "green";
@@ -296,12 +294,12 @@ window.checkerBoard = (function() {
         
         this.canvas = d.createElement("canvas");
         this.canvas.style.position = "absolute";
-        this.canvas.style.width = "2000px";//this.viewBox.style.width;
+        this.canvas.style.width = this.viewBox.style.width;
         this.canvas.style.height = this.canvas.style.width;
         this.canvas.style.left = "0px";
         this.canvas.style.top = "0px";
-        this.canvas.style.transformOrigin = `0px 0px`;
-        this.canvas.style.transform = `scale(${this.scale})`;
+        //this.canvas.style.transformOrigin = `0px 0px`;
+        //this.canvas.style.transform = `scale(${this.scale})`;
         this.viewBox.appendChild(this.canvas);
 
         //后台保存的空棋盘
@@ -3854,7 +3852,8 @@ window.checkerBoard = (function() {
     
     checkerBoard.prototype.setScale = function(scl){
         this.scale = scl;
-        this.canvas.style.transform = `scale(${this.scale})`;
+        this.canvas.style.width = `${this.width*scl}px`;
+        this.canvas.style.height = `${this.height*scl}px`;
     }
 
 

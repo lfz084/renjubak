@@ -127,10 +127,14 @@ hr {
 }
 
 #viewBox {
-    background: green;
+    background: #ccc;
     overflow-x: scroll;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
+}
+
+#viewBox::-webkit-scrollbar {
+    display: none;
 }
 
 #wrapper {

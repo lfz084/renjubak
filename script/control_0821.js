@@ -1427,6 +1427,7 @@ window.control = (() => {
                     if (isBusy()) return;
                     //newGame();
                     cBd.setSize(but.input.value*1);
+                    scaleCBoard(false);
                     RenjuLib.setCenterPos({x:cBd.size/2+0.5, y:cBd.size/2+0.5});
                     RenjuLib.getAutoMove();
                 }),
