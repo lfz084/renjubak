@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1108.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1108.03.02";
 
 if (self.importScripts){
     self.importScripts(
@@ -62,20 +62,7 @@ function openLib(file) {
         })
         .then(function() {
             try {
-                let path = renLibDoc.getAutoMove();
-                if (path.length) {
-                    post("autoMove", path);
-                }
-                else {
-                    let position = [];
-                    for (let i = 0; i < 15; i++) {
-                        position[i] = [];
-                        for (let j = 0; j < 15; j++) {
-                            position[i][j] = 0;
-                        }
-                    }
-                    showBranchs({ path: [], position: position })
-                }
+                getAutoMove();
                 Promise.resolve();
             }
             catch (err) {
@@ -85,6 +72,23 @@ function openLib(file) {
         .catch(function(err) {
             postMessage(err);
         })
+}
+
+function getAutoMove(){
+    let path = renLibDoc.getAutoMove();
+    if (path.length) {
+        post("autoMove", path);
+    }
+    else {
+        let position = [];
+        for (let i = 0; i < 15; i++) {
+            position[i] = [];
+            for (let j = 0; j < 15; j++) {
+                position[i][j] = 0;
+            }
+        }
+        showBranchs({ path: [], position: position })
+    }
 }
 
 function showBranchs(param) {
@@ -113,7 +117,8 @@ const CMD = {
     showBranchs: showBranchs,
     setCenterPos: setCenterPos,
     setBufferScale: setBufferScale,
-    setPostStart: setPostStart
+    setPostStart: setPostStart,
+    getAutoMove: getAutoMove
 }
 onmessage = function(e) {
     if (e.data) {

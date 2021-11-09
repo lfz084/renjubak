@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.03.02";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -288,6 +288,10 @@ window.RenjuLib = (() => {
         setCenterPos: setCenterPos,
         colour: function() {
             colour = !colour;
+        },
+        getAutoMove: function(){
+            enable && (cBoard.toStart(),cBoard.toPrevious(),
+                wk.postMessage({ cmd: "getAutoMove", parameter: undefined }));
         },
         setBufferScale: setBufferScale,
         setPostStart: setPostStart

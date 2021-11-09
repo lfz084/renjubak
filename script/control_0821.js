@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1108.02";
+self.SCRIPT_VERSIONS["control"] = "v1108.03.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -71,6 +71,7 @@ window.control = (() => {
         cAutoPut = null,
         cCleAll = null,
         cShownum = null,
+        scaleCBoard = function(){},
         setShowNum = function() {},
         getShowNum = function() {},
         cNewGame = null,
@@ -219,6 +220,7 @@ window.control = (() => {
         engine.postMsg("cancelFind");
         let h1 = parseInt(cBd.width);
         let h2 = parseInt(cBd.canvas.height);
+        scaleCBoard(false);
         cBd.cle();
         cBd.printCheckerBoard();
         cBd.resetNum = 0;
@@ -405,6 +407,7 @@ window.control = (() => {
         cBd.xyObjToPage(p, cBd.canvas);
         left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
         cMenu = createMenu(left, top, width, height, fontSize, [
+            0, "设置",
             1, "打开",
             2, `保存`,
             3, `${EMOJI_SEARCH} 找点`,
@@ -428,6 +431,9 @@ window.control = (() => {
             let x = but.menu.offsetLeft;
             let y = but.menu.offsetTop;
             switch (but.input.value * 1) {
+                case 0:
+                    cShownum.showMenu(x, y);
+                    break;
                 case 1:
                     cLoadImg.showMenu(x, y);
                     break;
@@ -667,37 +673,21 @@ window.control = (() => {
         fileInput.setAttribute("type", "file");
         fileInput.style.display = "none";
         renjuCmddiv.appendChild(fileInput);
-
-        function setBufferScale() {
-            let w = cBd.width * 0.8;
-            let h;
-            let l = (dw - w) / 2;
-            let t = dh / 7;
-            // 设置弹窗，让用户手动输入标记
-            msg("5.5倍内存, (默认 lib 文件大小的 5倍)", "input", l, t, w, h, "设置", undefined, function(msgStr) {
-                let num = String((/\d+\.*\d*倍/).exec(msgStr)).split("倍")[0];
-                RenjuLib.setBufferScale(num * 1)
+        
+        let setMemoryMenu = createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize,
+            [4,"4倍内存",
+            5,"5倍内存",
+            6,"6倍内存",
+            7,"7倍内存",
+            8,"8倍内存"],
+            function(but){
+                RenjuLib.setBufferScale(but.input.value*1);
             });
-        }
-
-        function setLibSize() {
-            let w = cBd.width * 0.8;
-            let h;
-            let l = (dw - w) / 2;
-            let t = dh / 7;
-            let color = getRenjuLbColor();
-            // 设置弹窗，让用户手动输入标记
-            msg("15路 棋盘棋谱", "input", l, t, w, h, "设置", undefined, function(msgStr) {
-                let num = String((/\d+路/).exec(msgStr)).split("路")[0];
-                RenjuLib.setCenterPos({ x: num / 2 + 0.5, y: num / 2 + 0.5 })
-            });
-        }
-
+        
         cLoadImg = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
         cLoadImg.addOption(1, "打开 图片");
         cLoadImg.addOption(2, "打开 lib 棋谱");
         cLoadImg.addOption(3, "设置内存大小");
-        cLoadImg.addOption(4, "设置小棋盘棋谱");
         cLoadImg.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cLoadImg.show();
         cLoadImg.setText("打开");
@@ -716,10 +706,7 @@ window.control = (() => {
                     fileInput.click()
                     break;
                 case 3:
-                    setBufferScale()
-                    break;
-                case 4:
-                    setLibSize()
+                    setMemoryMenu.showMenu()
                     break;
             }
             but.input.value = 0;
@@ -733,6 +720,7 @@ window.control = (() => {
             let h1 = cBd.width * h / w;
             let h2 = cBd.canvas.height;
             cBd.cle();
+            scaleCBoard(false);
             // 画图之前，设置画布大小
             cBd.canvas.width = w1;
             cBd.canvas.height = h1;
@@ -791,11 +779,11 @@ window.control = (() => {
         cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
         //cCutImage.addOption(0, "________图片________");
         //cCutImage.addOption(1, "分享图片");
-        cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩");
-        cCutImage.addOption(3, "PNG /(*.png) ____ 清晰");
-        cCutImage.addOption(4, "SVG /(*.svg) ____ 无损");
-        cCutImage.addOption(5, "HTML/(*.html) ___ 无损");
-        cCutImage.addOption(6, "PDF /(*.pdf) _____ 无损");
+        cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩图片");
+        cCutImage.addOption(3, "PNG /(*.png) ____ 清晰图片");
+        cCutImage.addOption(4, "SVG /(*.svg) ____ 无损图片");
+        cCutImage.addOption(5, "HTML/(*.html) ___ 无损文档");
+        cCutImage.addOption(6, "PDF /(*.pdf) _____ 无损文档");
         //cCutImage.addOption(7, "________棋谱________");
         //cCutImage.addOption(8, "LIB /(*.lib) ______ 棋谱");
         cCutImage.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
@@ -1440,6 +1428,7 @@ window.control = (() => {
                     //newGame();
                     cBd.setSize(but.input.value*1);
                     RenjuLib.setCenterPos({x:cBd.size/2+0.5, y:cBd.size/2+0.5});
+                    RenjuLib.getAutoMove();
                 }),
             cShownumTop = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
         
@@ -1454,8 +1443,9 @@ window.control = (() => {
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
         cShownum.addOption(2, "显示线路");
-        cShownum.addOption(3, "设置棋盘大小");
-        cShownum.addOption(4, "设置棋盘坐标");
+        cShownum.addOption(3, "放大棋盘");
+        cShownum.addOption(4, "设置棋盘大小");
+        cShownum.addOption(5, "设置棋盘坐标");
         //cShownum.show();
         cShownum.setText(EMOJI_ROUND_ONE);
         //setShowNum(1);
@@ -1486,9 +1476,13 @@ window.control = (() => {
                     cBd.isShowAutoLine = cShownum.menu.lis[2].checked;
                     break;
                 case 3:
-                    cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
+                    //setLis(3, !cShownum.menu.lis[3].checked);
+                    scaleCBoard(!cShownum.menu.lis[3].checked);
                     break;
                 case 4:
+                    cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
+                    break;
+                case 5:
                     coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
                     break;
             }
@@ -1506,6 +1500,20 @@ window.control = (() => {
         
             //cShownum.setText(getShowNum()?EMOJI_ROUND_ONE :EMOJI_ROUND_BLACK);
         });
+        scaleCBoard = function (isScale){
+            if(isScale){
+                cBd.setScale(1.5);
+                cBd.center();
+                cShownum.menu.lis[3].checked = true;
+                cShownum.menu.lis[3].innerHTML = cShownum.input[3].text + "  ✔";
+            }
+            else{
+                cBd.setScale(1);
+                cShownum.menu.lis[3].checked = false;
+                cShownum.menu.lis[3].innerHTML = cShownum.input[3].text;
+            }
+        }
+    
         setShowNum = function(shownum) {
             cShownum.menu.lis[0].checked = !!shownum;
             if (cShownum.menu.lis[0].checked) {

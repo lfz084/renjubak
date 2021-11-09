@@ -126,6 +126,13 @@ hr {
     border-width: 0px;
 }
 
+#viewBox {
+    background: green;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
 #wrapper {
     overflow-x: scroll;
     overflow-y: scroll;

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JPoint"] = "v1108.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JPoint"] = "v1108.03.02";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

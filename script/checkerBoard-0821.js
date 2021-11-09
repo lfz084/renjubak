@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.02";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.03.02";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -277,19 +277,32 @@ window.checkerBoard = (function() {
         this.threePoints = {};
 
         //页面显示的棋盘
-        this.canvas = d.createElement("canvas");
-        this.canvas.style.position = "absolute";
+        this.scale = 1;
+        this.viewBox = d.createElement("div");
+        this.viewBox.style.position = "absolute";
         if (width == null || height == null) {
-            this.canvas.style.width = dw < dh ? dw + "px" : dh + "px";
-            this.canvas.style.height = this.canvas.style.width;
+            this.viewBox.style.width = dw < dh ? dw + "px" : dh + "px";
+            this.viewBox.style.height = this.viewBox.style.width;
         }
         else {
-            this.canvas.style.width = parseInt(width) + "px";
-            this.canvas.style.height = parseInt(height) + "px";
+            this.viewBox.style.width = parseInt(width) + "px";
+            this.viewBox.style.height = parseInt(height) + "px";
         }
-        this.canvas.style.left = parseInt(left) + "px";
-        this.canvas.style.top = parseInt(top) + "px";
-        this.parentNode.appendChild(this.canvas);
+        this.viewBox.style.left = parseInt(left) + "px";
+        this.viewBox.style.top = parseInt(top) + "px";
+        //this.viewBox.style.background = "green";
+        this.viewBox.setAttribute("id", "viewBox");
+        this.parentNode.appendChild(this.viewBox);
+        
+        this.canvas = d.createElement("canvas");
+        this.canvas.style.position = "absolute";
+        this.canvas.style.width = "2000px";//this.viewBox.style.width;
+        this.canvas.style.height = this.canvas.style.width;
+        this.canvas.style.left = "0px";
+        this.canvas.style.top = "0px";
+        this.canvas.style.transformOrigin = `0px 0px`;
+        this.canvas.style.transform = `scale(${this.scale})`;
+        this.viewBox.appendChild(this.canvas);
 
         //后台保存的空棋盘
         this.bakCanvas = d.createElement("canvas");
@@ -1119,6 +1132,16 @@ window.checkerBoard = (function() {
         }
 
     }
+    
+    
+    
+    checkerBoard.prototype.center = function(){
+        if(this.scale==1) return;
+        let x = this.canvas.width*(this.scale-1)/2,
+            y = this.canvas.height*(this.scale-1)/2;
+        this.viewBox.scrollLeft = x;
+        this.viewBox.scrollTop = y;
+    }
 
 
 
@@ -1497,12 +1520,14 @@ window.checkerBoard = (function() {
 
         let i;
         let j;
-
         if (this.isOut(x, y, this.canvas)) return -1;
 
         let p = tempp;
         p.setxy(x, y); // page 坐标 转 canvas 坐标
         this.xyPageToObj(p, this.canvas);
+        p.x = (this.viewBox.scrollLeft + p.x) / this.scale;
+        p.y = (this.viewBox.scrollTop + p.y) / this.scale;
+        
         x = p.x + ~~(this.gW / 2);
         y = p.y + ~~(this.gH / 2);
         i = ~~((x - this.XL) / this.gW);
@@ -2094,6 +2119,8 @@ window.checkerBoard = (function() {
         let p = tempp;
         p.setxy(x, y);
         this.xyPageToObj(p, htmlObj);
+        p.x = (this.viewBox.scrollLeft + p.x) / this.scale;
+        p.y = (this.viewBox.scrollTop + p.y) / this.scale;
         x = p.x;
         y = p.y;
 
@@ -3446,7 +3473,6 @@ window.checkerBoard = (function() {
                 this.P[l].setxy(x, y);
             }
         }
-        console.log(this.P)
     };
 
 
@@ -3822,6 +3848,13 @@ window.checkerBoard = (function() {
         else if(this.oldCode){
             this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
         }
+    }
+    
+    
+    
+    checkerBoard.prototype.setScale = function(scl){
+        this.scale = scl;
+        this.canvas.style.transform = `scale(${this.scale})`;
     }
 
 
