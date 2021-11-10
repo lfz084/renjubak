@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1108.03.02";
+self.SCRIPT_VERSIONS["control"] = "v1108.08";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -164,11 +164,11 @@ window.control = (() => {
                     this.prePostTimer = t;
                 }
                 t -= sTime;
-                let h = parseInt(t / 3600000);
+                let h = ~~(t / 3600000);
                 h = h < 10 ? "0" + h : h;
-                let m = parseInt((t % 3600000) / 60000);
+                let m = ~~((t % 3600000) / 60000);
                 m = m < 10 ? "0" + m : m;
-                let s = parseInt((t % 60000) / 1000);
+                let s = ~~((t % 60000) / 1000);
                 s = s < 10 ? "0" + s : s;
                 lbDiv.innerHTML = `${h}:${m}:${s}`;
             }, 1000);
@@ -218,8 +218,8 @@ window.control = (() => {
 
     function newGame() {
         engine.postMsg("cancelFind");
-        let h1 = parseInt(cBd.width);
-        let h2 = parseInt(cBd.canvas.height);
+        let h1 = ~~(cBd.width);
+        let h2 = ~~(cBd.canvas.height);
         scaleCBoard(false);
         cBd.cle();
         cBd.printCheckerBoard();
@@ -250,10 +250,10 @@ window.control = (() => {
     function changeCoordinate(arr, idx) {
         let nArr = getArr([]);
         idx = idx || 112;
-        let l = 7 - parseInt(idx % arr[0].length);
+        let l = 7 - ~~(idx % arr[0].length);
         l = l < 0 ? 0 : l;
         l = l + arr[0].length > 15 ? 15 - arr[0].length : l;
-        let t = 7 - parseInt(idx / arr.length);
+        let t = 7 - ~~(idx / arr.length);
         t = t < 0 ? 0 : t;
         t = t + arr.length > 15 ? 15 - arr.length : t;
         for (let i = 0; i < arr.length; i++) {
@@ -341,8 +341,8 @@ window.control = (() => {
         }
         else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
 
-            cBd.cutImg.style.width = parseInt(cBd.canvas.width) + "px";
-            cBd.cutImg.style.height = parseInt(cBd.canvas.height) + "px";
+            cBd.cutImg.style.width = ~~(cBd.canvas.width) + "px";
+            cBd.cutImg.style.height = ~~(cBd.canvas.height) + "px";
             cBd.cutImg.src = "./icon.png";
             cBd.parentNode.appendChild(cBd.cutImg);
             let pNode = renjuCmddiv.parentNode;
@@ -404,8 +404,8 @@ window.control = (() => {
 
     function createContextMenu(left, top, width, height, fontSize) {
         let p = { x: 0, y: 0 };
-        cBd.xyObjToPage(p, cBd.canvas);
-        left = p.x + (parseInt(cBd.canvas.style.width) - width) / 2;
+        cBd.xyObjToPage(p, cBd.viewBox);
+        left = p.x + (parseInt(cBd.viewBox.style.width) - width) / 2;
         cMenu = createMenu(left, top, width, height, fontSize, [
             0, "设置",
             1, "打开",
@@ -1478,7 +1478,7 @@ window.control = (() => {
                     break;
                 case 3:
                     //setLis(3, !cShownum.menu.lis[3].checked);
-                    scaleCBoard(!cShownum.menu.lis[3].checked);
+                    scaleCBoard(!cShownum.menu.lis[3].checked, 1);
                     break;
                 case 4:
                     cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
@@ -1501,17 +1501,26 @@ window.control = (() => {
         
             //cShownum.setText(getShowNum()?EMOJI_ROUND_ONE :EMOJI_ROUND_BLACK);
         });
-        scaleCBoard = function (isScale){
-            if(isScale){
-                cBd.setScale(1.5);
-                cBd.center();
+        cBd.onScale = function(){
+            if(this.scale==1){
+                cShownum.menu.lis[3].checked = false;
+                cShownum.menu.lis[3].innerHTML = cShownum.input[3].text;
+            }
+            else{
                 cShownum.menu.lis[3].checked = true;
                 cShownum.menu.lis[3].innerHTML = cShownum.input[3].text + "  ✔";
             }
+        }
+        scaleCBoard = function (isScale, timer = "now"){
+            if(isScale){
+                if(playModel != MODEL_LINE_EDIT &&
+                    playModel != MODEL_ARROW_EDIT)
+                        cBd.setScale(1.5, timer);
+                else
+                    showLabel(`${EMOJI_STOP} 画线模式,不能放大`);
+            }
             else{
-                cBd.setScale(1);
-                cShownum.menu.lis[3].checked = false;
-                cShownum.menu.lis[3].innerHTML = cShownum.input[3].text;
+                cBd.setScale(1, timer);
             }
         }
     
@@ -2005,7 +2014,7 @@ window.control = (() => {
                 }
                 if ((!cancelClick) && isBodyClick) {
                     //log(`cancelClick=${cancelClick}, isBodyClick=${isBodyClick}, length=${bodyPreviousTouch.length } `);
-                    if (true || !cBd.isOut(tX, tY, cBd.canvas))
+                    if (true || !cBd.isOut(tX, tY, cBd.viewBox))
                         evt.preventDefault(); // 屏蔽浏览器双击放大 && clickEvent
                     if ((bodyPreviousTouch.length > 0) &&
                         (Math.abs(bodyPreviousTouch[0].pageX - tX) < 30) &&
@@ -2014,7 +2023,7 @@ window.control = (() => {
                         bodyPreviousTouch.length = 0;
                         /////////这里添加双击事件////////
                         //通过 isOut 模拟 canvas事件
-                        if (!cBd.isOut(tX, tY, cBd.canvas)) {
+                        if (!cBd.isOut(tX, tY, cBd.viewBox)) {
                             setTimeout(canvasDblClick(tX, tY), 10);
                             //log("canvas 双击");
                         }
@@ -2030,7 +2039,7 @@ window.control = (() => {
                         }, 500);
                         /////////这里添加单击事件////////
                         //通过 isOut 模拟 canvas事件
-                        if (!cBd.isOut(tX, tY, cBd.canvas)) {
+                        if (!cBd.isOut(tX, tY, cBd.viewBox)) {
                             canvasClick(tX, tY);
                             //log("canvas 单击");
                         }
@@ -2071,7 +2080,7 @@ window.control = (() => {
             let p = { x: 0, y: 0 };
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
-            cBd.xyPageToObj(p, cBd.canvas);
+            cBd.xyPageToObj(p, cBd.viewBox);
             canvasClick(p.x, p.y);
         }
 
@@ -2080,7 +2089,7 @@ window.control = (() => {
             let p = { x: 0, y: 0 };
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
-            cBd.xyPageToObj(p, cBd.canvas);
+            cBd.xyPageToObj(p, cBd.viewBox);
             canvasDblClick(p.x, p.y);
         }
 
@@ -2104,7 +2113,7 @@ window.control = (() => {
             //  针对 msg 弹窗 恢复下一次长按事件
             bodyStartTouches.length = 0;
             //通过 isOut 模拟 canvas事件
-            if (!cBd.isOut(x, y, cBd.canvas)) {
+            if (!cBd.isOut(x, y, cBd.viewBox)) {
                 isCancelMenuClick = !!(navigator.userAgent.indexOf("iPhone") + 1); //!(event && "contextmenu" == event.type);
                 setTimeout(canvasKeepTouch(x, y), 10);
                 //log("canvad 长按");
@@ -2156,7 +2165,7 @@ window.control = (() => {
                 renjuClick(x, y);
             }
             else if (!cLockImg.checked) {
-                if (cBd.isOut(x, y, cBd.canvas)) return;
+                if (cBd.isOut(x, y, cBd.viewBox)) return;
                 let p = { x: x, y: y };
                 cBd.setxy(p, event.type == "click" ? 2 : 1);
                 cBd.setCutDiv(p.x, p.y, true);
@@ -2199,10 +2208,10 @@ window.control = (() => {
 
         function continueSetCutDivMove() {
             //log("continueSetCutDivMove ");
-            let x = parseInt(continueSetCutDivX);
-            let y = parseInt(continueSetCutDivY);
+            let x = ~~(continueSetCutDivX);
+            let y = ~~(continueSetCutDivY);
             let p = { x: x, y: y };
-            if (!cBd.isOut(x, y, cBd.canvas, parseInt(cBd.width) / 17))
+            if (!cBd.isOut(x, y, cBd.viewBox, ~~(cBd.width) / 17))
             {
                 cBd.setxy(p, 0.02);
                 cBd.setCutDiv(p.x, p.y, true);
@@ -2637,7 +2646,7 @@ window.control = (() => {
                         }
                         else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playModel == MODEL_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
                             // 添加棋子  wNb(idx,color,showNum)
-                            let isF = cBd.size==15 ? isFoul(idx % 15, parseInt(idx / 15), arr) : false;
+                            let isF = cBd.size==15 ? isFoul(idx % 15, ~~(idx / 15), arr) : false;
                             cBd.wNb(idx, "auto", cmds.showNum, undefined, isF);
                         }
                         break;
@@ -2779,8 +2788,13 @@ window.control = (() => {
         }
         else {
             //log(`top=${window.scrollY}, left=${window.scrollX}`);
-            cMenu.idx = idx;
-            cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
+            if(!cBd.isOut(x, y, cBd.viewBox, -~~(cBd.width/10))){
+                cMenu.idx = idx;
+                cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
+            }
+            else{
+                scaleCBoard(cBd.scale==1, 1);
+            }
         }
 
     }
@@ -2889,24 +2903,24 @@ window.control = (() => {
             s.left = "0px";
 
             let imgWidth = dw < dh ? dw : dh;
-            imgWidth = parseInt(imgWidth * 3 / 4);
+            imgWidth = ~~(imgWidth * 3 / 4);
             s = imgWindow.style;
             s.position = "relative";
             s.width = imgWidth + "px";
             s.height = imgWidth + "px";
-            s.top = parseInt((dh - imgWidth) / 2) + "px";
-            s.left = parseInt((dw - imgWidth) / 2) + "px";
+            s.top = ~~((dh - imgWidth) / 2) + "px";
+            s.left = ~~((dw - imgWidth) / 2) + "px";
             s.backgroundColor = "#666666";
             s.border = `0px solid `;
 
-            let iWidth = parseInt(imgWidth * 3 / 5);
+            let iWidth = ~~(imgWidth * 3 / 5);
             shareImg.src = cBd.canvas.toDataURL();
             s = shareImg.style;
             s.position = "absolute";
             s.width = iWidth + "px";
             s.height = iWidth + "px";
-            s.top = parseInt((imgWidth - iWidth) / 2) + "px";
-            s.left = parseInt((imgWidth - iWidth) / 2) + "px";
+            s.top = ~~((imgWidth - iWidth) / 2) + "px";
+            s.left = ~~((imgWidth - iWidth) / 2) + "px";
             s.border = `0px solid black`;
 
             let oldBackgroundColor = cBd.backgroundColor;
@@ -2924,7 +2938,7 @@ window.control = (() => {
                 //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
             }
 
-            let h = parseInt((imgWidth - iWidth) / 2 / 2);
+            let h = ~~((imgWidth - iWidth) / 2 / 2);
             let w = h * 4;
             let l = (imgWidth - w) / 2;
             let t = imgWidth - h - (imgWidth - iWidth) / 8;

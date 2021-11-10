@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1108.03.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1108.08";
 if (self.importScripts)
     self.importScripts('emoji-0821.js',`Evaluator-0821.js`);
 
@@ -1087,7 +1087,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     let t = new Date().getTime();
                     if (t - prvTimer > maxTimer) {
                         prvTimer += maxTimer;
-                        maxTimer = maxTimer < 60000 ? maxTimer + parseInt((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
+                        maxTimer = maxTimer < 60000 ? maxTimer + ~~((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
                         if (!backstage) {
                             post("printMoves", { winMoves: vcfMoves, color: vcfColor });
                         }
@@ -2495,7 +2495,7 @@ function isFoulNode(x, y, arr, node) {
 
 //找出可能的，活3级别攻击点(不验证做V后是否也给对手做了V)
 function findLevelThreePoint(arr, color, newarr, fType, idx, backstage, num, depth) {
-    num = typeof num == "number" ? parseInt(num) : 9999;
+    num = typeof num == "number" ? ~~(num) : 9999;
     backstage = backstage == null ? true : backstage;
     let threeP = []; // 保存活3点，包括复活3
     let simpleP = []; // 保存坐杀点

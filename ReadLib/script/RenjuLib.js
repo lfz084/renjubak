@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.03.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.08";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -109,7 +109,7 @@ window.RenjuLib = (() => {
     
     function setCenterPos(point = {x:8, y:8}) {
         centerPos = point;
-        enable && showLabel(`棋谱中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`);
+        enable && showLabel(`中心点: (${centerPos.x}, ${centerPos.y})`);
     }
 
     function createWorker() {

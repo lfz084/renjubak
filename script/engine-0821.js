@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1108.03.02";
+self.SCRIPT_VERSIONS["engine"] = "v1108.08";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -90,7 +90,7 @@ window.engine = (() => {
         let but = cVCF;
         cCancel.move(but.left, but.top, but.width, but.height);
         let lb = cFP;
-        labelTime.move(lb.left, lb.top, lb.width, lb.height, parseInt(parseInt(lb.width) / 4) + "px");
+        labelTime.move(lb.left, lb.top, lb.width, lb.height, ~~(parseInt(lb.width) / 4) + "px");
         openNoSleep();
         tree = null;
         treeKeyMap = new Map();
