@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.08";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.09";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -111,7 +111,7 @@ window.checkerBoard = (function() {
             sum += rt[i];
         }
         rt[rt.length] = (Math.abs(move) - Math.abs(sum))*(move<0?-1:1);
-        log(`${rt}`,"info")
+        //log(`${rt}`,"info")
         return rt;
     }
 

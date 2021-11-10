@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1108.08";
+self.SCRIPT_VERSIONS["control"] = "v1108.09";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -121,7 +121,8 @@ window.control = (() => {
         cCleLb = null,
         cHelp = null,
         exWindow,
-        isCancelMenuClick = false; //iOS 长按弹出棋盘菜单后会触发click事件。
+        isCancelMenuClick = false, //iOS 长按弹出棋盘菜单后会误触发click事件。
+        isCancelCanvasClick = false; //ios 长按放大棋盘会误触发click事件
     const setTop = (() => {
         let topMark = document.createElement("div");
         document.body.appendChild(topMark);
@@ -390,7 +391,7 @@ window.control = (() => {
             fontSize,
             true,
             () => {
-                log(`isCancelMenuClick=${isCancelMenuClick}`);
+                    //log(`isCancelMenuClick=${isCancelMenuClick}`);
                 let rt = isCancelMenuClick;
                 setTimeout(() => {
                     isCancelMenuClick = false;
@@ -1940,6 +1941,7 @@ window.control = (() => {
                 }
                 //初始化长按事件
                 isCancelMenuClick = false;
+                isCancelCanvasClick = false;
                 if (!timerBodyKeepTouch) {
                     timerBodyKeepTouch = setTimeout(bodyKeepTouch, 500);
                 }
@@ -1983,7 +1985,7 @@ window.control = (() => {
         //处理触摸结束事件
         function bodyTouchEnd(evt) {
 
-            setTimeout(() => { isCancelMenuClick = false }, 250);
+            setTimeout(() => { isCancelMenuClick = false; isCancelCanvasClick = false }, 250);
             let cancelClick = false;
             let touches = evt.changedTouches;
             let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
@@ -2157,6 +2159,7 @@ window.control = (() => {
         }
 
         function canvasClick(x, y) {
+            if(isCancelCanvasClick) return;
             //log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
@@ -2793,6 +2796,7 @@ window.control = (() => {
                 cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
             }
             else{
+                isCancelCanvasClick = !!(navigator.userAgent.indexOf("iPhone") + 1);
                 scaleCBoard(cBd.scale==1, 1);
             }
         }
