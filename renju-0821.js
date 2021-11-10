@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1108.09";
+self.SCRIPT_VERSIONS["renju"] = "v1110.00";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -818,7 +818,7 @@ var loadApp = () => { // 按顺序加载应用
             return bodyDiv;
         }
         catch (err) {
-            document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.location.reload()">点击刷新</a></h2></div>`;
+            document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.reloadApp()">点击刷新</a></h2></div>`;
         }
     }
 
@@ -923,9 +923,11 @@ var loadApp = () => { // 按顺序加载应用
             logVersions();
             if (autoShowUpDataInformation())    //提示新版本 更新已经完成
                 return downloadSource()  //下载缓存文件
+            else
+                return Promise.resolve()
         })
         .then(()=>{
-            logCaches()  // print caches information
+            return logCaches()  // print caches information
                 .then(() => {
                     return logCache(window.APP_VERSION)
                 })

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1108.09";
+self.SCRIPT_VERSIONS["control"] = "v1110.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -24,6 +24,30 @@ window.control = (() => {
         if (TEST_CONTROL && DEBUG)
             print(`[control.js]\n>> ` + param);
     }
+    
+    window.blockUnload = function(enable) {
+        setTimeout(function(){
+            if (isBusy(false) || 
+            (cBd && (cBd.oldCode || cBd.threePoints.arr || (getRenjuSelColor() == cObjVCF.color && bArr(cBd.getPointArray([]), cObjVCF.arr)))) ||
+            (RenjuLib && !RenjuLib.isEmpty())
+            ) {
+                window.onbeforeunload = function(e) {
+                    e = e || window.event;
+                    // 兼容IE8和Firefox 4之前的版本
+                    if (e) {
+                        e.returnValue = '离开提示';
+                    }
+                    // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
+                    return '离开提示';
+                }
+                log("blockUnload(true)","info");
+            }
+            else {
+                window.onbeforeunload = null;
+                log("blockUnload(false)","info");
+            }
+        },0)
+    };
 
     const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
     setTimeout(function() {
@@ -228,6 +252,7 @@ window.control = (() => {
         cBd.firstColor = "black";
         cBd.hideCutDiv();
         cBd.drawLineEnd();
+        cObjVCF.arr = [];
         playModel = MODEL_RENJU;
         cSelChecked(cSelBlack);
         nSetChecked(cAutoadd);
@@ -236,6 +261,7 @@ window.control = (() => {
         if (imgCmdDiv.parentNode) imgCmdDiv.parentNode.removeChild(imgCmdDiv);
         viewport1.resize();
         RenjuLib.closeLib();
+        window.blockUnload && window.blockUnload();
     }
 
 
@@ -2824,9 +2850,9 @@ window.control = (() => {
 
 
 
-    function isBusy() {
+    function isBusy(loading = true) {
         let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
-        if (busy) window._loading.open("busy", 1600);
+        if (busy && loading) window._loading.open("busy", 1600);
         return busy;
     }
 
@@ -2847,6 +2873,7 @@ window.control = (() => {
             cCancelFind.hide();
             lbTime.close()
         }
+        window.blockUnload && window.blockUnload(value);
     }
 
 

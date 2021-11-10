@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1108.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1110.00";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -261,6 +261,9 @@ window.RenjuLib = (() => {
             cBoard = param.cBoard;
             getShowNum = param.getShowNum;
             setPlayModel = param.setPlayModel;
+        },
+        isEmpty: function(){
+            return !enable;
         },
         openLib: function(file) {
             if (isBusy()) return;

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1108.09";
+self.SCRIPT_VERSIONS["engine"] = "v1110.00";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -95,6 +95,7 @@ window.engine = (() => {
         tree = null;
         treeKeyMap = new Map();
         threePoints = null;
+        window.blockUnload && window.blockUnload(true);
     }
 
     function callback() { // calculate end
@@ -133,6 +134,7 @@ window.engine = (() => {
         saveContinueData();
         closeNoSleep();
         if (isShowLabel) showLabel("点击标记 展开分支 点击 [<<] 可以退出");
+        window.blockUnload && window.blockUnload(false);
     }
 
     function printMsg() {

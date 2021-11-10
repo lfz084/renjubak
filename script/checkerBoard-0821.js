@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1108.09";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1110.00";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -972,8 +972,9 @@ window.checkerBoard = (function() {
     checkerBoard.prototype.cleThreePoints = function() {
         if (this.threePoints.arr) {
             cleTPS.call(this);
+            window.blockUnload && window.blockUnload();
         }
-
+        
         function cleTPS() {
             this.threePoints = {};
             this.cleLb("all");
@@ -4424,6 +4425,7 @@ window.checkerBoard = (function() {
             if (blackMoves) this.unpackMoves(showNum, "black", blackMoves);
             if (whiteMoves) this.unpackMoves(showNum, "white", whiteMoves);
         }
+        window.blockUnload && window.blockUnload();
     };
 
 
