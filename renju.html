@@ -45,7 +45,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1110.00";
+        window.APP_VERSION = "v1110.05";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -124,7 +124,7 @@
             "v1108.03": ["增加设置棋盘大小功能",
                          "增加设置棋盘坐标功能",
                          "暂时只支持15路棋盘计算"],
-            "v1110.00": ["增加棋盘放大功能",
+            "v1110.05": ["增加棋盘放大功能",
                          "长按棋盘边框放大/缩小",
                          "增加退出提示,防止误操作丢失数据"]
         }
@@ -245,6 +245,7 @@
                 BUT.removeAttribute("class");
                 console.log(message);
                 timer = setTimeout(() => {
+                    if (!BUT.parentNode) return;
                     BUT.innerHTML = `<a href="renju.html" target="_self">点击刷新</a>`;
                     BUT.setAttribute("class", "refresh")
                 }, 15 * 1000)
@@ -297,7 +298,7 @@
                     return _loadScript(SOURCE_FILES["renju_js"])
                 })
                 .then(() => {
-                    mlog("loadApp source ......")
+                    mlog("loadApp source ......");
                     return loadApp()
                 })
                 .then(() => {

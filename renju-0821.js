@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1110.00";
+self.SCRIPT_VERSIONS["renju"] = "v1110.05";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -235,6 +235,7 @@ var loadApp = () => { // 按顺序加载应用
                     });
                     cs += `_____________________\n`;
                     log(cs, "warn");
+                    return Promise.resolve();
                 });
         }
         else {
@@ -256,6 +257,7 @@ var loadApp = () => { // 按顺序加载应用
                             });
                             cs += `_____________________\n`;
                             log(cs);
+                            return Promise.resolve();
                         });
                 })
         }
@@ -312,10 +314,12 @@ var loadApp = () => { // 按顺序加载应用
         }
         return Promise.all(ps)
             .then(()=>{
-                log("---更新离线缓存--->ok", "warn")
+                log("---更新离线缓存--->ok", "warn");
+                return Promise.resolve();
             })
             .catch(err => {
-                log(`---更新离线缓存失败---> ${err.message}`, "error")
+                log(`---更新离线缓存失败---> ${err.message}`, "error");
+                return Promise.resolve();
             })
     }
 
@@ -658,19 +662,19 @@ var loadApp = () => { // 按顺序加载应用
                         return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
                             .then((num) => {
                                 num == 1 && window.reloadApp();
-                                return version.version;
+                                return Promise.resolve(version.version);
                             })
                             .catch(()=>{
-                                return undefined;
+                                return Promise.resolve();
                             })
-                    return undefined;
+                    return Promise.resolve();
                 })
                 .catch(()=>{
-                    return undefined;
+                    return Promise.resolve();
                 })
         }
         else {
-            return Promise.resolve(undefined)
+            return Promise.resolve()
         }
     }
     
@@ -693,6 +697,7 @@ var loadApp = () => { // 按顺序加载应用
         if ("serviceWorker" in navigator) {
             setTimeout(search, 5 * 1000);
         }
+        return Promise.resolve();
     }
 
     function autoShowUpDataInformation() {
@@ -719,7 +724,16 @@ var loadApp = () => { // 按顺序加载应用
                         Msg += `\n\t${strLen(i+1, 2)}. ${lineWrap(infoArr[i])}`
                     Msg += `\n\t_____________________ `;
                 }
-                lineNum==1 ? showLabel(Msg): msg({ text: Msg, butNum: 1, lineNum: lineNum, textAlign: lineNum > 1 ? "left" : "center" });
+                lineNum==1 ? showLabel(Msg): 
+                    msg({ text: Msg, 
+                        butNum: 2, 
+                        lineNum: lineNum, 
+                        textAlign: lineNum > 1 ? "left" : "center",
+                        enterTXT: "关闭",
+                        cancelTXT: "历史记录", 
+                        callEnter: () => {}, 
+                        callCancel: () => {window.open("./help/renjuhelp/versionHistory.html","helpWindow")}
+                    });
                 localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
                 return true;
             }

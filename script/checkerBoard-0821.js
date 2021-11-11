@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1110.00";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1110.05";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -10,13 +10,13 @@ window.checkerBoard = (function() {
     const TYPE_WHITE = 4; // 无序号 添加的黑棋
     const TYPE_MOVE = 5; //VCF手顺
     const TYPE_MARK_FOUL = 6;
-
-    const COORDINATE_ALL = 0;
-    const COORDINATE_LEFT_UP = 1;
-    const COORDINATE_RIGHT_UP = 2;
-    const COORDINATE_RIGHT_DOWN = 3;
-    const COORDINATE_LEFT_DOWN = 4;
-    const COORDINATE_NONE = 5;
+    
+    const COORDINATE_NONE = 0;
+    const COORDINATE_ALL = 1;
+    const COORDINATE_LEFT_UP = 2;
+    const COORDINATE_RIGHT_UP = 3;
+    const COORDINATE_RIGHT_DOWN = 4;
+    const COORDINATE_LEFT_DOWN = 5;
 
     function log(param, type = "log") {
         const command = {
@@ -64,9 +64,7 @@ window.checkerBoard = (function() {
             else {
                 cancelAnima();
                 if(cBoard.scale==1) {
-                    cBoard.viewBox.style.border = `0px`;
-                    cBoard.viewBox.style.left = `0px`;
-                    cBoard.viewBox.style.top = `0px`;
+                    cBoard.setViewBoxBorder(false);
                 }
             }
         }
@@ -89,11 +87,8 @@ window.checkerBoard = (function() {
                 width_arr = getMoveLine(cBoard.width-parseInt(cBoard.canvas.style.width), points);
             }
             else{
-                let bw = ~~(cBoard.width/100);
-                cBoard.viewBox.style.border = `${bw}px solid #ccc`; // ridge groove
-                //cBoard.viewBox.style.borderRadius = `${bw}px`;
-                cBoard.viewBox.style.left = `${-bw}px`;
-                cBoard.viewBox.style.top = `${-bw}px`;
+                cBoard.setViewBoxBorder(true);
+                
                 points = getPoints(cBoard.width*(cBoard.scale-1));
                 moves_x = getMoveLine(cBoard.width*(cBoard.scale-1)/2, points);
                 moves_y = getMoveLine(cBoard.width*(cBoard.scale-1)/2, points);
@@ -3000,9 +2995,10 @@ window.checkerBoard = (function() {
 
         this.SLTX = this.size;
         this.SLTY = this.SLTX;
-        let padding = this.coordinateType < 1 ? ~~(this.width / (this.SLTX + 2) * 1.5) :
-            this.coordinateType < 5 ? ~~(this.width / (this.SLTX + 1) * 1.5) :
-            ~~(this.width / this.SLTX / 2);
+        let padding = this.coordinateType == 0 ? ~~(this.width / this.SLTX / 2) :
+            this.coordinateType == 1 ? ~~(this.width / (this.SLTX + 2) * 1.5) :
+             ~~(this.width / (this.SLTX + 1) * 1.5);
+            
         switch (this.coordinateType) {
             case COORDINATE_ALL:
             case COORDINATE_NONE:
@@ -3963,19 +3959,13 @@ window.checkerBoard = (function() {
     
     checkerBoard.prototype.setScale = function(scl, timer = "now"){
         this.scale = scl;
-        log(`scl=${scl}`,"info")
+        //log(`scl=${scl}`,"info")
         if(timer == "now"){
             if(scl==1){
-                this.viewBox.style.border = `0px`;
-                this.viewBox.style.left = `0px`;
-                this.viewBox.style.top = `0px`;
+                this.setViewBoxBorder(false);
             }
             else{
-                let bw = ~~(this.width/100);
-                this.viewBox.style.border = `${bw}px solid #ccc`; // ridge groove
-                //this.viewBox.style.borderRadius = `${bw}px`;
-                this.viewBox.style.left = `${-bw}px`;
-                this.viewBox.style.top = `${-bw}px`;
+                this.setViewBoxBorder(true);
             }
             this.canvas.style.width = `${this.width*scl}px`;
             this.canvas.style.height = `${this.height*scl}px`;
@@ -3986,6 +3976,25 @@ window.checkerBoard = (function() {
         }
         
         this.onScale.call(this);
+    }
+    
+    
+    
+    checkerBoard.prototype.setViewBoxBorder = function(value){
+        if(value){
+            let bw = ~~(this.width/100),
+                 p = { x: 0, y: 0 };
+            this.xyObjToPage(p, this.viewBox);
+            this.viewBox.style.border = `${bw}px solid #ccc`; // ridge groove
+            //this.viewBox.style.borderRadius = `${bw}px`;
+            this.viewBox.style.left = `${p.x < bw ? -p.x : -bw}px`;
+            this.viewBox.style.top = `${p.y < bw ? -p.y : -bw}px`;
+        }
+        else{
+            this.viewBox.style.border = `0px`;
+            this.viewBox.style.left = `0px`;
+            this.viewBox.style.top = `0px`;
+        }
     }
 
 

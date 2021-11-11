@@ -606,10 +606,10 @@
         document.body.setAttribute("class", "finish");
         const iHTML = document.body.innerHTML;
         document.body.innerHTML = "";
-        let dDiv = createDocumentDiv();
-        createTop(dDiv);
-        createBody(iHTML, dDiv);
-        createButtom(dDiv);
+        let dDiv = createDocumentDiv(),
+            topDiv = createTop(dDiv),
+            bodyDiv = createBody(iHTML, dDiv),
+            buttomDiv = createButtom(dDiv);
         window.onhashchange();
         //alert(`${document.documentElement.clientWidth}, ${document.documentElement.clientHeight}`)
         log(`parentWindow=${window.parent==window.self}`);
@@ -654,6 +654,7 @@
         TOP_DIV.setAttribute("class", "topDiv");
         //TOP_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
         parentNode.appendChild(TOP_DIV);
+        return TOP_DIV;
     }
 
 
@@ -665,6 +666,7 @@
         BODY_DIV.innerHTML = iHTML;
         mapUL(BODY_DIV);
         parentNode.appendChild(BODY_DIV);
+        return BODY_DIV;
         //log(`BODY_DIV.height=${BODY_DIV.scrollHeight}`);
 
         function mapUL(elem, colorDepth = 0) {
@@ -751,6 +753,7 @@
         BUTTOM_DIV.setAttribute("class", "buttomDiv");
         //BUTTOM_DIV.innerHTML = `<a onclick="window.open('./renjuhelp.html','_self')"><< 首页</a>`;
         parentNode.appendChild(BUTTOM_DIV);
+        return BUTTOM_DIV;
     }
 
 

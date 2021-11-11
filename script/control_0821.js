@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1110.00";
+self.SCRIPT_VERSIONS["control"] = "v1110.05";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1429,12 +1429,12 @@ window.control = (() => {
         });
         
         let coordinateMenu = createMenu( menuLeft, t, menuWidth, h, menuFontSize,
-                [0,"棋盘坐标:上下左右",
-                1,"棋盘坐标:上左",
-                2,"棋盘坐标:上右",
-                3,"棋盘坐标:下右",
-                4,"棋盘坐标:下左",
-                5,"棋盘坐标:无坐标"],
+                [0,"棋盘坐标:无坐标",
+                1,"棋盘坐标:上下左右",
+                2,"棋盘坐标:上左",
+                3,"棋盘坐标:上右",
+                4,"棋盘坐标:下右",
+                5,"棋盘坐标:下左"],
                 function(){
                     if (isBusy()) return;
                     cBd.setCoordinate(coordinateMenu.input.value*1);
@@ -2817,7 +2817,7 @@ window.control = (() => {
         }
         else {
             //log(`top=${window.scrollY}, left=${window.scrollX}`);
-            if(!cBd.isOut(x, y, cBd.viewBox, -~~(cBd.width/10))){
+            if(!cBd.isOut(x, y, cBd.viewBox, -~~(cBd.width/8))){
                 cMenu.idx = idx;
                 cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
             }
@@ -2851,7 +2851,7 @@ window.control = (() => {
 
 
     function isBusy(loading = true) {
-        let busy = !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
+        let busy = !cLoadImg.div.parentNode || !cCutImage.div.parentNode || !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
         if (busy && loading) window._loading.open("busy", 1600);
         return busy;
     }
