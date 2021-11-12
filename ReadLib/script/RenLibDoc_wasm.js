@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.05";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.22";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -285,7 +285,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.05";
                 scl -= 0.1;
                 if(pages) resolve(pages);
                 else if(scl>3)setTimeout(()=>max(bufSize, scl),0);
-                else reject(new Error(`手机空闲内存太小了,请关闭后台应用释放内存`));
+                else reject(`手机空闲内存太小了,请关闭后台应用释放内存`);
             }
             max(bufSize, scl);
         });
@@ -403,7 +403,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.05";
                 /*
                 post("warn", `buffer_scale = ${buffer_scale}`);
                 if (!resetBuffer(buf.byteLength, buffer_scale))
-                    return Promise.reject(new Error("grow Error"));
+                    return Promise.reject("grow Error");
                     */
             })
             .then(function(pages) {
@@ -412,7 +412,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.05";
                     return Promise.resolve();
                 }
                 else {
-                    return Promise.reject(new Error("libFile Open Error"));
+                    return Promise.reject("libFile Open Error");
                 }
             })
             /*.then(function(){
@@ -421,33 +421,33 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1110.05";
                     return Promise.resolve();
                 }
                 else if(rt==-1){
-                    return Promise.reject(new Error(`不是五子棋棋谱`));
+                    return Promise.reject(`不是五子棋棋谱`);
                 }
                 else{
-                    return Promise.reject(new Error(`Point err: ${rt}`));
+                    return Promise.reject(`Point err: ${rt}`);
                 }
             })*/
             .then(function() {
                 if (wasm_exports._Z12checkVersionv())
                     return Promise.resolve();
                 else
-                    return Promise.reject(new Error(`不是五子棋棋谱`));
+                    return Promise.reject(`不是五子棋棋谱`);
             })
             .then(function() {
                 let number = wasm_exports._Z15loadAllMoveNodev(),
-                    dataSize = 1008 + 908 + number * 28;
+                    dataSize = 1808 + 908 + number * 24;
                 if (memory.buffer.byteLength < data_buffer + dataSize)
-                    return Promise.reject(new Error(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`));
+                    return Promise.reject(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
                 if (number)
                     return Promise.resolve();
                 else
-                    return Promise.reject(new Error(`loadAllMoveNode Error`));
+                    return Promise.reject(`loadAllMoveNode Error`);
             })
             .then(function() {
                 if (wasm_exports._Z15createRenjuTreev())
                     return Promise.resolve();
                 else
-                    return Promise.reject(new Error(`createRenjuTree Error`));
+                    return Promise.reject(`createRenjuTree Error`);
             })
             .then(function(){
                 return Promise.resolve(jFile.close());

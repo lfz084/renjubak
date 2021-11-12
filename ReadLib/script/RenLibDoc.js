@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1110.05";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1110.22";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -463,14 +463,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1110.05";
         let libFile = new LibraryFile();
         
         if (!libFile.open(buf)) {
-            throw new Error("libFile Open Error");
-            return Promise.reject();
+            return Promise.reject("libFile Open Error");
         }
 
         post("log", "addLibrary")
         if (!libFile.checkVersion()) {
-            throw new Error(`不是五子棋棋谱`)
-            return Promise.reject();
+            return Promise.reject(`不是五子棋棋谱`);
         }
 
         let m_Stack = new Stack();
@@ -537,7 +535,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1110.05";
                 next.setIsMark(true);
                 //SetModifiedFlag();
                 post("error", "Point err")
-                return Promise.reject();
+                return Promise.reject("addLibrary: Point error");
             }
             else {
                 number++;

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1110.05";
+self.SCRIPT_VERSIONS["renju"] = "v1110.22";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -174,7 +174,7 @@ var loadApp = () => { // 按顺序加载应用
                             if (_self.count++ >= 3) {
                                 const MSG = `${err ? err.message: ""}\n put cache Error: count > 3 (${request.url.split("/").pop()})`
                                 log(MSG, "error")
-                                reject(new Error(MSG))
+                                reject(MSG)
                                 return;
                             }
                             //log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
@@ -344,7 +344,7 @@ var loadApp = () => { // 按顺序加载应用
             }
             link.onerror = (err) => {
                 let message = `loadCss_Error: "${filename}"`;
-                reject(new Error(message));
+                reject(message);
                 //log(message);
             }
             link.href = url;
@@ -365,7 +365,7 @@ var loadApp = () => { // 按顺序加载应用
 
             function err(err) {
                 let message = `loadFont_Error: "${filename}"`;
-                reject(new Error(message));
+                reject(message);
                 //log(message);
             }
             let oReq = new XMLHttpRequest();
@@ -389,7 +389,7 @@ var loadApp = () => { // 按顺序加载应用
 
             function err(err) {
                 let message = `loadFile_Error: "${filename}"`;
-                reject(new Error(message));
+                reject(message);
                 //log(message);
             }
             let oReq = new XMLHttpRequest();
@@ -413,7 +413,7 @@ var loadApp = () => { // 按顺序加载应用
 
             function err(err) {
                 let message = `loadTxT_Error: "${filename}"`;
-                reject(new Error(message));
+                reject(message);
                 //log(message);
             }
             let oReq = new XMLHttpRequest();
@@ -449,7 +449,7 @@ var loadApp = () => { // 按顺序加载应用
             }
             oScript.onerror = (err) => {
                 let message = `loadScript_Error: "${filename}"`;
-                reject(new Error(message));
+                reject(message);
                 //log(message);
             }
             oScript.src = url;
@@ -493,7 +493,7 @@ var loadApp = () => { // 按顺序加载应用
                     .then(() => {
                         return new Promise((resolve, reject) => {
                             function _timeout() {
-                                reject(new Error(`Error: 连接网络超时\n文件"${fileName}"下载失败`));
+                                reject(`Error: 连接网络超时\n文件"${fileName}"下载失败`);
                             }
                             setTimeout(_timeout, 30 * 1000);
                             loadFun(fileName)
@@ -606,7 +606,7 @@ var loadApp = () => { // 按顺序加载应用
                             resolve()
                     }
                     function registerError(){
-                        reject(new Error("注册 serviceWorker 失败"))
+                        reject("注册 serviceWorker 失败")
                     }
                     if (registration.installing) {
                         serviceWorker = registration.installing;

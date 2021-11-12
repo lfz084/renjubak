@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1110.05";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1110.22";
 
 if (self.importScripts){
     self.importScripts(
@@ -53,10 +53,9 @@ function getArrBuf(file) {
 function openLib(file) {
     getArrBuf(file)
         .then(function(buf) {
-             let rt = renLibDoc.addLibrary(buf);
-             return Promise.resolve(rt);
+             return renLibDoc.addLibrary(buf);
         })
-        .then(function(){
+        .then(function(rt){
             post("finish");
             return Promise.resolve();
         })
@@ -66,7 +65,7 @@ function openLib(file) {
                 Promise.resolve();
             }
             catch (err) {
-                Promise.rejecte(err);
+                Promise.rejecte(err.message);
             }
         })
         .catch(function(err) {
