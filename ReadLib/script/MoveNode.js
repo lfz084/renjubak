@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveNode"] = "v1110.23";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveNode"] = "v1111.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

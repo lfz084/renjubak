@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1110.23";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1111.01";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -205,7 +205,7 @@ window.RenjuLib = (() => {
     }
 
     function catchErr() {
-        new Date().getTime() - sTime > 60 * 1000 ? onError(new Error("打开文件出错了: 解码过程出现错误")) : undefined;
+        new Date().getTime() - sTime > 30 * 1000 ? onError(new Error("打开文件出错了: 解码过程出现错误")) : undefined;
     }
 
     function otherMessage(message) {
