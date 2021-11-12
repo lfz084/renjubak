@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1110.22";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1110.23";
 
 if (self.importScripts){
     self.importScripts(
@@ -69,7 +69,8 @@ function openLib(file) {
             }
         })
         .catch(function(err) {
-            postMessage(err);
+            post("error", err);
+            postMessage(err.constructor.name = "Error" ? err : new Error(`${err}`));
         })
 }
 

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1110.22";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1110.23";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
