@@ -453,7 +453,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
                 return Promise.resolve(jFile.close());
             })
             .catch(function(err) {
-                return Promise.reject(err);
+                return Promise.reject(err.message || err);
             })
     }
 
