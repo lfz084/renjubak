@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1111.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1111.03";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -73,6 +73,9 @@ window.RenjuLib = (() => {
             setPlayModel(MODEL_RENLIB);
             enable = true;
             finish();
+        },
+        onerror: function(err){
+            onError(err);
         },
         alert: function(msg) {
             alert(msg);
@@ -219,10 +222,10 @@ window.RenjuLib = (() => {
             level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
         //log(data)
         if (!isEqual(data.position, cBoard.getPointArray())) return;
-
+        console.info(data.nodes)
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
-            if (cBoard.size < 14 || !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
+            if (cBoard.size < 14 || cBoard.nextColor()===2 || !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
                 cBoard.wLb(nodes[i].idx, nodes[i].txt, colour ? nodes[i].color : "black");
                 if (nextMove.level < level.indexOf(nodes[i].txt)) {
                     nextMove.level = level.indexOf(nodes[i].txt);
@@ -288,7 +291,6 @@ window.RenjuLib = (() => {
         isLoading: function() {
             return isLoading;
         },
-        setCenterPos: setCenterPos,
         colour: function() {
             colour = !colour;
         },
@@ -296,6 +298,7 @@ window.RenjuLib = (() => {
             enable && (cBoard.toStart(),cBoard.toPrevious(),
                 wk.postMessage({ cmd: "getAutoMove", parameter: undefined }));
         },
+        setCenterPos: setCenterPos,
         setBufferScale: setBufferScale,
         setPostStart: setPostStart
     }

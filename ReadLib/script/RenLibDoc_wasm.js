@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -415,7 +415,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
                     return Promise.reject("libFile Open Error");
                 }
             })
-            /*.then(function(){
+            /*
+            .then(function(){
                 let rt = wasm_exports._Z10addLibraryv();
                 if(rt>-1){
                     return Promise.resolve();
@@ -426,7 +427,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
                 else{
                     return Promise.reject(`Point err: ${rt}`);
                 }
-            })*/
+            })
+            */
             .then(function() {
                 if (wasm_exports._Z12checkVersionv())
                     return Promise.resolve();
@@ -435,7 +437,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
             })
             .then(function() {
                 let number = wasm_exports._Z15loadAllMoveNodev(),
-                    dataSize = 1808 + 908 + number * 24;
+                    dataSize = 1804 + 908 + 16 + 24 + number * 24; // Stack + MoveList + LibraryFile + RootMoveNode + libNode;
                 if (memory.buffer.byteLength < data_buffer + dataSize)
                     return Promise.reject(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
                 if (number)
@@ -460,7 +462,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1111.01";
 
     //-----------------------------------------------------------
     CRenLibDoc.prototype.getBranchNodes = function(path) {
-
+    post("info", path);
         function normalizeNodes(nodes, nMatch) {
             let idx,
                 txt,

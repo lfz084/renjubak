@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1111.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1111.03";
 
 if (self.importScripts){
     self.importScripts(
@@ -29,7 +29,7 @@ cmd = [alert | log | warn | info | error | addBranch | addBranchArray | createTr
 
 function post(cmd, param) {
     if (typeof cmd == "object" && cmd.constructor.name == "Error")
-        postMessage(cmd)  //ios safari not working
+        postMessage(cmd)  //部分浏览器 不支持复制 Error
     else
         postMessage({ "cmd": cmd, "parameter": param })
 }
@@ -69,8 +69,7 @@ function openLib(file) {
             }
         })
         .catch(function(err) {
-            post("finish");
-            post("alert", err);
+            post("onerror", err.message || err);
         })
 }
 

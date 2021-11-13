@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1111.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1111.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -665,7 +665,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1111.01";
 
     //-----------------------------------------------------------
     CRenLibDoc.prototype.getBranchNodes = function(path) {
-
+    post("info", path);
         function normalizeNodes(nodes, nMatch) {
             let idx,
                 txt,

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1111.01";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1111.03";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -2217,6 +2217,12 @@ window.checkerBoard = (function() {
         }
         return false;
     };
+    
+    
+    
+    checkerBoard.prototype.nextColor = function(){
+        return this.MSindex%2 ? 1 : 2;
+    }
 
 
 

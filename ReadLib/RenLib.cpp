@@ -1117,7 +1117,7 @@ private:
         int current = m_MoveList->Index();
         MoveNode* pMove;
         while(i <= current){ //      兼容 Rapfi 制谱
-            pMove = m_MoveList->Get(i++);
+            pMove = m_MoveList->Get(i++);   
             if (pMove->mPos == Pos) return pMove;
         }*/
             
@@ -1347,7 +1347,7 @@ bool checkVersion(){
         MoveNode* pCurrentMove = 0;
         
         if (m_MoveList->IsEmpty()) {
-            pCurrentMove = (MoveNode*)newBuffer(sizeof(MoveNode)) + 1;
+            pCurrentMove = (MoveNode*)newBuffer(sizeof(MoveNode));
             m_MoveList->SetRoot(pCurrentMove);
             rootMoveNode = pCurrentMove;
         }
@@ -1439,7 +1439,7 @@ bool createRenjuTree(){
     
     m_MoveList->SetRootIndex();
     
-    for(UINT i=1; i<m_MoveNode_count; i++){
+    for(UINT i=0; i<m_MoveNode_count; i++){
         next++;
         //log(next->getName());
         if(i%300000==0) loading(i, m_MoveNode_count);
