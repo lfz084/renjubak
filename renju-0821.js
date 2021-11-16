@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1111.03";
+self.SCRIPT_VERSIONS["renju"] = "v1116.00";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -56,7 +56,7 @@ var loadApp = () => { // 按顺序加载应用
     window.dw = d.documentElement.clientWidth;
     window.dh = d.documentElement.clientHeight;
     window.cWidth = dw < dh ? dw * 0.95 : dh * 0.95; //棋盘宽度
-    cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
+    cWidth = dw < dh ? cWidth : dh < ~~(dw / 2 * 0.985) ? dh : ~~(dw / 2 * 0.985);
 
     window.viewport1 = null; // 控制缩放
     window.vConsole = null; // 调试工具
@@ -72,6 +72,11 @@ var loadApp = () => { // 按顺序加载应用
         window.frames[0].window.alert(name);
         IFRAME.parentNode.removeChild(IFRAME);
     };
+    
+    window.addEventListener("error", function(err){
+        log(err.Stack || err.message || err, "error");
+        //alert(err.Stack || err.message || err);
+    });
     
     window._loading = (function() { //控制加载动画
         let timer = null;
@@ -448,9 +453,9 @@ var loadApp = () => { // 按顺序加载应用
                 }, 0);
             }
             oScript.onerror = (err) => {
-                let message = `loadScript_Error: "${filename}"`;
+                let message = `loadScript_Error: "${filename}"\n${err.message}`;
                 reject(new Error(message));
-                //log(message);
+                //log(message,"error");
             }
             oScript.src = url;
         });
@@ -810,7 +815,7 @@ var loadApp = () => { // 按顺序加载应用
             upDiv.style.position = "absolute";
             upDiv.style.width = "0px";
             upDiv.style.height = "0px";
-            upDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
+            upDiv.style.left = dw > dh ? ~~((dw - cWidth * 2) / 2) + "px" : (dw - cWidth) / 2 + "px";
             upDiv.style.top = dw > dh ? (dh - cWidth) / 2 + "px" : cWidth + "px";
             //upDiv.style.backgroundColor = "green";
 
@@ -819,8 +824,8 @@ var loadApp = () => { // 按顺序加载应用
             downDiv.style.position = "absolute";
             downDiv.style.width = "0px";
             downDiv.style.height = "0px";
-            downDiv.style.left = dw > dh ? parseInt((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
-            downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + parseInt(cWidth / 13) + "px" : cWidth * 2.06 + "px";
+            downDiv.style.left = dw > dh ? ~~((dw - cWidth * 2) / 2) + cWidth + "px" : "0px";
+            downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + ~~(cWidth / 13) + "px" : cWidth * 2.06 + "px";
             //downDiv.style.backgroundColor = "blue";
 
             cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);

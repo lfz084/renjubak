@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["appData"] = "v1111.03";
+self.SCRIPT_VERSIONS["appData"] = "v1116.00";
 window.appData = (() => {
     "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
@@ -77,15 +77,28 @@ window.appData = (() => {
             whiteMoves = localStorage.getItem("whiteMoves"),
             blackMoves = localStorage.getItem("blackMoves"),
             cBoardSize = localStorage.getItem("cBoardSize"),
-            coordinateType = localStorage.getItem("coordinateType");
+            coordinateType = localStorage.getItem("coordinateType"),
+            renjuCmdSettings = getObject("renjuCmdSettings");
             
         /*
         console.log(moves)
         console.log(blackMoves)
         console.log(whiteMoves)
         */
-        if ((cBoardSize != "undefined") && cBoardSize) cBd.setSize(parseInt(cBoardSize));
-        if ((coordinateType != "undefined") && coordinateType) cBd.setCoordinate(parseInt(coordinateType));
+        if ((cBoardSize != "undefined") && cBoardSize)
+            cBd.setSize(parseInt(cBoardSize));
+        else
+            cBd.setSize(cBd.size);
+            
+        if ((coordinateType != "undefined") && coordinateType) 
+            cBd.setCoordinate(parseInt(coordinateType));
+        else
+            cBd.setCoordinate(cBd.coordinateType);
+            
+        if(typeof renjuCmdSettings == "object"){
+            control.loadCmdSettings("renjuCmdSettings", renjuCmdSettings);
+        }
+            
         if ((firstColor != "undefined") && firstColor) cBd.firstColor = firstColor;
         if (parseInt(resetNum) > 0) cBd.resetNum = parseInt(resetNum);
         if (cBd.setMoves(moves)) cBd.unpackMoves(true);
@@ -142,6 +155,14 @@ window.appData = (() => {
     let removeKey = key => {
         return localStorage.removeItem(key);
     };
+    
+    let getObject = key => {
+        return JSON.parse(getKey(key));
+    };
+    
+    let setObject = (key, obj) => {
+        return setKey(key, JSON.stringify(obj));
+    };
 
     return {
         "renjuSave": renjuSave,
@@ -152,6 +173,8 @@ window.appData = (() => {
         "loadContinueData": loadContinueData,
         "getKey": getKey,
         "setKey": setKey,
+        "getObject": getObject,
+        "setObject": setObject,
         "removeKey": removeKey,
     };
 })();

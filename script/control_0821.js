@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1111.03";
+self.SCRIPT_VERSIONS["control"] = "v1116.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -86,18 +86,22 @@ window.control = (() => {
     let continueLabel = ["标记1", "标记2", "标记3", "标记4", "标记5"],
         parentNode,
         renjuCmddiv = null,
+        renjuCmdSettings = {positions:[], defaultButtons:[], ButtonsIdx:[], idx:0},
         imgCmdDiv = null,
+        imgCmdSettings = {positions:[], defaultButtons:[], ButtonsIdx:[], idx:0},
+        onLoadCmdSettings = function() {},
+        scaleCBoard = function() {},
+        setShowNum = function() {},
+        getShowNum = function() {},
+        editButtons = function() {},
         
         cMenu = null,
 
-        cLockImg = {},
+        cLockImg = null,
         cPutBoard = null,
         cAutoPut = null,
         cCleAll = null,
         cShownum = null,
-        scaleCBoard = function(){},
-        setShowNum = function() {},
-        getShowNum = function() {},
         cNewGame = null,
         cLocknum = null,
         cAutoadd = null,
@@ -262,6 +266,27 @@ window.control = (() => {
         viewport1.resize();
         RenjuLib.closeLib();
         window.blockUnload && window.blockUnload();
+    }
+    
+    function setMenuCheckBox(button, idx, idxs) {
+        if(idxs.indexOf(idx)>-1){
+            button.menu.lis[idx].checked = !button.menu.lis[idx].checked;
+            if (button.menu.lis[idx].checked) {
+                button.menu.lis[idx].innerHTML = button.input[idx].text + "  ✔";
+            }
+            else {
+                button.menu.lis[idx].innerHTML = button.input[idx].text;
+            }
+        }
+    }
+    
+    function setMenuRadio(button, idx, idxs) {
+        for(let i=(idxs && idxs.length || button.input.length) - 1; i>=0; i--){
+            button.menu.lis[i].checked = false;
+            button.menu.lis[i].innerHTML = button.input[i].text;
+        }
+        button.menu.lis[idx].checked = true;
+        button.menu.lis[idx].innerHTML = button.input[idx].text + "  ✔";
     }
 
 
@@ -519,7 +544,36 @@ window.control = (() => {
         });
     }
     
-
+    
+    
+    function moveButtons(settings){
+        let buts =settings.defaultButtons,
+            positions = settings.positions,
+            buttonsIdx = settings.ButtonsIdx[settings.idx];
+        for(let i=0; i<positions.length; i++){
+            buts[i].hide();
+        }
+        
+        for (let i = 0; i < buttonsIdx.length; i++) {
+            buts[buttonsIdx[i]].move(positions[i].left, positions[i].top);
+        }
+    }
+    
+    function loadCmdSettings(key, settings) {
+        if (key = "renjuCmdSettings") {
+            renjuCmdSettings.ButtonsIdx = settings.ButtonsIdx || renjuCmdSettings.ButtonsIdx;
+            renjuCmdSettings.idx = settings.idx || renjuCmdSettings.idx;
+            moveButtons(renjuCmdSettings);
+            onLoadCmdSettings();
+        }
+    }
+    function saveCmdSettings(key, settings) {
+        let obj = {
+            ButtonsIdx: settings.ButtonsIdx,
+            idx: settings.idx
+        }
+        appData.setObject(key, obj);
+    }
 
 
     // renju 模式控制面板
@@ -543,43 +597,38 @@ window.control = (() => {
         let menuFontSize = sw / 20;
 
         w = sw / 5;
+        
 
-        cStart = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cStart.show();
+        cStart = new button(renjuCmddiv, "button", 0, 0, w, h);
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
             if (isBusy()) return;
             cBd.toStart(getShowNum());
         });
 
-        cPrevious = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
-        cPrevious.show();
+        cPrevious = new button(renjuCmddiv, "button", 0, 0, w, h);
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
             if (isBusy()) return;
             cBd.toPrevious(getShowNum());
         });
 
-        cNext = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
-        cNext.show();
+        cNext = new button(renjuCmddiv, "button", 0, 0, w, h);
         cNext.setText(">>");
         cNext.setontouchend(function() {
             if (isBusy()) return;
             cBd.toNext(getShowNum());
         });
 
-        cEnd = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cEnd.show();
+        cEnd = new button(renjuCmddiv, "button", 0, 0, w, h);
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
             if (isBusy()) return;
             cBd.toEnd(getShowNum());
         });
 
-        t = t + h * 1.5;
 
-        cMoveL = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cMoveL.show();
+        cMoveL = new button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveL.setColor("black");
         cMoveL.setText("←");
         cMoveL.setontouchend(function() {
@@ -587,8 +636,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("left");
         });
 
-        cMoveR = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
-        cMoveR.show();
+        cMoveR = new button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveR.setColor("black");
         cMoveR.setText("→ ");
         cMoveR.setontouchend(function() {
@@ -596,8 +644,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("right");
         });
 
-        cMoveT = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
-        cMoveT.show();
+        cMoveT = new button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveT.setColor("black");
         cMoveT.setText(" ↑");
         cMoveT.setontouchend(function() {
@@ -605,8 +652,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("top");
         });
 
-        cMoveB = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cMoveB.show();
+        cMoveB = new button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveB.setColor("black");
         cMoveB.setText("↓");
         cMoveB.setontouchend(function() {
@@ -614,27 +660,21 @@ window.control = (() => {
             cBd.moveCheckerBoard("bottom");
         });
 
-
-        t = t + h * 1.5;
-
-        cFlipY = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cFlipY.show();
+        cFlipY = new button(renjuCmddiv, "button", 0, 0, w, h);
         cFlipY.setText("↔180°");
         cFlipY.setontouchend(function() {
             if (isBusy()) return;
             cBd.boardFlipY(getShowNum());
         });
 
-        cCW = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
-        cCW.show();
+        cCW = new button(renjuCmddiv, "button", 0, 0, w, h);
         cCW.setText(" ↗90°");
         cCW.setontouchend(function() {
             if (isBusy()) return;
             cBd.boardCW(getShowNum());
         });
 
-        cCleLb = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
-        cCleLb.show();
+        cCleLb = new button(renjuCmddiv, "button", 0, 0, w, h);
         cCleLb.setColor("black");
         cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
@@ -645,20 +685,14 @@ window.control = (() => {
             cBd.threePoints = {};
         });
 
-        cNewGame = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cNewGame.show();
+        cNewGame = new button(renjuCmddiv, "button", 0, 0, w, h);
         cNewGame.setText("新棋局");
         cNewGame.setontouchend(function() {
             if (isBusy()) return;
             newGame();
         });
 
-
-        w = sw / 5;
-        t = t + h * 1.5;
-
-        cInputcode = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cInputcode.show();
+        cInputcode = new button(renjuCmddiv, "button", 0, 0, w, h);
         cInputcode.setColor("black");
         cInputcode.setText("输入代码");
 
@@ -679,8 +713,7 @@ window.control = (() => {
                 inputCode, undefined, undefined, 10);
         });
 
-        cOutputcode = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
-        cOutputcode.show();
+        cOutputcode = new button(renjuCmddiv, "button", 0, 0, w, h);
         cOutputcode.setColor("black");
         cOutputcode.setText("输出代码");
         cOutputcode.setontouchend(function() {
@@ -711,12 +744,11 @@ window.control = (() => {
                 RenjuLib.setBufferScale(but.input.value*1);
             });
         
-        cLoadImg = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cLoadImg = new button(renjuCmddiv, "select", 0, 0, w, h);
         cLoadImg.addOption(1, "打开 图片");
         cLoadImg.addOption(2, "打开 lib 棋谱");
         cLoadImg.addOption(3, "设置内存大小");
         cLoadImg.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cLoadImg.show();
         cLoadImg.setText("打开");
         cLoadImg.setonchange(function(but) {
             but.setText(`打开`);
@@ -803,7 +835,7 @@ window.control = (() => {
             RenjuLib.openLib(file);
         }
 
-        cCutImage = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
+        cCutImage = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cCutImage.addOption(0, "________图片________");
         //cCutImage.addOption(1, "分享图片");
         cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩图片");
@@ -814,7 +846,6 @@ window.control = (() => {
         //cCutImage.addOption(7, "________棋谱________");
         //cCutImage.addOption(8, "LIB /(*.lib) ______ 棋谱");
         cCutImage.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cCutImage.show();
         cCutImage.setText(`保存`);
         cCutImage.setonchange(function(but) {
             but.setText(`保存`);
@@ -842,7 +873,7 @@ window.control = (() => {
             but.input.value = 0;
         });
         
-        cCancelFind = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
+        cCancelFind = new button(renjuCmddiv, "button", 0, 0, w, h);
         //cCancelFind.show();
         cCancelFind.setText(`${EMOJI_STOP} 停止`);
         //cCancelFind.setColor("red");
@@ -851,11 +882,7 @@ window.control = (() => {
             RenjuLib.isLoading() && RenjuLib.cancal();
         });
 
-
-        t = t + h * 1.5;
-
-        cAutoadd = new button(renjuCmddiv, "radio", 0, t, w, h);
-        cAutoadd.show();
+        cAutoadd = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAutoadd.setText(` ${EMOJI_ROUND_BLACK_WHITE} 棋`);
         cAutoadd.setChecked(1);
         cAutoadd.setontouchend(function() {
@@ -863,24 +890,21 @@ window.control = (() => {
             nSetChecked(cAutoadd);
         });
 
-        cAddblack = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
-        cAddblack.show();
+        cAddblack = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddblack.setText(` ${EMOJI_ROUND_BLACK} 棋`);
         cAddblack.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cAddblack);
         });
 
-        cAddwhite = new button(renjuCmddiv, "radio", w * 2.66, t, w, h);
-        cAddwhite.show();
+        cAddwhite = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddwhite.setText(` ${EMOJI_ROUND} 棋`);
         cAddwhite.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cAddwhite);
         });
 
-        cNextone = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cNextone.show();
+        cNextone = new button(renjuCmddiv, "button", 0, 0, w, h);
         cNextone.setColor("black");
         cNextone.setText(`下手为${EMOJI_ROUND_ONE}`);
         cNextone.setontouchend(function() {
@@ -888,27 +912,22 @@ window.control = (() => {
             cBd.setResetNum(cBd.MSindex + 1);
             cBd.isShowNum = getShowNum();
         });
-        
 
-        t = t + h * 1.5;
-
-        cLba = new button(renjuCmddiv, "radio", w * 0, t, w, h);
-        cLba.show();
+        cLba = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLba.setText(` ${EMOJI_SQUARE_BLACK} `);
         cLba.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cLba);
         });
 
-        cLbb = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
-        cLbb.show();
+        cLbb = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbb.setText(` ${EMOJI_ROUND_DOUBLE} `);
         cLbb.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cLbb);
         });
 
-        cLABC = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cLABC = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cLABC.addOption(-1, "︾");
         cLABC.addOption(0, "←  箭头");
         cLABC.addOption(1, "__ 线条");
@@ -920,13 +939,10 @@ window.control = (() => {
         cLABC.addOption(7, `${EMOJI_FOUL} 标记`);
 
         cLABC.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cLABC.show();
-
         cLABC.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cLABC);
         });
-
         cLABC.setonchange(function() {
             changePlayModel();
             if (cLABC.input.value == 5) {
@@ -983,8 +999,7 @@ window.control = (() => {
             }
         };
 
-        cResetnum = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cResetnum.show();
+        cResetnum = new button(renjuCmddiv, "button", 0, 0, w, h);
         cResetnum.setColor("black");
         cResetnum.setText(" 重置手数");
         cResetnum.setontouchend(function() {
@@ -993,27 +1008,22 @@ window.control = (() => {
             setShowNum(true);
             cBd.isShowNum = getShowNum();
         });
-        
-        
-        t = t + h * 1.5;
 
-        cLbc = new button(renjuCmddiv, "radio", w * 0, t, w, h);
-        cLbc.show();
+        cLbc = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbc.setText(` ${EMOJI_TRIANGLE_BLACK} `);
         cLbc.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cLbc);
         });
 
-        cLbd = new button(renjuCmddiv, "radio", w * 1.33, t, w, h);
-        cLbd.show();
+        cLbd = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbd.setText(` ${EMOJI_FORK} `);
         cLbd.setontouchend(function() {
             //if (isBusy()) return;
             nSetChecked(cLbd);
         });
 
-        cLbColor = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cLbColor = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cLbColor.addOption(-1, "︾");
         for (let i = 0; i < lbColor.length; i++) {
             cLbColor.addOption(i, lbColor[i].colName);
@@ -1035,7 +1045,6 @@ window.control = (() => {
             //log(cLbColor.menu.lis["down"])
             s.backgroundColor = lbColor[i].color;
         }
-        cLbColor.show();
         cLbColor.setText(`${EMOJI_PEN} 颜色`);
         cLbColor.setonchange(function(but) {
             //if (isBusy()) return;
@@ -1048,7 +1057,7 @@ window.control = (() => {
             cLABC.setColor(lbColor[but.input.value].color);
         });
         
-        cPrintVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
+        cPrintVCF = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cPrintVCF.addOption(0, "︾");
         cPrintVCF.addOption(1, "第1套VCF");
         cPrintVCF.addOption(2, "第2套VCF");
@@ -1060,7 +1069,6 @@ window.control = (() => {
         cPrintVCF.addOption(8, "第8套VCF");
         //cPrintVCF.addOption(9, "︽");
         cPrintVCF.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cPrintVCF.show();
         cPrintVCF.setText("➩ VCF ");
         cPrintVCF.setonchange(function(but) {
             but.setText("➩ VCF ");
@@ -1086,11 +1094,7 @@ window.control = (() => {
             }
         });
 
-        
-        t = t + h * 1.5;
-
-        cSelBlack = new button(renjuCmddiv, "checkbox", w * 0, t, w, h);
-        cSelBlack.show();
+        cSelBlack = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelBlack.setText("黑先");
         cSelBlack.setChecked(1);
         cSelBlack.setontouchend(function() {
@@ -1098,8 +1102,7 @@ window.control = (() => {
             cSelChecked(cSelBlack);
         });
 
-        cSelWhite = new button(renjuCmddiv, "checkbox", w * 1.33, t, w, h);
-        cSelWhite.show();
+        cSelWhite = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelWhite.setText("白先");
         cSelWhite.setontouchend(function() {
             //if (isBusy()) return;
@@ -1109,7 +1112,7 @@ window.control = (() => {
         const CALCULATE = 1;
         let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
-        cFindPoint = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cFindPoint = new button(renjuCmddiv, "select", 0, 0, w, h);
         if (CALCULATE) {
             //cFindPoint.addOption(0, "︾" );
             cFindPoint.addOption(1, "VCT选点");
@@ -1133,7 +1136,6 @@ window.control = (() => {
         }
 
         cFindPoint.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cFindPoint.show();
         cFindPoint.setText("找点");
         cFindPoint.setonchange(function(but) {
             but.setText("找点");
@@ -1251,7 +1253,7 @@ window.control = (() => {
         });
         //cFindPoint.setontouchend(function() {});
 
-        cFindVCF = new button(renjuCmddiv, "select", w * 3.99, t, w, h);
+        cFindVCF = new button(renjuCmddiv, "select", 0, 0, w, h);
         if (CALCULATE) {
             //cFindVCF.addOption(0, "︾");
             cFindVCF.addOption(1, "快速找  VCF");
@@ -1276,7 +1278,6 @@ window.control = (() => {
             }
         }
         cFindVCF.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cFindVCF.show();
         cFindVCF.setText("解题");
         cFindVCF.setonchange(function(but) {
             but.setText("解题");
@@ -1400,18 +1401,7 @@ window.control = (() => {
         });
         cFindVCF.setontouchend(function() {});
 
-
-        t = t + h * 1.5;
-        if (dw < dh) {
-            t = 0 - cBd.width - h * 2.5;
-            setTop(parentNode.offsetTop + t)
-        }
-        else {
-            setTop(0);
-        }
-
-        cShareWhite = new button(renjuCmddiv, "button", w * 0, t, w, h);
-        cShareWhite.show();
+        cShareWhite = new button(renjuCmddiv, "button", 0, 0, w, h);
         cShareWhite.setColor("black");
         cShareWhite.setText(" 分享图片");
         cShareWhite.setontouchend(function() {
@@ -1419,8 +1409,7 @@ window.control = (() => {
             share("white");
         });
 
-        cShare = new button(renjuCmddiv, "button", w * 1.33, t, w, h);
-        cShare.show();
+        cShare = new button(renjuCmddiv, "button", 0, 0, w, h);
         cShare.setColor("black");
         cShare.setText(" 分享原图");
         cShare.setontouchend(function() {
@@ -1435,9 +1424,9 @@ window.control = (() => {
                 3,"棋盘坐标:上右",
                 4,"棋盘坐标:下右",
                 5,"棋盘坐标:下左"],
-                function(){
+                function(but){
                     if (isBusy()) return;
-                    cBd.setCoordinate(coordinateMenu.input.value*1);
+                    cBd.setCoordinate(but.input.value*1);
                 }),
             cBoardSizeMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
                 [6,"6路棋盘",
@@ -1458,22 +1447,47 @@ window.control = (() => {
                     RenjuLib.setCenterPos({x:cBd.size/2+0.5, y:cBd.size/2+0.5});
                     RenjuLib.getAutoMove();
                 }),
-            cShownumTop = new button(renjuCmddiv, "button", w * 2.66, t, w, h);
+            cLoadRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+                [0,"默认",
+                1,"设置1",
+                2,"设置2",
+                3,"设置3",
+                4,"设置4",
+                5,"设置5"],
+                function(but){
+                    if(isBusy()) return;
+                    renjuCmdSettings.idx = but.input.value*1;
+                    saveCmdSettings("renjuCmdSettings", renjuCmdSettings);
+                    loadCmdSettings("renjuCmdSettings", renjuCmdSettings);
+                }),
+            cSaveRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+                [1, "设置1",
+                2, "设置2",
+                3, "设置3",
+                4, "设置4",
+                5, "设置5"],
+                function(but){  
+                    if(isBusy()) return;
+                    renjuCmdSettings.idx = but.input.value * 1;
+                    editButtons("renjuCmdSettings", renjuCmdSettings);
+                }),
+            cShownumTop = new button(renjuCmddiv, "button", 0, 0, w, h);
         
-        cShownumTop.show();
         cShownumTop.setText(" 设置 ");
         cShownumTop.setontouchend(function() {
             if (isBusy()) return;
             cShownum.defaultontouchend();
         });
         
-        cShownum = new button(renjuCmddiv, "select", w * 2.66, t, w, h);
+        cShownum = new button(renjuCmddiv, "select", 0, 0, w, h);
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
         cShownum.addOption(2, "显示线路");
         cShownum.addOption(3, "放大棋盘");
         cShownum.addOption(4, "设置棋盘大小");
         cShownum.addOption(5, "设置棋盘坐标");
+        cShownum.addOption(6, "读取按键位置");
+        cShownum.addOption(7, "设置按键位置");
         //cShownum.show();
         cShownum.setText(EMOJI_ROUND_ONE);
         //setShowNum(1);
@@ -1481,31 +1495,27 @@ window.control = (() => {
         cShownum.menu.lis[0].checked = true;
         cShownum.menu.lis[0].innerHTML = cShownum.input[0].text + "  ✔";
         cShownum.setonchange(function(but) {
-            cShownum.setText(EMOJI_ROUND_ONE);
+            but.setText(EMOJI_ROUND_ONE);
             if (isBusy()) return;
-            
-            switch (cShownum.input.value * 1) {
+            setMenuCheckBox(but, but.input.selectedIndex, [0,1,2]);
+            switch (but.input.value * 1) {
                 case 0:
-                    setLis(0, !cShownum.menu.lis[0].checked);
-                    if (cShownum.menu.lis[0].checked) {
+                    if (but.menu.lis[0].checked) {
                         cBd.showNum();
                     }
                     else {
                         cBd.hideNum();
                     }
-                    cBd.isShowNum = cShownum.menu.lis[0].checked;
+                    cBd.isShowNum = but.menu.lis[0].checked;
                     break;
                 case 1:
-                    setLis(1, !cShownum.menu.lis[1].checked);
-                    cBd.isShowFoul = cShownum.menu.lis[1].checked;
+                    cBd.isShowFoul = but.menu.lis[1].checked;
                     break;
                 case 2:
-                    setLis(2, !cShownum.menu.lis[2].checked);
-                    cBd.isShowAutoLine = cShownum.menu.lis[2].checked;
+                    cBd.isShowAutoLine = but.menu.lis[2].checked;
                     break;
                 case 3:
-                    //setLis(3, !cShownum.menu.lis[3].checked);
-                    scaleCBoard(!cShownum.menu.lis[3].checked, 1);
+                    scaleCBoard(!but.menu.lis[3].checked, 1);
                     break;
                 case 4:
                     cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
@@ -1513,20 +1523,16 @@ window.control = (() => {
                 case 5:
                     coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
                     break;
+                case 6:
+                    cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
+                    break;
+                case 7:
+                    cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
+                    break;
             }
             cBd.autoShow();
         
-            function setLis(idx, checked) {
-                cShownum.menu.lis[idx].checked = checked;
-                if (cShownum.menu.lis[idx].checked) {
-                    cShownum.menu.lis[idx].innerHTML = cShownum.input[idx].text + "  ✔";
-                }
-                else {
-                    cShownum.menu.lis[idx].innerHTML = cShownum.input[idx].text;
-                }
-            }
-        
-            //cShownum.setText(getShowNum()?EMOJI_ROUND_ONE :EMOJI_ROUND_BLACK);
+            //but.setText(getShowNum()?EMOJI_ROUND_ONE :EMOJI_ROUND_BLACK);
         });
         cBd.onScale = function(){
             if(this.scale==1){
@@ -1537,7 +1543,21 @@ window.control = (() => {
                 cShownum.menu.lis[3].checked = true;
                 cShownum.menu.lis[3].innerHTML = cShownum.input[3].text + "  ✔";
             }
-        }
+        };
+        cBd.onSetSize = function(){
+            cBoardSizeMenu.input.selectedIndex = this.size - 6;
+            setMenuRadio(cBoardSizeMenu, cBoardSizeMenu.input.selectedIndex);
+            viewport1.scrollTop();
+        };
+        cBd.onSetCoordinate = function(){
+            coordinateMenu.input.selectedIndex = this.coordinateType;
+            setMenuRadio(coordinateMenu, coordinateMenu.input.selectedIndex);
+            viewport1.scrollTop();
+        };
+        onLoadCmdSettings = function(){
+            setMenuRadio(cLoadRenjuSettingsMenu, renjuCmdSettings.idx);
+            viewport1.scrollTop();
+        };
         scaleCBoard = function (isScale, timer = "now"){
             if(isScale){
                 if(playModel != MODEL_LINE_EDIT &&
@@ -1549,7 +1569,7 @@ window.control = (() => {
             else{
                 cBd.setScale(1, timer);
             }
-        }
+        };
     
         setShowNum = function(shownum) {
             cShownum.menu.lis[0].checked = !!shownum;
@@ -1564,8 +1584,7 @@ window.control = (() => {
             return cShownum.menu.lis[0].checked;
         };
 
-        cHelp = new button(renjuCmddiv, "button", w * 3.99, t, w, h);
-        cHelp.show();
+        cHelp = new button(renjuCmddiv, "button", 0, 0, w, h);
         cHelp.setColor("black");
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
@@ -1573,9 +1592,274 @@ window.control = (() => {
             window.open("./help/renjuhelp/renjuhelp.html", "helpWindow");
         });
         
+        let topButtons = [
+                cShareWhite,
+                cShare,
+                cShownumTop,
+                cHelp],
+            downButtons = [
+                cStart,
+                cPrevious,
+                cNext,
+                cEnd,
+                cMoveL,
+                cMoveR,
+                cMoveT,
+                cMoveB,
+                cFlipY,
+                cCW,
+                cCleLb,
+                cNewGame,
+                cInputcode,
+                cOutputcode,
+                cLoadImg,
+                cCutImage,
+                cAutoadd,
+                cAddblack,
+                cAddwhite,
+                cNextone,
+                cLba,
+                cLbb,
+                cLABC,
+                cResetnum,
+                cLbc,
+                cLbd,
+                cLbColor,
+                cPrintVCF,
+                cSelBlack,
+                cSelWhite,
+                cFindPoint,
+                cFindVCF];
+                
+        for (let i = 0; i < 9; i++) {  // set positions
+            if (i === 0) {
+                if (dw < dh) {
+                    t = 0 - cBd.width - h * 2.5;
+                    setTop(parentNode.offsetTop + t)
+                }
+                else {
+                    t = 0;
+                    setTop(0);
+                }
+            }
+            else if (i === 1) {
+                if (dw < dh)
+                    t = 0;
+                else
+                    t += h * 1.5;
+            }
+            else {
+                t += h * 1.5;
+            }
+            for (let j = 0; j < 4; j++) {
+                renjuCmdSettings.positions.push({
+                    left: w * j * 1.33,
+                    top: t
+                });
+            }
+        }
+        renjuCmdSettings.defaultButtons = dw < dh ? topButtons.concat(downButtons) : downButtons.concat(topButtons);
         
-        t = t + h * 1.5;
+        renjuCmdSettings.ButtonsIdx[0] = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35];
+        renjuCmdSettings.ButtonsIdx[1] = [0,1,2,3,4,5,6,7,12,13,14,15,20,21,22,23,24,25,26,27];
+        renjuCmdSettings.ButtonsIdx[2] = [0,1,2,3,4,5,6,7,12,13,14,15,20,21,22,23,24,25,26,27,16,17,18,19];
+        renjuCmdSettings.ButtonsIdx[3] = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,21,22,23,24,25,26,27,16,17,18,19];
+        renjuCmdSettings.ButtonsIdx[4] = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,32,33,34,35,20,21,22,23,24,25,26,27,28,29,30,31,16,17,18,19];
+        renjuCmdSettings.ButtonsIdx[5] = [0,1,2,3,4,5,6,7,12,13,14,15];
+        
+        renjuCmdSettings.idx = 0;
+    
+        moveButtons(renjuCmdSettings);
+        
+        editButtons = (() => {
+            const VIEW = document.createElement("div"),
+                IFRAME = document.createElement("div"),
+                TITLE = document.createElement("div"),
+                CLOSE_BUTTON = document.createElement("img");
+            
+            let p = {x:0, y:0},
+                settingsKey = "settingsKey",
+                pSettings,
+                cBdLeft = 0,
+                cBdTop = 0,
+                pButtonsIdx = [],
+                newButtonsIdx = [],
+                Positions = [],
+                DefaultButtons = [];
+            
+            p = {x:cBd.viewBox.offsetLeft, y:cBd.viewBox.offsetTop};
+            cBd.xyObjToPage(p, cBd.viewBox);
+            cBdLeft = p.x;
+            cBdTop = p.y;
+                
+            let s = VIEW.style;
+            s.position = "absolute";
+            s.left = p.x + "px";
+            s.top = p.y + "px";
+            s.width = cBd.viewBox.style.width;
+            s.height = cBd.viewBox.style.height;
+            s.zIndex = 9999;
+            //s.background = "green";
+    
+            IFRAME.setAttribute("id", "exWindow");
+            s = IFRAME.style;
+            s.position = "absolute";
+            s.left = 0;
+            s.top = 0;
+            s.width = cBd.viewBox.style.width;
+            s.height = cBd.viewBox.style.height;
+            s.border = `${sw/260}px solid black`;
+            s.background = "white";
+            VIEW.appendChild(IFRAME);
+            
+            s = TITLE.style;
+            s.color = "black";
+            s.background = "white";
+            s.left = "0px";
+            s.top = "0px";
+            s.width = "100%";
+            s.textAlign = "center";
+            s.fontSize = ~~(cBd.width/25) + "px";
+            s.lineHeight = ~~(cBd.width/10) + "px";
+            IFRAME.appendChild(TITLE);
+            TITLE.innerHTML = "点击添加按键";
 
+            CLOSE_BUTTON.src = "./pic/close.svg";
+            CLOSE_BUTTON.oncontextmenu = (event) => {
+                event.preventDefault();
+            };
+            setButtonClick(CLOSE_BUTTON, close);
+            s = CLOSE_BUTTON.style;
+            let sz = cBd.width / 10 + "px";
+            s.position = "absolute";
+            s.left = cBd.width - parseInt(sz) + "px";
+            s.top = "0px";
+            s.width = sz;
+            s.height = sz;
+            s.opacity = "0.5";
+            s.backgroundColor = "#c0c0c0";
+            VIEW.appendChild(CLOSE_BUTTON);
+            
+            let divs = [];
+            for(let i=0; i<50; i++){
+                divs[i] = document.createElement("div");
+            }
+            
+            function close(){
+                VIEW.setAttribute("class", "hideEXWindow");
+                VIEW.parentNode && setTimeout(() => VIEW.parentNode.removeChild(VIEW), 350);
+                msgbox("是否保存更改?","保存",undefined,"取消",undefined)
+                .then(function(rt) {
+                    if(rt==window.MSG_ENTER){ // save change
+                        pButtonsIdx.length = 0;
+                        for(let i=0; i<newButtonsIdx.length; i++){
+                            pButtonsIdx[i] = newButtonsIdx[i];
+                        }
+                    }
+                    saveCmdSettings(settingsKey, pSettings);
+                    loadCmdSettings(settingsKey, pSettings);
+                    //showButtons(pButtonsIdx, Positions, DefaultButtons);
+                })
+                .then(function(){
+                    let checkSettingButton = false
+                    for(let i=0; i<pButtonsIdx.length; i++){
+                        if(DefaultButtons[pButtonsIdx[i]]==cShownumTop){
+                            checkSettingButton = true;
+                            break;
+                        }
+                    }
+                    !checkSettingButton && msgbox("你隐藏了设置按钮，还能长按棋盘弹出设置");
+                })
+            }
+            
+            function showDiv(left, top, div, but){
+                let divStyle = div.style,
+                    buttonStyle = but.button.style,
+                    buttonDivStyle = but.div.style;
+                divStyle.position = buttonStyle.position;
+                divStyle.padding = buttonStyle.padding;
+                divStyle.zIndex = buttonStyle.zIndex;
+                divStyle.margin = buttonStyle.margin;
+                divStyle.borderRadius = buttonStyle.borderRadius;
+                divStyle.outline = buttonStyle.outline;
+                divStyle.textAlign = buttonStyle.textAlign;
+                divStyle.lineHeight = buttonStyle.lineHeight;
+                divStyle.backgroundColor = buttonStyle.backgroundColor;
+                divStyle.fontSize = buttonStyle.fontSize;
+                divStyle.color = buttonStyle.color;
+                divStyle.opacity = buttonStyle.opacity;
+                
+                divStyle.top = top + "px";
+                divStyle.left = left + "px";
+                divStyle.width = buttonDivStyle.width;
+                divStyle.height = buttonDivStyle.height;
+                divStyle.borderStyle = buttonDivStyle.borderStyle;
+                divStyle.borderWidth = buttonDivStyle.borderWidth;
+                divStyle.borderColor = buttonDivStyle.borderColor;
+                
+                div.innerHTML = but.text;
+                //log(`${divStyle.left}, ${divStyle.top}`)
+                IFRAME.appendChild(div);
+            }
+            
+            function hideDiv(div){
+                div.parentNode && div.parentNode.removeChild(div);
+            }
+            
+            function hideAllDiv(){
+                for(let i=0; i<divs.length; i++){
+                    hideDiv(divs[i]);
+                }
+            }
+            
+            function showButton(position, button) {
+                button.move(position.left, position.top);
+            }
+            
+            function hideAllButton(buttons) {
+                for (let i = 0; i < buttons.length; i++) {
+                    buttons[i].hide();
+                }
+            }
+            /*
+            function showButtons(buttonsIdx, positions, defaultButtons) {
+                hideAllButton(defaultButtons);
+                for (let i = 0; i < buttonsIdx.length; i++) {
+                    showButton(positions[i], defaultButtons[buttonsIdx[i]]);
+                }
+            }
+            */
+            return function(key, settings){
+                let positions = settings.positions,
+                    defaultButtons = settings.defaultButtons,
+                    buttonsIdx = settings.ButtonsIdx[settings.idx],
+                    p = {x:renjuCmddiv.offsetLeft, y:renjuCmddiv.offsetTop};
+                cBd.xyObjToPage(p, renjuCmddiv.parentNode);
+                let paddingLeft = p.x - cBdLeft,
+                    paddingTop = ~~(CLOSE_BUTTON.offsetTop + parseInt(CLOSE_BUTTON.style.height) * 1.5);
+                settingsKey = key;
+                pSettings = settings;
+                pButtonsIdx = buttonsIdx;
+                newButtonsIdx = [];
+                Positions  = positions;
+                DefaultButtons = defaultButtons;
+                hideAllButton(defaultButtons);
+                hideAllDiv();
+                VIEW.setAttribute("class", "showEXWindow");
+                document.body.appendChild(VIEW);
+                for(let i=0; i<defaultButtons.length; i++){
+                    let left = paddingLeft + parseInt(positions[i].left),
+                        top = paddingTop + ~~(i / 4) * parseInt(defaultButtons[i].height) * 1.5;
+                    showDiv(left, top, divs[i], defaultButtons[i]);
+                    setButtonClick(divs[i],function(){
+                        hideDiv(divs[i]);
+                        showButton(positions[newButtonsIdx.length], defaultButtons[i]);
+                        newButtonsIdx.push(i);
+                    });
+                }
+            }
+        })();
+        
         exWindow = (() => {
 
             const EX_WINDOW = document.createElement("div");
@@ -1857,9 +2141,6 @@ window.control = (() => {
         cCleAll.setontouchend(function() {
             for (let i = 15 * 15 - 1; i >= 0; i--) cBd.P[i].cle();
         });
-
-
-        t = t + h * 1.5;
 
         cAddblack2 = new button(imgCmdDiv, "radio", w * 0, t, w, h);
         cAddblack2.show();
@@ -2851,7 +3132,7 @@ window.control = (() => {
 
 
     function isBusy(loading = true) {
-        let busy = !cLoadImg.div.parentNode || !cCutImage.div.parentNode || !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
+        let busy =  cCancelFind.div.parentNode; //!cLoadImg.div.parentNode || !cCutImage.div.parentNode || !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
         if (busy && loading) window._loading.open("busy", 1600);
         return busy;
     }
@@ -3050,5 +3331,6 @@ window.control = (() => {
             setCheckerBoardEvent(cBoard.canvas, bodyDiv);
         },
         "getEXWindow": () => { return exWindow },
+        "loadCmdSettings": loadCmdSettings
     };
 })();

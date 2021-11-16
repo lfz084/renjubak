@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["button"] = "v1111.03";
+self.SCRIPT_VERSIONS["button"] = "v1116.00";
 window.button = (() => {
 
     "use strict";
@@ -285,7 +285,7 @@ window.button = (() => {
             li.onclick = function() {
                 if (isCancelMenuClick()) return;
                 if (event) event.cancelBubble = true;
-                input.value = i;
+                //input.value = i; //system auto set
                 input.selectedIndex = i; // input.onchange();
                 //alert(`onclick  ,i=${i}, idx=${input.selectedIndex}`);
                 if (muWindow.parentNode) {
@@ -330,7 +330,6 @@ window.button = (() => {
 
                 //log(`type=${this.type}, menuWindow=${this.menuWindow }, parentNode=${this.menuWindow.parentNode}`)
                 if (this.type != "select" || !this.menuWindow || isMenuShow) return;
-                //this.input.value = -1;
                 //this.input.selectedIndex = -1;
                 let muWindow = this.menuWindow;
                 let s = muWindow.style;
@@ -594,12 +593,13 @@ window.button = (() => {
 
     //  移动和设置大小
     button.prototype.move = function(left, top, width, height) {
-
+        let text = this.text;
         this.left = left == null ? this.left : parseInt(left) + "px";
         this.top = top == null ? this.top : parseInt(top) + "px";
         this.width = width == null ? this.width : parseInt(width) + "px";
         this.height = height == null ? this.height : parseInt(height) + "px";
         this.show();
+        text && this.setText(text);
     };
 
 
@@ -667,7 +667,7 @@ window.button = (() => {
         this.change = function() {
             log(`new setonchange......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultonchange()) callback(but);
+            if (but.defaultonchange()) callback(but)
         }
         if (this.type == "select" || this.type == "file") {
             this.input.removeEventListener("change", fun, true);

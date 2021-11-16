@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1111.03";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1116.00";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -324,7 +324,9 @@ window.checkerBoard = (function() {
         this.gW = 0; //棋盘格子宽度,浮点数
         this.gH = 0; //棋盘格子高度,浮点数
         this.size = 15;
+        this.onSetSize = function(){};
         this.coordinateType = COORDINATE_ALL;
+        this.onSetCoordinate = function(){};
         this.SLTX = this.size;
         this.SLTY = this.SLTX; //默认是15×15棋盘;
         this.searchIdx = []; // 记录正在计算的点
@@ -3850,6 +3852,7 @@ window.checkerBoard = (function() {
         this.coordinateType = coordinateType;
         this.printCheckerBoard();
         this.refreshCheckerBoard();
+        this.onSetCoordinate.call(this);
     }
 
 
@@ -3959,6 +3962,7 @@ window.checkerBoard = (function() {
         else if(this.oldCode){
             this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
         }
+        this.onSetSize.call(this);
     }
     
     
