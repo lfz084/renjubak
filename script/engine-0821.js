@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1116.00";
+self.SCRIPT_VERSIONS["engine"] = "v1116.02";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -31,14 +31,12 @@ window.engine = (() => {
     let works = [];
     let cObjVCF = {}; //{ arr: [], winMoves: [], color: 0, time: false }; // 保存VCF分支
     let cBd;
-    let cVCF;
-    let cFP;
-    let cCancel;
-    let labelTime;
     let closeMsg;
     let closeNoSleep;
     let saveContinueData;
-    let save = {};
+    let labelTime = null;
+    let save = function() {};
+    let setBusy = function() {};
     let tree = null;
     let oldTree = null;
     let oldCode = "";
@@ -79,18 +77,13 @@ window.engine = (() => {
     }
 
     function setCmd() { //calculate start
-        cFP.hide();
-        cVCF.hide();
+        setBusy(true);
         removeTree();
         cleThreePoints();
         cBd.showFoul(false, true);
         cBd.removeMarkArrow("all");
         cBd.removeMarkLine("all");
         cBd.removeMarkLine(cBd.autoLines);
-        let but = cVCF;
-        cCancel.move(but.left, but.top, but.width, but.height);
-        let lb = cFP;
-        labelTime.move(lb.left, lb.top, lb.width, lb.height, ~~(parseInt(lb.width) / 4) + "px");
         openNoSleep();
         tree = null;
         treeKeyMap = new Map();
@@ -124,12 +117,7 @@ window.engine = (() => {
             threePoints = null;
             isShowLabel = true;
         }
-        cFP.show();
-        cFP.setText("找点");
-        cVCF.show();
-        cVCF.setText("解题");
-        cCancel.hide();
-        labelTime.close();
+        setBusy(false);
         closeMsg();
         saveContinueData();
         closeNoSleep();
@@ -198,15 +186,13 @@ window.engine = (() => {
             maxThread = param.maxThread;
             cObjVCF = param.cObjVCF;
             cBd = param.cBoard;
-            cVCF = param.cFindVCF;
-            cFP = param.cFindPoint;
-            cCancel = param.cCancelFind;
-            labelTime = param.lbTime;
             msg = param.msg;
             closeMsg = param.closeMsg;
             closeNoSleep = param.closeNoSleep;
             saveContinueData = param.saveContinueData;
+            labelTime = param.lbTime;
             save = param.saveData;
+            setBusy = param.setBusy;
         },
         postMsg: (cmd, param) => {
             //log(cmd);

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1116.00";
+self.SCRIPT_VERSIONS["control"] = "v1116.02";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -95,6 +95,10 @@ window.control = (() => {
         getShowNum = function() {},
         editButtons = function() {},
         
+        blackwhiteRadioChecked = function() {},
+        markRadioChecked = function() {},
+        autoblackwhiteRadioChecked = function() {},
+        
         cMenu = null,
 
         cLockImg = null,
@@ -172,8 +176,8 @@ window.control = (() => {
             renjuCmddiv.appendChild(this.div);
             this.startTime = new Date().getTime();
             this.div.style.position = "absolute";
-            this.div.style.left = left;
-            this.div.style.top = top;
+            this.div.style.left = left + "px";
+            this.div.style.top = top + "px";
             this.div.style.height = parseInt(height) + "px";
             this.div.style.width = parseInt(width) + "px";
             this.div.style.fontFamily = "mHeiTi";
@@ -222,29 +226,29 @@ window.control = (() => {
         }
         return false;
     }
-
-    function cSelChecked(chk) {
-        cSelBlack.setChecked(0);
-        cSelWhite.setChecked(0);
-        chk.setChecked(1);
-    }
-
-    function nSetChecked(chk) {
-        cLba.setChecked(0);
-        cLbb.setChecked(0);
-        cLbc.setChecked(0);
-        cLbd.setChecked(0);
-        cAutoadd.setChecked(0);
-        cAddblack.setChecked(0);
-        cAddwhite.setChecked(0);
-        cLABC.setChecked(0);
-        chk.setChecked(1);
-        if (chk != cLABC) {
-            playModel = MODEL_RENJU;
-            cBd.drawLineEnd();
+    
+    function setRadio(buttons = [], callback = ()=>{}) {
+        function check(but) {
+            for (let i = buttons.length - 1; i >= 0; i--)
+                buttons[i].setChecked(false);
+            but.setChecked(true);
+            callback.call(but);
         }
+        for(let i=buttons.length-1; i>=0; i--)
+            buttons[i].setontouchend(check);
+        return check;
     }
-
+    
+    function setChecked(buttons = [], callback = () => {}) {
+        function check(but) {
+            but.setChecked(!but.checked);
+            callback();
+        }
+        for (let i = buttons.length - 1; i >= 0; i--)
+            buttons[i].setontouchend(check);
+        return check;
+    }
+    
     function newGame() {
         engine.postMsg("cancelFind");
         let h1 = ~~(cBd.width);
@@ -258,8 +262,8 @@ window.control = (() => {
         cBd.drawLineEnd();
         cObjVCF.arr = [];
         playModel = MODEL_RENJU;
-        cSelChecked(cSelBlack);
-        nSetChecked(cAutoadd);
+        blackwhiteRadioChecked(cSelBlack);
+        markRadioChecked(cAutoadd);
         parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
         parentNode.appendChild(renjuCmddiv);
         if (imgCmdDiv.parentNode) imgCmdDiv.parentNode.removeChild(imgCmdDiv);
@@ -547,10 +551,11 @@ window.control = (() => {
     
     
     function moveButtons(settings){
+        
         let buts =settings.defaultButtons,
             positions = settings.positions,
             buttonsIdx = settings.ButtonsIdx[settings.idx];
-        for(let i=0; i<positions.length; i++){
+        for(let i=0; i<buts.length; i++){
             buts[i].hide();
         }
         
@@ -785,6 +790,7 @@ window.control = (() => {
             cBd.canvas.height = h1;
             cBd.canvas.style.width = w1 + "px";
             cBd.canvas.style.height = h1 + "px";
+            cBd.viewBox.style.height = cBd.canvas.style.height;
             let ctx = cBd.canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
             parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
@@ -885,24 +891,12 @@ window.control = (() => {
         cAutoadd = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAutoadd.setText(` ${EMOJI_ROUND_BLACK_WHITE} 棋`);
         cAutoadd.setChecked(1);
-        cAutoadd.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cAutoadd);
-        });
 
         cAddblack = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddblack.setText(` ${EMOJI_ROUND_BLACK} 棋`);
-        cAddblack.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cAddblack);
-        });
 
         cAddwhite = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddwhite.setText(` ${EMOJI_ROUND} 棋`);
-        cAddwhite.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cAddwhite);
-        });
 
         cNextone = new button(renjuCmddiv, "button", 0, 0, w, h);
         cNextone.setColor("black");
@@ -915,17 +909,9 @@ window.control = (() => {
 
         cLba = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLba.setText(` ${EMOJI_SQUARE_BLACK} `);
-        cLba.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cLba);
-        });
 
         cLbb = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbb.setText(` ${EMOJI_ROUND_DOUBLE} `);
-        cLbb.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cLbb);
-        });
 
         cLABC = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cLABC.addOption(-1, "︾");
@@ -939,10 +925,7 @@ window.control = (() => {
         cLABC.addOption(7, `${EMOJI_FOUL} 标记`);
 
         cLABC.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cLABC.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cLABC);
-        });
+        
         cLABC.setonchange(function() {
             changePlayModel();
             if (cLABC.input.value == 5) {
@@ -1011,17 +994,9 @@ window.control = (() => {
 
         cLbc = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbc.setText(` ${EMOJI_TRIANGLE_BLACK} `);
-        cLbc.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cLbc);
-        });
 
         cLbd = new button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbd.setText(` ${EMOJI_FORK} `);
-        cLbd.setontouchend(function() {
-            //if (isBusy()) return;
-            nSetChecked(cLbd);
-        });
 
         cLbColor = new button(renjuCmddiv, "select", 0, 0, w, h);
         //cLbColor.addOption(-1, "︾");
@@ -1097,18 +1072,10 @@ window.control = (() => {
         cSelBlack = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelBlack.setText("黑先");
         cSelBlack.setChecked(1);
-        cSelBlack.setontouchend(function() {
-            //if (isBusy()) return;
-            cSelChecked(cSelBlack);
-        });
 
         cSelWhite = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelWhite.setText("白先");
-        cSelWhite.setontouchend(function() {
-            //if (isBusy()) return;
-            cSelChecked(cSelWhite);
-        });
-
+        
         const CALCULATE = 1;
         let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
@@ -1429,16 +1396,16 @@ window.control = (() => {
                     cBd.setCoordinate(but.input.value*1);
                 }),
             cBoardSizeMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
-                [6,"6路棋盘",
-                7,"7路棋盘",
-                8,"8路棋盘",
-                9,"9路棋盘",
-                10,"10路棋盘",
-                11,"11路棋盘",
-                12,"12路棋盘",
-                13,"13路棋盘",
+                [15,"15路棋盘",
                 14,"14路棋盘",
-                15,"15路棋盘"],
+                13,"13路棋盘",
+                12,"12路棋盘",
+                11,"11路棋盘",
+                10,"10路棋盘",
+                9,"9路棋盘",
+                8,"8路棋盘",
+                7,"7路棋盘",
+                6,"6路棋盘",],
                 function(but){
                     if (isBusy()) return;
                     //newGame();
@@ -1545,7 +1512,7 @@ window.control = (() => {
             }
         };
         cBd.onSetSize = function(){
-            cBoardSizeMenu.input.selectedIndex = this.size - 6;
+            cBoardSizeMenu.input.selectedIndex = 15 - this.size;
             setMenuRadio(cBoardSizeMenu, cBoardSizeMenu.input.selectedIndex);
             viewport1.scrollTop();
         };
@@ -1590,6 +1557,16 @@ window.control = (() => {
         cHelp.setontouchend(function() {
             if (isBusy()) return;
             window.open("./help/renjuhelp/renjuhelp.html", "helpWindow");
+        });
+        
+        // blackwhiteRadioChecked = function
+        blackwhiteRadioChecked = setRadio([cSelBlack,cSelWhite]);
+
+        markRadioChecked = setRadio([cLba, cLbb, cLbc, cLbd, cAutoadd, cAddblack, cAddwhite, cLABC], function() {
+            if (this != cLABC) {
+                playModel = MODEL_RENJU;
+                cBd.drawLineEnd();
+            }
         });
         
         let topButtons = [
@@ -1881,8 +1858,8 @@ window.control = (() => {
             cBd.xyObjToPage(p, renjuCmddiv);
 
             const FONT_SIZE = sw / 28 + "px";
-            const EX_WINDOW_LEFT = parseInt(cFlipY.left) + p.x + "px";
-            const EX_WINDOW_TOP = parseInt(cFlipY.top) + p.y + "px";
+            const EX_WINDOW_LEFT = parseInt(renjuCmdSettings.positions[8].left) + p.x + "px";
+            const EX_WINDOW_TOP = parseInt(renjuCmdSettings.positions[8].top) + p.y + "px";
             const EX_WINDOW_WIDTH = w * 5 - parseInt(FONT_SIZE) * 2 + "px";
             const EX_WINDOW_HEIGHT = h * 1.5 * 7 + h + "px";
 
@@ -1961,7 +1938,9 @@ window.control = (() => {
                 "closeMsg": closeMsg,
                 "closeNoSleep": closeNoSleep,
                 "saveContinueData": appData.saveContinueData,
+                "lbTime": lbTime,
                 "saveData": appData.saveData,
+                "setBusy": setBusy
             });
 
             RenjuLib.reset({
@@ -2029,6 +2008,7 @@ window.control = (() => {
             cBd.canvas.height = h1;
             cBd.canvas.style.width = w1 + "px";
             cBd.canvas.style.height = h1 + "px";
+            cBd.viewBox.style.height = cBd.canvas.style.height;
             let ctx = cBd.canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h, w1 / 13, h1 / 13, w1 / 13 * 11, h1 / 13 * 11);
             parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
@@ -2077,8 +2057,9 @@ window.control = (() => {
                     h = parseInt(cBd.canvas.height);
                     cBd.canvas.height = parseInt(cBd.width) * h2 / w2;
                     cBd.canvas.style.height = parseInt(cBd.width) * h2 / w2 + "px";
+                    cBd.viewBox.style.height = cBd.canvas.style.height;
                     ctx.drawImage(cBd.cutImg, 0, 0, w2, h2, 0, 0, parseInt(cBd.width), parseInt(cBd.width) * h2 / w2);
-
+                    
                     cBd.XL = parseInt(cBd.canvas.width) / 13;
                     cBd.XR = parseInt(cBd.canvas.width) / 13 * 12;
                     cBd.YT = parseInt(cBd.canvas.height) / 13;
@@ -2114,7 +2095,7 @@ window.control = (() => {
             else {
                 cBd.autoPut();
             }
-            nSetChecked(cAddwhite2);
+            autoblackwhiteRadioChecked(cAddwhite2);
         });
 
 
@@ -2141,19 +2122,21 @@ window.control = (() => {
         cCleAll.setontouchend(function() {
             for (let i = 15 * 15 - 1; i >= 0; i--) cBd.P[i].cle();
         });
+        
+        t += h*1.5;
 
         cAddblack2 = new button(imgCmdDiv, "radio", w * 0, t, w, h);
         cAddblack2.show();
         cAddblack2.setText(` ${EMOJI_ROUND_BLACK} 棋`);
         cAddblack2.setontouchend(function() {
-            nSetChecked(cAddblack2);
+            autoblackwhiteRadioChecked(cAddblack2);
         });
 
         cAddwhite2 = new button(imgCmdDiv, "radio", w * 1.33, t, w, h);
         cAddwhite2.show();
         cAddwhite2.setText(` ${EMOJI_ROUND} 棋`);
         cAddwhite2.setontouchend(function() {
-            nSetChecked(cAddwhite2);
+            autoblackwhiteRadioChecked(cAddwhite2);
         });
 
 
@@ -2204,15 +2187,42 @@ window.control = (() => {
         });
 
 
-        function nSetChecked(chk) {
-            cAddblack2.setChecked(0);
-            cAddwhite2.setChecked(0);
-            chk.setChecked(1);
+        autoblackwhiteRadioChecked = setRadio([cAddblack2,cAddwhite2],function(){
             if (!cLockImg.checked) {
                 lockImg();
                 cLockImg.setChecked(1);
             }
+        });
+        
+        
+        for (let i = 0; i < 9; i++) {  // set positions
+            if (i === 0) t = 0;
+            else t += h * 1.5;
+            for (let j = 0; j < 4; j++) {
+                imgCmdSettings.positions.push({
+                    left: w * j * 1.33,
+                    top: t
+                });
+            }
         }
+        imgCmdSettings.defaultButtons = [
+            cLockImg,
+            cAutoPut,
+            cPutBoard,
+            cCleAll,
+            cAddblack2,
+            cAddwhite2,
+            cSLTX,
+            cSLTY
+            ];
+        
+        imgCmdSettings.ButtonsIdx[0] = [0,1,2,3,4,5,6,7];
+        
+        imgCmdSettings.idx = 0;
+    
+        moveButtons(imgCmdSettings);
+        
+         
     }
 
     let setCheckerBoardEvent = (() => {
@@ -3139,18 +3149,14 @@ window.control = (() => {
 
     function setBusy(value) {
         if (value) {
-            cLoadImg.hide();
-            cCutImage.hide();
-            let but = cCutImage;
-            cCancelFind.move(but.left, but.top, but.width, but.height);
-            let lb = cLoadImg;
-            lbTime.move(lb.left, lb.top, lb.width, lb.height, ~~(parseInt(lb.width) / 4) + "px");
+            for(let i=renjuCmdSettings.ButtonsIdx[renjuCmdSettings.idx].length - 1; i >= 0; i--){
+                renjuCmdSettings.defaultButtons[renjuCmdSettings.ButtonsIdx[renjuCmdSettings.idx][i]].hide();
+            }
+            cCancelFind.move(renjuCmdSettings.positions[6].left, renjuCmdSettings.positions[6].top, renjuCmdSettings.defaultButtons[0].width, renjuCmdSettings.defaultButtons[0].height);
+            lbTime.move(renjuCmdSettings.positions[5].left, renjuCmdSettings.positions[5].top, renjuCmdSettings.defaultButtons[0].width, renjuCmdSettings.defaultButtons[0].height, ~~(parseInt(renjuCmdSettings.defaultButtons[0].width) / 4) + "px");
         }
         else {
-            cLoadImg.show();
-            cLoadImg.setText("打开");
-            cCutImage.show();
-            cCutImage.setText("保存");
+            moveButtons(renjuCmdSettings);
             cCancelFind.hide();
             lbTime.close()
         }

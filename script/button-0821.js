@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["button"] = "v1116.00";
+self.SCRIPT_VERSIONS["button"] = "v1116.02";
 window.button = (() => {
 
     "use strict";
@@ -667,7 +667,7 @@ window.button = (() => {
         this.change = function() {
             log(`new setonchange......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultonchange()) callback(but)
+            if (but.defaultonchange()) callback.call(this, but)
         }
         if (this.type == "select" || this.type == "file") {
             this.input.removeEventListener("change", fun, true);
@@ -688,7 +688,7 @@ window.button = (() => {
         this.touchstart = function() {
             log(`new touchstart......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultontouchstart()) callback(but);
+            if (but.defaultontouchstart()) callback.call(this, but);
         }
         if (this.type == "select" || this.type == "file") {
             this.div.removeEventListener("touchstart", fun, true);
@@ -712,7 +712,7 @@ window.button = (() => {
         this.touchend = function() {
             log(`new touchend......`)
             if (event) event.cancelBubble = true;
-            if (but.defaultontouchend()) callback(but);
+            if (but.defaultontouchend()) callback.call(this, but);
         }
         if (this.type == "select" || this.type == "file") {
             this.div.removeEventListener("touchend", fun, true);

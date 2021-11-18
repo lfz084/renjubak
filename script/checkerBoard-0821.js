@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1116.00";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1116.02";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -2911,6 +2911,8 @@ window.checkerBoard = (function() {
     
     
     checkerBoard.prototype.printEmptyCBoard = function(){
+        this.viewBox.style.width = this.width + "px";
+        this.viewBox.style.height = this.height + "px";
         let canvas = this.bakCanvas; // 准备在后台画棋盘
         // 画图之前，设置画布大小
         canvas.width = this.width;
