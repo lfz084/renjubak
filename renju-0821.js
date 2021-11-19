@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1116.02";
+self.SCRIPT_VERSIONS["renju"] = "v1116.03";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -130,7 +130,7 @@ var loadApp = () => { // 按顺序加载应用
         return {
             open: (animaName, _timeout) => { //打开动画
                 if (lock) return;
-                //log("_loading.open")
+                log("_loading.open","warn");
                 if (!WIN_LOADING.parentNode) {
                     ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
                     document.body.appendChild(WIN_LOADING);
@@ -144,7 +144,7 @@ var loadApp = () => { // 按顺序加载应用
             },
             close: () => { //关闭动画
                 if (lock) return;
-                //log("_loading.close")
+                log("_loading.close","warn");
                 if (timer) {
                     clearTimeout(timer);
                 }

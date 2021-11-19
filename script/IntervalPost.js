@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["IntervalPost"] = "v1116.02";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["IntervalPost"] = "v1116.03";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
