@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1116.03";
+self.SCRIPT_VERSIONS["control"] = "v1202.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -28,7 +28,7 @@ window.control = (() => {
     window.blockUnload = function(enable) {
         setTimeout(function() {
             if (isBusy(false) ||
-                (cBd && (cBd.oldCode || cBd.threePoints.arr || (getRenjuSelColor() == cObjVCF.color && bArr(cBd.getPointArray([]), cObjVCF.arr)))) ||
+                (cBd && (cBd.oldCode || cBd.threePoints.arr || (getRenjuSelColor() == cObjVCF.color && bArr(cBd.getArray2D(), cObjVCF.arr)))) ||
                 (RenjuLib && !RenjuLib.isEmpty())
             ) {
                 window.onbeforeunload = function(e) {
@@ -298,13 +298,13 @@ window.control = (() => {
 
     function putBoard(idx) {
         if (idx < 0) return;
-        let arr = cBd.getPointArray([]);
+        let arr = cBd.getArray2D();
         newGame();
         cBd.unpackArray(!idx ? arr : changeCoordinate(arr, idx));
     }
 
     function changeCoordinate(arr, idx) {
-        let nArr = getArr([]);
+        let nArr = getArr2D([]);
         idx = idx || 112;
         let l = 7 - ~~(idx % arr[0].length);
         l = l < 0 ? 0 : l;
@@ -1053,7 +1053,7 @@ window.control = (() => {
             if (isBusy()) return;
             if (but.input.value * 1) {
                 let color = getRenjuSelColor();
-                let arr = cBd.getPointArray([]);
+                let arr = cBd.getArray2D();
                 if (color == cObjVCF.color && bArr(arr, cObjVCF.arr)) {
                     if (cObjVCF.winMoves.length >= but.input.value) {
                         let moves = cObjVCF.winMoves[but.input.value - 1].slice(0, cObjVCF.winMoves[but.input.value - 1].length);
@@ -1115,9 +1115,8 @@ window.control = (() => {
                 return;
             }
             viewport1.resize();
-            let arr = [];
-            cBd.getPointArray(arr);
-            let newarr = getArr([]);
+            let arr = cBd.getArray2D();
+            let newarr = getArr2D([]);
             switch (but.input.value * 1) {
                 case 1:
                     engine.postMsg("vctSelectPoint", {
@@ -1257,8 +1256,7 @@ window.control = (() => {
                 return;
             }
             viewport1.resize();
-            let arr = [];
-            cBd.getPointArray(arr);
+            let arr = cBd.getArray2D();
             switch (but.input.value * 1) {
                 case 1:
                     engine.postMsg("findVCF", {
@@ -1284,14 +1282,14 @@ window.control = (() => {
                     engine.postMsg("isTwoVCF", {
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: getArr([])
+                        newarr: getArr2D([])
                     });
                     break;
                 case 4:
                     engine.postMsg("isSimpleWin", {
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: getArr([]),
+                        newarr: getArr2D([]),
                         num: 4,
                         level: 3
                     });
@@ -1300,14 +1298,14 @@ window.control = (() => {
                     engine.postMsg("isThreeWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: getArr([])
+                        newarr: getArr2D([])
                     });
                     break;
                 case 6:
                     engine.postMsg("isFourWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: getArr([])
+                        newarr: getArr2D([])
                     });
                     break;
                 case 7:
@@ -1729,8 +1727,8 @@ window.control = (() => {
                 VIEW.setAttribute("class", "hideEXWindow");
                 VIEW.parentNode && setTimeout(() => VIEW.parentNode.removeChild(VIEW), 350);
                 msgbox("是否保存更改?", "保存", undefined, "取消", undefined)
-                    .then(function(rt) {
-                        if (rt == window.MSG_ENTER) { // save change
+                    .then(function({butCode}) {
+                        if (butCode == window.MSG_ENTER) { // save change
                             pButtonsIdx.length = 0;
                             for (let i = 0; i < newButtonsIdx.length; i++) {
                                 pButtonsIdx[i] = newButtonsIdx[i];
@@ -2948,7 +2946,7 @@ window.control = (() => {
         if (playModel == MODEL_RENJU || playModel == MODEL_RENLIB) {
             if (idx > -1) {
                 let cmds = getRenjuCmd();
-                let arr = cBd.getPointArray([]);
+                let arr = cBd.getArray2D();
                 if (cBd.oldCode || playModel == MODEL_RENLIB) cmds.type = TYPE_NUMBER;
                 if (cBd.threePoints && cBd.threePoints.arr) {
                     if (cBd.threePoints.index > -1) {

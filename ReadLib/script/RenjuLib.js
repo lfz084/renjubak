@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1116.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1202.00";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -221,7 +221,7 @@ window.RenjuLib = (() => {
             nextMove = { idx: -1, level: -2 },
             level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
         //log(data)
-        if (!isEqual(data.position, cBoard.getPointArray())) return;
+        if (!isEqual(data.position, cBoard.getArray2D())) return;
         console.info(data.nodes)
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {

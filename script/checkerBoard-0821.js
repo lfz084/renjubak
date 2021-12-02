@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1116.03";
+self.SCRIPT_VERSIONS["checkerBoard"] = "v1202.00";
 window.checkerBoard = (function() {
 
     "use strict";
@@ -487,7 +487,7 @@ window.checkerBoard = (function() {
 
     checkerBoard.prototype.addTree = function(tree) {
         let code = this.getCode();
-        let arr = this.getPointArray([]);
+        let arr = this.getArray2D();
 
         this.oldFirstColor = this.firstColor; // 在this.cle 前面
         this.cle();
@@ -546,7 +546,7 @@ window.checkerBoard = (function() {
             }
             else if (playmodel == control.libModel) {
                 log("autoshow")
-                RenjuLib.showBranchs({ path: cBoard.MS.slice(0, cBoard.MSindex + 1), position: cBoard.getPointArray() });
+                RenjuLib.showBranchs({ path: cBoard.MS.slice(0, cBoard.MSindex + 1), position: cBoard.getArray2D() });
                 cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
             }
             else {
@@ -571,7 +571,7 @@ window.checkerBoard = (function() {
 
 
     // 将传入的二维数组顺时针90°
-    checkerBoard.prototype.CW = function(arrobj, count) {
+    checkerBoard.prototype.CW = function(arr2D, count) {
 
         let x;
         let y;
@@ -583,7 +583,7 @@ window.checkerBoard = (function() {
 
             arrs[y] = [];
             for (x = 0; x < this.SLTX; x++) {
-                arrs[y][x] = arrobj[y][x];
+                arrs[y][x] = arr2D[y][x];
             }
 
         }
@@ -592,7 +592,7 @@ window.checkerBoard = (function() {
 
             for (x = 0; x < this.SLTX; x++) {
                 nx = this.SLTX - 1 - x;
-                arrobj[y][x] = arrs[nx][y];
+                arr2D[y][x] = arrs[nx][y];
             }
 
         }
@@ -602,7 +602,7 @@ window.checkerBoard = (function() {
 
 
     // 将传入的二维数组逆时针90°
-    checkerBoard.prototype.CCW = function(arrobj, count) {
+    checkerBoard.prototype.CCW = function(arr2D, count) {
 
         let x;
         let y;
@@ -614,7 +614,7 @@ window.checkerBoard = (function() {
 
             arrs[y] = [];
             for (x = 0; x < this.SLTX; x++) {
-                arrs[y][x] = arrobj[y][x];
+                arrs[y][x] = arr2D[y][x];
             }
 
         }
@@ -623,12 +623,74 @@ window.checkerBoard = (function() {
 
             for (x = 0; x < this.SLTX; x++) {
                 ny = this.SLTY - 1 - y;
-                arrobj[y][x] = arrs[x][ny];
+                arr2D[y][x] = arrs[x][ny];
             }
 
         }
 
     };
+    
+    
+    
+     // 二维数组上下反转
+    checkerBoard.prototype.flipX = function(arr2D) {
+
+        let x;
+        let y;
+        let nx;
+        let ny;
+
+        let arrs = [];
+        for (y = 0; y < this.SLTY; y++) {
+
+            arrs[y] = [];
+            for (x = 0; x < this.SLTX; x++) {
+                arrs[y][x] = arr2D[y][x];
+            }
+
+        }
+
+        for (y = 0; y < this.SLTY; y++) {
+
+            for (x = 0; x < this.SLTX; x++) {
+                ny = this.SLTY - 1 - y;
+                arr2D[y][x] = arrs[ny][x];
+            }
+
+        }
+
+    };
+
+
+
+    // 二维数组左右翻转
+    checkerBoard.prototype.flipY = function(arr2D) {
+
+        let x;
+        let y;
+        let nx;
+        let ny;
+        // 复制二维数组
+        let arrs = [];
+        for (y = 0; y < this.SLTY; y++) {
+
+            arrs[y] = [];
+            for (x = 0; x < this.SLTX; x++) {
+                arrs[y][x] = arr2D[y][x];
+            }
+
+        }
+        // 翻转
+        for (y = 0; y < this.SLTY; y++) {
+
+            for (x = 0; x < this.SLTX; x++) {
+                nx = this.SLTX - 1 - x;
+                arr2D[y][x] = arrs[y][nx];
+            }
+
+        }
+    };
+
 
 
 
@@ -1538,67 +1600,6 @@ window.checkerBoard = (function() {
 
 
 
-    // 二维数组上下反转
-    checkerBoard.prototype.flipX = function(arrobj) {
-
-        let x;
-        let y;
-        let nx;
-        let ny;
-
-        let arrs = [];
-        for (y = 0; y < this.SLTY; y++) {
-
-            arrs[y] = [];
-            for (x = 0; x < this.SLTX; x++) {
-                arrs[y][x] = arrobj[y][x];
-            }
-
-        }
-
-        for (y = 0; y < this.SLTY; y++) {
-
-            for (x = 0; x < this.SLTX; x++) {
-                ny = this.SLTY - 1 - y;
-                arrobj[y][x] = arrs[ny][x];
-            }
-
-        }
-
-    };
-
-
-
-    // 二维数组左右翻转
-    checkerBoard.prototype.flipY = function(arrobj) {
-
-        let x;
-        let y;
-        let nx;
-        let ny;
-        // 复制二维数组
-        let arrs = [];
-        for (y = 0; y < this.SLTY; y++) {
-
-            arrs[y] = [];
-            for (x = 0; x < this.SLTX; x++) {
-                arrs[y][x] = arrobj[y][x];
-            }
-
-        }
-        // 翻转
-        for (y = 0; y < this.SLTY; y++) {
-
-            for (x = 0; x < this.SLTX; x++) {
-                nx = this.SLTX - 1 - x;
-                arrobj[y][x] = arrs[y][nx];
-            }
-
-        }
-    };
-
-
-
     checkerBoard.prototype.getAutoColor = function(msIndex) {
 
         let i = msIndex > -1 ? msIndex : this.MSindex;
@@ -1662,37 +1663,57 @@ window.checkerBoard = (function() {
             }
         }
 
-        return ml.toUpperCase();
+        return ml.toUpperCase();ll
     };
 
 
 
     // 传一个一维 空数组进来转成二维数组，把当前棋盘MS记录写入数组
-    checkerBoard.prototype.getPointArray = function(arrobj = []) {
+    checkerBoard.prototype.getArray2D = function() {
+        let arr2D = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
 
-        arrobj.length = this.SLTY;
-        for (let i = 0; i < arrobj.length; i++) {
-            arrobj[i] = [];
-        }
-
-        for(let x = 0; x < this.SLTX; x++){
-            for(let y = 0; y < this.SLTY; y++){
+        for(let x = 0; x < 15; x++){
+            for(let y = 0; y < 15; y++){
                 let idx = x + y * 15;
-                if (this.P[idx].type == TYPE_NUMBER) {
-                    arrobj[y][x] = this.P[idx].color == this.bNumColor ? 1 : 2;
-                }
-                else if (this.P[idx].type == TYPE_WHITE) {
-                    arrobj[y][x] = 2;
-                }
-                else if (this.P[idx].type == TYPE_BLACK) {
-                    arrobj[y][x] = 1;
-                }
-                else {
-                    arrobj[y][x] = 0;
+                switch (this.P[idx].type) {
+                    case TYPE_NUMBER:
+                        arr2D[y][x] = this.P[idx].color == this.bNumColor ? 1 : 2;
+                        break;
+                    case TYPE_WHITE:
+                        arr2D[y][x] = 2;
+                        break;
+                    case TYPE_BLACK:
+                        arr2D[y][x] = 1;
+                        break;
+                    default:
+                        arr2D[y][x] = 0;
                 }
             }
         }
-        return arrobj;
+        return arr2D;
+    };
+    
+    
+    
+    checkerBoard.prototype.getArray = function() {
+        let arr = new Array(225 + 1);
+        for(let idx=0; idx<225; idx++){
+            switch(this.P[idx].type) {
+                case TYPE_NUMBER:
+                    arr[idx] = this.P[idx].color == this.bNumColor ? 1 : 2;
+                    break;
+                case TYPE_WHITE:
+                    arr[idx] = 2;
+                    break;
+                case TYPE_BLACK:
+                    arr[idx] = 1;
+                    break;
+                default:
+                    arr[idx] = 0;
+            }
+        }
+        arr[225] = -1;
+        return arr;
     };
 
 
@@ -1700,7 +1721,7 @@ window.checkerBoard = (function() {
     // 自动识别图片中的棋子
     checkerBoard.prototype.autoPut = function() {
 
-        let arr = getArr([], 0, this.SLTX, this.SLTY);
+        let arr = getArr2D([], 0, this.SLTX, this.SLTY);
         let max = 0;
         let min = 255;
         let test = false;
@@ -4123,23 +4144,23 @@ window.checkerBoard = (function() {
             this.removeMarkLine(i, this.autoLines);
         }
         if (display) {
-            let arr = this.getPointArray([]);
-            let newarr = getArr([]);
+            let arr = this.getArray2D();
+            let newarr = getArr2D([]);
             findThreePoint(arr, 1, newarr, ONLY_FREE);
             addLines.call(this, 1, arr, newarr, 3);
-            newarr = getArr([]);
+            newarr = getArr2D([]);
             findThreePoint(arr, 2, newarr, ONLY_FREE);
             addLines.call(this, 2, arr, newarr, 3);
-            newarr = getArr([]);
+            newarr = getArr2D([]);
             findFourPoint(arr, 1, newarr);
             addLines.call(this, 1, arr, newarr, 4);
-            newarr = getArr([]);
+            newarr = getArr2D([]);
             findFourPoint(arr, 2, newarr);
             addLines.call(this, 2, arr, newarr, 4);
-            newarr = getArr([]);
+            newarr = getArr2D([]);
             findFivePoint(arr, 1, newarr);
             addLines.call(this, 1, arr, newarr, 5);
-            newarr = getArr([]);
+            newarr = getArr2D([]);
             findFivePoint(arr, 2, newarr);
             addLines.call(this, 2, arr, newarr, 5);
         }
@@ -4180,8 +4201,8 @@ window.checkerBoard = (function() {
             }
         }
         if (display) {
-            let arr = cBoard.getPointArray(getArr([]));
-            let newarr = getArr([]);
+            let arr = cBoard.getArray2D();
+            let newarr = getArr2D([]);
             this.size==15 && findFoulPoint(arr, newarr);
             for (let y = 0; y < this.SLTY; y++) {
                 for (let x = 0; x < this.SLTX; x++) {
@@ -4527,8 +4548,8 @@ window.checkerBoard = (function() {
                 MSindex = this.MSindex,
                 moveNodes = this.tree.moveNodes,
                 moveNodesIndex = this.tree.moveNodesIndex,
-                arr = this.getPointArray(getArr([])),
-                newarr = getArr([]);
+                arr = this.getArray2D(),
+                newarr = getArr2D([]);
             //log(nodes, "info")
             this.unpacking = true;
             this.cleLb("all");
@@ -4622,7 +4643,7 @@ window.checkerBoard = (function() {
 
 
     // 解析二维数组后，摆棋
-    checkerBoard.prototype.unpackArray = function(arrobj, isShowNum) {
+    checkerBoard.prototype.unpackArray = function(arr2D, isShowNum) {
 
         let bNarr = [];
         let wNarr = [];
@@ -4632,7 +4653,7 @@ window.checkerBoard = (function() {
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
                 let idx = x + 15 * y;
-                switch (String(arrobj[y][x])) {
+                switch (String(arr2D[y][x])) {
                     case "0":
                         this.clePoint(idx);
                         break;

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1116.03";
+self.SCRIPT_VERSIONS["renju"] = "v1202.00";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -62,7 +62,7 @@ var loadApp = () => { // 按顺序加载应用
     window.vConsole = null; // 调试工具
     window.openNoSleep = () => {}; //打开防休眠
     window.closeNoSleep = () => {}; //关闭防休眠
-    let cBoard = null; //棋盘对象
+    window.cBoard = null; //棋盘对象
 
     window.alert = function(name) { //更改默认标题
         const IFRAME = document.createElement('IFRAME');
@@ -130,7 +130,7 @@ var loadApp = () => { // 按顺序加载应用
         return {
             open: (animaName, _timeout) => { //打开动画
                 if (lock) return;
-                log("_loading.open","warn");
+                //log("_loading.open","warn");
                 if (!WIN_LOADING.parentNode) {
                     ANIMA.innerHTML = ANIMA_NANE[animaName] || black_white;
                     document.body.appendChild(WIN_LOADING);
@@ -144,7 +144,7 @@ var loadApp = () => { // 按顺序加载应用
             },
             close: () => { //关闭动画
                 if (lock) return;
-                log("_loading.close","warn");
+                //log("_loading.close","warn");
                 if (timer) {
                     clearTimeout(timer);
                 }
@@ -317,7 +317,7 @@ var loadApp = () => { // 按顺序加载应用
         for(let i=0; i<keys.length; i++){
             ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.APP_VERSION));
         }
-        return Promise.all(ps)
+        return Promise.all(ps.slice(0,29))
             .then(()=>{
                 log("---更新离线缓存--->ok", "warn");
                 return Promise.resolve();
@@ -665,8 +665,8 @@ var loadApp = () => { // 按顺序加载应用
                 .then(version => {
                     if (version.isNewVersion)
                         return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
-                            .then((num) => {
-                                num == 1 && window.reloadApp();
+                            .then(({butCode}) => {
+                                butCode == MSG_ENTER && window.reloadApp();
                                 return Promise.resolve(version.version);
                             })
                             .catch(()=>{
@@ -931,6 +931,7 @@ var loadApp = () => { // 按顺序加载应用
         })
         .then(() => {
             window._loading.text("99%");
+            removeMlog();
             resetNoSleep();
             const UI = createUI();
             window.viewport1.resize();

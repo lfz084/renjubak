@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1116.03";
+self.SCRIPT_VERSIONS["engine"] = "v1202.00";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -206,7 +206,7 @@ window.engine = (() => {
                     callback();
                 },
                 "findThreePoint": () => {
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     addThreePoint(oldThreePoints);
                     findThreePoint(param.arr, param.color, newarr, param.ftype);
                     cBd.printArray(newarr, "③", param.ftype == ONLY_FREE ? "red" : "black");
@@ -214,42 +214,42 @@ window.engine = (() => {
                 },
                 "findTTPoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findTTPoint(param.arr, 1, newarr);
                     cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFFPoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findFFPoint(param.arr, param.color, newarr);
                     cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findSixPoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findSixPoint(param.arr, param.color, newarr, param.setnum);
                     cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFoulPoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findFoulPoint(param.arr, newarr, param.setnum);
                     cBd.printArray(newarr, EMOJI_FOUL, "red");
                     callback();
                 },
                 "findFivePoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findFivePoint(param.arr, param.color, newarr, param.setnum);
                     cBd.printArray(newarr, "⑤", "red");
                     callback();
                 },
                 "findFourPoint": () => {
                     addThreePoint(oldThreePoints);
-                    let newarr = getArr([]);
+                    let newarr = getArr2D([]);
                     findFourPoint(param.arr, param.color, newarr, param.ftype);
                     cBd.printArray(newarr, "④", param.ftype == ONLY_FREE ? "red" : "black");
                     callback();
@@ -282,7 +282,7 @@ window.engine = (() => {
                     work.postMessage({ "cmd": "getLevelB", parameter: param });
                     let continuefun = () => {
                         if (lvl.level >= 4) {
-                            let newarr = getArr([]);
+                            let newarr = getArr2D([]);
                             findFivePoint(param.arr, param.color, newarr, param.setnum);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
@@ -329,7 +329,7 @@ window.engine = (() => {
                     work.postMessage({ "cmd": "getLevelB", parameter: param });
                     let continuefun = () => {
                         if (lvl.level >= 4) {
-                            let newarr = getArr([]);
+                            let newarr = getArr2D([]);
                             findFivePoint(param.arr, 1, newarr);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();

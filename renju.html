@@ -45,7 +45,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1116.03";
+        window.APP_VERSION = "v1202.00";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -73,12 +73,12 @@
             '404_html': "./404.html",
             renju_html: "./renju.html",
             renju_js: "./renju-0821.js",
-            "close.svg": "./pic/close.svg",
-            "chevron-left.svg": "./pic/chevron-left.svg",
-            "close-white.svg": "./pic/close-white.svg",
-            "docusign-white.svg": "./pic/docusign-white.svg",
-            "icon.png": "https://lfz084.github.io/icon.png",
-            "icon.ico": "https://lfz084.github.io/icon.ico",
+            "close_svg": "./pic/close.svg",
+            "chevron-left_svg": "./pic/chevron-left.svg",
+            "close-white_svg": "./pic/close-white.svg",
+            "docusign-white_svg": "./pic/docusign-white.svg",
+            "icon_png": "https://lfz084.github.io/icon.png",
+            "icon_ico": "https://lfz084.github.io/icon.ico",
 
             IntervalPost: "script/IntervalPost.js",
             RenjuTree: "script/RenjuTree.js",
@@ -127,8 +127,9 @@
             "v1111.06": ["增加棋盘放大功能",
                          "长按棋盘边框放大/缩小",
                          "增加退出提示,防止误操作丢失数据"],
-            "v1116.03": ["增加设置按钮位置功能",
-                         "你可以保存5个按钮布局"]
+            "v1116.05": ["增加设置按钮位置功能",
+                         "你可以保存5个按钮布局"],
+            "v1202.00": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
@@ -253,6 +254,9 @@
                 }, 15 * 1000)
             }
         })()
+        let removeMlog = function() {
+            if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
+        }
 
         function strLen(str, len, char = " ", align = "left") {
             if (align == "left") {
@@ -304,7 +308,17 @@
                     return loadApp()
                 })
                 .then(() => {
-                    if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
+                    return;
+                    let str = idxLists2String();
+
+                    msg(str, "input")
+                        .then(() => {
+                            //testEv(testMoveIdx);
+                            //testEv(testIfSwitch, 1000);
+                            //testEv(testGetPower);
+                            //testEv(testIsLineFive, 3000);
+                        })
+
                 })
                 .catch((err) => {
                     const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
@@ -318,6 +332,239 @@
                         })
                 })
         };
+    </script>
+    <script>
+        /*
+        let idxLists;
+        
+        function createEmptyLists() {
+            let outIdx = 225,
+                idxLists = [];
+            for (let i = 0; i < 2; i++) {
+                idxLists[i] = [];
+                for (let j = 0; j < 15; j++) {
+                    idxLists[i][j] = [];
+                    for (let k = 0; k < 15 + 8; k++) {
+                        idxLists[i][j][k] = outIdx;
+                    }
+                }
+            }
+
+            for (let i = 2; i < 4; i++) {
+                idxLists[i] = [];
+                for (let j = 0; j < 15; j++) {
+                    idxLists[i][j] = [];
+                    for (let k = 0; k < 1 + 8 + j; k++) {
+                        idxLists[i][j][k] = outIdx;
+                    }
+                }
+                for (let j = 13; j >= 0; j--) {
+                    idxLists[i][28 - j] = [];
+                    for (let k = 0; k < 1 + 8 + j; k++) {
+                        idxLists[i][28 - j][k] = outIdx;
+                    }
+                }
+            }
+            return idxLists;
+        }
+
+        function createIdxLists(cBoardSize) {
+            let List,
+                idxLists = createEmptyLists();
+
+            for (let y = 0; y < 15; y++) {
+                List = idxLists[0][y];
+                for (let x = 0; x < 15; x++) {
+                    if (x < cBoardSize && y < cBoardSize) List[4 + x] = x + y * 15;
+                }
+            }
+
+            for (let x = 0; x < 15; x++) {
+                List = idxLists[1][x];
+                for (let y = 0; y < 15; y++) {
+                    if (x < cBoardSize && y < cBoardSize) List[4 + y] = x + y * 15;
+                }
+            }
+
+            for (let i = 0; i < 15; i++) { // x + (14-y) = i, y = x + 14 - i
+                List = idxLists[2][i];
+                for (let j = 0; j <= i; j++) {
+                    let x = 0 + j,
+                        y = x + 14 - i;
+                    if (x < cBoardSize && y < cBoardSize) List[4 + j] = x + y * 15;
+                }
+            }
+            for (let i = 13; i >= 0; i--) { // (14-x) + y = i, y = i - 14 + x;
+                List = idxLists[2][14 + 14 - i];
+                for (let j = 0; j <= i; j++) {
+                    let x = 14 - i + j,
+                        y = i - 14 + x;
+                    if (x < cBoardSize && y < cBoardSize) List[4 + j] = x + y * 15;
+                }
+            }
+
+            for (let i = 0; i < 15; i++) { // x + y = i, y = i - x
+                List = idxLists[3][i];
+                for (let j = 0; j <= i; j++) {
+                    let x = i - j,
+                        y = i - x;
+                    if (x < cBoardSize && y < cBoardSize) List[4 + j] = x + y * 15;
+                }
+            }
+            for (let i = 13; i >= 0; i--) { // (14-x)+(14-y) = i, y = 28 - i - x
+                List = idxLists[3][14 + 14 - i];
+                for (let j = 0; j <= i; j++) {
+                    let x = 14 - j,
+                        y = 28 - i - x;
+                    if (x < cBoardSize && y < cBoardSize) List[4 + j] = x + y * 15;
+                }
+            }
+            return idxLists;
+        }
+
+        function idxLists2String() {
+            let str = "";
+            for (let i = 0; i < idxLists.length; i++) {
+                str += `\n${i}:`;
+                for (let j = 0; j < idxLists[i].length; j++) {
+                    str += `\n[${idxLists[i][j]}],`;
+                }
+            }
+            return str;
+        }
+
+
+        function moveIdx(idx, move = 0, direction = 0) {
+            try{
+            let x = getX(idx),
+                y = getY(idx);
+            switch (direction) {
+                case 0:
+                    return idxLists[direction][y][4 + x + move];
+                    break;
+                case 1:
+                    return idxLists[direction][x][4 + y + move];
+                    break;
+                case 2:
+                    return idxLists[direction][x + 14 - y][x + 14 - y < 15 ? 4 + x + move : 4 + y + move];
+                    break;
+                case 3:
+                    return idxLists[direction][x + y][x + y < 15 ? 4 + y + move : 18 - x + move];
+                    break;
+            }
+            }
+            catch(err){
+                alert(err.Stack || err.message)
+            }
+        }
+        
+        function getArrayValue(idx, move, direction, arr){
+            return arr[moveIdx(idx, move, direction)];
+        }
+        */
+
+        function testEv(fun, time = 5000) {
+            setTimeout(() => {
+                input()
+                    .then(fun)
+                    .then(() => {
+                        testEv(fun, time);
+                    })
+            }, time)
+        }
+
+        function testIf(value, value1) {
+            if (value == 0) {
+                return false;
+            }
+            else if (value == 1 && 1 == value1) {
+                return true;
+            }
+            else if (value == 2 && 2 == value1) {
+                return true;
+            }
+            else if (value == -1) {
+                return false;
+            }
+            return false;
+        }
+
+        function testSwitch(value, value1) {
+            switch (value) {
+                case 0:
+                    return false;
+                    break;
+                case 1:
+                    if (1 == value1) return true;
+                    else return false;
+                    break;
+                case 2:
+                    if (2 == value1) return true;
+                    else return false;
+                    break;
+                case -1:
+                    return false;
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        function testIfSwitch({ butCode, inputStr }) {
+            inputStr = parseInt(inputStr);
+            let startTime;
+            startTime = new Date().getTime();
+            for (let i = 0; i < inputStr; i++) {
+                testSwitch(1, -1)
+            }
+            alert("testSwitch:" + (new Date().getTime() - startTime));
+
+            startTime = new Date().getTime();
+            for (let i = 0; i < inputStr; i++) {
+                testIf(1, -1)
+            }
+            alert("testIf:" + (new Date().getTime() - startTime));
+        }
+
+        function testGetPower({ butCode, inputStr }) {
+            let ps = [];
+            for (let direction = 0; direction < 4; direction++) {
+                ps.push(getPower(inputStr * 1, cBoard.getArray(), direction, 1));
+            }
+            alert(`${ps}`);
+        }
+        
+        function testIsLineFive({ butCode, inputStr }) {
+            let ts = [];
+            for(let direction=0; direction<4; direction++){
+                ts.push(testLineFour(inputStr*1, direction, 1, cBoard.getArray()))
+            }
+            alert(`[${ts}]`);
+        }
+
+        function input() {
+            return msg({
+                text: "112",
+                type: "input",
+                lineNum: 1,
+                butNum: 1
+            })
+        }
+
+        function testMoveIdx({ butCode, inputStr }) {
+            let str = "";
+            inputStr = parseInt(inputStr);
+
+            for (let direction = 0; direction < 4; direction++) {
+                str += "[";
+                for (let move = -4; move < 5; move++) {
+                    //str += `${moveIdx(inputStr, move, direction)},`;
+                    str += `${getArrValue(inputStr, move, direction, cBoard.getArray())},`;
+                }
+                str += "]\n";
+            }
+            alert(str)
+        }
     </script>
 </body>
 

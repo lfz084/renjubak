@@ -1,6 +1,6 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1116.03";
-const DIRECTIONS = ["x", "y", "d", "u"]; // 米字线
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.00";
+const DIRECTIONS = [0,1,2,3] //[→, ↓, ↘, ↗]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
 const ONLY_VCF = 1; // 只找做VCF点
@@ -155,7 +155,7 @@ function copyMoves(moves) {
 
 // 复制一个arr二维数组, 
 function copyArr(arr, arr2) {
-    getArr(arr);
+    getArr2D(arr);
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
             arr[y][x] = arr2[y][x];
@@ -630,7 +630,7 @@ function isFF(x, y, color, arr) {
         if (color == 2) { // 判断白棋
             for (let i = 0; i > -5; i--) {
                 let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
-                //if (DIRECTIONS[j]=="u") //console.log (pw)
+                
                 if (pw == 4) {
                     if (isLineFF(x, y, DIRECTIONS[j], color, arr)) {
                         count = 2;
@@ -1389,8 +1389,8 @@ function getBlockFour(x, y, arr) {
 function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
     let nx = -1;
     let ny = -1;
-    switch (String(direction)) {
-        case "x":
+    switch (direction) {
+        case 0:
             for (let i = 0; i < maxLen; i++) {
                 if (x + i + move > 14 || x + i + move < 0) break;
                 if (arr[y][x + i + move] == 0) {
@@ -1400,7 +1400,7 @@ function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 }
             }
             break;
-        case "y":
+        case 1:
             for (let i = 0; i < maxLen; i++) {
                 if (y + i + move > 14 || y + i + move < 0) break;
                 if (arr[y + i + move][x] == 0) {
@@ -1410,7 +1410,7 @@ function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 }
             }
             break;
-        case "d":
+        case 2:
             for (let i = 0; i < maxLen; i++) {
                 if (y + i + move > 14 || y + i + move < 0 || x + i + move > 14 || x + i + move < 0) break;
                 if (arr[y + i + move][x + i + move] == 0) {
@@ -1420,7 +1420,7 @@ function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 }
             }
             break;
-        case "u":
+        case 3:
             for (let i = 0; i < maxLen; i++) {
                 if (y - i - move < 0 || y - i - move > 14 || x + i + move > 14 || x + i + move < 0) break;
                 if (arr[y - i - move][x + i + move] == 0) {
@@ -1444,8 +1444,8 @@ function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
     let count = 0;
     let thisColor = color;
     let nColor = thisColor == 1 ? 2 : 1;
-    switch (String(direction)) {
-        case "x":
+    switch (direction) {
+        case 0:
             for (let i = 0; i < maxLen; i++) {
                 if ((x + i + move) < 0 || (x + i + move) > 14) {
                     return -1;
@@ -1454,7 +1454,7 @@ function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 if (arr[y][x + i + move] == thisColor) count++;
             }
             break;
-        case "y":
+        case 1:
             for (let i = 0; i < maxLen; i++) {
                 if ((y + i + move) < 0 || (y + i + move) > 14) {
                     return -1;
@@ -1463,7 +1463,7 @@ function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 if (arr[y + i + move][x] == nColor) return -1;
             }
             break;
-        case "d":
+        case 2:
             for (let i = 0; i < maxLen; i++) {
                 if ((y + i + move) < 0 || (y + i + move) > 14 || (x + i + move) < 0 || (x + i + move) > 14) {
                     return -1;
@@ -1472,7 +1472,7 @@ function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
                 if (arr[y + i + move][x + i + move] == nColor) return -1;
             }
             break;
-        case "u":
+        case 3:
             for (let i = 0; i < maxLen; i++) {
                 if ((y - i - move) < 0 || (y - i - move) > 14 || (x + i + move) < 0 || (x + i + move) > 14) {
                     return -1;
@@ -1521,7 +1521,7 @@ function getKey(arr) {
 
 
 
-function getArr(arr, setnum = 0, x = 15, y = 15) {
+function getArr2D(arr, setnum = 0, x = 15, y = 15) {
     let j = 0;
     arr.length = 0;
     for (j = 0; j < y; j++) {
@@ -1574,7 +1574,7 @@ function getLevel(arr, color, num) {
         level: 0,
         p: null
     };
-    let newarr = getArr([]);
+    let newarr = getArr2D([]);
     if (findFivePoint(arr, color, newarr)) {
         let count = 0;
         let p;
@@ -1696,17 +1696,17 @@ function setArr(idx, arr, value) {
 */
 
 function changeX(x, move, direction) {
-    switch (String(direction)) {
-        case "x":
+    switch (direction) {
+        case 0:
             return x + move;
             break;
-        case "y":
+        case 1:
             return x;
             break;
-        case "d":
+        case 2:
             return x + move;
             break;
-        case "u":
+        case 3:
             return x + move;
             break;
     }
@@ -1715,17 +1715,17 @@ function changeX(x, move, direction) {
 
 
 function changeY(y, move, direction) {
-    switch (String(direction)) {
-        case "x":
+    switch (direction) {
+        case 0:
             return y;
             break;
-        case "y":
+        case 1:
             return y + move;
             break;
-        case "d":
+        case 2:
             return y + move;
             break;
-        case "u":
+        case 3:
             return y - move;
             break;
     }
@@ -1758,7 +1758,7 @@ function moveIndexToName(moves, maxLength) {
 
 
 function toArr(r, arr) {
-    arr = arr || getArr([]);
+    arr = arr || getArr2D([]);
     if (r.length == 225) {
         for (let y = 0; y < 15; y++) {
             for (let x = 0; x < 15; x++) {
@@ -1786,13 +1786,13 @@ function movesSort(fMoves, fun) {
 
 function findFoulPoint(arr, newarr, setnum) {
     
-    let narr = getArr([]);
+    let narr = getArr2D([]);
     findSixPoint(arr, 1, narr, setnum);
     addFoulPoint(newarr, narr);
-    narr = getArr([]);
+    narr = getArr2D([]);
     findFFPoint(arr, 1, narr, setnum);
     addFoulPoint(newarr, narr);
-    narr = getArr([]);
+    narr = getArr2D([]);
     findTTPoint(arr, 1, narr, setnum);
     addFoulPoint(newarr, narr);
     return newarr;

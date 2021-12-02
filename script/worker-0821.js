@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1116.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.00";
 if (self.importScripts)
     self.importScripts('emoji-0821.js',`Evaluator-0821.js`);
 
@@ -89,7 +89,7 @@ onmessage = function(e) {
         "vctSelectPoint": function() {
             findLevelThreePoint(p.arr, p.color, p.newarr, undefined, undefined, false);
             let fMoves = [];
-            continueFour(p.arr, p.color, 1, fMoves, getArr([]));
+            continueFour(p.arr, p.color, 1, fMoves, getArr2D([]));
             if (fMoves) {
                 for (let i = fMoves.length - 1; i >= 0; i--) {
                     post("wLb", { idx: fMoves[i][0], text: "④", color: "black" });
@@ -314,7 +314,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
                 return nextNode(CONTINUE_VCT) ? 0 : -1;
             }
             let fMoves = []; //  保存先手连续冲四分支
-            continueFour(arr, color, 1, fMoves, getArr([]));
+            continueFour(arr, color, 1, fMoves, getArr2D([]));
             let j;
             for (j = fMoves.length - 1; j >= 0; j--) { // continue find VCT point
                 let x = getX(fMoves[j][0]);
@@ -326,7 +326,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
 
             //mConsole(` fourPoint =  ${getChildNodeIdx(ctnNode)}`);
             let key = getKey(arr);
-            let tPoint = findLevelThreePoint(arr, color, getArr([]), undefined, ctnNode.idx >= 0 ? ctnNode.idx : 112, true, undefined, 4);
+            let tPoint = findLevelThreePoint(arr, color, getArr2D([]), undefined, ctnNode.idx >= 0 ? ctnNode.idx : 112, true, undefined, 4);
             let i;
             let t;
             let leng = tPoint.length;
@@ -694,7 +694,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
 
         let notV;
         let fMoves = []; //  保存先手连续冲四分支
-        continueFour(arr, color == 1 ? 2 : 1, 1, fMoves, getArr([]));
+        continueFour(arr, color == 1 ? 2 : 1, 1, fMoves, getArr2D([]));
         let j;
         for (j = fMoves.length - 2; j >= 0; j--) {
             for (let k = fMoves.length - 1; k > j; k--) {
@@ -1113,7 +1113,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
 
         let moves = vcfMoves;
         let arr = vcfArr;
-        let newarr = getArr([]);
+        let newarr = getArr2D([]);
         let fs = vcfFS;
         let FailMoves = vcfFailMoves;
         let WinMoves = vcfWinMoves;
@@ -1127,14 +1127,14 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
         let ty = 0;
         //首次循环，需要计算对手进攻级别
         if (cfLevel == null) {
-            getArr(newarr);
+            getArr2D(newarr);
             cfLevel = getLevel(arr, nColor);
 
         }
 
         // //console.log(cfLevel.level)
         if (cfLevel.level < 4 && dp <= depth) { //如果对手进攻级别低于  冲4
-            getArr(newarr);
+            getArr2D(newarr);
             if (findFourPoint(arr, color, newarr)) {
 
                 fs.push(-1);
@@ -1473,7 +1473,7 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
         let tx = level.p.x;
         let ty = level.p.y;
         arr[ty][tx] = color == 1 ? 2 : 1;
-        let fPoint = findFFWin(arr, color, getArr([]));
+        let fPoint = findFFWin(arr, color, getArr2D([]));
         isWin = fPoint.length > 0;
         arr[ty][tx] = 0;
         if (isWin && !pass) { //验证对手先手
@@ -1523,7 +1523,7 @@ function isThreeWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                 let tx = getX(bPoint[i]);
                 let ty = getY(bPoint[i]);
                 arr[ty][tx] = color == 1 ? 2 : 1;
-                let fPoint = findFFWin(arr, color, getArr([]));
+                let fPoint = findFFWin(arr, color, getArr2D([]));
                 if (fPoint.length == 0) {
                     isWin = false;
                     nd = node.childNode[node.childNode.length - 1];
@@ -1584,7 +1584,7 @@ function isVCF(color, arr, moves) {
     let l = moves.length;
     let i;
     for (i = 0; i < l; i += 2) {
-        getArr(newarr);
+        getArr2D(newarr);
         let level = getLevel(arr, nColor);
         if (level.level < 4) { // 对方进攻级别小于冲4
             let x = getX(moves[i]);
@@ -1643,7 +1643,7 @@ function isVCF(color, arr, moves) {
     //VCF的最后一手为44级别，如果是五连会出错
     let isV = false;
     if (OV.length == l) {
-        getArr(newarr);
+        getArr2D(newarr);
         let fP = findFivePoint(arr, color, newarr);
         if (fP) {
             if (fP.length >= 2) {
@@ -1687,7 +1687,7 @@ function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
     }
     */
     //mConsole(`__>> idx=${idx}`)
-    if (lvl.level >= 3 || findThreeWin(arr, color, getArr([]), [], VCT).length) {
+    if (lvl.level >= 3 || findThreeWin(arr, color, getArr2D([]), [], VCT).length) {
         if (lvl.level >= 3 && isThreeWinPoint(idx, color, arr, true, undefined, node)) {
             isWin = true;
         }
@@ -1705,7 +1705,7 @@ function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                 node.childNode[0].defaultChildNode = VCT;
                 VCT.parentNode = node.childNode[0];
             }
-            let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr([]), undefined, 3 - 2, true, undefined, true, undefined, true);
+            let newarr = selectPoint(arr, color == 1 ? 2 : 1, getArr2D([]), undefined, 3 - 2, true, undefined, true, undefined, true);
             for (let i = 0; i < 225; i++) { //find blockVCT point
                 if (lvl.level >= 3) break;
                 let tx = pnt.point[i].x;
@@ -1736,13 +1736,13 @@ function isFourWinPoint(idx, color, arr, backstage, pass, node = new Node()) {
                     let cNode = node.childNode[0].childNode;
                     cNode[cNode.length] = new Node(ty * 15 + tx, node.childNode[0]);
                     let nd = cNode[cNode.length - 1];
-                    let fPoint = findFFWin(arr, color, getArr([]));
+                    let fPoint = findFFWin(arr, color, getArr2D([]));
                     if (fPoint.length) {
                         arr[ty][tx] = 0;
                         nd.childNode[0] = new Node(fPoint[0] * 1, nd);
                     }
                     else {
-                        let wp = findThreeWin(arr, color, getArr([]), tWinPoint, nd);
+                        let wp = findThreeWin(arr, color, getArr2D([]), tWinPoint, nd);
                         if (wp.length) {
                             //isWin = true;
                             arr[ty][tx] = 0;
@@ -2079,7 +2079,7 @@ function blockCatchFoul(arr) {
 
     post("showLabel", { text: `开始计算 先手防 ......`, timeout: 2000 });
     let fMoves = []; //  保存先手连续冲四分支
-    continueFour(arr, 1, 6, fMoves, getArr([]));
+    continueFour(arr, 1, 6, fMoves, getArr2D([]));
     movesSort(fMoves, (a, b) => { return a >= b; })
 
     // 分析先手增加防点，(先手直接解禁&先手用白子解禁,必增加防点)
@@ -2682,7 +2682,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
     //冲四方不存在VCF,不验证五连
     let level = getLevel(arr, color == 1 ? 2 : 1);
     if (level.level < 4) {
-        let narr = getArr([]);
+        let narr = getArr2D([]);
         if (findFourPoint(arr, color, narr)) {
             for (let y = 0; y < 15; y++) {
                 for (let x = 0; x < 15; x++) {
@@ -2900,7 +2900,7 @@ function isTwoVCF(idx, color, arr) {
             //处理先手防
             let testCount = 0;
             let fMoves = []; //
-            continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]));
+            continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr2D([]));
             movesSort(fMoves, (a, b) => { return a <= b; });
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
@@ -3176,7 +3176,7 @@ function isTwoVCF(idx, color, arr) {
                 //  保存先手连续冲四分支
                 let cbps = getContinueBlockPoints(arr, color, winMoves, undefined, bPoint);
                 let fMoves = getContinueBlockVCF(arr, color, winMoves, cbps); //
-                //continueFour(arr, color == 1 ? 2 : 1, 3, fMoves, getArr([]));
+                //continueFour(arr, color == 1 ? 2 : 1, 3, fMoves, getArr2D([]));
                 maxCount += fMoves.length;
                 for (let j = fMoves.length - 1; j >= 0; j--) {
                     //post("showLabel", {text:`[${moveIndexToName(moves,20)}]`, timeout:5000});
@@ -3235,7 +3235,7 @@ function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
 
     let fMoves = [];
     cbps = cbps || getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints);
-    continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr([]), undefined, undefined, cbps, [], winMoves);
+    continueFour(arr, color == 1 ? 2 : 1, 6, fMoves, getArr2D([]), undefined, undefined, cbps, [], winMoves);
     let j;
     //if (test) mConsole(`idx=${idx}, leng=${fMoves.length}`)
     //if (test) mConsole(fMoves)
@@ -3281,8 +3281,8 @@ function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
 // 找到先手防 可能经过的点，黑白分开找
 function getContinueBlockPoints(arr, color, winMoves, cbps, blockPoints) {
     let nColor = color == 1 ? 2 : 1;
-    let newarr = cbps ? cbps.nColorArr : getArr([]);
-    let narr = cbps ? cbps.colorArr : getArr([]);
+    let newarr = cbps ? cbps.nColorArr : getArr2D([]);
+    let narr = cbps ? cbps.colorArr : getArr2D([]);
     blockPoints = blockPoints || [];
 
     for (let moveIndex = winMoves.length - 1; moveIndex >= 0; moveIndex--) {
@@ -3832,7 +3832,7 @@ function getBlockVCFPaths(VCF, color, arr, backstage, passFour, idx) {
         //excludeBP(arr, color == 1 ? 2 : 1, bPoint, undefined, undefined, undefined, winMoves);
     }
     let continueFourPath = [];
-    continueFour(arr, color == 1 ? 2 : 1, 9, continueFourPath, getArr([]));
+    continueFour(arr, color == 1 ? 2 : 1, 9, continueFourPath, getArr2D([]));
     movesSort(continueFourPath, (a, b) => { return a <= b; })
 
     return paths.concat(continueFourPath);
@@ -3977,7 +3977,7 @@ function getWinLevelSimple(arr, color, timeout, maxNum, gDepth, node) {
             if (!notWin && gDepth >= 2) { // 没有找到直接共防，继续寻找先手防
                 //处理先手防
                 let fMoves = []; //  保存对手连续冲四分支
-                continueFour(arr, color == 1 ? 2 : 1, maxNum, fMoves, getArr([]));
+                continueFour(arr, color == 1 ? 2 : 1, maxNum, fMoves, getArr2D([]));
                 let j;
                 for (j = fMoves.length - 1; j >= 0; j--) {
                     // 摆棋
@@ -4025,12 +4025,12 @@ function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstag
     if (!level) level = getLevelB(arr, color == 1 ? 2 : 1, timeout, depth);
     if (level.level >= 5) {
         //if (testidx) console.log(5)
-        getArr(newarr, -9999);
+        getArr2D(newarr, -9999);
         return newarr;
     }
     else if (level.level >= 4.5) {
         //if (testidx) console.log(4.5)
-        let narr = getArr([]);
+        let narr = getArr2D([]);
         findFivePoint(arr, color, narr);
         for (let y = 0; y < 15; y++) {
             for (let x = 0; x < 15; x++) {
@@ -4042,7 +4042,7 @@ function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstag
     else if (level.level >= 4) {
         //if (testidx) console.log(4)
         // 对手冲四，选点唯一
-        getArr(newarr, -9999);
+        getArr2D(newarr, -9999);
         // p保存的是成立防点，不会是禁手，如果禁手level==4.5 
         newarr[level.p.y][level.p.x] = 0;
 
@@ -4055,7 +4055,7 @@ function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstag
         mv.push(level.moves);
         //let p = getBlockVCFb(mv, color == 1 ? 2 : 1, arr, true);
         let p = getBlockVCF(mv, color == 1 ? 2 : 1, arr);
-        getArr(newarr, -9999);
+        getArr2D(newarr, -9999);
 
         for (let i = p.length - 1; i >= 0; i--) {
             let x = getX(p[i]);
@@ -4065,8 +4065,8 @@ function selectPoint(arr, color, newarr, timeout = 30000, depth = 1000, backstag
     }
     else { // level.level<3
         //if (testidx) console.log(2)
-        let narr = getArr([]);
-        let narr1 = getArr([]);
+        let narr = getArr2D([]);
+        let narr1 = getArr2D([]);
         findFourPoint(arr, color == 1 ? 2 : 1, narr1, undefined); // 保存对手冲四点
         continueFour(arr, color, num > 4 ? 5 : num, [], narr); //分析连续冲四
         for (let y = 0; y < 15; y++) { // 把 arr 的数据合并到 narr;
