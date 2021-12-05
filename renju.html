@@ -308,15 +308,16 @@
                     return loadApp()
                 })
                 .then(() => {
-                    return;
+return;
                     let str = idxLists2String();
 
                     msg(str, "input")
                         .then(() => {
                             //testEv(testMoveIdx);
+                            //testEv(testGetArrValue);
                             //testEv(testIfSwitch, 1000);
                             //testEv(testGetPower);
-                            //testEv(testIsLineFive, 3000);
+                            testEv(testIsLineFive, 3000);
                         })
 
                 })
@@ -533,13 +534,40 @@
             }
             alert(`${ps}`);
         }
-        
+
         function testIsLineFive({ butCode, inputStr }) {
-            let ts = [];
-            for(let direction=0; direction<4; direction++){
-                ts.push(testLineFour(inputStr*1, direction, 1, cBoard.getArray()))
+            try{
+            let times = [],
+                ts = [],
+                lineInfoStr = [],
+                arr = cBoard.getArray(),
+                lineInfo = new Uint32Array(1),
+                startTime = new Date().getTime();
+            /*for (let i = 0; i < inputStr * 1; i++) {
+                for (let direction = 0; direction < 4; direction++) {
+                    ts[direction] = testLineFour(112, direction, 1, arr, lineInfo);
+                }
             }
-            alert(`[${ts}]`);
+            times[0] = new Date().getTime() - startTime;
+            
+            startTime = new Date().getTime();
+            for (let i = 0; i < inputStr * 1; i++) {*/
+                for (let direction = 0; direction < 4; direction++) {
+                    ts[direction] = testLineThree(112, direction, 1, arr, lineInfo);
+                    let tArr = [];
+                    for(let m=0; m<9; m++){
+                        tArr[m] = 7 & (lineInfo[0] >> m*3);
+                    }
+                    lineInfoStr[direction] = `[${tArr}]`;
+                }
+            /*}
+            times[1] = new Date().getTime() - startTime;
+            alert(`${times.join("\n")}`)*/
+            alert(`[${ts}] \n ${lineInfoStr.join("\n")}`)
+            }
+            catch(err){
+                alert(err.message)
+            }
         }
 
         function input() {
@@ -550,14 +578,29 @@
                 butNum: 1
             })
         }
-
+        
         function testMoveIdx({ butCode, inputStr }) {
+            let startTime = new Date().getTime();
+            
+            inputStr = parseInt(inputStr);
+            for(let i=0; i<inputStr; i++){
+                for(let direction=0; direction<4; direction++){
+                    for(let move=-14; move<15; move++){
+                        moveIdx(112, move, direction);
+                    }
+                }
+            }
+            
+            alert(new Date().getTime() - startTime);
+        }
+
+        function testGetArrValue({ butCode, inputStr }) {
             let str = "";
             inputStr = parseInt(inputStr);
 
             for (let direction = 0; direction < 4; direction++) {
                 str += "[";
-                for (let move = -4; move < 5; move++) {
+                for (let move = -5; move < 6; move++) {
                     //str += `${moveIdx(inputStr, move, direction)},`;
                     str += `${getArrValue(inputStr, move, direction, cBoard.getArray())},`;
                 }

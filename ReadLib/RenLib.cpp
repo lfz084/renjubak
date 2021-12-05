@@ -1059,7 +1059,7 @@ private:
             
         }while(data1 && data2);
         
-        return len<4 ? len : 4;
+        return len;
     }
     
     void addMove(MoveNode* pMove, MoveNode* pNewMove){
