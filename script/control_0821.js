@@ -1516,6 +1516,8 @@ window.control = (() => {
             cBoardSizeMenu.input.selectedIndex = 15 - this.size;
             setMenuRadio(cBoardSizeMenu, cBoardSizeMenu.input.selectedIndex);
             viewport1.scrollTop();
+            setCBoardSize && setCBoardSize.constructor.name=="function" && 
+                setCBoardSize(this.size);
         };
         cBd.onSetCoordinate = function() {
             coordinateMenu.input.selectedIndex = this.coordinateType;
@@ -2967,7 +2969,7 @@ window.control = (() => {
                         }
                         else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playModel == MODEL_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
                             // 添加棋子  wNb(idx,color,showNum)
-                            let isF = cBd.size == 15 ? isFoul(idx % 15, ~~(idx / 15), arr) : false;
+                            let isF = 0 //cBd.size == 15 ? isFoul(idx % 15, ~~(idx / 15), arr) : false;
                             cBd.wNb(idx, "auto", cmds.showNum, undefined, isF);
                         }
                         break;

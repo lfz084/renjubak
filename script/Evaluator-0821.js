@@ -1,10 +1,65 @@
 "use strict";
 if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.00";
-const DIRECTIONS = [0,1,2,3] //[→, ↓, ↘, ↗]; // 米字线
+const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
+const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
 const ONLY_VCF = 1; // 只找做VCF点
 const ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
+
+const GOMOKU_RULES = 1; //无禁
+const RENJU_RULES = 2; //有禁
+
+//--------------- lineInfo ------------------
+
+const FREE = 1; //0b00000001
+const MAX = 14; //0b00001110
+const FOUL = 16; //0b00010000
+const MAX_FREE = 15; //0b00001111
+const FOUL_MAX_FREE = 31; //0b00011111
+const MARK_MOVE = 224; //0b11100000
+const FREE_COUNT = 0x0700; //0b00000111 00000000
+const ADD_FREE_COUNT = 0x800; //0b00001000 00000000
+const MAX_COUNT = 0x7000; //0b01110000 00000000
+const DIRECTION = 0x7000; //0b01110000 00000000
+const ADD_MAX_COUNT = 0x8000; //0b10000000 00000000
+const ZERO = 0;
+const ONE_FREE = 3;
+const ONE_NOFREE = 2;
+const TWO_FREE = 5;
+const TWO_NOFREE = 4;
+const THREE_FREE = 7;
+const THREE_NOFREE = 6;
+const FOUR_FREE = 9;
+const FOUR_NOFREE = 8;
+const LINE_DOUBLE_FOUR = 24;
+const FIVE = 10;
+const SIX = 28;
+const SHORT = 14; //空间不够
+
+const EMPTYLIST = new Array(15);
+
+const LINE_NAME = {
+    1: "活",
+    16: "禁",
+    0: "零",
+    3: "活一",
+    2: "眠一",
+    5: "活二",
+    4: "眠二",
+    7: "活三",
+    6: "眠三",
+    9: "活四",
+    8: "冲四",
+    24: "单线四四禁",
+    10: "五连",
+    28: "长连",
+    14: "空间不够"
+}
+
+let gameRules = RENJU_RULES;
+
+//--------------------  Node  ------------------------
 
 function Node(idx = `-1`, parentNode, childNode = []) {
     this.parentNode = parentNode;
@@ -34,6 +89,17 @@ function movesToNode(moves, node) {
     return node;
 }
 
+//----------------------  cBoardSize  --------------------------
+
+let cBoardSize = 15;
+
+function setCBoardSize(size) {
+    cBoardSize = size;
+    idxLists = createIdxLists(cBoardSize);
+    idxTable = createIdxTable();
+}
+
+//--------------------  aroundPoint  ------------------------
 
 // 设置idx为中心，保存周围点的坐标
 function setAroundPoint(index, point, radius, idx) {
@@ -57,16 +123,20 @@ function setAroundPoint(index, point, radius, idx) {
         under = (y + r) > 14 ? 14 : y + r;
         if (left >= 0) {
             for (let i = top; i <= under; i++) {
-                index[count] = i * 15 + left;
-                point[count] = { x: left, y: i };
-                count += 1;
+                if (i < cBoardSize && left < cBoardSize) {
+                    index[count] = i * 15 + left;
+                    point[count] = { x: left, y: i };
+                    count += 1;
+                }
             }
         }
         if (right < 15) {
             for (let i = top; i <= under; i++) {
-                index[count] = i * 15 + right;
-                point[count] = { x: right, y: i };
-                count += 1;
+                if (i < cBoardSize && right < cBoardSize) {
+                    index[count] = i * 15 + right;
+                    point[count] = { x: right, y: i };
+                    count += 1;
+                }
             }
         }
         // 搜索上下两边;
@@ -76,16 +146,20 @@ function setAroundPoint(index, point, radius, idx) {
         under = y + r;
         if (top >= 0) {
             for (let i = left; i <= right; i++) {
-                index[count] = top * 15 + i;
-                point[count] = { x: i, y: top };
-                count += 1;
+                if (i < cBoardSize && top < cBoardSize) {
+                    index[count] = top * 15 + i;
+                    point[count] = { x: i, y: top };
+                    count += 1;
+                }
             }
         }
         if (under < 15) {
             for (let i = left; i <= right; i++) {
-                index[count] = under * 15 + i;
-                point[count] = { x: i, y: under };
-                count += 1;
+                if (i < cBoardSize && under < cBoardSize) {
+                    index[count] = under * 15 + i;
+                    point[count] = { x: i, y: under };
+                    count += 1;
+                }
             }
         }
         radius[r] = count;
@@ -130,6 +204,7 @@ function aroundFindPoint(arr, idx, radius = 7, continueFourFirst) {
     }
     return P.concat(firstP);
 }
+
 //，保存周围点的坐标
 // 创建二维数组，保存 0-224 个点周围点的坐标信息。
 // 以H8 为例，H8周围的点坐标 保存在 aroundPoint[112]
@@ -141,7 +216,171 @@ for (let i = 0; i < 225; i++) {
     setAroundPoint(aroundPoint[i].index, aroundPoint[i].point, aroundPoint[i].radius, i);
 }
 
+//--------------------- idxLists ---------------------
 
+// 创建空白lists 用来保存阳线，阴线的idx
+function createEmptyLists() {
+    let outIdx = 225,
+        idxLists = new Array(4 * 29 * 43);
+    for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 15; j++) {
+            for (let k = 0; k < 15 + 28; k++) {
+                idxLists[(i * 29 + j) * 43 + k] = outIdx;
+            }
+        }
+    }
+
+    for (let i = 2; i < 4; i++) {
+        for (let j = 0; j < 15; j++) {
+            for (let k = 0; k < 1 + 28 + j; k++) {
+                idxLists[(i * 29 + j) * 43 + k] = outIdx;
+            }
+        }
+        for (let j = 13; j >= 0; j--) {
+            for (let k = 0; k < 1 + 28 + j; k++) {
+                idxLists[(i * 29 + 28 - j) * 43 + k] = outIdx;
+            }
+        }
+    }
+    return idxLists;
+}
+
+//保存棋盘区域内每一条线的idx，每条线按照 line[n] < line[n+1] 排序
+function createIdxLists(cBoardSize) {
+    let List,
+        idxLists = createEmptyLists();
+
+    for (let y = 0; y < 15; y++) {
+        List = y * 43;
+        for (let x = 0; x < 15; x++) {
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + x] = x + y * 15;
+        }
+    }
+
+    for (let x = 0; x < 15; x++) {
+        List = (29 + x) * 43;
+        for (let y = 0; y < 15; y++) {
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + y] = x + y * 15;
+        }
+    }
+
+    for (let i = 0; i < 15; i++) { // x + (14-y) = i, y = x + 14 - i
+        List = (2 * 29 + i) * 43;
+        for (let j = 0; j <= i; j++) {
+            let x = 0 + j,
+                y = x + 14 - i;
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+        }
+    }
+    for (let i = 13; i >= 0; i--) { // (14-x) + y = i, y = i - 14 + x;
+        List = (2 * 29 + 14 + 14 - i) * 43;
+        for (let j = 0; j <= i; j++) {
+            let x = 14 - i + j,
+                y = i - 14 + x;
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+        }
+    }
+
+    for (let i = 0; i < 15; i++) { // x + y = i, y = i - x
+        List = (3 * 29 + i) * 43;
+        for (let j = 0; j <= i; j++) {
+            let x = i - j,
+                y = i - x;
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+        }
+    }
+    for (let i = 13; i >= 0; i--) { // (14-x)+(14-y) = i, y = 28 - i - x
+        List = (3 * 29 + 14 + 14 - i) * 43;
+        for (let j = 0; j <= i; j++) {
+            let x = 14 - j,
+                y = 28 - i - x;
+            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+        }
+    }
+    return idxLists;
+}
+
+function idxLists2String() {
+    let str = "";
+    for (let i = 0; i < 4; i++) {
+        str += `\n${A}:`;
+        for (let j = 0; j < 29; j++) {
+            str += `\n[${idxLists.slice((i*29+j)*43, (i*29+j)*43+43)}],`;
+        }
+    }
+    return str;
+}
+
+let idxLists = createIdxLists(15);
+
+//------------------------- idxTable ----------------------
+
+// 创建索引表，快速读取阳线，阴线idx
+function createIdxTable() {
+    let tb = new Array(225 * 29 * 4);
+    for (let idx = 0; idx < 225; idx++) {
+        for (let move = -14; move < 15; move++) {
+            for (let direction = 0; direction < 4; direction++) {
+                let x = getX(idx),
+                    y = getY(idx);
+                switch (direction) {
+                    case 0:
+                        tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + y) * 43 + 14 + x + move];
+                        break;
+                    case 1:
+                        tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x) * 43 + 14 + y + move];
+                        break;
+                    case 2:
+                        tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + 14 - y) * 43 + (x + 14 - y < 15 ? 14 + x + move : 14 + y + move)];
+                        break;
+                    case 3:
+                        tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + y) * 43 + (x + y < 15 ? 14 + y + move : 28 - x + move)];
+                        break;
+                }
+            }
+        }
+    }
+
+    return tb;
+}
+
+// 按照阳线，阴线读取idx
+function moveIdx(idx, move, direction = 0) {
+    return idxTable[(idx * 29 + move + 14) * 4 + direction]; // 7s
+    /*
+    let x = changeX(getX(idx),move, direction),  // 17s
+        y = changeY(getY(idx),move, direction);
+    
+    if(x<0 || x>cBoardSize || y<0 || y>cBoardSize)
+        return 225;
+    else
+        return y*15 + x;
+    */
+    /*
+    let x = getX(idx),  // 23s
+        y = getY(idx);
+    
+    switch (direction) {
+        case 0:
+            return idxLists[(direction*29 + y)*43 + 14 + x + move];
+            break;
+        case 1:
+            return idxLists[(direction*29 + x)*43 + 14 + y + move];
+            break;
+        case 2:
+            return idxLists[(direction*29 + x + 14 - y)*43 + (x + 14 - y < 15 ? 14 + x + move : 14 + y + move)];
+            break;
+        case 3:
+            return idxLists[(direction*29 + x + y)*43 + (x + y < 15 ? 14 + y + move : 28 - x + move)];
+            break;
+    }
+    */
+}
+
+
+let idxTable = createIdxTable();
+
+//----------------------------------------------------
 
 // 复制一个维数组
 function copyMoves(moves) {
@@ -164,33 +403,6 @@ function copyArr(arr, arr2) {
     return arr;
 }
 
-/*
-// 把hash 数组压缩成 二维数组，减小JSON数据大小
-function compressHash(arrs, hash) {
-  arrs = [];
-  for (let i=0; i<225; i++) {
-    for (let key in hash[i]) {
-      let moves = hash[i][key];
-      for (let j=moves.length-1; j>=0; j--){
-        arrs.push(moves[j]);
-      }
-    }
-  }
-  return arrs;
-}
-
-// 把二维数组解压成 hash数组
-function unCompressHash(hash, arrs) {
-  hash = [];
-  
-  for (let i=arrs.length-1; i>=0; i--) {
-    let idx = arrs[i].length-1;
-    let key = arrs[i][idx];
-  }
-  return hash;
-}
-*/
-
 
 
 
@@ -198,98 +410,21 @@ function unCompressHash(hash, arrs) {
 //x,y是白棋冲四点. 
 function isCatchFoul(x, y, arr) {
 
-    if (arr[y][x] != 0) return false;
-    arr[y][x] = 2;
-    let ch = false;
-    let idx = getBlockFour(x, y, arr);
-    if (idx != -1) {
-        let tx = getX(idx);
-        let ty = getY(idx);
-        if (isFoul(tx, ty, arr)) ch = tx + ty * 15;
-    }
-    arr[y][x] = 0;
-    return ch;
-
 }
-
-function isCatchFoul_Point(point, arr) {
-    return isCatchFoul(point.x, point.y, arr);
-}
-
-function isCatchFoul_Idx(idx, arr) {
-    return isCatchFoul(getX(idx), getY(idx), arr);
-}
-
 
 
 
 // 判断是否，已经五连胜
 function isWin(color, arr) {
 
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
-                if (pw == 5) {
-                    if (color == 2) {
-                        return true;
-                    }
-                    else if (getArrValue(x, y, -1, DIRECTIONS[i], arr) != color) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
 }
+
 
 
 // 不判断对手是否五连
 // 判断是否活四级别胜
 function isFFWin(x, y, color, arr, pass = false) {
-    let win = false;
-    if (isFour(x, y, color, arr, true)) {
-        win = true;
-    }
-    if (color == 2) {
-        if (isFF(x, y, 2, arr) || isCatchFoul(x, y, arr)) {
-            win = true;
-        }
-    }
-    if (win && !pass) {
-        let lvl = getLevel(arr, color == 1 ? 2 : 1);
-        if (lvl.level >= 4) win = false;
-    }
-    return win;
-}
 
-function isFFWin_Point(point, color, arr, pass = false) {
-    return isFFWin(point.x, point.y, color, arr, pass);
-}
-
-function isFFWin_Idx(idx, color, arr, pass = false) {
-    return isFFWin(getX(idx), getY(idx), color, arr, pass);
-}
-
-
-
-// 不会验证x,y是否有棋子
-//判断指定点，是否为禁点
-function isFoul(x, y, arr) {
-    if (arr[y][x] != 0) return false;
-    if (isSix(x, y, 1, arr)) return true;
-    if (isFF(x, y, 1, arr)) return true;
-    if (isTT(x, y, arr)) return true;
-    return false;
-}
-
-function isFoul_Point(point, arr) {
-    return isFoul(point.x, point.y, arr);
-}
-
-function isFoul_Idx(idx, arr) {
-    return isFoul(getX(idx), getY(idx), arr);
 }
 
 
@@ -297,74 +432,14 @@ function isFoul_Idx(idx, arr) {
 // 不会验证x,y是否有棋子
 // 判断 x，y是否长连
 function isSix(x, y, color, arr) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    for (let i = 0; i < 4; i++) { // 分别从4个方向判断
-        if (count < 0 || (color == 2 && count > 0)) break;
-        for (let j = 0; j > -5; j--) { // 分别判断这个点相关的5个 五
-            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
-            if (color == 2) { // 白棋判断
-                if (pw > 5) {
-                    count = 1;
-                    break;
-                }
-                // 五连 否定长连
-                if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color) {
-                    count = -1;
-                    break;
-                }
-            }
-            else {
-                if (pw > 5) {
-                    count = 1;
-                    continue;
-                }
-                if (pw == 5) {
-                    if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == color) {
-                        count = 1;
-                        continue;
-                    }
-                    else { // 五连 否定长连
-                        count = -1;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    arr[y][x] = ov;
-    return count > 0 ? true : false;
-}
 
-function isSix_Point(point, color, arr) {
-    return isSix(point.x, point.y, color, arr);
-}
-
-function isSix_Idx(idx, color, arr) {
-    return isSix(getX(idx), getY(idx), color, arr);
 }
 
 
 
 // 不会验证x,y是否有棋子
 function isLineSix(x, y, direction, color, arr) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    for (let i = -5; i < 1; i++) {
-        let pw = getPower(x, y, arr, direction, color, i);
-        if (pw == 6) { arr[y][x] = ov; return true; }
-    }
-    arr[y][x] = ov;
-    return false;
-}
 
-function isLineSix_Point(point, direction, color, arr) {
-    return isLineSix(point.x, point.y, direction, color, arr);
-}
-
-function isLineSix_Idx(idx, direction, color, arr) {
-    return isLineSix(getX(idx), getY(idx), direction, color, arr);
 }
 
 
@@ -372,248 +447,651 @@ function isLineSix_Idx(idx, direction, color, arr) {
 // 不会验证x,y是否有棋子
 // 判断x,y,点是否五连
 function isFive(x, y, color, arr) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    for (let i = 0; i < 4; i++) {
-        if (count > 0) break;
-        for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
-            if (color == 2) { // 白棋
-                if (pw >= 5) {
-                    count = 1;
-                    break;
-                }
-            }
-            else { //黑棋
-                if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color) {
-                    count = 1;
-                    break;
-                }
-            }
-        }
-    }
-    arr[y][x] = ov;
-    return count > 0 ? true : false;
-}
 
-function isFive_Point(point, color, arr) {
-    return isFive(point.x, point.y, color, arr);
-}
-
-function isFive_Idx(idx, color, arr) {
-    return isFive(getX(idx), getY(idx), color, arr);
 }
 
 
 
 // 不会验证x,y是否有棋子
 function isFour(x, y, color, arr, free, passFoul) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    let isfree = false;
-    for (let i = 0; i < 4; i++) {
-        if (count < 0) break;
-        let isf = false;
-        for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j);
-            if (color == 2) { //白棋
-                if (pw == 4) {
-                    if ((getArrValue(x, y, j, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0) || (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0)) {
-                        isfree = true;
-                    }
-                    count = 1;
-                    continue;
-                }
-                if (pw >= 5) { // 五连排除4
-                    count = -1;
+
+}
+
+
+
+/*
+// return 5 || 0;
+function testLineFive(idx, direction, color, arr) {
+    let rt = 0,
+        ov = arr[idx],
+        emptyCount = 0,
+        colorCount = 0,
+        max = -1;
+    arr[idx] = color;
+    for (let move = -4; move < 5; move++) {
+        let v = getArrValue(idx, move, direction, arr);
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 5) {
+                if (gameRules == GOMOKU_RULES) {
+                    rt = 5;
                     break;
                 }
-            }
-            else { //黑棋
-                if (pw == 4 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
-                    if (isLineFF(x, y, DIRECTIONS[i], color, arr)) {
-                        count = -1;
+                else {
+                    if (color != getArrValue(idx, move - 5, direction, arr) &&
+                        color != getArrValue(idx, move + 1, direction, arr))
+                    {
+                        rt = 5;
                         break;
                     }
-                    else { // 确认是黑 ，4连点
-                        if ((getArrValue(x, y, j, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j + 6, DIRECTIONS[i], arr) != color) || (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 2, DIRECTIONS[i], arr) != color)) {
-                            isfree = true;
-                        }
-                        isf = true;
+                }
+            }
+            v = getArrValue(idx, move - 4, direction, arr);
+            if (v == 0) emptyCount--;
+            else colorCount--;
+        }
+    }
+    arr[idx] = ov;
+    return rt;
+}
+
+
+
+function testLineFourGomoku(idx, direction, color, arr, ftype) {
+    if (0 == getArrValue(idx, -4, direction, arr)) {
+        if (0 == getArrValue(idx, 1, direction, arr))
+            return free;
+        else
+            return normal;
+    }
+    else if (0 == getArrValue(idx, 0, direction, arr)) {
+        if (0 == getArrValue(idx, -1, direction, arr))
+            return free;
+        else
+            return normal;
+    }
+    return normal;
+}
+
+function testLineFourRenju(idx, direction, color, arr, ftype) {
+
+}
+*/
+
+// (long*)lineInfo,  (lineInfo >> 3) & 0b111
+function testLine(idx, direction, color, arr) {
+    let max = -1, // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
+        addFree = 0, // 0 | 1
+        addCount = 0,
+        free = 0, // >= 0
+        count = 0,
+        markMove = 0,
+        emptyCount = 0,
+        colorCount = 0,
+        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
+        ov = arr[idx];
+    arr[idx] = color;
+
+    vs[0] = getArrValue(idx, -5, direction, arr);
+    vs[1] = getArrValue(idx, -4, direction, arr);
+    for (let move = -4; move < 5; move++) {
+        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        let v = vs[move + 5];
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+
+            if (gameRules == RENJU_RULES && color == 1 &&
+                (color == vs[move] || color == vs[move + 6]))
+            {
+                if (colorCount == 5 && colorCount > max) {
+                    max = SIX;
+                    free = 0;
+                    count = 0;
+                    markMove = move;
+                }
+            }
+            else {
+                if (colorCount > max) {
+                    max = colorCount;
+                    addFree = 0;
+                    addCount = 1;
+                    free = 0;
+                    count = 0;
+                    markMove = move;
+                }
+
+                if (colorCount == max) {
+                    if (addCount) count++;
+                    addCount = 0;
+
+                    if (addFree) {
+                        free++;
+                        markMove = move;
                     }
+                    addFree = 1;
                 }
-                if (pw >= 5) { // 五连，长连排除4
-                    count = -1;
-                    break;
-                }
+
             }
 
+            v = vs[move + 1];
+            if (v == 0) {
+                emptyCount--;
+                addCount = 1;
+            }
+            else {
+                colorCount--;
+                addFree = 0;
+            }
         }
-        count = isf ? count + 1 : count;
     }
-    arr[y][x] = ov;
-    if (count == 1 && color == 1) { //黑棋
-        // 禁手排除4
-        // 已经排除所有  44;
-        count = (!passFoul && (isSix(x, y, 1, arr) || isTT(x, y, arr))) ? 0 : 1;
-    }
-    if (free == true) {
-        return (count == 1 && isfree == true) ? true : false;
-    }
-    else if (free == false) {
-        return (count == 1 && isfree == false) ? true : false;
-    }
-    else {
-        return count == 1 ? true : false;
-    }
-}
 
-function isFour_Point(point, color, arr, free, passFoul) {
-    return isFour(point.x, point.y, color, arr, free, passFoul);
-}
+    arr[idx] = ov;
+    max &= 0b111;
+    let lineFoul = max == 6 || max == 4 && count > 1 && !free ? 1 : 0;
 
-function isFour_Idx(idx, color, arr, free, passFoul) {
-    return isFour(getX(idx), getY(idx), color, arr, free, passFoul);
+    return direction << 12 |
+        free << 8 |
+        markMove << 5 |
+        lineFoul << 4 | // set lineFoul
+        max << 1 | // set maxNum
+        (free ? 1 : 0); // set free
 }
 
 
 
-function isLineFive(x, y, direction, color, arr) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    for (let j = 0; j > -5; j--) {
-        let pw = getPower(x, y, arr, direction, color, j);
-        if (color == 2) { // 白棋
-            if (pw >= 5) {
-                count = 1;
+function testLineFoul(idx, direction, color, arr) {
+    let max = 0, // 0 | 3 | 4 | 5 | SIX
+        addFree = 0, // 0 | 1
+        addCount = 0,
+        free = 0, // >= 0
+        count = 0,
+        markMove = 0,
+        emptyCount = 0,
+        colorCount = 0,
+        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
+        ov = arr[idx];
+    arr[idx] = 1;
+
+    vs[0] = getArrValue(idx, -5, direction, arr);
+    vs[1] = getArrValue(idx, -4, direction, arr);
+    for (let move = -4; move < 5; move++) {
+        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        let v = vs[move + 5];
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == 1) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 5) {
+                if (1 == vs[move] ||
+                    1 == vs[move + 6])
+                {
+                    max = SIX;
+                }
+                else {
+                    max = 5;
+                }
+                free = 0;
+                count = 0;
+                markMove = move;
                 break;
             }
-        }
-        else { //黑棋
-            if (pw == 5 && getArrValue(x, y, j - 1, direction, arr) != color) {
-                count = 1;
-                break;
+            else if (colorCount == 4) {
+                if (1 == vs[move] ||
+                    1 == vs[move + 6])
+                { //六腐形
+                }
+                else {
+                    if (max < 4) {
+                        max = 4;
+                        addFree = 0;
+                        addCount = 1;
+                        free = 0;
+                        count = 0;
+                        markMove = move;
+                    }
+
+                    if (addCount) count++;
+                    addCount = 0;
+
+                    if (addFree) {
+                        free++;
+                        markMove = move;
+                    }
+                    addFree = 1;
+                }
+            }
+            else if (colorCount == 3 && max <= 3) {
+                if (1 == vs[move] ||
+                    1 == vs[move + 6])
+                { //六腐形
+                }
+                else {
+                    if (max < 3) {
+                        max = 3;
+                        addFree = 0;
+                        addCount = 1;
+                        free = 0;
+                        count = 0;
+                        markMove = move;
+                    }
+
+                    if (addCount) count++;
+                    addCount = 0;
+
+                    if (addFree) {
+                        free++;
+                        markMove = move;
+                    }
+                    addFree = 1;
+                }
+            }
+
+            v = vs[move + 1];
+            if (v == 0) {
+                emptyCount--;
+                addCount = 1;
+            }
+            else {
+                colorCount--;
+                addFree = 0;
             }
         }
     }
-    arr[y][x] = ov;
-    return count > 0 ? true : false;
-}
 
-function isLineFive_Point(point, direction, color, arr) {
-    return isLineFive(point.x, point.y, direction, color, arr);
-}
+    arr[idx] = ov;
 
-function isLineFive_Idx(idx, direction, color, arr) {
-    return isLineFive(getX(idx), getY(idx), direction, color, arr);
+    return direction << 12 |
+        free << 8 |
+        markMove << 5 |
+        (free ? max == 4 ? FOUR_FREE : THREE_FREE :
+            max == 4 && count > 1 ? LINE_DOUBLE_FOUR :
+            max << 1);
 }
 
 
 
 // 不会验证x,y是否有棋子
-// 辅助判断33禁，x,y,点在 direction指定这条线上是不是一个冲4点,活4
-function isLineFour(x, y, direction, color, arr, free, pass) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let isf = 0;
-    if (color == 2) { // 判断白棋
-        for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, direction, color, i);
-            if (pw == 4) {
-                if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0)) {
-                    isf += free == false ? 0 : 1;
+// idx,点在 direction指定这条线上是不是一个冲4点,活4
+function testLineFour(idx, direction, color, arr) {
+
+    let max = 0, // 0 | 4 | 5 | SIX
+        addFree = 0, // 0 | 1
+        addCount = 0,
+        free = 0, // >= 0
+        count = 0,
+        markMove = 0,
+        emptyCount = 0,
+        colorCount = 0,
+        ov = arr[idx];
+    arr[idx] = color;
+
+    for (let move = -4; move < 5; move++) {
+        // getArrValur(18 - 22次)直接 getArrValur 快一些
+        let v = getArrValue(idx, move, direction, arr);
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 5) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == getArrValue(idx, move - 5, direction, arr) ||
+                        color == getArrValue(idx, move + 1, direction, arr)))
+                {
+                    max = SIX;
                 }
                 else {
-                    isf += free == true ? 0 : 1;
+                    max = 5;
                 }
-
+                free = 0;
+                count = 0;
+                markMove = move;
+                break;
             }
-            if (pw > 4) { isf -= 99; break; }
-        }
-    }
-    else { // 判断黑棋
-        for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, direction, color, i);
-            if (pw == 4 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
-                if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0 && getArrValue(x, y, i + 6, direction, arr) != color) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0 && getArrValue(x, y, i - 2, direction, arr) != color)) {
-                    isf += free == false ? 0 : 1;
+            else if (colorCount == 4) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == getArrValue(idx, move - 5, direction, arr) ||
+                        color == getArrValue(idx, move + 1, direction, arr)))
+                { //六腐形
                 }
                 else {
-                    isf += free == true ? 0 : 1;
-                }
-            } // 五连以上否定冲4
-            if (pw > 4) { isf -= 99; break; }
-        }
-    }
-    arr[y][x] = ov;
-    if (isf && !pass) { //五连，禁手排除4
-        if (isFive(x, y, color, arr)) { isf -= 99; }
-        if (color == 1) {
-            if (isFoul(x, y, arr)) { isf -= 99; }
-        }
-    }
-    return isf > 0;
-}
+                    if (max < 4) {
+                        max = 4;
+                        addFree = 0;
+                        addCount = 1;
+                        free = 0;
+                        count = 0;
+                        markMove = move;
+                    }
 
-function isLineFour_Point(point, direction, color, arr, free, pass) {
-    return isLineFour(point.x, point.y, direction, color, arr, free, pass);
-}
+                    if (addCount) count++;
+                    addCount = 0;
 
-function isLineFour_Idx(idx, direction, color, arr, free, pass) {
-    return isLineFour(getX(idx), getY(idx), direction, color, arr, free, pass);
-}
+                    if (addFree) {
+                        free++;
+                        markMove = move;
+                    }
+                    addFree = 1;
+                }
+            }
 
-function isLineFourNode(x, y, direction, arr, free, pass, node) {
-    let color = 1;
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let isf = 0;
-    let nd = node;
-    nd.lines = nd.lines || [];
-    let line;
-    for (let i = 0; i > -5; i--) {
-        let pw = getPower(x, y, arr, direction, color, i);
-        if (pw == 4 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
-            nd.txt = EMOJI_ROUND_FOUR;
-            let freeFoulStart = getArrIndex(x, y, i - 1, direction, arr);
-            let freeFoulEnd = getArrIndex(x, y, i + 5, direction, arr);
-            line = {
-                start: getArrIndex(x, y, i, direction, arr),
-                end: getArrIndex(x, y, i + 4, direction, arr),
-                color: "blue",
-                type: "four",
-                direction: direction,
-            };
-            if ((getArrValue(x, y, i, direction, arr) == 0 && getArrValue(x, y, i + 5, direction, arr) == 0 && getArrValue(x, y, i + 6, direction, arr) != color) || (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0 && getArrValue(x, y, i - 2, direction, arr) != color)) {
-                if (getArrValue(x, y, i, direction, arr) == 0) {
-                    line.end = freeFoulEnd;
-                }
-                else {
-                    line.start = freeFoulStart;
-                }
-                isf += free == false ? 0 : 1;
+            v = getArrValue(idx, move - 4, direction, arr);
+            if (v == 0) {
+                emptyCount--;
+                addCount = 1;
             }
             else {
-                isf += free == true ? 0 : 1;
+                colorCount--;
+                addFree = 0;
             }
-        } // 五连以上否定冲4
-        if (pw > 4) { isf -= 99; break; }
-    }
-    arr[y][x] = ov;
-    if (isf && !pass) { //五连，禁手排除4
-        if (isFive(x, y, color, arr)) { isf -= 99; }
-        if (color == 1) {
-            if (isFoulNode(x, y, arr, nd)) { isf -= 99; }
         }
     }
-    line.color = isf > 0 ? "red" : line.color;
-    line.type = isf > 0 ? "freeFour" : "four";
-    nd.txtColor = line.color == "red" ? "red" : undefined;
-    if (nd.lines.length == 0 && line) nd.lines.push(line);
-    return isf > 0;
+    arr[idx] = ov;
+
+    return direction << 12 |
+        free << 8 |
+        markMove << 5 |
+        (free ? FOUR_FREE :
+            count > 1 ? LINE_DOUBLE_FOUR :
+            max << 1);
+}
+
+
+
+function testLineThree(idx, direction, color, arr) {
+    let max = 0, // 0 | 3 | 4 | 5 | SIX
+        addFree = 0, // 0 | 1
+        addCount = 0,
+        free = 0, // >= 0
+        count = 0,
+        markMove = 0,
+        emptyCount = 0,
+        colorCount = 0,
+        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
+        ov = arr[idx];
+    arr[idx] = color;
+
+    vs[0] = getArrValue(idx, -5, direction, arr);
+    vs[1] = getArrValue(idx, -4, direction, arr);
+    for (let move = -4; move < 5; move++) {
+        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        let v = vs[move + 5];
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 5) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == vs[move] ||
+                        color == vs[move + 6]))
+                {
+                    max = SIX;
+                }
+                else {
+                    max = 5;
+                }
+                free = 0;
+                count = 0;
+                markMove = move;
+                break;
+            }
+            else if (colorCount == 4) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == vs[move] ||
+                        color == vs[move + 6])) {}
+                else {
+                    if (max < 4) {
+                        max = 4;
+                        addFree = 0;
+                        addCount = 1;
+                        free = 0;
+                        count = 0;
+                        markMove = move;
+                    }
+
+                    if (addCount) count++;
+                    addCount = 0;
+
+                    if (addFree) {
+                        free++;
+                        markMove = move;
+                    }
+                    addFree = 1;
+                }
+            }
+            else if (colorCount == 3 && max <= 3) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == vs[move] ||
+                        color == vs[move + 6]))
+                { //六腐形
+                }
+                else {
+                    if (max < 3) {
+                        max = 3;
+                        addFree = 0;
+                        addCount = 1;
+                        free = 0;
+                        count = 0;
+                        markMove = move;
+                    }
+
+                    if (addCount) count++;
+                    addCount = 0;
+
+                    if (addFree) {
+                        free++;
+                        markMove = move;
+                    }
+                    addFree = 1;
+                }
+            }
+
+            v = vs[move + 1];
+            if (v == 0) {
+                emptyCount--;
+                addCount = 1;
+            }
+            else {
+                colorCount--;
+                addFree = 0;
+            }
+        }
+    }
+
+    arr[idx] = ov;
+
+    return direction << 12 |
+        free << 8 |
+        markMove << 5 |
+        (free ? max == 4 ? FOUR_FREE : THREE_FREE :
+            max == 4 && count > 1 ? LINE_DOUBLE_FOUR :
+            max << 1);
+}
+
+
+
+function testFoul() {
+
+}
+
+
+
+function isFoul(idx, arr) {
+    const LEN = 8,
+        VALUE = 0,
+        COUNT = 1,
+        PIDX = 2,
+        IDX = 3,
+        INFO_START = 4;
+    let stack = new Array(36 * LEN),
+        stackIdx = 0,
+        threeCount = 0,
+        fourCount = 0,
+        foulCount = 0,
+        ov = arr[idx];
+
+    arr[idx] = 1;
+    stack[VALUE] = 0;
+    stack[COUNT] = 0;
+    stack[PIDX] = 0;
+    stack[IDX] = idx;
+    for (let direction = 0; direction < 4; direction++) {
+        let info = testLineThree(idx, direction, 1, arr),
+            v = FOUL_MAX_FREE & info;
+        if (v == FIVE) { // not foul
+            stackIdx = -1;
+            break;
+        }
+        else if (v > FOUL) foulCount++;
+        else if (v >= FOUR_NOFREE) fourCount++;
+        else if (v == THREE_FREE) {
+            threeCount++;
+            stack[INFO_START + stack[COUNT]++] = info & 0x8fff | (direction << 12);
+        }
+    }
+    
+    if (stackIdx > -1) {
+        //console.log(`>>>`)
+        if (fourCount > 1 || foulCount) { // is foul
+            stack[VALUE] = 2;
+            stackIdx = -1;
+        }
+        else if (threeCount < 2) stackIdx = -1; //not foul
+
+        while (stackIdx > -1) {//continue test doubleThree
+            
+            if (stackIdx % 2 == 0) { // test freeFourPoint and first doubleThree
+            //console.log(`stackIdx=${stackIdx}, \n[${stack}]`)
+                let idx = stack[stackIdx * LEN + IDX];
+                if (stack[stackIdx * LEN + VALUE] > 1) { // is doubleThree
+                    //console.log(1)
+                    arr[idx] = 0;
+                    stackIdx--;
+                    if (stackIdx == -1) stack[VALUE] = 2; // set first doubleThree
+                }
+                else if (stack[stackIdx * LEN + PIDX] == stack[stackIdx * LEN + COUNT]) { // not doubleThree
+                    //console.log(2)
+                    arr[idx] = 0;
+                    stackIdx--;
+                    if (stackIdx > -1) stack[stackIdx * LEN + VALUE] = 1; //set freeFourPoint
+                }
+                else {
+                    //console.log(3)
+                    let ps = getFreeFourPoint(idx, arr, stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + PIDX]++]);
+                    stackIdx++;
+                    stack[stackIdx * LEN + VALUE] = 0;
+                    stack[stackIdx * LEN + COUNT] = ps[0]; //count
+                    stack[stackIdx * LEN + PIDX] = 0;
+                    //stack[stackIdx * LEN + IDX] = idx;
+                    stack[stackIdx * LEN + INFO_START + 0] = ps[1];
+                    stack[stackIdx * LEN + INFO_START + 1] = ps[2];
+                }
+            }
+            else { // test next doubleThree
+            //console.info(`stackIdx=${stackIdx}, \n[${stack}]`)
+                if (stack[stackIdx * LEN + VALUE] == 1) { // find freeFourPoint
+                    //console.info(1)
+                    stackIdx--;
+                    stack[stackIdx * LEN + VALUE]++; // add one freeThree
+                }
+                else if (stack[stackIdx * LEN + PIDX] == stack[stackIdx * LEN + COUNT]) { // not freeFourPoint
+                    //console.info(2)
+                    stackIdx--;
+                }
+                else {
+                    //console.info(3)
+                    let skip = false,
+                        idx = stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + PIDX]++];
+                    
+                    threeCount = 0;
+                    fourCount = 0;
+                    foulCount = 0;
+                        
+                    arr[idx] = 1;
+                    stackIdx++;
+                    stack[stackIdx * LEN + VALUE] = 0;
+                    stack[stackIdx * LEN + COUNT] = 0; //count
+                    stack[stackIdx * LEN + PIDX] = 0;
+                    stack[stackIdx * LEN + IDX] = idx;
+                    for (let direction = 0; direction < 4; direction++) {
+                        let info = testLineThree(idx, direction, 1, arr),
+                            v = FOUL_MAX_FREE & info;
+                        if (v == FIVE) {
+                            arr[idx] = 0;
+                            stackIdx--; //not freeFourPoint
+                            skip = true;
+                            break;
+                        }
+                        else if (v > FOUL) foulCount++;
+                        else if (v >= FOUR_NOFREE) fourCount++;
+                        else if (v == THREE_FREE) {
+                            threeCount++;
+                            stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + COUNT]++] = info & 0x8fff | (direction << 12);
+                        }
+                    }
+                    
+                    if (!skip) {
+                        if (fourCount > 1 || foulCount) {
+                            arr[idx] = 0;
+                            stackIdx--; //not freeFourPoint
+                        }
+                        else if (threeCount < 2) {
+                            arr[idx] = 0;
+                            stackIdx--; // is freeFourPoint
+                            stack[stackIdx * LEN + VALUE] = 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    arr[idx] = ov;
+    return stack[VALUE] > 1;
+}
+
+
+
+function isDoubleThreeFoul(idx, color, arr) {
+
 }
 
 
@@ -621,138 +1099,14 @@ function isLineFourNode(x, y, direction, arr, free, pass, node) {
 // 不会验证x,y是否有棋子
 //判断 x,y 是否44
 function isFF(x, y, color, arr) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    for (let j = 0; j < 4; j++) {
-        if (count < 0) break; // 五连排除了44，退出
-        let isf = false;
-        if (color == 2) { // 判断白棋
-            for (let i = 0; i > -5; i--) {
-                let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
-                
-                if (pw == 4) {
-                    if (isLineFF(x, y, DIRECTIONS[j], color, arr)) {
-                        count = 2;
-                    }
-                    else {
-                        isf = true;
-                    }
-                } // 五连以上否定冲44
-                if (pw > 4) { count = -2; break; }
-            }
-        }
-        else { // 判断黑棋
-            for (let i = 0; i > -5; i--) {
-                let pw = getPower(x, y, arr, DIRECTIONS[j], color, i);
-                if (pw == 4 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color && getArrValue(x, y, i + 5, DIRECTIONS[j], arr) != color) {
-                    if (isLineFF(x, y, DIRECTIONS[j], color, arr)) {
-                        count = 2;
-                    }
-                    else {
-                        isf = true;
-                    }
-                } // 五连否定冲44
-                if (pw == 5 && getArrValue(x, y, i - 1, DIRECTIONS[j], arr) != color) {
-                    count = -2;
-                    break;
-                }
-            }
-        }
-        count += isf ? 1 : 0;
-    }
-    arr[y][x] = ov;
-    return count > 1 ? true : false;
-}
 
-function isFF_Point(point, color, arr) {
-    return isFF(point.x, point.y, color, arr);
-}
-
-function isFF_Idx(idx, color, arr) {
-    return isFF(getX(idx), getY(idx), color, arr);
 }
 
 
 
 // 不会验证x,y是否有棋子
 function isThree(x, y, color, arr, free) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0; // 任意3计数
-    let countf = 0; // 活3计数
-    let isf = false;
-    for (let i = 0; i < 4; i++) {
-        if (count < 0) break;
-        isf = false;
-        for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j)
-            if (color == 2) {
-                if (pw == 3) {
-                    count++;
-                    if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
-                        if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && (getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0 || getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0)) {
-                            isf = true;
-                        }
-                        else if (getArrValue(x, y, j + 5, DIRECTIONS[i], arr) == 0) {
-                            isf = true;
-                        }
-                    }
-                    else if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) == 0) {
-                        isf = true;
-                    }
-                    continue;
-                } // 四连以上排除
 
-                if (pw >= 4) {
-                    count = -1;
-                    break;
-                }
-            }
-            else {
-                if (pw == 3) {
-                    count++;
-                    if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
-                        if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0) {
-                            let p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j);
-                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
-                                isf = true;
-                            }
-                            p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j + 4);
-                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
-                                isf = true;
-                            }
-                        }
-                        else {
-                            let p = getNextEmpty(x, y, arr, DIRECTIONS[i], 1, j + 1);
-                            if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
-                                isf = true;
-                            }
-                        }
-                    }
-                    else if (getArrValue(x, y, j + 4, DIRECTIONS[i], arr) == 0) {
-                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], j + 1);
-                        if (isLineFour(p.x, p.y, DIRECTIONS[i], color, arr, true)) {
-                            isf = true;
-                        }
-                    }
-                } // 四连以上排除
-
-                if ((pw >= 5) || (pw == 4 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color)) {
-                    count = -1;
-                    break;
-                }
-            }
-        }
-        countf += isf ? 1 : 0;
-    }
-    arr[y][x] = ov;
-    if (color == 1) { // 黑棋33，否定3连
-        count = countf > 1 ? -1 : count;
-        //console.log("countf=" + countf)
-    }
-    //console.log("count=" +count + "   countf=" +countf)
-    return free === true ? (count > 0 && countf > 0) : free === false ? (count > 0 && countf == 0) : count > 0;
 }
 
 function isThree_Point(point, color, arr, free) {
@@ -768,50 +1122,7 @@ function isThree_Idx(idx, color, arr, free) {
 // 不会验证x,y是否有棋子
 // x,y,点是否形成33
 function isTT(x, y, arr) {
-    let color = 1;
-    //五连否定33
-    //if (isFive(x, y, color, arr)) return false;
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let count = 0;
-    // 先搜索33形状
-    for (let i = 0; i < 4; i++) {
-        if (count < 0) break;
-        for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, DIRECTIONS[i], color, j)
 
-            if (pw == 3) {
-                if (getArrValue(x, y, j, DIRECTIONS[i], arr) == 0) {
-                    if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
-                        count++;
-                        break;
-                        //continue;
-                    }
-                }
-            } // 五连排除33
-            if (pw == 5 && getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != color && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != color) {
-                count = -1;
-                break;
-            }
-        }
-    }
-    if (count < 2) {
-        arr[y][x] = ov;
-        return false;
-    }
-    else {
-        count = 0; // 确认有了33形状，进一步判断是否是活3，count累计活3个数
-        for (let i = 0; i < 4; i++) {
-            // 从4个方向判断是否活3，是就计数
-            if (isLineThree(x, y, DIRECTIONS[i], 1, arr, true)) {
-                count++;
-            }
-            if (count > 1) break;
-        }
-        arr[y][x] = ov;
-        // 累计够两个活3，确认是33
-        return count > 1 ? true : false;
-    }
 }
 
 function isTT_Point(point, arr) {
@@ -827,161 +1138,13 @@ function isTT_Idx(idx, arr) {
 // 不会验证x,y是否有棋子
 // x,y,点在direction指定这条线上面是否为3
 function isLineThree(x, y, direction, color, arr, free) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let isf = false;
-    let isfree = false;
-    if (color == 2) { // 判断白棋
-        for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, direction, color, i);
-            if (pw == 3) {
-                isf = true;
-                if (getArrValue(x, y, i, direction, arr) == 0) {
-                    if (getArrValue(x, y, i + 4, direction, arr) == 0 && (getArrValue(x, y, i + 5, direction, arr) == 0 || getArrValue(x, y, i - 1, direction, arr) == 0)) {
-                        isfree = true;
-                        break;
-                    }
-                    else if (getArrValue(x, y, i + 5, direction, arr) == 0) {
-                        isfree = true;
-                        break;
-                    }
-                }
-                else if (getArrValue(x, y, i + 4, direction, arr) == 0 && getArrValue(x, y, i - 1, direction, arr) == 0) {
-                    isfree = true;
-                    break;
-                }
-            }
-            if (pw >= 4) { isf = false; break; }
-        }
-    }
-    else { // 判断黑棋
-        for (let i = 0; i > -5; i--) {
-            let pw = getPower(x, y, arr, direction, color, i);
-            if (pw == 3 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
-                isf = true;
-                if (getArrValue(x, y, i, direction, arr) == 0) {
-                    if (getArrValue(x, y, i + 4, direction, arr) == 0) {
-                        let p = getNextEmpty(x, y, arr, direction, 1, i);
-                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, 1, i + 4);
-                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            break;
-                        }
-                    }
-                    else {
-                        let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
-                        if (isLineFour(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            break;
-                        }
-                    }
-                }
-                else if (getArrValue(x, y, i + 4, direction, arr) == 0) {
-                    let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
-                    if (isLineFour(p.x, p.y, direction, color, arr, true)) {
-                        isfree = true;
-                        break;
-                    }
-                }
-            } // 4以上否定活3
-            if (pw >= 4) { isf = false; break; }
-        }
-    }
-    arr[y][x] = ov;
-    return free === true ? (isfree && isf) : (!isfree && isf);
+
 }
 
-function isLineThree_Point(point, direction, color, arr, free) {
-    return isLineThree(point.x, point.y, direction, color, arr, free);
-}
 
-function isLineThree_Idx(idx, direction, color, arr, free) {
-    return isLineThree(getX(idx), getY(idx), direction, color, arr, free);
-}
 
 function isLineThreeNode(x, y, direction, arr, free, node) {
-    let color = 1;
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let isf = false;
-    let isfree = false;
-    let nd;
-    let line;
-    let LINEIDX = node.lines.length;
-    for (let i = 0; i > -5; i--) {
-        let pw = getPower(x, y, arr, direction, color, i);
-        if (pw == 3 && getArrValue(x, y, i - 1, direction, arr) != color && getArrValue(x, y, i + 5, direction, arr) != color) {
-            isf = true;
-            line = {
-                start: getArrIndex(x, y, i, direction, arr),
-                end: line ? line.end : getArrIndex(x, y, i + 4, direction, arr),
-                color: "blue",
-                type: "three",
-                direction: direction,
-            };
-            let ed = line.end;
-            if (getArrValue(x, y, i, direction, arr) == 0) {
-                if (getArrValue(x, y, i + 4, direction, arr) == 0) {
-                    let p = getNextEmpty(x, y, arr, direction, 1, i);
-                    nd = new Node(p.x + p.y * 15, node);
-                    node.childNode.push(nd);
-                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
-                        isfree = true;
-                        nd.txt = EMOJI_ROUND_FOUR;
-                        line = getLine(p.x + p.y * 15, 1, direction, arr, undefined, "freeThree");
-                        line.end = ed;
-                        node.lines[LINEIDX] = line;
-                        break;
-                    }
-                    p = getNextEmpty(x, y, arr, direction, 1, i + 4);
-                    nd = new Node(p.x + p.y * 15, node);
-                    node.childNode.push(nd);
-                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
-                        isfree = true;
-                        nd.txt = EMOJI_ROUND_FOUR;
-                        line = getLine(p.x + p.y * 15, 1, direction, arr, undefined, "freeThree");
-                        line.end = ed;
-                        node.lines[LINEIDX] = line;
-                        break;
-                    }
-                }
-                else {
-                    let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
-                    nd = new Node(p.x + p.y * 15, node);
-                    node.childNode.push(nd);
-                    if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
-                        isfree = true;
-                        nd.txt = EMOJI_ROUND_FOUR;
-                        line = getLine(p.x + p.y * 15, 1, direction, arr, undefined, "freeThree");
-                        line.end = ed;
-                        node.lines[LINEIDX] = line;
-                        break;
-                    }
-                }
-            }
-            else if (getArrValue(x, y, i + 4, direction, arr) == 0) {
-                let p = getNextEmpty(x, y, arr, direction, 1, i + 1);
-                nd = new Node(p.x + p.y * 15, node);
-                node.childNode.push(nd);
-                if (isLineFourNode(p.x, p.y, direction, arr, true, undefined, nd)) {
-                    isfree = true;
-                    nd.txt = EMOJI_ROUND_FOUR;
-                    line = getLine(p.x + p.y * 15, 1, direction, arr, undefined, "freeThree");
-                    line.end = ed;
-                    node.lines[LINEIDX] = line;
-                    break;
-                }
-            }
-            node.lines[LINEIDX] = line;
-        } // 4以上否定活3
-        if (pw >= 4) { isf = false; break; }
-    }
-    arr[y][x] = ov;
-    return free === true ? (isfree && isf) : (!isfree && isf);
+
 }
 
 
@@ -989,261 +1152,27 @@ function isLineThreeNode(x, y, direction, arr, free, node) {
 // 不会验证x,y是否有棋子
 // x,y,点在direction指定这条线上面是否为2
 function isLineTwo(x, y, direction, color, arr, free) {
-    let ov = arr[y][x];
-    arr[y][x] = color;
-    let isf = false;
-    let isfree = false;
-    for (let i = 0; i > -5; i--) {
-        let pw = getPower(x, y, arr, direction, color, i);
-        if (pw == 2) {
-            isf = true;
-            if (!getArrValue(x, y, i, direction, arr) || !getArrValue(x, y, i + 4, direction, arr)) {
-                let st = -1;
-                let end = -1;
-                for (let j = 0; j < 5; j++) {
-                    if (getArrValue(x, y, i + j, direction, arr) == color) {
-                        if (st == -1) {
-                            st = j;
-                        }
-                        else {
-                            end = j;
-                            break;
-                        }
-                    }
-                }
-                let p;
-                switch (end - st) {
-                    case 1:
-                        p = getNextEmpty(x, y, arr, direction, color, i + st - 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        break;
-                    case 2:
-                        p = getNextEmpty(x, y, arr, direction, color, i + st - 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 3);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        break;
-                    case 3:
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 1);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        p = getNextEmpty(x, y, arr, direction, color, i + st + 2);
-                        if (p.x != -1 && isLineThree(p.x, p.y, direction, color, arr, true)) {
-                            isfree = true;
-                            i = -9999;
-                            break;
-                        }
-                        break;
-                }
-            }
-        }
-        if (pw >= 3) { isf = false; break; }
-    }
-    arr[y][x] = ov;
-    return free === true ? (isfree && isf) : (!isfree && isf);
+
 }
 
-
-function isLineTwo_Point(point, direction, color, arr, free) {
-    return isLineTwo(point.x, point.y, direction, color, arr, free);
-}
-
-
-function isLineTwo_Idx(idx, direction, color, arr, free) {
-    return isLineTwo(getX(idx), getY(idx), direction, color, arr, free);
-}
 
 
 // 不会验证x,y是否有棋子
 // 判断是否是一条线上的44,不判断x，y是否五连
 function isLineFF(x, y, direction, color, arr) {
-    let st = 0;
-    let ed = 0;
-    let i;
-    for (i = -1; i > -4; i--) {
-        if (getArrValue(x, y, i, direction, arr) != color) {
-            break;
-        }
-    }
-    st = i + 1;
-    for (i = 1; i < 4 + st; i++) {
-        if (getArrValue(x, y, i, direction, arr) != color) {
-            break;
-        }
-    }
-    ed = i - 1;
-    //console.log("st="+ st + "   ed=" + ed)
-    switch (ed - st) {
-        case 0:
-            if (getArrValue(x, y, -4, direction, arr) == color && getArrValue(x, y, 4, direction, arr) == color && getArrValue(x, y, -3, direction, arr) == color && getArrValue(x, y, 3, direction, arr) == color && getArrValue(x, y, -2, direction, arr) == color && getArrValue(x, y, 2, direction, arr) == color && getArrValue(x, y, -1, direction, arr) == 0 && getArrValue(x, y, 1, direction, arr) == 0) {
-                if (color == 2) return true;
-                if (getArrValue(x, y, -5, direction, arr) != color && getArrValue(x, y, 5, direction, arr) != color) {
-                    return true;
-                }
-            }
-            break;
-        case 1:
-            if (getArrValue(x, y, -3 + st, direction, arr) == color && getArrValue(x, y, 3 + ed, direction, arr) == color && getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
-                if (color == 2) return true;
-                if (getArrValue(x, y, -4 + st, direction, arr) != color && getArrValue(x, y, 4 + ed, direction, arr) != color) {
-                    return true;
-                }
-            }
-            break;
-        case 2:
-            if (getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
-                if (color == 2) return true;
-                if (getArrValue(x, y, -3 + st, direction, arr) != color && getArrValue(x, y, 3 + ed, direction, arr) != color) {
-                    return true;
-                }
-            }
-            break;
-        case 3:
-    }
-    return false;
+
 }
 
-function isLineFF_Point(point, direction, color, arr) {
-    return isLineFF(point.x, point.y, direction, color, arr);
-}
 
-function isLineFF_Idx(idx, direction, color, arr) {
-    return isLineFF(getX(idx), getY(idx), direction, color, arr);
-}
 
 function isLineFFNode(x, y, direction, arr, node, LINEIDX) {
-    let color = 1;
-    let st = 0;
-    let ed = 0;
-    let i;
-    for (i = -1; i > -4; i--) {
-        if (getArrValue(x, y, i, direction, arr) != color) {
-            break;
-        }
-    }
-    st = i + 1;
-    for (i = 1; i < 4 + st; i++) {
-        if (getArrValue(x, y, i, direction, arr) != color) {
-            break;
-        }
-    }
-    ed = i - 1;
-    //console.log("st="+ st + "   ed=" + ed)
-    switch (ed - st) {
-        case 0:
-            if (getArrValue(x, y, -4, direction, arr) == color && getArrValue(x, y, 4, direction, arr) == color && getArrValue(x, y, -3, direction, arr) == color && getArrValue(x, y, 3, direction, arr) == color && getArrValue(x, y, -2, direction, arr) == color && getArrValue(x, y, 2, direction, arr) == color && getArrValue(x, y, -1, direction, arr) == 0 && getArrValue(x, y, 1, direction, arr) == 0) {
-                if (getArrValue(x, y, -5, direction, arr) != color && getArrValue(x, y, 5, direction, arr) != color) {
-                    node.txt = EMOJI_FOUL;
-                    node.lines[LINEIDX] = {
-                        start: getArrIndex(x, y, -4, direction, arr),
-                        end: getArrIndex(x, y, 4, direction, arr),
-                        color: "red",
-                        type: "lineFF",
-                        direction: direction,
-                    };
-                    return true;
-                }
-            }
-            break;
-        case 1:
-            if (getArrValue(x, y, -3 + st, direction, arr) == color && getArrValue(x, y, 3 + ed, direction, arr) == color && getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
-                if (getArrValue(x, y, -4 + st, direction, arr) != color && getArrValue(x, y, 4 + ed, direction, arr) != color) {
-                    node.txt = EMOJI_FOUL;
-                    node.lines[LINEIDX] = {
-                        start: getArrIndex(x, y, -3 + st, direction, arr),
-                        end: getArrIndex(x, y, 3 + ed, direction, arr),
-                        color: "red",
-                        type: "lineFF",
-                        direction: direction,
-                    };
-                    return true;
-                }
-            }
-            break;
-        case 2:
-            if (getArrValue(x, y, -2 + st, direction, arr) == color && getArrValue(x, y, 2 + ed, direction, arr) == color && getArrValue(x, y, -1 + st, direction, arr) == 0 && getArrValue(x, y, 1 + ed, direction, arr) == 0) {
-                if (getArrValue(x, y, -3 + st, direction, arr) != color && getArrValue(x, y, 3 + ed, direction, arr) != color) {
-                    node.txt = EMOJI_FOUL;
-                    node.lines[LINEIDX] = {
-                        start: getArrIndex(x, y, -2 + st, direction, arr),
-                        end: getArrIndex(x, y, 2 + ed, direction, arr),
-                        color: "red",
-                        type: "lineFF",
-                        direction: direction,
-                    };
-                    return true;
-                }
-            }
-            break;
-        case 3:
-    }
-    return false;
+
 }
 
 
 
 function getLine(idx, color, direction, arr, lineColor = "red", lineType) {
-    let start, end;
-    for (start = -1; start > -9; start--) {
-        if (getArrValue_Idx(idx, start, direction, arr) != color) break;
-    }
-    start++;
-    for (end = 1; end < 9; end++) {
-        if (getArrValue_Idx(idx, end, direction, arr) != color) break;
-    }
-    end--;
-    const LINE_LEN = end - start + 1;
-    if (LINE_LEN == 4) {
-        start--;
-        end++;
-    }
-    lineType = lineType || (LINE_LEN > 5 ? "six" : LINE_LEN == 5 ? "five" : "freeFour");
-    return {
-        start: getArrIndex(getX(idx), getY(idx), start, direction, arr),
-        end: getArrIndex(getX(idx), getY(idx), end, direction, arr),
-        color: lineColor,
-        type: lineType,
-        direction: direction,
-    }
+
 }
 
 function getLines(idx, color, arr, level) {
@@ -1363,143 +1292,83 @@ function getLines(idx, color, arr, level) {
 
 
 // 返回冲4的防点
-function getBlockFour(x, y, arr) {
-    let color = arr[y][x] == 1 ? 2 : 1;
-    let nColor = arr[y][x];
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j > -5; j--) {
-            let pw = getPower(x, y, arr, DIRECTIONS[i], nColor, j);
-            if (pw == 4) {
-                if (nColor == 2) {
-                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], nColor, j);
-                    return p.y * 15 + p.x;
-                }
-                else if (getArrValue(x, y, j - 1, DIRECTIONS[i], arr) != nColor && getArrValue(x, y, j + 5, DIRECTIONS[i], arr) != nColor) {
-                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], nColor, j);
-                    return p.y * 15 + p.x;
-                }
-            }
-        }
+function getBlockFourPoint(idx, arr, lineInfo) {
+    let move = (lineInfo >> 5) & 7,
+        direction = (lineInfo >> 12) & 7,
+        nIdx;
+    for (let m = 0; m > -5; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx]) return nIdx;
     }
-    return -1;
 }
 
+function getFreeFourPoint(idx, arr, lineInfo) {
+    let move = (lineInfo >> 5) & 7,
+        direction = (lineInfo >> 12) & 7,
+        points = [0, 0, 0],
+        m = 0,
+        nIdx;
+    for (m = 0; m > -5; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx]) break; // skip first
+    }
+    for (m--; m > -6; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx]) {
+            points[1 + points[0]++] = nIdx;
+        }
+    }
+    points[0] = (lineInfo >> 8) & 7; //set freePoint num
 
+    return points;
+}
+
+/*
+function getBlockThree(idx, arr, info) {
+    let rt = new Array(4),
+        freeCount = (info >> 8) & 7,
+        move = (info >> 5) & 7,
+        direction = (info >> 12) & 7;
+    for (let m = 0; m > -5; m--) {
+        idx = moveIdx(idx, move + m, direction);
+        if (0 == arr[idx]) {
+            rt[1 + rt[0]++] = idx;
+        }
+    }
+}
+*/
 
 function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
-    let nx = -1;
-    let ny = -1;
-    switch (direction) {
-        case 0:
-            for (let i = 0; i < maxLen; i++) {
-                if (x + i + move > 14 || x + i + move < 0) break;
-                if (arr[y][x + i + move] == 0) {
-                    nx = x + i + move;
-                    ny = y;
-                    break;
-                }
-            }
-            break;
-        case 1:
-            for (let i = 0; i < maxLen; i++) {
-                if (y + i + move > 14 || y + i + move < 0) break;
-                if (arr[y + i + move][x] == 0) {
-                    nx = x;
-                    ny = y + i + move;
-                    break;
-                }
-            }
-            break;
-        case 2:
-            for (let i = 0; i < maxLen; i++) {
-                if (y + i + move > 14 || y + i + move < 0 || x + i + move > 14 || x + i + move < 0) break;
-                if (arr[y + i + move][x + i + move] == 0) {
-                    nx = x + i + move;
-                    ny = y + i + move;
-                    break;
-                }
-            }
-            break;
-        case 3:
-            for (let i = 0; i < maxLen; i++) {
-                if (y - i - move < 0 || y - i - move > 14 || x + i + move > 14 || x + i + move < 0) break;
-                if (arr[y - i - move][x + i + move] == 0) {
-                    nx = x + i + move;
-                    ny = y - i - move;
-                    break;
-                }
-            }
-            break;
-    }
-    return {
-        "x": nx,
-        "y": ny
-    };
+
 }
 
 
 
-// x,y,坐标代表第一个点和后面的4个点成五格。返回在这五格内的子力。
-function getPower(x, y, arr, direction, color, move = 0, maxLen = 5) {
-    let count = 0;
-    let thisColor = color;
-    let nColor = thisColor == 1 ? 2 : 1;
-    switch (direction) {
-        case 0:
-            for (let i = 0; i < maxLen; i++) {
-                if ((x + i + move) < 0 || (x + i + move) > 14) {
-                    return -1;
-                }
-                if (arr[y][x + i + move] == nColor) return -1;
-                if (arr[y][x + i + move] == thisColor) count++;
-            }
-            break;
-        case 1:
-            for (let i = 0; i < maxLen; i++) {
-                if ((y + i + move) < 0 || (y + i + move) > 14) {
-                    return -1;
-                }
-                if (arr[y + i + move][x] == thisColor) count++;
-                if (arr[y + i + move][x] == nColor) return -1;
-            }
-            break;
-        case 2:
-            for (let i = 0; i < maxLen; i++) {
-                if ((y + i + move) < 0 || (y + i + move) > 14 || (x + i + move) < 0 || (x + i + move) > 14) {
-                    return -1;
-                }
-                if (arr[y + i + move][x + i + move] == thisColor) count++;
-                if (arr[y + i + move][x + i + move] == nColor) return -1;
-            }
-            break;
-        case 3:
-            for (let i = 0; i < maxLen; i++) {
-                if ((y - i - move) < 0 || (y - i - move) > 14 || (x + i + move) < 0 || (x + i + move) > 14) {
-                    return -1;
-                }
-                if (arr[y - i - move][x + i + move] == thisColor) count++;
-                if (arr[y - i - move][x + i + move] == nColor) return -1;
-            }
-            break;
-    }
-
-    if (count == maxLen) {
-        let nx = changeX(x, maxLen + move, direction);
-        let ny = changeY(y, maxLen + move, direction);
-        for (let i = 0; i < 10; i++) {
-            if (nx < 0 || nx > 14 || ny < 0 || ny > 14) break;
-            if (arr[ny][nx] == thisColor) {
-                count++;
-            }
-            else
-            {
-                break;
-            }
-            nx = changeX(nx, 1, direction);
-            ny = changeY(ny, 1, direction);
+// 返回 idx 在 direction 这条线上面的子力
+function getPower(idx, arr, direction, color, power, move = 0) {
+    let emptyCount = 0,
+        colorCount = 0,
+        max = -1;
+    for (let move = -4; move < 5; move++) {
+        let v = getArrValue(idx, move, direction, arr);
+        if (v == 0) {
+            emptyCount++;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+        }
+        if (emptyCount + colorCount == 5) {
+            if (colorCount > max) max = colorCount;
+            v = getArrValue(idx, move - 4, direction, arr);
+            if (v == 0) emptyCount--;
+            else colorCount--;
         }
     }
-    return count;
+    return max;
 }
 
 
@@ -1619,13 +1488,8 @@ function getLevel(arr, color, num) {
 
 
 // 取得一个点的值
-function getArrValue(x, y, move, direction, arr) {
-    let nx = changeX(x, move, direction);
-    let ny = changeY(y, move, direction);
-    if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return arr[ny][nx];
-    }
-    return null;
+function getArrValue(idx, move, direction, arr) {
+    return arr[moveIdx(idx, move, direction)];
 }
 
 
@@ -1678,23 +1542,6 @@ function getY(idx) {
     return ~~(idx / 15);
 }
 
-
-/*
-function getArrElement(idx, arr) {
-
-    let x = getX(idx);
-    let y = getY(idx);
-    return arr[y][x];
-}
-
-
-
-function setArr(idx, arr, value) {
-
-    getArrElement(idx, arr) = value;
-}
-*/
-
 function changeX(x, move, direction) {
     switch (direction) {
         case 0:
@@ -1734,7 +1581,7 @@ function changeY(y, move, direction) {
 
 
 // index ，转字母数字坐标
-function indexToName(idx) {
+function idxToName(idx) {
     let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let x = getX(idx);
     let y = getY(idx);
@@ -1746,7 +1593,7 @@ function indexToName(idx) {
 function moveIndexToName(moves, maxLength) {
     let name = "";
     for (let i = 0; i < moves.length; i++) {
-        name += `${i?"":""}${indexToName(moves[i])}`;
+        name += `${i?"":""}${idxToName(moves[i])}`;
         if (name.length >= maxLength) {
             name += "......";
             break;
@@ -1785,7 +1632,7 @@ function movesSort(fMoves, fun) {
 
 
 function findFoulPoint(arr, newarr, setnum) {
-    
+
     let narr = getArr2D([]);
     findSixPoint(arr, 1, narr, setnum);
     addFoulPoint(newarr, narr);
@@ -1918,40 +1765,108 @@ function findFivePointB(idx, arr, color, maxCount) {
 
 
 
-// 找出可能的4连点
-function findFour(arr, color, newarr) {
+function findFour(arr, color, infoArr) {
+    let emptyList = new Array(15),
+        emptyMoves = new Array(15);
+    for (let direction = 0; direction < 4; direction++) {
+        let markArr = new Array(225),
+            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
+            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
+        for (let list = listStart; list < listEnd; list++) {
+            let emptyCount = 0,
+                colorCount = 0,
+                moveStart = 14,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                emptyStart = 0,
+                emptyEnd = 0;
+            for (let move = moveStart; move < moveEnd; move++) {
+                let pIdx = (direction * 29 + list) * 43 + move,
+                    v = arr[idxLists[pIdx]];
+                if (v == 0) {
+                    emptyCount++;
+                    emptyMoves[emptyEnd] = move;
+                    emptyList[emptyEnd++] = idxLists[pIdx];
+                }
+                else if (v == color) {
+                    colorCount++;
+                }
+                else { // v!=color || v==-1
+                    emptyCount = 0;
+                    colorCount = 0;
+                    emptyStart = emptyEnd;
+                }
+                //console.log(idxLists[pIdx])
+                if (emptyCount + colorCount == 5) {
+                    //console.info(`idx = ${idxLists[pIdx]}, emptyCount = ${emptyCount}, colorCount = ${colorCount}`)
+                    if (colorCount == 4) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        {
+                            for (let e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                        else {
+                            for (let e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                        //break;
+                    }
+                    else if (colorCount == 3) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        { //六腐形
+                        }
+                        else {
+                            for (let e = emptyStart; e < emptyEnd; e++) {
+                                if ((markArr[emptyList[e]] & 0x0e) < FOUR_NOFREE) {
+                                    markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | FOUR_NOFREE;
+                                }
 
-    let count = 0;
-    let nx;
-    let ny;
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, DIRECTIONS[i], color);
-                if (color == 2) {
-                    if (pw == 3) {
-                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
-                        newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
-                        newarr[p.y][p.x] += Math.pow(10, i);
+                                if (markArr[emptyList[e]] & ADD_MAX_COUNT) {
+                                    markArr[emptyList[e]] += 0x1000; //count++
+                                }
+                                markArr[emptyList[e]] = markArr[emptyList[e]] & 0x7fff;
+
+                                if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
+                                    markArr[emptyList[e]] += 0x100; //free++
+                                    markArr[emptyList[e]] |= ((move - emptyMoves[e]) << 5); //set markMove
+                                }
+                                markArr[emptyList[e]] |= ADD_FREE_COUNT;
+                            }
+                        }
                     }
-                    if (pw == 4) {
-                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
-                        newarr[p.y][p.x] = -9999;
+
+                    v = arr[idxLists[pIdx - 4]];
+                    if (v == 0) {
+                        emptyCount--;
+                        emptyStart++;
+                        for (let e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                        }
                     }
-                }
-                else {
-                    if (pw == 3 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
-                        newarr[p.y][p.x] += Math.pow(10, i);
-                        p = getNextEmpty(p.x, p.y, arr, DIRECTIONS[i], color, 1);
-                        newarr[p.y][p.x] += Math.pow(10, i);
-                    }
-                    if (pw == 4 && getArrValue(x, y, -1, DIRECTIONS[i], arr) != color && getArrValue(x, y, 5, DIRECTIONS[i], arr) != color) {
-                        let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
-                        newarr[p.y][p.x] = -9999;
+                    else {
+                        colorCount--;
+                        for (let e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
+                        }
                     }
                 }
+            }
+        }
+
+        for (let i = 0; i < 225; i++) {
+            let oldV = infoArr[i] & 0x1f,
+                newV = markArr[i] & 0x1f;
+            if (FIVE == newV) {
+                infoArr[i] = markArr[i] & 0x8fff | (direction << 12);
+            }
+            else if (FOUR_NOFREE == newV) {
+                //if (gameRules == RENJU_RULES && color == 1)
+                infoArr[i] = markArr[i] & 0x8fff | (direction << 12);
             }
         }
     }
@@ -2219,4 +2134,3 @@ function findMoves(FailMoves, move) {
     }
     return (i >= 0) ? true : false;
 }
-

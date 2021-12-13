@@ -2243,7 +2243,7 @@ function findFoulNode(arr) {
             }
         }
         depth++;
-        const NUM_TXT = `第${depth}手[${indexToName(node.idx)}]`;
+        const NUM_TXT = `第${depth}手[${idxToName(node.idx)}]`;
         const ISFOUL = depth == 1 ?
             node.txt == EMOJI_FOUL ?
             `是禁手` :
@@ -2591,7 +2591,7 @@ function isLevelThreePoint(idx, color, arr, fType) {
     arr[y][x] = color;
     let level = getLevelB(arr, color, 60000, fType == ONLY_SIMPLE_WIN ? 1 : undefined);
     let nColor = color == 1 ? 2 : 1;
-    //mConsole(`[${indexToName(idx)}]level=${level.level}, [${level.level==3?moveIndexToName(level.moves):""}]`)
+    //mConsole(`[${idxToName(idx)}]level=${level.level}, [${level.level==3?moveIndexToName(level.moves):""}]`)
     if (level.level < 4 && level.level >= 3) {
         let l = level.moves.length; // 保存手数，待后面判断43杀
         let txt = "";
@@ -2904,7 +2904,7 @@ function isTwoVCF(idx, color, arr) {
             movesSort(fMoves, (a, b) => { return a <= b; });
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
-                post("showLabel", { text: `${fMoves.length-j}/${fMoves.length} [${indexToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, timeout: 10000 });
+                post("showLabel", { text: `${fMoves.length-j}/${fMoves.length} [${idxToName(idx)}] [${moveIndexToName(fMoves[j],20)}]`, timeout: 10000 });
                 // 摆棋
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
                     let x = getX(fMoves[j][k]);
