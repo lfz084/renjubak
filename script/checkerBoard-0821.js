@@ -1091,7 +1091,7 @@ window.checkerBoard = (function() {
     // 删除一颗棋子,不删除MS的记录
     checkerBoard.prototype.cleNb = function(idx, showNum, timer = "now") {
 
-        if (idx < 0) return;
+        if (idx < 0 || idx > 224) return;
         if (this.P[idx].type == TYPE_NUMBER) {
             this.cletLbMoves();
             let i = this.MSindex;
@@ -4704,7 +4704,7 @@ window.checkerBoard = (function() {
 
     //  在棋盘的一个点上面，打印一个标记
     checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
-        if (idx < 0) return;
+        if (idx < 0 || idx > 224) return;
         if (this.P[idx].type != TYPE_EMPTY) {
             if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
                 this.cleLb(idx);
@@ -4728,7 +4728,7 @@ window.checkerBoard = (function() {
     // 在棋盘的一个点上面，摆一颗棋子
     checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
 
-        if (idx < 0) return;
+        if (idx < 0 || idx > 224) return;
         if (this.P[idx].type != TYPE_EMPTY) {
             if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
                 this.cleLb(idx);

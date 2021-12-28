@@ -2189,7 +2189,8 @@ function getMoveKey(move) {
 }
 
 
-
+var pushMovesCount = new Array(225);
+var findMovesCount = new Array(225);
 // 会改变moves
 // 添加失败分支
 function pushFailMoves(FailMoves, move) {
@@ -2202,6 +2203,7 @@ function pushFailMoves(FailMoves, move) {
         FailMoves[MOVE_LEN][MOVE_KEY] = [];
     }
     FailMoves[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
+    pushMovesCount[mv.length]++;
 }
 
 
@@ -2217,6 +2219,7 @@ function findMoves(FailMoves, move) {
     for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
         if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
     }
+    i>=0 && findMovesCount[MOVE_LEN]++;
     return (i >= 0) ? true : false;
 }
 

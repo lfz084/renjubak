@@ -1068,10 +1068,14 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
     return vcfWinMoves.length;
 
 
-
+    
     // 搜索VCF
     function vcfActuator() {
 
+        for(let i=0; i<225; i++) {
+            pushMovesCount[i] = 0;
+            findMovesCount[i] = 0;
+        }
         let x;
         let y;
         let len;
@@ -1090,6 +1094,8 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                         maxTimer = maxTimer < 60000 ? maxTimer + ~~((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
                         if (!backstage) {
                             post("printMoves", { winMoves: vcfMoves, color: vcfColor });
+                            post("vConsole", pushMovesCount);
+                            post("vConsole", findMovesCount);
                         }
                     }
                     vcfFinding = continueFindVCF(timeOut, depth);
@@ -1100,14 +1106,18 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     break;
                 case -1:
                     copyArr(vcfArr, vcfInitial);
+                    post("vConsole", pushMovesCount);
+                    post("vConsole", findMovesCount);
+                    
                     return;
                     break;
             }
         }
+        
     }
 
 
-
+    
     // 搜索VCF,递归计算到深度10，返回给浏览器，等待定时器下一次调用。
     function continueFindVCF() {
 
