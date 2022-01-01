@@ -308,13 +308,13 @@
                     return loadApp()
                 })
                 .then(() => {
-                    
+
                     window.animationFuntion = (() => {
                         let anima = null;
-                        
+
                         function run(fun) {
                             if (fun()) {
-                                anima = requestAnimationFrame(()=>{run(fun)});
+                                anima = requestAnimationFrame(() => { run(fun) });
                             }
                             else {
                                 cancelAnimationFrame(anima);
@@ -324,9 +324,56 @@
                         return (fun) => {
                             run(fun);
                         };
-                        
+
                     })();
-                    
+                    /*
+                    let arr = cBoard.getArray();
+                    testEv(({ codeStr, inputStr }) => {
+                        try {
+                            let moves = [];
+                            for (let i = 0; i < inputStr * 1; i++) {
+                                moves[i] = i;
+                            }
+                            let vcfFailMoves = [];
+                            for (let i = 0; i < 225; i++) { vcfFailMoves[i] = {}; };
+                            let initArr = arr.slice(0),
+                                sTime = new Date().getTime();
+                            for (let k = 0; k < 10; k++) {
+                                for (let l = 0; l < 10000; l++) {
+                                    moves[0] = l;
+                                    pushFailMoves(vcfFailMoves, moves);
+                                    for (let i = 0; i < 1; i++) {
+                                        if (!findMoves(vcfFailMoves, moves)) {
+                                            alert("findMoves not eq");
+                                            break;
+                                        };
+                                    }
+                                }
+                            }
+                            alert(new Date().getTime() - sTime);
+
+                            resetVCF();
+                            sTime = new Date().getTime();
+                            for (let k = 0; k < 10; k++) {
+                                for (let l = 0; l < 10000; l++) {
+                                    vcfPositionPush(moves.length / 2, ~~(l/2), arr);
+                                    for (let i = 0; i < 1; i++) {
+                                        if (!vcfPositionHas(moves.length / 2, ~~(l/2), initArr)) {
+                                            alert("vcfHasPosition not eq");
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            alert(new Date().getTime() - sTime);
+                        }
+                        catch (err) {
+                            alert(err.message)
+                        }
+                    });
+                    */
+
+
                     //testEv(testMoveIdx);
                     //testEv(testGetArrValue);
                     //testEv(testIfSwitch, 1000);
@@ -356,9 +403,9 @@
                         }
                     });
                     */
-
                     cBoard.onMove = function(idx) {
                         try {
+                            
                             cBoard.cleLb("all");
 
                             let emptyList = new Array(15),
@@ -438,16 +485,20 @@
                             */
 
                             let st = new Date().getTime();
-                            for (let i = 0; i < 10000; i++) {
+                            for (let i = 0; i < -1; i++) {
                                 //isLineThree(7, 7, "x", 1, arr);
                                 //findFourPoint(arr, arr[idx], newarr);
                                 //testFour(arr, arr[idx], markArr);
-                                getLevel(arr, arr[idx]);
+                                //getLevel(arr, arr[idx]);
+                                v = 2 / 2;
                             }
                             //console.log(markArr)
-                            let level = getLevel(arr, arr[idx]);
-                            alert(`${new Date().getTime() - st}\nidx=${level>>8}\nlevel=${level&255}`);
-                            
+                            //let level = getLevel(arr, arr[idx]);
+
+                            findVCF(arr, arr[idx]);
+                            alert(`${new Date().getTime() - st}\n`)
+                            //alert(`${new Date().getTime() - st}\nidx=${level>>8}\nlevel=${level&255}`);
+
                             let sum = 0;
                             for (let i = 0; i < 90; i++) {
                                 for (let j = 0; j <= i; j++) {

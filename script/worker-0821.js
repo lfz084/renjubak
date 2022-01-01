@@ -1015,7 +1015,7 @@ function findVCT(arr, color, node, count, depth, backstage) {
 }
 
 
-
+/*
 function findVCF(arr, color, count = 1, depth = 225, timeOut = 36000000, backstage = true) {
     let rt;
     depth = arr.depth ? data.depth : depth;
@@ -1030,7 +1030,7 @@ function findVCF(arr, color, count = 1, depth = 225, timeOut = 36000000, backsta
     rt = findVCFB(arr, color, count, depth, timeOut, backstage);
     return rt;
 }
-
+*/
 
 
 // 连续查找,VCF

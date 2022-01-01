@@ -1,124 +1,71 @@
-"use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.00";
-const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
-const FIND_ALL = 0;
-const ONLY_FREE = 1; // 只找活3，活4
-const ONLY_NOFREE = 2; // 只找眠3，眠4
-const ONLY_VCF = 1; // 只找做VCF点
-const ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
+#define NULL 0
+typedef unsigned char BYTE;
+typedef unsigned int UINT; 
+typedef unsigned short DWORD;
 
-const GOMOKU_RULES = 1; //无禁
-const RENJU_RULES = 2; //有禁
+const char DIRECTIONS[4] = {0, 1, 2, 3}; //[→, ↓, ↘, ↗]; // 米字线
+const char FIND_ALL = 0;
+const char ONLY_FREE = 1; // 只找活3，活4
+const char ONLY_NOFREE = 2; // 只找眠3，眠4
+const char ONLY_VCF = 1; // 只找做VCF点
+const char ONLY_SIMPLE_WIN = 2; // 只找43级别做杀点
+
+const char GOMOKU_RULES = 1; //无禁
+const char RENJU_RULES = 2; //有禁
 
 //---------------- color --------------------
 
-const BLACK_COLOR = 1;
-const WHITE_COLOR = 2;
-const INVERT_COLOR = [0, 2, 1]; //利用数组反转棋子颜色
+const char BLACK_COLOR = 1;
+const char WHITE_COLOR = 2;
+const char INVERT_COLOR[3] = {0, 2, 1}; //利用数组反转棋子颜色
 
 //---------------- level --------------------
 
-const LEVEL_WIN = 10;
-const LEVEL_FREEFOUR = 9;
-const LEVEL_NOFREEFOUR = 8;
-const LEVEL_DOUBLEFREETHREE = 7;
-const LEVEL_DOUBLEVCF = LEVEL_DOUBLEFREETHREE;
-const LEVEL_FREETHREE = 6;
-const LEVEL_VCF = LEVEL_FREETHREE;
-const LEVEL_VCT = 4;
-const LEVEL_NONE = 0;
+const char LEVEL_WIN = 10;
+const char LEVEL_FREEFOUR = 9;
+const char LEVEL_NOFREEFOUR = 8;
+const char LEVEL_DOUBLEFREETHREE = 7;
+const char LEVEL_DOUBLEVCF = LEVEL_DOUBLEFREETHREE;
+const char LEVEL_FREETHREE = 6;
+const char LEVEL_VCF = LEVEL_FREETHREE;
+const char LEVEL_VCT = 4;
+const char LEVEL_NONE = 0;
 
 //--------------- lineInfo ------------------
 
-const FREE = 1; //0b00000001
-const MAX = 14; //0b00001110
-const MAX_FREE = 15; //0b00001111
-const FOUL = 16; //0b00010000
-const FOUL_FREE = 17; //0b00010001
-const FOUL_MAX = 30; //0b00011110
-const FOUL_MAX_FREE = 31; //0b00011111
-const MARK_MOVE = 224; //0b11100000
-const FREE_COUNT = 0x0700; //0b00000111 00000000
-const ADD_FREE_COUNT = 0x800; //0b00001000 00000000
-const MAX_COUNT = 0x7000; //0b01110000 00000000
-const DIRECTION = 0x7000; //0b01110000 00000000
-const ADD_MAX_COUNT = 0x8000; //0b10000000 00000000
-const ZERO = 0;
-const ONE_FREE = 3;
-const ONE_NOFREE = 2;
-const TWO_FREE = 5;
-const TWO_NOFREE = 4;
-const THREE_FREE = 7;
-const THREE_NOFREE = 6;
-const FOUR_FREE = 9;
-const FOUR_NOFREE = 8;
-const LINE_DOUBLE_FOUR = 24;
-const FIVE = 10;
-const SIX = 28;
-const SHORT = 14; //空间不够
+const short FREE = 1; //0b00000001
+const short MAX = 14; //0b00001110
+const short MAX_FREE = 15; //0b00001111
+const short FOUL = 16; //0b00010000
+const short FOUL_FREE = 17; //0b00010001
+const short FOUL_MAX = 30; //0b00011110
+const short FOUL_MAX_FREE = 31; //0b00011111
+const short MARK_MOVE = 224; //0b11100000
+const short FREE_COUNT = 0x0700; //0b00000111 00000000
+const short ADD_FREE_COUNT = 0x800; //0b00001000 00000000
+const short MAX_COUNT = 0x7000; //0b01110000 00000000
+const short DIRECTION = 0x7000; //0b01110000 00000000
+const short ADD_MAX_COUNT = 0x8000; //0b10000000 00000000
+const short ZERO = 0;
+const short ONE_FREE = 3;
+const short ONE_NOFREE = 2;
+const short TWO_FREE = 5;
+const short TWO_NOFREE = 4;
+const short THREE_FREE = 7;
+const short THREE_NOFREE = 6;
+const short FOUR_FREE = 9;
+const short FOUR_NOFREE = 8;
+const short LINE_DOUBLE_FOUR = 24;
+const short FIVE = 10;
+const short SIX = 28;
+const short SHORT = 14; //空间不够
 
-const EMPTYLIST = new Array(15);
+const char EMPTYLIST[15];
 
-const LINE_NAME = {
-    1: "活",
-    16: "禁",
-    0: "零",
-    3: "活一",
-    2: "眠一",
-    5: "活二",
-    4: "眠二",
-    7: "活三",
-    6: "眠三",
-    9: "活四",
-    8: "冲四",
-    24: "单线四四禁",
-    10: "五连",
-    28: "长连",
-    14: "空间不够"
-}
+char gameRules = RENJU_RULES;
 
-let gameRules = RENJU_RULES;
+//  --------------------------  --------------------------
 
-//--------------------  Node  ------------------------
-
-function Node(idx = `-1`, parentNode, childNode = []) {
-    this.parentNode = parentNode;
-    this.idx = idx;
-    this.childNode = childNode;
-}
-
-function movesToNode(moves, node) {
-    let cNode = node.childNode;
-    let leng = moves.length;
-    let startIdx = 0;
-    let sIdx;
-    for (sIdx = 0; sIdx < leng; sIdx++) {
-        for (startIdx = 0; startIdx < cNode.length; startIdx++) {
-            if (moves[sIdx] == cNode[startIdx].idx) break;
-        }
-        if (startIdx == cNode.length) break;
-        node = cNode[startIdx];
-        cNode = cNode[startIdx].childNode;
-    }
-    for (let i = sIdx; i < leng; i++) {
-        let idx = i == sIdx ? startIdx : 0; // idx == [].push
-        cNode[idx] = new Node(moves[i] * 1, node);
-        node = cNode[idx];
-        cNode = cNode[idx].childNode;
-    }
-    return node;
-}
-
-//----------------------  cBoardSize  --------------------------
-
-let cBoardSize = 15;
-
-function setCBoardSize(size) {
-    cBoardSize = size;
-    idxLists = createIdxLists(cBoardSize);
-    idxTable = createIdxTable();
-    aroundIdxTable = createAroundIdxTable();
-}
 
 //--------------------- idxLists ---------------------
 
@@ -307,6 +254,17 @@ function getAroundIdxCount(centerIdx, radius) {
 
 //，保存周围点的坐标
 let aroundIdxTable; // = createAroundIdxTable();
+
+//----------------------  cBoardSize  --------------------------
+
+char cBoardSize = 15;
+void setCBoardSize(char size) {
+    cBoardSize = size;
+    idxLists = createIdxLists(cBoardSize);
+    idxTable = createIdxTable();
+    aroundIdxTable = createAroundIdxTable();
+}
+
 
 //----------------------------------------------------
 
