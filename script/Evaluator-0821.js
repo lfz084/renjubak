@@ -1278,21 +1278,6 @@ function getFreeFourPoint(idx, arr, lineInfo) {
     return points;
 }
 
-/*
-function getBlockThree(idx, arr, info) {
-    let rt = new Array(4),
-        freeCount = (info >> 8) & 7,
-        move = (info >> 5) & 7,
-        direction = (info >> 12) & 7;
-    for (let m = 0; m > -5; m--) {
-        idx = moveIdx(idx, move + m, direction);
-        if (0 == arr[idx]) {
-            rt[1 + rt[0]++] = idx;
-        }
-    }
-}
-*/
-
 function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
 
 }

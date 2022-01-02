@@ -60,94 +60,98 @@ const short FIVE = 10;
 const short SIX = 28;
 const short SHORT = 14; //空间不够
 
-const char EMPTYLIST[15];
+char EMPTYLIST[15];
 
 char gameRules = RENJU_RULES;
 
 //  --------------------------  --------------------------
 
+char cBoardSize = 15;
+
+BYTE idxLists[4 * 29 * 43]; // = createIdxLists(15);
+
+short idxTable[226 * 29 * 4]; // = createIdxTable();
+
+short aroundIdxTable[(15 + 225) * 225]; // = createAroundIdxTable();
 
 //--------------------- idxLists ---------------------
 
 // 创建空白lists 用来保存阳线，阴线的idx
-function createEmptyLists() {
-    let outIdx = 225,
-        idxLists = new Array(4 * 29 * 43);
-
-    for (let i = idxLists.length - 1; i >= 0; i--) {
+BYTE* createEmptyLists() {
+    BYTE outIdx = 225;
+    for (int i = 4 * 29 * 43 - 1; i >= 0; i--) {
         idxLists[i] = outIdx;
     }
     return idxLists;
 }
 
 //保存棋盘区域内每一条线的idx，每条线按照 line[n] < line[n+1] 排序
-function createIdxLists(cBoardSize) {
-    let List,
-        idxLists = createEmptyLists();
+BYTE* createIdxLists(BYTE cBoardSize) {
+    BYTE* List = NULL;
+    
+    createEmptyLists();
     //direction = 0
-    for (let y = 0; y < 15; y++) {
-        List = y * 43;
-        for (let x = 0; x < 15; x++) {
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + x] = x + y * 15;
+    for (BYTE y = 0; y < 15; y++) {
+        List = idxLists + y * 43;
+        for (BYTE x = 0; x < 15; x++) {
+            if (x < cBoardSize && y < cBoardSize) List[14 + x] = x + y * 15;
         }
     }
     //direction = 1
-    for (let x = 0; x < 15; x++) {
-        List = (29 + x) * 43;
-        for (let y = 0; y < 15; y++) {
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + y] = x + y * 15;
+    for (BYTE x = 0; x < 15; x++) {
+        List = idxLists + (29 + x) * 43;
+        for (BYTE y = 0; y < 15; y++) {
+            if (x < cBoardSize && y < cBoardSize) List[14 + y] = x + y * 15;
         }
     }
     //direction = 2
-    for (let i = 0; i < 15; i++) { // x + (14-y) = i, y = x + 14 - i
-        List = (2 * 29 + i) * 43;
-        for (let j = 0; j <= i; j++) {
-            let x = 0 + j,
+    for (BYTE i = 0; i < 15; i++) { // x + (14-y) = i, y = x + 14 - i
+        List = idxLists + (2 * 29 + i) * 43;
+        for (BYTE j = 0; j <= i; j++) {
+            BYTE x = 0 + j,
                 y = x + 14 - i;
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+            if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
-    for (let i = 13; i >= 0; i--) { // (14-x) + y = i, y = i - 14 + x;
-        List = (2 * 29 + 14 + 14 - i) * 43;
-        for (let j = 0; j <= i; j++) {
-            let x = 14 - i + j,
+    for (BYTE i = 13; i >= 0; i--) { // (14-x) + y = i, y = i - 14 + x;
+        List = idxLists + (2 * 29 + 14 + 14 - i) * 43;
+        for (BYTE j = 0; j <= i; j++) {
+            BYTE x = 14 - i + j,
                 y = i - 14 + x;
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+            if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
     //direction = 3
-    for (let i = 0; i < 15; i++) { // x + y = i, y = i - x
-        List = (3 * 29 + i) * 43;
-        for (let j = 0; j <= i; j++) {
-            let x = i - j,
+    for (BYTE i = 0; i < 15; i++) { // x + y = i, y = i - x
+        List = idxLists + (3 * 29 + i) * 43;
+        for (BYTE j = 0; j <= i; j++) {
+            BYTE x = i - j,
                 y = i - x;
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+            if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
-    for (let i = 13; i >= 0; i--) { // (14-x)+(14-y) = i, y = 28 - i - x
-        List = (3 * 29 + 14 + 14 - i) * 43;
-        for (let j = 0; j <= i; j++) {
-            let x = 14 - j,
+    for (BYTE i = 13; i >= 0; i--) { // (14-x)+(14-y) = i, y = 28 - i - x
+        List = idxLists + (3 * 29 + 14 + 14 - i) * 43;
+        for (BYTE j = 0; j <= i; j++) {
+            BYTE x = 14 - j,
                 y = 28 - i - x;
-            if (x < cBoardSize && y < cBoardSize) idxLists[List + 14 + j] = x + y * 15;
+            if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
     return idxLists;
 }
 
-let idxLists; // = createIdxLists(15);
-
 //------------------------- idxTable ----------------------
 
 // 创建索引表，快速读取阳线，阴线idx. 超出棋盘范围返回 outIdx = 225
-function createIdxTable() {
-    let outIdx = 225,
-        tb = new Array(226 * 29 * 4);
-    for (let idx = 0; idx < 225; idx++) {
-        for (let move = -14; move < 15; move++) {
-            for (let direction = 0; direction < 4; direction++) {
-                let x = getX(idx),
-                    y = getY(idx);
+short* createIdxTable() {
+    BYTE outIdx = 225;
+    short* tb = idxTable;
+    for (BYTE idx = 0; idx < 225; idx++) {
+        for (char move = -14; move < 15; move++) {
+            for (BYTE direction = 0; direction < 4; direction++) {
+                BYTE x = idx % 15,
+                    y = ~~(idx/15);
                 if (x >= 0 && x < cBoardSize && y >= 0 && y < cBoardSize) {
                     switch (direction) {
                         case 0:
@@ -172,7 +176,7 @@ function createIdxTable() {
     }
 
 
-    for (let i = 29 * 4 - 1; i >= 0; i--) {
+    for (BYTE i = 29 * 4 - 1; i >= 0; i--) {
         tb[225 * 29 * 4 + i] = outIdx;
     }
 
@@ -180,238 +184,88 @@ function createIdxTable() {
 }
 
 // 按照阳线，阴线读取idx, 如果参数idx在棋盘外，直接返回 outIdx = 225
-function moveIdx(idx, move, direction = 0) {
+short moveIdx(BYTE idx, char move, BYTE direction) {
     return idxTable[(idx * 29 + move + 14) * 4 + direction]; // 7s
 }
 
-let idxTable; // = createIdxTable();
 
 //--------------------  aroundIdxTable  ------------------------
 
-function createAroundIdxTable() {
-    let idxTable = new Array((15 + 225) * 225),
-        outIdx = 225;
-    for (let idx = 0; idx < 225; idx++) {
-        for (let i = 0; i < 15; i++) {
+short* createAroundIdxTable() {
+    short* idxTable = aroundIdxTable;
+    BYTE outIdx = 225;
+    for (BYTE idx = 0; idx < 225; idx++) {
+        for (BYTE i = 0; i < 15; i++) {
             idxTable[idx * 240 + i] = 0;
         }
-        for (let i = 0; i < 225; i++) {
+        for (BYTE i = 0; i < 225; i++) {
             idxTable[idx * 240 + 15 + i] = outIdx;
         }
-        let pIdx = 0,
+        BYTE pIdx = 0,
             x = idx % 15,
             y = ~~(idx / 15);
         if (x < 0 || x >= cBoardSize || y < 0 || y >= cBoardSize) continue;
         idxTable[idx * 240 + 15 + pIdx++] = idx;
         idxTable[idx * 240] = pIdx;
-        for (let radius = 1; radius < 15; radius++) {
-            let top = moveIdx(idx, -radius, 1),
+        for (BYTE radius = 1; radius < 15; radius++) {
+            short top = moveIdx(idx, -radius, 1),
                 right = moveIdx(idx, radius, 0),
                 buttom = moveIdx(idx, radius, 1),
                 left = moveIdx(idx, -radius, 0),
                 nIdx;
             if (top != outIdx) {
-                for (let m = -radius + 1; m <= radius; m++) {
+                for (char m = -radius + 1; m <= radius; m++) {
                     nIdx = moveIdx(top, m, 0);
                     if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (right != outIdx) {
-                for (let m = -radius + 1; m <= radius; m++) {
+                for (char m = -radius + 1; m <= radius; m++) {
                     nIdx = moveIdx(right, m, 1);
                     if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (buttom != outIdx) {
-                for (let m = radius - 1; m >= -radius; m--) {
+                for (char m = radius - 1; m >= -radius; m--) {
                     nIdx = moveIdx(buttom, m, 0);
                     if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (left != outIdx) {
-                for (let m = radius - 1; m >= -radius; m--) {
+                for (char m = radius - 1; m >= -radius; m--) {
                     nIdx = moveIdx(left, m, 1);
                     if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             idxTable[idx * 240 + radius] = pIdx;
         }
-        //console.info(`idx=${idx}, pIdx=${pIdx}`)
     }
 
     return idxTable;
 }
 
 //返回centerIdx为中心，顺时针绕圈的第index个点，index=0时就直接返回centerIdx
-function aroundIdx(centerIdx, index) {
+short aroundIdx(BYTE centerIdx, BYTE index) {
     return aroundIdxTable[centerIdx * 240 + 15 + index];
 }
 
 //返回centerIdx为中心，radius半径内的点的计数，radius=0时，返回1
-function getAroundIdxCount(centerIdx, radius) {
+short getAroundIdxCount(BYTE centerIdx, BYTE radius) {
     return aroundIdxTable[centerIdx * 240 + radius];
 }
 
-//，保存周围点的坐标
-let aroundIdxTable; // = createAroundIdxTable();
 
 //----------------------  cBoardSize  --------------------------
 
-char cBoardSize = 15;
 void setCBoardSize(char size) {
     cBoardSize = size;
-    idxLists = createIdxLists(cBoardSize);
-    idxTable = createIdxTable();
-    aroundIdxTable = createAroundIdxTable();
+    createIdxLists(cBoardSize);
+    createIdxTable();
+    createAroundIdxTable();
 }
 
 
 //----------------------------------------------------
-
-// 复制一个维数组
-function copyMoves(moves) {
-    let m = [];
-    let len = moves.length
-    for (let i = 0; i < len; i++) {
-        m[i] = moves[i];
-    }
-    return m;
-}
-
-// 复制一个arr二维数组, 
-function copyArr(arr, arr2) {
-    getArr2D(arr);
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            arr[y][x] = arr2[y][x];
-        }
-    }
-    return arr;
-}
-
-
-
-
-//判断冲四点是否抓禁，不判断黑棋是否有五连点
-//x,y是白棋冲四点. 
-function isCatchFoul(x, y, arr) {
-
-}
-
-
-
-// 判断是否，已经五连胜
-function isWin(color, arr) {
-
-}
-
-
-
-// 不判断对手是否五连
-// 判断是否活四级别胜
-function isFFWin(x, y, color, arr, pass = false) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// 判断 x，y是否长连
-function isSix(x, y, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-function isLineSix(x, y, direction, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// 判断x,y,点是否五连
-function isFive(x, y, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-function isFour(x, y, color, arr, free, passFoul) {
-
-}
-
-
-
-/*
-// return 5 || 0;
-function testLineFive(idx, direction, color, arr) {
-    let rt = 0,
-        ov = arr[idx],
-        emptyCount = 0,
-        colorCount = 0,
-        max = -1;
-    arr[idx] = color;
-    for (let move = -4; move < 5; move++) {
-        let v = getArrValue(idx, move, direction, arr);
-        if (v == 0) {
-            emptyCount++;
-        }
-        else if (v == color) {
-            colorCount++;
-        }
-        else { // v!=color || v==-1
-            emptyCount = 0;
-            colorCount = 0;
-        }
-        if (emptyCount + colorCount == 5) {
-            if (colorCount == 5) {
-                if (gameRules == GOMOKU_RULES) {
-                    rt = 5;
-                    break;
-                }
-                else {
-                    if (color != getArrValue(idx, move - 5, direction, arr) &&
-                        color != getArrValue(idx, move + 1, direction, arr))
-                    {
-                        rt = 5;
-                        break;
-                    }
-                }
-            }
-            v = getArrValue(idx, move - 4, direction, arr);
-            if (v == 0) emptyCount--;
-            else colorCount--;
-        }
-    }
-    arr[idx] = ov;
-    return rt;
-}
-
-
-
-function testLineFourGomoku(idx, direction, color, arr, ftype) {
-    if (0 == getArrValue(idx, -4, direction, arr)) {
-        if (0 == getArrValue(idx, 1, direction, arr))
-            return free;
-        else
-            return normal;
-    }
-    else if (0 == getArrValue(idx, 0, direction, arr)) {
-        if (0 == getArrValue(idx, -1, direction, arr))
-            return free;
-        else
-            return normal;
-    }
-    return normal;
-}
-
-function testLineFourRenju(idx, direction, color, arr, ftype) {
-
-}
-*/
 
 // (long*)lineInfo,  (lineInfo >> 3) & 0b111
 function testLine(idx, direction, color, arr) {
