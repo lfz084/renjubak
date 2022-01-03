@@ -386,75 +386,6 @@ function isFour(x, y, color, arr, free, passFoul) {
 }
 
 
-
-/*
-// return 5 || 0;
-function testLineFive(idx, direction, color, arr) {
-    let rt = 0,
-        ov = arr[idx],
-        emptyCount = 0,
-        colorCount = 0,
-        max = -1;
-    arr[idx] = color;
-    for (let move = -4; move < 5; move++) {
-        let v = getArrValue(idx, move, direction, arr);
-        if (v == 0) {
-            emptyCount++;
-        }
-        else if (v == color) {
-            colorCount++;
-        }
-        else { // v!=color || v==-1
-            emptyCount = 0;
-            colorCount = 0;
-        }
-        if (emptyCount + colorCount == 5) {
-            if (colorCount == 5) {
-                if (gameRules == GOMOKU_RULES) {
-                    rt = 5;
-                    break;
-                }
-                else {
-                    if (color != getArrValue(idx, move - 5, direction, arr) &&
-                        color != getArrValue(idx, move + 1, direction, arr))
-                    {
-                        rt = 5;
-                        break;
-                    }
-                }
-            }
-            v = getArrValue(idx, move - 4, direction, arr);
-            if (v == 0) emptyCount--;
-            else colorCount--;
-        }
-    }
-    arr[idx] = ov;
-    return rt;
-}
-
-
-
-function testLineFourGomoku(idx, direction, color, arr, ftype) {
-    if (0 == getArrValue(idx, -4, direction, arr)) {
-        if (0 == getArrValue(idx, 1, direction, arr))
-            return free;
-        else
-            return normal;
-    }
-    else if (0 == getArrValue(idx, 0, direction, arr)) {
-        if (0 == getArrValue(idx, -1, direction, arr))
-            return free;
-        else
-            return normal;
-    }
-    return normal;
-}
-
-function testLineFourRenju(idx, direction, color, arr, ftype) {
-
-}
-*/
-
 // (long*)lineInfo,  (lineInfo >> 3) & 0b111
 function testLine(idx, direction, color, arr) {
     let max = -1, // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
@@ -1579,13 +1510,13 @@ function testFive(arr, color, infoArr) {
     for (let i = 0; i < 225; i++) infoArr[i] = 0;
     for (let direction = 0; direction < 4; direction++) {
         let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
+            listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
         for (let list = listStart; list < listEnd; list++) {
             let emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
             for (let move = moveStart; move < moveEnd; move++) {
@@ -1665,7 +1596,7 @@ function testFour(arr, color, infoArr) {
                 emptyStart = 0,
                 emptyEnd = 0;
             for (let move = moveStart; move < moveEnd; move++) {
-                
+
                 let pIdx = (direction * 29 + list) * 43 + move,
                     v = arr[idxLists[pIdx]];
                 if (v == 0) {
@@ -1718,7 +1649,7 @@ function testFour(arr, color, infoArr) {
 
                                     if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                         markArr[emptyList[e]] += 0x100; //free++
-                                        markArr[emptyList[e]] |= ((move - emptyMoves[e]) << 5); //set markMove
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
                                     }
                                     markArr[emptyList[e]] |= ADD_FREE_COUNT;
                                 }
@@ -1770,13 +1701,13 @@ function testThree(arr, color, infoArr) {
     for (let i = 0; i < 225; i++) infoArr[i] = 0;
     for (let direction = 0; direction < 4; direction++) {
         let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
+            listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
         for (let list = listStart; list < listEnd; list++) {
             let emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
             for (let move = moveStart; move < moveEnd; move++) {
@@ -1823,6 +1754,7 @@ function testThree(arr, color, infoArr) {
                             for (let e = emptyStart; e < emptyEnd; e++) {
                                 if (((markArr[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
                                     markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | (colorCount + 1 << 1);
+                                    //if(idxToName(emptyList[e])=="L7") console.error(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
                                 }
 
                                 if (((markArr[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
@@ -1833,7 +1765,8 @@ function testThree(arr, color, infoArr) {
 
                                     if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                         markArr[emptyList[e]] += 0x100; //free++
-                                        markArr[emptyList[e]] |= ((move - emptyMoves[e]) << 5); //set markMove
+                                        markArr[emptyList[e]] =  (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
+                                        //if(idxToName(emptyList[e])=="L7") console.info(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
                                     }
                                     markArr[emptyList[e]] |= ADD_FREE_COUNT;
                                 }
@@ -1867,9 +1800,26 @@ function testThree(arr, color, infoArr) {
             else if (5 > max && max > 2) {
                 markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0; //mark free
                 if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
-                    //console.log(`${idxToName(idx)}`)
+                    //console.log(`idx: ${idxToName(idx)}\n direction: ${direction}, \n markMove:  ${(markArr[idx] & 0xe0) >> 5}`);
                     if (gameRules == RENJU_RULES && color == 1) {
                         let foul = isFoul(idx, arr) ? 1 : 0;
+                        if ((max == 3) && (markArr[idx] & FREE) && (foul == 0)) {
+                            arr[idx] = color;
+                            let ps = getFreeFourPoint(idx, arr, ((markArr[idx] & 0x8fff) | (direction << 12)));
+                            //console.warn(`[${ps[0]},${idxToName(ps[1])}, ${idxToName(ps[2])}]`);
+                            let i = 1;
+                            for (i = 1; i <= ps[0]; i++) {
+                                let f = isFoul(ps[i], arr);
+                                //console.warn(`${idxToName(ps[i])} isFoul: ${f}`);
+                                if (!f) break; //ps[i] is freeFour point
+                            }
+                            arr[idx] = 0;
+                            if (i > ps[0]) {
+                                //console.warn(`markArr[idx]: ${markArr[idx]}`);
+                                markArr[idx] &= 0xf8fe; //clear free
+                                //console.warn(`markArr[idx]: ${markArr[idx]}`);
+                            }
+                        }
                         infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12) | foul << 4;
                         //console.log(`${idxToName(idx)}, foul=${foul}, infoArr[idx]=${infoArr[idx].toString(2)}`)
                     }
@@ -1891,13 +1841,13 @@ function getLevel(arr, color) {
         emptyMoves = new Array(15);
     for (let direction = 0; direction < 4; direction++) {
         let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
+            listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
         for (let list = listStart; list < listEnd; list++) {
             let emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
             for (let move = moveStart; move < moveEnd; move++) {
@@ -2065,12 +2015,12 @@ function vcfNewNode(idx) {
 function vcfTransTablePush(keyLen, keySum, position, moves) {
     if (keyLen < 37)
         pushFailMoves(vcfTransMoves, moves);
-    else 
+    else
         vcfPositionPush(keyLen, keySum, position);
 }
 
 function vcfTransTableHas(keyLen, keySum, position, moves) {
-    if (keyLen < 37) 
+    if (keyLen < 37)
         return findMoves(vcfTransMoves, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
@@ -2107,7 +2057,7 @@ function findVCF(arr, color) {
         nColorIdx,
         infoArr = new Array(225),
         moves = new Array(0),
-        stackIdx = [-1,-1,225, 225],
+        stackIdx = [-1, -1, 225, 225],
         sum = 0,
         done = false,
         pushMoveCount = 0,
@@ -2131,9 +2081,9 @@ function findVCF(arr, color) {
                 //console.log(`[${moveIndexToName(moves, 500)}]\n [${stackIdx}]\n ${colorIdx}`);
                 //console.warn(`${idxToName(vcfNodes[pCurrentNode])}`)
             }
-            
+
             //console.info(`${idxToName(vcfNodes[vcfNodes[pCurrentNode + 2]])}`)
-            if (vcfTransTableHas(moves.length / 2, sum, arr, moves)/*findMoves(vcfTransMoves, moves)*/) {
+            if (vcfTransTableHas(moves.length / 2, sum, arr, moves) /*findMoves(vcfTransMoves, moves)*/ ) {
                 hasCount++;
                 //console.error(`[${moveIndexToName(moves, 500)}]`);
             }
@@ -2151,7 +2101,7 @@ function findVCF(arr, color) {
                         end = 225;
                     }
 
-                    for (let i = end-1; i >= 0; i--) {
+                    for (let i = end - 1; i >= 0; i--) {
                         let idx = aroundIdx(centerIdx, i),
                             max = infoArr[idx] & FOUL_MAX;
                         if (max == FOUR_NOFREE) {
@@ -2166,10 +2116,10 @@ function findVCF(arr, color) {
                                 //console.warn(`[${moveIndexToName(moves.concat(idx), 500)}]`);
                                 //pushFailMoves(vcfTransMoves, moves);
                                 vcfTransTablePush(moves.length / 2, sum, arr, moves);
-                                for(let j=moves.length-1; j>=0; j--) {
+                                for (let j = moves.length - 1; j >= 0; j--) {
                                     stackIdx.push(-1);
                                 }
-                                stackIdx.push(-1,-1);
+                                stackIdx.push(-1, -1);
                                 break;
                             }
                             else {
@@ -2183,7 +2133,7 @@ function findVCF(arr, color) {
             }
         }
         else {
-            if(moves.length > 72) pushPositionCount++;
+            if (moves.length > 72) pushPositionCount++;
             else pushMoveCount++;
             pushCountByte += moves.length / (1024 * 1024);
             //pushFailMoves(vcfTransMoves, moves);
@@ -2206,13 +2156,13 @@ function findVCF(arr, color) {
         }
         //done = done || pushMoveCount > 1000;
     }
-    
-    let isEq = true 
-    for(let i=0; i<225; i++){
-        if(arr[i]!=initArr[i]) isEq = false;
+
+    let isEq = true
+    for (let i = 0; i < 225; i++) {
+        if (arr[i] != initArr[i]) isEq = false;
     }
     "alert" in self && alert(`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
-    post("vConsole",`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
+    post("vConsole", `time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
 }
 
 //--------------------------------------------------

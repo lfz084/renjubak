@@ -60,28 +60,43 @@ const short FIVE = 10;
 const short SIX = 28;
 const short SHORT = 14; //空间不够
 
-char VALUE_LIST[11] = {0};
-BYTE EMPTY_LIST[15] = {0};
-
-BYTE gameRules = RENJU_RULES;
 
 //  --------------------------  --------------------------
 
 BYTE cBoardSize = 15;
+BYTE gameRules = RENJU_RULES;
 
-BYTE idxLists[4 * 29 * 43] = {0}; // = createIdxLists(15);
-
+BYTE idxLists[4 * 29 * 43] = {0}; // = createIdxLists();
 BYTE idxTable[226 * 29 * 4] = {0}; // = createIdxTable();
-
 BYTE aroundIdxTable[(15 + 225) * 225] = {0}; // = createAroundIdxTable();
 
+char valueList[11] = {0}; //testLine, testLineThree...
 BYTE stackBuffer[36 * 12] = {0}; // isFoul stackBuffer
-
 BYTE getPoints[4] = {0}; // getBlockThreePoints, getFreeFourPoint
+BYTE freeFourPoints[4] = {0}; //testThree
 
-//--------------------- log ---------------------
+BYTE emptyList[15] = {0}; //testFive, testFour...
+BYTE emptyMoves[15] = {0};
+DWORD markArr[226] = {0};
+DWORD infoArr[226] = {0}; //getLevel
+
+//--------------------- log --------------------------
 
 extern void log(double num);
+
+////------------------ setBuffer ---------------------
+
+void setBuffer(BYTE* buf, long len, BYTE value) {
+    for (long i=0; i<len; i++) {
+        buf[i] = value;
+    }
+}
+
+void setBuffer(DWORD* buf, long len, DWORD value) {
+    for (long i=0; i<len; i++) {
+        buf[i] = value;
+    }
+}
 
 //--------------------- idxLists ---------------------
 
@@ -183,6 +198,10 @@ void createIdxTable() {
                 }
             }
         }
+    }
+    
+    for (BYTE i = 0; i < 29 * 4; i++) {
+        idxTable[225 * 29 * 4 + i] = outIdx;
     }
 
 }
@@ -289,11 +308,11 @@ DWORD testLine(BYTE idx, BYTE direction, char color, char* arr) {
     char ov = arr[idx];
     arr[idx] = color;
     // getArrValue(18 - 28次)，使用缓存快一些
-    VALUE_LIST[0] = getArrValue(idx, -5, direction, arr);
-    VALUE_LIST[1] = getArrValue(idx, -4, direction, arr);
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
     for (char move = -4; move < 5; move++) {
-        VALUE_LIST[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        char v = VALUE_LIST[move + 5];
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -307,7 +326,7 @@ DWORD testLine(BYTE idx, BYTE direction, char color, char* arr) {
         if (emptyCount + colorCount == 5) {
 
             if (gameRules == RENJU_RULES && color == 1 &&
-                (color == VALUE_LIST[move] || color == VALUE_LIST[move + 6]))
+                (color == valueList[move] || color == valueList[move + 6]))
             {
                 if (colorCount == 5 && colorCount > max) {
                     max = SIX;
@@ -339,7 +358,7 @@ DWORD testLine(BYTE idx, BYTE direction, char color, char* arr) {
 
             }
 
-            v = VALUE_LIST[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -377,11 +396,11 @@ DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
     char ov = arr[idx];
     arr[idx] = 1;
     // getArrValue(18 - 28次)，使用缓存快一些
-    VALUE_LIST[0] = getArrValue(idx, -5, direction, arr);
-    VALUE_LIST[1] = getArrValue(idx, -4, direction, arr);
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
     for (char move = -4; move < 5; move++) {
-        VALUE_LIST[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        char v = VALUE_LIST[move + 5];
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -394,8 +413,8 @@ DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
         }
         if (emptyCount + colorCount == 5) {
             if (colorCount == 5) {
-                if (1 == VALUE_LIST[move] ||
-                    1 == VALUE_LIST[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 {
                     max = SIX;
                 }
@@ -408,8 +427,8 @@ DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
                 break;
             }
             else if (colorCount == 4) {
-                if (1 == VALUE_LIST[move] ||
-                    1 == VALUE_LIST[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 { //六腐形
                 }
                 else {
@@ -433,8 +452,8 @@ DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
                 }
             }
             else if (colorCount == 3 && max <= 3) {
-                if (1 == VALUE_LIST[move] ||
-                    1 == VALUE_LIST[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 { //六腐形
                 }
                 else {
@@ -458,7 +477,7 @@ DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
                 }
             }
 
-            v = VALUE_LIST[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -587,11 +606,11 @@ DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
     char ov = arr[idx];
     arr[idx] = color;
     // getArrValue(18 - 28次)，使用缓存快一些
-    VALUE_LIST[0] = getArrValue(idx, -5, direction, arr);
-    VALUE_LIST[1] = getArrValue(idx, -4, direction, arr);
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
     for (char move = -4; move < 5; move++) {
-        VALUE_LIST[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        char v = VALUE_LIST[move + 5];
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -605,8 +624,8 @@ DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
         if (emptyCount + colorCount == 5) {
             if (colorCount == 5) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == VALUE_LIST[move] ||
-                        color == VALUE_LIST[move + 6]))
+                    (color == valueList[move] ||
+                        color == valueList[move + 6]))
                 {
                     max = SIX;
                 }
@@ -620,8 +639,8 @@ DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
             }
             else if (colorCount == 4) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == VALUE_LIST[move] ||
-                        color == VALUE_LIST[move + 6])) {}
+                    (color == valueList[move] ||
+                        color == valueList[move + 6])) {}
                 else {
                     if (max < 4) {
                         max = 4;
@@ -644,8 +663,8 @@ DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
             }
             else if (colorCount == 3 && max <= 3) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == VALUE_LIST[move] ||
-                        color == VALUE_LIST[move + 6]))
+                    (color == valueList[move] ||
+                        color == valueList[move + 6]))
                 { //六腐形
                 }
                 else {
@@ -669,7 +688,7 @@ DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
                 }
             }
 
-            v = VALUE_LIST[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -886,6 +905,426 @@ bool isFoul(BYTE idx, char* arr) {
 
     arr[idx] = ov;
     return stackBuffer[VALUE] > 1;
+}
+
+
+
+void testFive(char* arr, char color, DWORD* infoArr) {
+    setBuffer(emptyList, 15, 0); //empty
+    setBuffer(emptyMoves, 15, 0);
+    setBuffer(infoArr, 225, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 225, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
+                colorCount = 0,
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
+                emptyStart = 0,
+                emptyEnd = 0;
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
+                if (v == 0) {
+                    emptyCount++;
+                    emptyMoves[emptyEnd] = move;
+                    emptyList[emptyEnd++] = idxLists[pIdx];
+                }
+                else if (v == color) {
+                    colorCount++;
+                }
+                else { // v!=color || v==-1
+                    emptyCount = 0;
+                    colorCount = 0;
+                    emptyStart = emptyEnd;
+                }
+
+                if (emptyCount + colorCount == 5) {
+                    if (colorCount == 4) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                    }
+
+                    v = arr[idxLists[pIdx - 4]];
+                    if (v == 0) {
+                        emptyCount--;
+                        emptyStart++;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                        }
+                    }
+                    else {
+                        colorCount--;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = markArr[idx] & MAX;
+            if (FIVE == max) {
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+            }
+        }
+    }
+}
+
+void testFour(char* arr, char color, DWORD* infoArr) {
+    setBuffer(emptyList, 15, 0); //empty
+    setBuffer(emptyMoves, 15, 0);
+    setBuffer(infoArr, 225, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 225, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
+                colorCount = 0,
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
+                emptyStart = 0,
+                emptyEnd = 0;
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
+                if (v == 0) {
+                    emptyCount++;
+                    emptyMoves[emptyEnd] = move;
+                    emptyList[emptyEnd++] = idxLists[pIdx];
+                }
+                else if (v == color) {
+                    colorCount++;
+                }
+                else { // v!=color || v==-1
+                    emptyCount = 0;
+                    colorCount = 0;
+                    emptyStart = emptyEnd;
+                }
+
+                if (emptyCount + colorCount == 5) {
+                    if (colorCount == 4) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                    }
+                    else if (colorCount == 3) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        { //六腐形
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                if ((markArr[emptyList[e]] & MAX) < FOUR_NOFREE) {
+                                    markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | FOUR_NOFREE;
+                                }
+
+                                if ((markArr[emptyList[e]] & MAX) == FOUR_NOFREE) {
+                                    if (markArr[emptyList[e]] & ADD_MAX_COUNT) {
+                                        markArr[emptyList[e]] += 0x1000; //count++
+                                    }
+                                    markArr[emptyList[e]] = markArr[emptyList[e]] & 0x7fff;
+
+                                    if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
+                                        markArr[emptyList[e]] += 0x100; //free++
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
+                                    }
+                                    markArr[emptyList[e]] |= ADD_FREE_COUNT;
+                                }
+                            }
+                        }
+                    }
+
+                    v = arr[idxLists[pIdx - 4]];
+                    if (v == 0) {
+                        emptyCount--;
+                        emptyStart++;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                        }
+                    }
+                    else {
+                        colorCount--;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = markArr[idx] & MAX;
+            if (FIVE == max) {
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+            }
+            else if (FOUR_NOFREE == max) {
+                markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0;
+                if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
+                    if (gameRules == RENJU_RULES && color == 1) {
+                        BYTE foul = isFoul(idx, arr) ? 1 : 0;
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12) | foul << 4;
+                    }
+                    else
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+                }
+            }
+        }
+    }
+}
+
+void testThree(char* arr, char color, DWORD* infoArr) {
+    setBuffer(emptyList, 15, 0); //empty
+    setBuffer(emptyMoves, 15, 0);
+    setBuffer(infoArr, 225, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 225, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
+                colorCount = 0,
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
+                emptyStart = 0,
+                emptyEnd = 0;
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
+                if (v == 0) {
+                    emptyCount++;
+                    emptyMoves[emptyEnd] = move;
+                    emptyList[emptyEnd++] = idxLists[pIdx];
+                }
+                else if (v == color) {
+                    colorCount++;
+                }
+                else { // v!=color || v==-1
+                    emptyCount = 0;
+                    colorCount = 0;
+                    emptyStart = emptyEnd;
+                }
+                
+                if (emptyCount + colorCount == 5) {
+                    if (colorCount == 4) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                    }
+                    else if (4 > colorCount && colorCount > 1) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        { //六腐形
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                if (((markArr[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                                    markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | ((colorCount + 1) << 1);
+                                }
+
+                                if (((markArr[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                                    if (markArr[emptyList[e]] & ADD_MAX_COUNT) {
+                                        markArr[emptyList[e]] += 0x1000; //count++
+                                    }
+                                    markArr[emptyList[e]] = markArr[emptyList[e]] & 0x7fff;
+
+                                    if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
+                                        markArr[emptyList[e]] += 0x100; //free++
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
+                                    }
+                                    markArr[emptyList[e]] |= ADD_FREE_COUNT;
+                                }
+                            }
+                        }
+                    }
+
+                    v = arr[idxLists[pIdx - 4]];
+                    if (v == 0) {
+                        emptyCount--;
+                        emptyStart++;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                        }
+                    }
+                    else {
+                        colorCount--;
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                            markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (markArr[idx] & MAX) >> 1;
+            if (5 == max) {
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+            }
+            else if (5 > max && max > 2) {
+                markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0; //mark free
+                if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
+                    if (gameRules == RENJU_RULES && color == 1) {
+                        BYTE foul = isFoul(idx, arr) ? 1 : 0;
+                        if((max == 3) && (markArr[idx] & FREE) && (foul == 0)) {
+                            arr[idx] = color;
+                            *(UINT*)(freeFourPoints) = getFreeFourPoint(idx, arr, ((markArr[idx] & 0x8fff) | (direction << 12)));
+                            BYTE i = 1;
+                            for (i=1; i<=freeFourPoints[0]; i++) { 
+                                BYTE f = isFoul(freeFourPoints[i], arr);
+                                if (!f) break; //freeFourPoints[i] is freeFour point
+                            }
+                            if (i > freeFourPoints[0]) markArr[idx] &= 0xf8fe; //clear free
+                            arr[idx] = 0;
+                        }
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12) | foul << 4;
+                    }
+                    else
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+                }
+            }
+        }
+    }
+}
+
+
+
+DWORD getLevel(char* arr, char color) {
+    bool isWin = false;
+    short fiveIdx = -1;
+    setBuffer(infoArr, 225, 0);
+    setBuffer(emptyList, 15, 0);
+    setBuffer(emptyMoves, 15, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 225, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
+                colorCount = 0,
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
+                emptyStart = 0,
+                emptyEnd = 0;
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
+                if (v == 0) {
+                    emptyCount++;
+                    emptyMoves[emptyEnd] = move;
+                    emptyList[emptyEnd++] = idxLists[pIdx];
+                }
+                else if (v == color) {
+                    colorCount++;
+                }
+                else { // v!=color || v==-1
+                    emptyCount = 0;
+                    colorCount = 0;
+                    emptyStart = emptyEnd;
+                }
+
+                if (emptyCount + colorCount == 5) {
+                    if (colorCount == 5) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        { //
+                        }
+                        else {
+                            isWin = true;
+                            direction = 4; //break for
+                            list = listEnd;
+                            move = moveEnd;
+                        }
+                    }
+                    else if (colorCount == 4) {
+                        if (gameRules == RENJU_RULES && color == 1 &&
+                            (color == arr[idxLists[pIdx - 5]] ||
+                                color == arr[idxLists[pIdx + 1]]))
+                        { //
+                        }
+                        else {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                                markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
+                            }
+                        }
+                    }
+
+                    v = arr[idxLists[pIdx - 4]];
+                    if (v == 0) {
+                        emptyCount--;
+                        emptyStart++;
+                    }
+                    else {
+                        colorCount--;
+                    }
+                }
+            }
+        }
+
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (markArr[idx] & MAX) >> 1;
+            if (5 == max) {
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
+            }
+        }
+    }
+
+    if (isWin) {
+        return LEVEL_WIN;
+    }
+    else {
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (infoArr[idx] & MAX) >> 1;
+            if (5 == max) {
+                if (fiveIdx == -1) fiveIdx = idx;
+                else if (fiveIdx != idx) return (fiveIdx << 8) | LEVEL_FREEFOUR;
+            }
+        }
+        if (fiveIdx == -1)
+            return LEVEL_NONE;
+        else if (gameRules == RENJU_RULES && color == 2 && isFoul(fiveIdx, arr))
+            return (fiveIdx << 8) | LEVEL_FREEFOUR;
+        else
+            return (fiveIdx << 8) | LEVEL_NOFREEFOUR;
+    }
 }
 
 
