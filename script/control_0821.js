@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.00";
+self.SCRIPT_VERSIONS["control"] = "v1202.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1256,7 +1256,7 @@ window.control = (() => {
                 return;
             }
             viewport1.resize();
-            let arr = cBd.getArray2D();
+            let arr = cBd.getArray();// cBd.getArray2D();
             switch (but.input.value * 1) {
                 case 1:
                     engine.postMsg("findVCF", {
@@ -1516,8 +1516,8 @@ window.control = (() => {
             cBoardSizeMenu.input.selectedIndex = 15 - this.size;
             setMenuRadio(cBoardSizeMenu, cBoardSizeMenu.input.selectedIndex);
             viewport1.scrollTop();
-            setCBoardSize && setCBoardSize.constructor.name=="Function" && 
-                setCBoardSize(this.size);
+            /*setCBoardSize && setCBoardSize.constructor.name=="Function" && 
+                setCBoardSize(this.size);*/
         };
         cBd.onSetCoordinate = function() {
             coordinateMenu.input.selectedIndex = this.coordinateType;

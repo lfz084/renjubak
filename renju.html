@@ -45,7 +45,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1202.00";
+        window.APP_VERSION = "v1202.01";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -129,7 +129,7 @@
                          "增加退出提示,防止误操作丢失数据"],
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
-            "v1202.00": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
+            "v1202.01": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
@@ -335,13 +335,14 @@
                             for (let i = 0; i < inputStr * 1; i++) {
                                 moves[i] = i;
                             }
+                        
                             let vcfFailMoves = [];
                             for (let i = 0; i < 225; i++) { vcfFailMoves[i] = {}; };
                             let initArr = arr.slice(0),
                                 sTime = new Date().getTime();
                             for (let k = 0; k < 10; k++) {
-                                for (let l = 0; l < 10000; l++) {
-                                    moves[0] = l;
+                                for (let l = 0; l < 1000; l++) {
+                                    moves[0] = l & 255;
                                     pushFailMoves(vcfFailMoves, moves);
                                     for (let i = 0; i < 1; i++) {
                                         if (!findMoves(vcfFailMoves, moves)) {
@@ -355,11 +356,16 @@
 
                             resetVCF();
                             sTime = new Date().getTime();
-                            for (let k = 0; k < 10; k++) {
-                                for (let l = 0; l < 10000; l++) {
-                                    vcfPositionPush(moves.length / 2, ~~(l/2), arr);
+                            moves[0] = 0;
+                            for (let k = 63; k < 73; k--) {
+                                moves.length = k;
+                                for (let l = 0; l < 7434; l++) {
+                                    //moves[0] = l & 255;
+                                    vcfMovesPush(k, l, moves);
+                                    //vcfPositionPush(k, l, arr);
                                     for (let i = 0; i < 1; i++) {
-                                        if (!vcfPositionHas(moves.length / 2, ~~(l/2), initArr)) {
+                                        if (!vcfMovesHas(k, l, moves)) {
+                                        //if (!vcfPositionHas(k, l, initArr)) {
                                             alert("vcfHasPosition not eq");
                                             break;
                                         }
@@ -369,7 +375,7 @@
                             alert(new Date().getTime() - sTime);
                         }
                         catch (err) {
-                            alert(err.message)
+                            alert(err.Stack || err.message)
                         }
                     });
                     */
@@ -406,7 +412,7 @@
                     */
                     cBoard.onMove = function(idx) {
                         try {
-
+                            
                             cBoard.cleLb("all");
 
                             let emptyList = new Array(15),
@@ -448,6 +454,9 @@
                                 newarr = getArr2D([]),
                                 markArr = new Array(225),
                                 around = [];
+                            let arrs = `[${arr}]`;
+                            alert(arrs)
+                            msg(arrs, "input");
                             /*
                             for (let i = 0; i < 225; i++) {
                                 around.push(aroundIdx(idx, i))

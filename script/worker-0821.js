@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.01";
 if (self.importScripts)
     self.importScripts('emoji-0821.js',`Evaluator-0821.js`);
 
@@ -1032,13 +1032,13 @@ function findVCF(arr, color, count = 1, depth = 225, timeOut = 36000000, backsta
 }
 */
 
-
 // 连续查找,VCF
 //color 设置棋子颜色， timeout 设置超时毫秒单位， 
 // depth 计算深度， backstage 后台模式, count VCF个数上限
 // 不会会改变arr参数的值，不需要 copyArr([], data）
 function findVCFB(arr, color, count, depth, timeOut, backstage) {
 
+    let loopCount = 0;
     //console.log("vcf start");
     let data = arr.depth ? arr : null; // loadcontinue findvcf
     timeOut = data ? data.timeOut : timeOut;
@@ -1064,18 +1064,15 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
     vcfStartTimer = new Date().getTime();
 
     vcfActuator(timeOut, depth, count, backstage);
-
+    post("vConsole", `pushMoveCount: ${pushMoveCount}\n
+        pushPositionCount: ${pushPositionCount}\n
+        hasCount: ${hasCount}`)
     return vcfWinMoves.length;
 
 
     
     // 搜索VCF
     function vcfActuator() {
-
-        for(let i=0; i<225; i++) {
-            pushMovesCount[i] = 0;
-            findMovesCount[i] = 0;
-        }
         let x;
         let y;
         let len;
@@ -1094,8 +1091,6 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                         maxTimer = maxTimer < 60000 ? maxTimer + ~~((maxTimer / 300) * (maxTimer / 300)) : maxTimer;
                         if (!backstage) {
                             post("printMoves", { winMoves: vcfMoves, color: vcfColor });
-                            post("vConsole", pushMovesCount);
-                            post("vConsole", findMovesCount);
                         }
                     }
                     vcfFinding = continueFindVCF(timeOut, depth);
@@ -1106,8 +1101,6 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     break;
                 case -1:
                     copyArr(vcfArr, vcfInitial);
-                    post("vConsole", pushMovesCount);
-                    post("vConsole", findMovesCount);
                     
                     return;
                     break;
@@ -1214,6 +1207,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 arr[ty][tx] = nColor;
                 // 为下次调用保存进攻级别
                 vcfSaveLevel(tx, ty, nColor, arr);
+                if(!(++loopCount & 0xffff)) post("vConsole", loopCount);
 
                 // 重复了错误分支，再退一手，递归退到合适位置
                 let fm = findMoves(FailMoves, moves);
@@ -1251,6 +1245,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 arr[ty][tx] = nColor;
                 // 为下次调用保存进攻级别
                 vcfSaveLevel(tx, ty, nColor, arr);
+                if(!(++loopCount & 0xffff)) post("vConsole", loopCount);
 
                 // 重复了错误分支，再退一手，递归退到合适位置
                 let fm = findMoves(FailMoves, moves);
@@ -1311,6 +1306,8 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 l = moves.length;
                 x = getX(moves[l - 1]);
                 y = getY(moves[l - 1]);
+                
+                if(!(++loopCount & 0xffff)) post("vConsole", loopCount);
 
                 arr[y][x] = nColor;
                 // 为下次调用保存进攻级别

@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.01";
 const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
 const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
@@ -331,59 +331,6 @@ function copyArr(arr, arr2) {
     return arr;
 }
 
-
-
-
-//判断冲四点是否抓禁，不判断黑棋是否有五连点
-//x,y是白棋冲四点. 
-function isCatchFoul(x, y, arr) {
-
-}
-
-
-
-// 判断是否，已经五连胜
-function isWin(color, arr) {
-
-}
-
-
-
-// 不判断对手是否五连
-// 判断是否活四级别胜
-function isFFWin(x, y, color, arr, pass = false) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// 判断 x，y是否长连
-function isSix(x, y, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-function isLineSix(x, y, direction, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// 判断x,y,点是否五连
-function isFive(x, y, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-function isFour(x, y, color, arr, free, passFoul) {
-
-}
 
 
 // (long*)lineInfo,  (lineInfo >> 3) & 0b111
@@ -1397,7 +1344,10 @@ function idxToName(idx) {
     let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let x = getX(idx);
     let y = getY(idx);
-    return (alpha.charAt(x) + (15 - y));
+    if (x <0 || x >= cBoardSize || y < 0 || y >= cBoardSize)
+        return "--";
+    else
+        return (alpha.charAt(x) + (15 - y));
 }
 
 
@@ -1765,7 +1715,7 @@ function testThree(arr, color, infoArr) {
 
                                     if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                         markArr[emptyList[e]] += 0x100; //free++
-                                        markArr[emptyList[e]] =  (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
                                         //if(idxToName(emptyList[e])=="L7") console.info(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
                                     }
                                     markArr[emptyList[e]] |= ADD_FREE_COUNT;
@@ -1830,8 +1780,6 @@ function testThree(arr, color, infoArr) {
         }
     }
 }
-
-
 
 function getLevel(arr, color) {
     let infoArr = new Array(225),
@@ -1939,65 +1887,109 @@ function getLevel(arr, color) {
 //--------------------- vcf ------------------------
 
 const VCF_NODES_LEN = 6000000, // 3*2000000
-    VCF_HASHTABLE_LEN = 1453950 + 9040000; //16155*90 + 226*40000
+    VCF_HASHTABLE_LEN = 5880420 + 4800000 + 104000000; //((135+224)*45)*90*4 + 80*60000 + 232*450000,
 let vcfHashTable = [],
-    vcfNextPosition = 0,
-    vcfTransMoves = [],
-    vcfNodes = [], //[0] = idx, [1]=down, [2]=right
-    vcfNextNode = 0;
+    vcfHashNextValue = 0;
+//vcfNodes = [], //[0] = idx, [1]=down, [2]=right
+//vcfNextNode = 0;
 //vcfStackNodes = [],
 //vcfStackIndex = -1,
 //vcfInfoArray = new Array(1024);
 
 function resetVCF() {
-    vcfHashTable = new Array(VCF_HASHTABLE_LEN);
-    vcfNextPosition = 1453950;
-    for (let i = 0; i < 225; i++) { vcfTransMoves[i] = {}; };
-    vcfNodes = new Array(VCF_NODES_LEN);
-    vcfNextNode = 3;
+    
+    vcfHashTable = [];
+    for (let i = 0; i < 225; i++) { vcfHashTable[i] = {};}
+    
+    /*
+    vcfHashTable = new ArrayBuffer(VCF_HASHTABLE_LEN + 256);
+    vcfHashNextValue = 5880420;
+    */
+    //vcfNodes = new Array(VCF_NODES_LEN);
+    //vcfNextNode = 3;
     //vcfStackNodes = [];
     //vcfStackIndex = -1;
     //vcfInfoArray[0] = 0;
 }
 
+
 function vcfPositionPush(keyLen, keySum, position) {
-    if (vcfNextPosition >= VCF_HASHTABLE_LEN) {
+    
+    let mv = position.slice(0);
+    const MOVE_LEN = keyLen;
+    const MOVE_KEY = keySum; // 对单色棋子索引求和，保存到数组最后位置。
+    // hash 数组保存失败分支;
+    if (vcfHashTable[MOVE_LEN][MOVE_KEY] == null) {
+        vcfHashTable[MOVE_LEN][MOVE_KEY] = [];
+    }
+    vcfHashTable[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
+    
+    /*
+    if (vcfHashNextValue >= VCF_HASHTABLE_LEN) {
         //alert(`vcfPositionPush out`)
         return 0;
     }
-    let key = keyLen * 16155 + keySum,
-        pPosition = vcfHashTable[key];
-    while (pPosition) {
-        key = pPosition + 225;
-        pPosition = vcfHashTable[key];
+    let pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pPosition = new Uint32Array(vcfHashTable, pNext, 1);
+    while (pPosition[0]) {
+        pNext = pPosition[0] + 228;
+        pPosition = new Uint32Array(vcfHashTable, pNext, 1);
     }
 
-    vcfHashTable[key] = vcfNextPosition;
+    pPosition[0] = vcfHashNextValue;
+    let newPosition = new Uint8Array(vcfHashTable, pPosition[0], 225);
     for (let i = 0; i < 225; i++) {
-        vcfHashTable[vcfNextPosition + i] = position[i];
+        newPosition[i] = position[i];
     }
-    vcfNextPosition += 226;
-    return vcfNextPosition;
+    pNext = pPosition[0] + 228;
+    pPosition = new Uint32Array(vcfHashTable, pNext, 1);
+    pPosition[0] = 0;
+    vcfHashNextValue += 232;
+
+    return vcfHashNextValue;
+    */
 }
 
+
 function vcfPositionHas(keyLen, keySum, position) {
-    let key = keyLen * 16155 + keySum,
-        pPosition = vcfHashTable[key];
-    while (pPosition) {
-        let isEqual = true;
+    
+    const MOVE_LEN = keyLen;
+    const MOVE_KEY = keySum; // 对每一手棋索引求，保存到数组最后位置。
+    if (vcfHashTable[MOVE_LEN][MOVE_KEY] == null) return false;
+    const FAILMOVES_MOVES_LEN = vcfHashTable[MOVE_LEN][MOVE_KEY].length;
+    for (let i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
+        let isEqual = true,
+            psTion = vcfHashTable[MOVE_LEN][MOVE_KEY][i];
         for (let i = 0; i < 225; i++) {
-            if (vcfHashTable[pPosition + i] != position[i]) {
+            if (psTion[i] != position[i]) {
                 isEqual = false;
                 break;
             }
         }
         if (isEqual) return true;
-        key = pPosition + 225;
-        pPosition = vcfHashTable[key];
     }
     return false;
+    
+    /*
+    let pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pPosition = new Uint32Array(vcfHashTable, pNext, 1);
+    while (pPosition[0]) {
+        let isEqual = true,
+            nextPosition = new Uint8Array(vcfHashTable, pPosition, 225);
+        for (let i = 0; i < 225; i++) {
+            if (nextPosition[i] != position[i]) {
+                isEqual = false;
+                break;
+            }
+        }
+        if (isEqual) return true;
+        pNext = pPosition[0] + 228;
+        pPosition = new Uint32Array(vcfHashTable, pNext, 1);
+    }
+    return false;
+    */
 }
-
+/*
 function vcfNewNode(idx) {
     if (vcfNextNode >= VCF_NODES_LEN) {
         //alert(`vcfNewNode out : ${(vcfNextNode-1453950)/3}`)
@@ -2011,17 +2003,69 @@ function vcfNewNode(idx) {
         return vcfNextNode - 3;
     }
 }
+*/
 
-function vcfTransTablePush(keyLen, keySum, position, moves) {
-    if (keyLen < 37)
-        pushFailMoves(vcfTransMoves, moves);
+
+
+// 会改变moves
+// 添加失败分支
+function vcfMovesPush(keyLen, keySum, move) {
+    if (vcfHashNextValue >= VCF_HASHTABLE_LEN) {
+        return 0;
+    }
+
+    let movesByte = ((keyLen >> 2) + 1) << 2,
+        pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pMoves = new Uint32Array(vcfHashTable, pNext, 1);
+    while (pMoves[0]) {
+        pNext = pMoves[0] + movesByte;
+        //post("vConsole", `pNext: ${pNext}\n pMoves[0]: ${pMoves[0]}\n movesByte: ${movesByte}`)
+        pMoves = new Uint32Array(vcfHashTable, pNext, 1);
+    }
+
+    pMoves[0] = vcfHashNextValue;
+
+    let newMoves = new Uint8Array(vcfHashTable, pMoves[0], movesByte);
+    newMoves[0] = keyLen;
+    for (let i = 0; i < keyLen; i++) {
+        newMoves[1 + i] = move[i];
+    }
+
+    pNext = pMoves[0] + movesByte;
+    //post("vConsole", `pNext: ${pNext}\n pMoves[0]: ${pMoves[0]}\n movesByte: ${movesByte}`)
+    pMoves = new Uint32Array(vcfHashTable, pNext, 1);
+    pMoves[0] = 0;
+    vcfHashNextValue = pNext + 4;
+
+    return vcfHashNextValue;
+}
+
+// 对比VCF手顺是否相等
+function vcfMovesHas(keyLen, keySum, move) {
+    let movesByte = ((keyLen >> 2) + 1) << 2,
+        pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pMoves = new Uint32Array(vcfHashTable, pNext, 1);
+    while (pMoves[0]) {
+        if (isRepeatMove(move, new Uint8Array(vcfHashTable, pMoves[0] + 1, keyLen))) return true;
+        pNext = pMoves[0] + movesByte;
+        //post("vConsole", `pNext: ${pNext}\n pMoves[0]: ${pMoves[0]}\n movesByte: ${movesByte}`)
+        pMoves = new Uint32Array(vcfHashTable, pNext, 1);
+    }
+    return false;
+}
+
+function vcfTransTablePush(keyLen, keySum, moves, position) {
+    if (keyLen < 73)
+        pushFailMoves(vcfHashTable, moves);
+        //vcfMovesPush(keyLen, keySum, moves);
     else
         vcfPositionPush(keyLen, keySum, position);
 }
 
-function vcfTransTableHas(keyLen, keySum, position, moves) {
-    if (keyLen < 37)
-        return findMoves(vcfTransMoves, moves);
+function vcfTransTableHas(keyLen, keySum, moves, position, centerIdx) {
+    if (keyLen < 73)
+        return findMoves(vcfHashTable, moves);
+        //return vcfMovesHas(keyLen, keySum, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
 }
@@ -2048,8 +2092,11 @@ function vcfStackCurrent() {
     
 }
 */
+
 function findVCF(arr, color) {
-    //setCBoardSize(15)
+
+    setCBoardSize(7);
+
     let initArr = arr.slice(0),
         sTime = new Date().getTime();
     let centerIdx = 112,
@@ -2063,9 +2110,13 @@ function findVCF(arr, color) {
         pushMoveCount = 0,
         pushPositionCount = 0,
         pushCountByte = 0,
-        hasCount = 0;
+        hasCount = 0,
+        loopCount = 0;
+
     resetVCF();
+
     while (!done) {
+        if (!(++loopCount & 0xffff)) post("vConsole", loopCount);
         nColorIdx = stackIdx.pop();
         colorIdx = stackIdx.pop();
 
@@ -2081,9 +2132,14 @@ function findVCF(arr, color) {
                 //console.log(`[${moveIndexToName(moves, 500)}]\n [${stackIdx}]\n ${colorIdx}`);
                 //console.warn(`${idxToName(vcfNodes[pCurrentNode])}`)
             }
-
+            /*
+            if (loopCount >= logStart && loopCount < (logStart + logCount)) {
+                post("vConsole", loopCount);
+                post("vConsole", `[${moveIndexToName(moves, 800)}]`);
+            }
+            */
             //console.info(`${idxToName(vcfNodes[vcfNodes[pCurrentNode + 2]])}`)
-            if (vcfTransTableHas(moves.length / 2, sum, arr, moves) /*findMoves(vcfTransMoves, moves)*/ ) {
+            if (vcfTransTableHas(moves.length, sum, moves, arr)) {
                 hasCount++;
                 //console.error(`[${moveIndexToName(moves, 500)}]`);
             }
@@ -2101,7 +2157,11 @@ function findVCF(arr, color) {
                         end = 225;
                     }
 
-                    for (let i = end - 1; i >= 0; i--) {
+                    let twoPoints = [],
+                        threePoints = [],
+                        fourPoints = [];
+                    let i;
+                    for (i = end - 1; i >= 0; i--) {
                         let idx = aroundIdx(centerIdx, i),
                             max = infoArr[idx] & FOUL_MAX;
                         if (max == FOUR_NOFREE) {
@@ -2112,32 +2172,56 @@ function findVCF(arr, color) {
 
                             if ((level & 0xff) == LEVEL_FREEFOUR) { //
                                 //pueh VCF
-                                post("vConsole", `[${moveIndexToName(moves.concat(idx), 500)}]`)
+                                post("printMoves", { winMoves: moves.concat(idx), color: color });
+                                post("vConsole", `[${moveIndexToName(moves.concat(idx), 900)}]`);
                                 //console.warn(`[${moveIndexToName(moves.concat(idx), 500)}]`);
-                                //pushFailMoves(vcfTransMoves, moves);
-                                vcfTransTablePush(moves.length / 2, sum, arr, moves);
+                                vcfTransTablePush(moves.length, sum, moves, arr);
                                 for (let j = moves.length - 1; j >= 0; j--) {
                                     stackIdx.push(-1);
                                 }
                                 stackIdx.push(-1, -1);
+                                post("vConsole", `[${moveIndexToName(moves, 800)}]`);
+                                post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
+                                post("vConsole", "win");
                                 break;
                             }
                             else {
-                                stackIdx.push(idx);
-                                stackIdx.push(level >> 8);
+                                let lineInfo = 0;
+                                for (let direction = 0; direction < 4; direction++) {
+                                    let info = FOUL_MAX_FREE & testLine(idx, direction, color, arr);
+                                    if (info == THREE_FREE) {
+                                        lineInfo = THREE_FREE;
+                                        break;
+                                    }
+                                    else if (info == THREE_NOFREE) {
+                                        lineInfo = THREE_NOFREE;
+                                    }
+                                }
+                                if (lineInfo == THREE_FREE)
+                                    threePoints.push(idx, level >> 8);
+                                else if (lineInfo == THREE_NOFREE)
+                                    threePoints = [idx, level >> 8].concat(threePoints);
+                                else if ((lineInfo & TWO_NOFREE) == TWO_NOFREE)
+                                    twoPoints.push(idx, level >> 8);
+                                else
+                                    fourPoints.push(idx, level >> 8);
                             }
                         }
                     }
+                    if (i < 0) {
+                        stackIdx = stackIdx.concat(fourPoints, twoPoints, threePoints);
+                        /*
+                        if (loopCount >= logStart && loopCount < (logStart + logCount))
+                            post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
+                        */
+                    }
                 }
-                //vcfNodes[pNode + 1]==0 && pushFailMoves(vcfTransMoves,moves)
             }
         }
         else {
-            if (moves.length > 72) pushPositionCount++;
-            else pushMoveCount++;
-            pushCountByte += moves.length / (1024 * 1024);
-            //pushFailMoves(vcfTransMoves, moves);
-            vcfTransTablePush(moves.length / 2, sum, arr, moves);
+            if (moves.length < 73) pushMoveCount++;
+            else pushPositionCount++;
+            vcfTransTablePush(moves.length, sum, moves, arr);
             //console.info(`[${moves}]\n [${stackIdx}]\n ${colorIdx}`)
         }
 
@@ -2162,8 +2246,9 @@ function findVCF(arr, color) {
         if (arr[i] != initArr[i]) isEq = false;
     }
     "alert" in self && alert(`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
-    post("vConsole", `time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
+    post("vConsole", `time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}\nloop = ${loopCount}`)
 }
+
 
 //--------------------------------------------------
 

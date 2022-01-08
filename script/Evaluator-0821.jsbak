@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.01";
 const DIRECTIONS = [0,1,2,3] //[→, ↓, ↘, ↗]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
@@ -2189,8 +2189,11 @@ function getMoveKey(move) {
 }
 
 
-var pushMovesCount = new Array(225);
-var findMovesCount = new Array(225);
+let  pushMoveCount = 0,
+     pushPositionCount = 0,
+     pushCountByte = 0,
+     hasCount = 0;
+
 // 会改变moves
 // 添加失败分支
 function pushFailMoves(FailMoves, move) {
@@ -2203,7 +2206,9 @@ function pushFailMoves(FailMoves, move) {
         FailMoves[MOVE_LEN][MOVE_KEY] = [];
     }
     FailMoves[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
-    pushMovesCount[mv.length]++;
+    //if(FailMoves[MOVE_LEN][MOVE_KEY].length>1) post("vConsole",`MOVE_LEN: ${MOVE_LEN}, ${FailMoves[MOVE_LEN][MOVE_KEY].length}`)
+    if(MOVE_LEN<74) pushMoveCount++;
+    else pushPositionCount++;
 }
 
 
@@ -2219,7 +2224,6 @@ function findMoves(FailMoves, move) {
     for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
         if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
     }
-    i>=0 && findMovesCount[MOVE_LEN]++;
+    if(i >= 0) hasCount++;
     return (i >= 0) ? true : false;
 }
-
