@@ -1404,6 +1404,11 @@ bool isRepeatMove(BYTE* newMove, BYTE* oldMove, BYTE len) {
 const UINT VCF_HASHTABLE_LEN = 5880420 + 6400000 + 116000000; //((135+224)*45)*90*4 + 80*80000 + 232*500000
 BYTE vcfHashTable[VCF_HASHTABLE_LEN + 256] = {0};
 UINT vcfHashNextValue = 0;
+BYTE vcfHashMaxMovesLen = 73;
+    
+void setVCFHashMaxMovesLen (BYTE maxLen) {
+    vcfHashMaxMovesLen = maxLen + 1;
+}
     
 void resetVCF() {
     vcfHashNextValue = 5880420;
@@ -1501,21 +1506,21 @@ bool vcfMovesHas(BYTE keyLen, UINT keySum, BYTE* move) {
 }
 
 void vcfTransTablePush(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
-    if (keyLen < 73)
+    if (keyLen < vcfHashMaxMovesLen)
         vcfMovesPush(keyLen, keySum, moves);
     else
         vcfPositionPush(keyLen, keySum, position);
 }
 
 bool vcfTransTableHas(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
-    if (keyLen < 73)
+    if (keyLen < vcfHashMaxMovesLen)
         return vcfMovesHas(keyLen, keySum, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
 }
 
 
-void findVCF(char* arr, char color, UINT logStart, UINT logCount) {
+void findVCF(char* arr, char color, BYTE maxDepth, UINT maxLoop) { /*UINT logStart, UINT logCount) {*/
     BYTE centerIdx = 112,
         colorIdx = 0xff,
         nColorIdx = 0xff;
@@ -1536,7 +1541,7 @@ void findVCF(char* arr, char color, UINT logStart, UINT logCount) {
     vcfStack[stackLen++] = 225;
     
     while (!done) {
-        if(!(++loopCount & 0xffff)) log(loopCount);
+        if(!(loopCount & 0xffff)) log(loopCount);
         
         nColorIdx = vcfStack[--stackLen];
         //log(nColorIdx);
@@ -1560,120 +1565,125 @@ void findVCF(char* arr, char color, UINT logStart, UINT logCount) {
                 hasCount++;
             }
             else {
-                if (loopCount >= logStart && loopCount < (logStart + logCount)) log((BYTE*)(vcfMoves), movesLen);
-                
-                testFour(arr, color, vcfInfoArr);
-                DWORD nLevel = getLevel(arr, INVERT_COLOR[color]);
-                //log (nLevel);
-                if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
-                    BYTE end;
-                    if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
-                        end = 1;
-                        centerIdx = nLevel >> 8;
+                if (movesLen < maxDepth) {
+                    /*
+                    if (loopCount >= logStart && loopCount < (logStart + logCount)) {
+                        log(loopCount);
+                        log((BYTE*)(vcfMoves), movesLen);
                     }
-                    else {
-                        end = 225;
-                    }
+                    */
+                    testFour(arr, color, vcfInfoArr);
+                    DWORD nLevel = getLevel(arr, INVERT_COLOR[color]);
+                    //log (nLevel);
+                    if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
+                        BYTE end;
+                        if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
+                            end = 1;
+                            centerIdx = nLevel >> 8;
+                        }
+                        else {
+                            end = 225;
+                        }
 
-                    BYTE twoPointsLen = 0,
-                        threePointsLen = 0,
-                        freeThreePointsLen = 0,
-                        fourPointsLen = 0;
-                    BYTE i = 0;
-                    for (i = 0; i < end; i++) {
-                        BYTE idx = aroundIdx(centerIdx, i);
-                        DWORD max = vcfInfoArr[idx] & FOUL_MAX;
-                        //if((max & MAX) == FOUR_NOFREE) log(max);
-                        if (max == FOUR_NOFREE) {
-                            arr[idx] = color;
-                            DWORD level = getLevel(arr, color);
-                            arr[idx] = 0;
-                            //log(level);
-                            //log((level & 0xff) == LEVEL_FREEFOUR);
+                        BYTE twoPointsLen = 0,
+                            threePointsLen = 0,
+                            freeThreePointsLen = 0,
+                            fourPointsLen = 0;
+                        BYTE i = 0;
+                        for (i = 0; i < end; i++) {
+                            BYTE idx = aroundIdx(centerIdx, i);
+                            DWORD max = vcfInfoArr[idx] & FOUL_MAX;
+                            //if((max & MAX) == FOUR_NOFREE) log(max);
+                            if (max == FOUR_NOFREE) {
+                                arr[idx] = color;
+                                DWORD level = getLevel(arr, color);
+                                arr[idx] = 0;
+                                //log(level);
+                                //log((level & 0xff) == LEVEL_FREEFOUR);
 
-                            if ((level & 0xff) == LEVEL_FREEFOUR) { //
-                                //push VCF
-                                vcfTransTablePush(movesLen, sum, vcfMoves, arr);
+                                if ((level & 0xff) == LEVEL_FREEFOUR) { //
+                                    //push VCF
+                                    vcfTransTablePush(movesLen, sum, vcfMoves, arr);
                                 
-                                for (BYTE j = 0; j < movesLen; j++) {
+                                    for (BYTE j = 0; j < movesLen; j++) {
+                                        vcfStack[stackLen++] = 0xff;
+                                        vcfWinMoves[j] = vcfMoves[j]; // push winMove;
+                                        //log(vcfWinMoves, movesLen);
+                                    }
+                                    log(88888);
+                                    log(loopCount);
+                                    log(stackLen);
+                                    log((BYTE*)(vcfMoves), movesLen);
+                                    log((BYTE*)(vcfStack), stackLen);
+                                    log(-88888);
+                                    
+                                    vcfWinMoves[movesLen] = idx;
+                                    vcfWinMoves[movesLen + 1] = 0xff;
+                                    
                                     vcfStack[stackLen++] = 0xff;
-                                    vcfWinMoves[j] = vcfMoves[j]; // push winMove;
-                                    //log(vcfWinMoves, movesLen);
-                                }
-                                log(88888);
-                                log(loopCount);
-                                log(stackLen);
-                                log((BYTE*)(vcfMoves), movesLen);
-                                log((BYTE*)(vcfStack), stackLen);
-                                log(-88888);
-                                
-                                vcfWinMoves[movesLen] = idx;
-                                vcfWinMoves[movesLen + 1] = 0xff;
-                                
-                                vcfStack[stackLen++] = 0xff;
-                                vcfStack[stackLen++] = 0xff;
-                                break;
-                            }
-                            else {
-                                DWORD lineInfo = 0;
-                                for (BYTE direction=0; direction<4; direction++) {
-                                    DWORD info = FOUL_MAX_FREE & testLine(idx, direction, color, arr);
-                                    if (info == THREE_FREE) {
-                                        lineInfo = THREE_FREE;
-                                        break;
-                                    }
-                                    else if (info == THREE_NOFREE) {
-                                        lineInfo = THREE_NOFREE;
-                                    }
-                                }
-                                if (lineInfo == THREE_FREE) {
-                                    vcfFreeThreePoints[freeThreePointsLen++] = (level >> 8);
-                                    vcfFreeThreePoints[freeThreePointsLen++] = idx;
-                                }
-                                else if (lineInfo == THREE_NOFREE) {
-                                    vcfThreePoints[threePointsLen++] = (level >> 8);
-                                    vcfThreePoints[threePointsLen++] = idx;
-                                }
-                                else if ((lineInfo & TWO_NOFREE) == TWO_NOFREE) {
-                                    vcfTwoPoints[twoPointsLen++] = (level >> 8);
-                                    vcfTwoPoints[twoPointsLen++] = idx;
+                                    vcfStack[stackLen++] = 0xff;
+                                    break;
                                 }
                                 else {
-                                    vcfFourPoints[fourPointsLen++] = (level >> 8);
-                                    vcfFourPoints[fourPointsLen++] = idx;
+                                    DWORD lineInfo = 0;
+                                    for (BYTE direction=0; direction<4; direction++) {
+                                        DWORD info = FOUL_MAX_FREE & testLine(idx, direction, color, arr);
+                                        if (info <= THREE_FREE && info > lineInfo) lineInfo = info;
+                                    }
+                                    if ((lineInfo & TWO_NOFREE) == TWO_NOFREE) {
+                                        vcfTwoPoints[twoPointsLen++] = (level >> 8);
+                                        vcfTwoPoints[twoPointsLen++] = idx;
+                                    }
+                                    else if (lineInfo == THREE_NOFREE) {
+                                        vcfThreePoints[threePointsLen++] = (level >> 8);
+                                        vcfThreePoints[threePointsLen++] = idx;
+                                    }
+                                    else if (lineInfo == THREE_FREE) {
+                                        vcfFreeThreePoints[freeThreePointsLen++] = (level >> 8);
+                                        vcfFreeThreePoints[freeThreePointsLen++] = idx;
+                                    }
+                                    else {
+                                        vcfFourPoints[fourPointsLen++] = (level >> 8);
+                                        vcfFourPoints[fourPointsLen++] = idx;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (i >= end) {
-                        /*
-                        log((BYTE*)(vcfFourPoints), fourPointsLen);
-                        log((BYTE*)(vcfTwoPoints), twoPointsLen);
-                        log((BYTE*)(vcfThreePoints), threePointsLen);
-                        log((BYTE*)(vcfFreeThreePoints), freeThreePointsLen);
-                        */
-                        
-                        end = fourPointsLen;          
-                        for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfFourPoints[--fourPointsLen];
-                        end = twoPointsLen;
-                        for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfTwoPoints[--twoPointsLen];
-                        end = threePointsLen;
-                        for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfThreePoints[--threePointsLen];
-                        end = freeThreePointsLen;
-                        for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfFreeThreePoints[--freeThreePointsLen];
-                        
-                        if (loopCount >= logStart && loopCount < (logStart + logCount)) log((BYTE*)(vcfStack), stackLen);
+                        if (i >= end) {
+                            /*
+                            if (loopCount >= logStart && loopCount < (logStart + logCount)) {
+                                log((BYTE*)(vcfFourPoints), fourPointsLen);
+                                log((BYTE*)(vcfTwoPoints), twoPointsLen);
+                                log((BYTE*)(vcfThreePoints), threePointsLen);
+                                log((BYTE*)(vcfFreeThreePoints), freeThreePointsLen);
+                            }
+                            */
+                            end = fourPointsLen;          
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfFourPoints[--fourPointsLen];
+                            end = twoPointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfTwoPoints[--twoPointsLen];
+                            end = threePointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfThreePoints[--threePointsLen];
+                            end = freeThreePointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfFreeThreePoints[--freeThreePointsLen];
+                            /*
+                            if (loopCount >= logStart && loopCount < (logStart + logCount)) 
+                                log((BYTE*)(vcfStack), stackLen);
+                            */
+                        }
                     }
                 }
             }
+            
         }
         else {
-            if (movesLen < 73) pushMoveCount++;
-            else pushPositionCount++;
+            
+            if (movesLen < vcfHashMaxMovesLen)
+                pushMoveCount++;
+            else
+                pushPositionCount++;
             vcfTransTablePush(movesLen, sum, vcfMoves, arr);
-        }
-
-        if (colorIdx == 0xff) { //back
+            
             if (movesLen) {
                 BYTE idx = vcfMoves[--movesLen];
                 arr[idx] = 0;
@@ -1684,6 +1694,11 @@ void findVCF(char* arr, char color, UINT logStart, UINT logCount) {
             else {
                 done = true;
             }
+        }
+        
+        if (++loopCount >= maxLoop) { //break loop
+            vcfStack[stackLen++] = 0xff;
+            vcfStack[stackLen++] = 0xff;
         }
     }
     log(99999);

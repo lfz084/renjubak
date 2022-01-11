@@ -1516,8 +1516,8 @@ window.control = (() => {
             cBoardSizeMenu.input.selectedIndex = 15 - this.size;
             setMenuRadio(cBoardSizeMenu, cBoardSizeMenu.input.selectedIndex);
             viewport1.scrollTop();
-            setCBoardSize && setCBoardSize.constructor.name=="Function" && 
-                setCBoardSize(this.size);
+            /*setCBoardSize && setCBoardSize.constructor.name=="Function" && 
+                setCBoardSize(this.size);*/
         };
         cBd.onSetCoordinate = function() {
             coordinateMenu.input.selectedIndex = this.coordinateType;

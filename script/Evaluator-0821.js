@@ -188,7 +188,7 @@ function createIdxLists(cBoardSize) {
     return idxLists;
 }
 
-let idxLists; // = createIdxLists(15);
+let idxLists = createIdxLists(15);
 
 //------------------------- idxTable ----------------------
 
@@ -237,7 +237,7 @@ function moveIdx(idx, move, direction = 0) {
     return idxTable[(idx * 29 + move + 14) * 4 + direction]; // 7s
 }
 
-let idxTable; // = createIdxTable();
+let idxTable = createIdxTable();
 
 //--------------------  aroundIdxTable  ------------------------
 
@@ -306,7 +306,7 @@ function getAroundIdxCount(centerIdx, radius) {
 }
 
 //，保存周围点的坐标
-let aroundIdxTable; // = createAroundIdxTable();
+let aroundIdxTable = createAroundIdxTable();
 
 //----------------------------------------------------
 
@@ -1344,7 +1344,7 @@ function idxToName(idx) {
     let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let x = getX(idx);
     let y = getY(idx);
-    if (x <0 || x >= cBoardSize || y < 0 || y >= cBoardSize)
+    if (x < 0 || x >= cBoardSize || y < 0 || y >= cBoardSize)
         return "--";
     else
         return (alpha.charAt(x) + (15 - y));
@@ -1889,7 +1889,10 @@ function getLevel(arr, color) {
 const VCF_NODES_LEN = 6000000, // 3*2000000
     VCF_HASHTABLE_LEN = 5880420 + 4800000 + 104000000; //((135+224)*45)*90*4 + 80*60000 + 232*450000,
 let vcfHashTable = [],
-    vcfHashNextValue = 0;
+    vcfHashNextValue = 0,
+    vcfWinMoves = [],
+    vcfWinMovesNext = 0;
+let vcfHashMaxMovesLen = 73;
 //vcfNodes = [], //[0] = idx, [1]=down, [2]=right
 //vcfNextNode = 0;
 //vcfStackNodes = [],
@@ -1897,10 +1900,10 @@ let vcfHashTable = [],
 //vcfInfoArray = new Array(1024);
 
 function resetVCF() {
-    
+    vcfWinMoves = [];
     vcfHashTable = [];
-    for (let i = 0; i < 225; i++) { vcfHashTable[i] = {};}
-    
+    for (let i = 0; i < 225; i++) { vcfHashTable[i] = {}; }
+
     /*
     vcfHashTable = new ArrayBuffer(VCF_HASHTABLE_LEN + 256);
     vcfHashNextValue = 5880420;
@@ -1914,7 +1917,7 @@ function resetVCF() {
 
 
 function vcfPositionPush(keyLen, keySum, position) {
-    
+
     let mv = position.slice(0);
     const MOVE_LEN = keyLen;
     const MOVE_KEY = keySum; // 对单色棋子索引求和，保存到数组最后位置。
@@ -1923,7 +1926,7 @@ function vcfPositionPush(keyLen, keySum, position) {
         vcfHashTable[MOVE_LEN][MOVE_KEY] = [];
     }
     vcfHashTable[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
-    
+
     /*
     if (vcfHashNextValue >= VCF_HASHTABLE_LEN) {
         //alert(`vcfPositionPush out`)
@@ -1952,7 +1955,7 @@ function vcfPositionPush(keyLen, keySum, position) {
 
 
 function vcfPositionHas(keyLen, keySum, position) {
-    
+
     const MOVE_LEN = keyLen;
     const MOVE_KEY = keySum; // 对每一手棋索引求，保存到数组最后位置。
     if (vcfHashTable[MOVE_LEN][MOVE_KEY] == null) return false;
@@ -1969,7 +1972,7 @@ function vcfPositionHas(keyLen, keySum, position) {
         if (isEqual) return true;
     }
     return false;
-    
+
     /*
     let pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
         pPosition = new Uint32Array(vcfHashTable, pNext, 1);
@@ -2055,17 +2058,17 @@ function vcfMovesHas(keyLen, keySum, move) {
 }
 
 function vcfTransTablePush(keyLen, keySum, moves, position) {
-    if (keyLen < 73)
+    if (keyLen < vcfHashMaxMovesLen)
         pushFailMoves(vcfHashTable, moves);
-        //vcfMovesPush(keyLen, keySum, moves);
+    //vcfMovesPush(keyLen, keySum, moves);
     else
         vcfPositionPush(keyLen, keySum, position);
 }
 
 function vcfTransTableHas(keyLen, keySum, moves, position, centerIdx) {
-    if (keyLen < 73)
+    if (keyLen < vcfHashMaxMovesLen)
         return findMoves(vcfHashTable, moves);
-        //return vcfMovesHas(keyLen, keySum, moves);
+    //return vcfMovesHas(keyLen, keySum, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
 }
@@ -2093,9 +2096,14 @@ function vcfStackCurrent() {
 }
 */
 
-function findVCF(arr, color) {
+function findVCF(arr, color, maxVCF, maxDepth, maxLoop) {
 
-    setCBoardSize(7);
+    //setCBoardSize(15);
+    /*
+    maxVCF = 1;
+    maxDepth = 180;
+    maxLoop = 1600000;
+    */
 
     let initArr = arr.slice(0),
         sTime = new Date().getTime();
@@ -2107,16 +2115,17 @@ function findVCF(arr, color) {
         stackIdx = [-1, -1, 225, 225],
         sum = 0,
         done = false,
+        vcfCount = 0,
         pushMoveCount = 0,
         pushPositionCount = 0,
-        pushCountByte = 0,
         hasCount = 0,
         loopCount = 0;
 
     resetVCF();
-
+    console.warn(`color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxLoop: ${maxLoop}`);
+    post("vConsole", `color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxLoop: ${maxLoop}`);
     while (!done) {
-        if (!(++loopCount & 0xffff)) post("vConsole", loopCount);
+        if (!(loopCount & 0xffff)) post("vConsole", loopCount);
         nColorIdx = stackIdx.pop();
         colorIdx = stackIdx.pop();
 
@@ -2136,96 +2145,100 @@ function findVCF(arr, color) {
             if (loopCount >= logStart && loopCount < (logStart + logCount)) {
                 post("vConsole", loopCount);
                 post("vConsole", `[${moveIndexToName(moves, 800)}]`);
-            }
-            */
+            }*/
+
             //console.info(`${idxToName(vcfNodes[vcfNodes[pCurrentNode + 2]])}`)
             if (vcfTransTableHas(moves.length, sum, moves, arr)) {
                 hasCount++;
                 //console.error(`[${moveIndexToName(moves, 500)}]`);
             }
             else {
-                //console.log(`[${moveIndexToName(moves, 500)}]`);
-                testFour(arr, color, infoArr);
-                let nLevel = getLevel(arr, INVERT_COLOR[color]);
-                if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
-                    let end;
-                    if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
-                        end = 1;
-                        centerIdx = nLevel >> 8;
-                    }
-                    else {
-                        end = 225;
-                    }
+                if (moves.length < maxDepth) {
+                    //console.log(`[${moveIndexToName(moves, 500)}]`);
+                    testFour(arr, color, infoArr);
+                    let nLevel = getLevel(arr, INVERT_COLOR[color]);
+                    //post("vConsole", `nLevel: ${nLevel}`);
+                    if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
+                        let end;
+                        if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
+                            end = 1;
+                            centerIdx = nLevel >> 8;
+                        }
+                        else {
+                            end = 225;
+                        }
 
-                    let twoPoints = [],
-                        threePoints = [],
-                        fourPoints = [];
-                    let i;
-                    for (i = end - 1; i >= 0; i--) {
-                        let idx = aroundIdx(centerIdx, i),
-                            max = infoArr[idx] & FOUL_MAX;
-                        if (max == FOUR_NOFREE) {
+                        let twoPoints = [],
+                            threePoints = [],
+                            fourPoints = [],
+                            isConcat = true;
 
-                            arr[idx] = color;
-                            let level = getLevel(arr, color);
-                            arr[idx] = 0;
+                        for (let i = end - 1; i >= 0; i--) {
+                            let idx = aroundIdx(centerIdx, i),
+                                max = infoArr[idx] & FOUL_MAX;
+                            if (max == FOUR_NOFREE) {
 
-                            if ((level & 0xff) == LEVEL_FREEFOUR) { //
-                                //pueh VCF
-                                post("printMoves", { winMoves: moves.concat(idx), color: color });
-                                post("vConsole", `[${moveIndexToName(moves.concat(idx), 900)}]`);
-                                //console.warn(`[${moveIndexToName(moves.concat(idx), 500)}]`);
-                                vcfTransTablePush(moves.length, sum, moves, arr);
-                                for (let j = moves.length - 1; j >= 0; j--) {
-                                    stackIdx.push(-1);
-                                }
-                                stackIdx.push(-1, -1);
-                                post("vConsole", `[${moveIndexToName(moves, 800)}]`);
-                                post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
-                                post("vConsole", "win");
-                                break;
-                            }
-                            else {
-                                let lineInfo = 0;
-                                for (let direction = 0; direction < 4; direction++) {
-                                    let info = FOUL_MAX_FREE & testLine(idx, direction, color, arr);
-                                    if (info == THREE_FREE) {
-                                        lineInfo = THREE_FREE;
+                                arr[idx] = color;
+                                let level = getLevel(arr, color);
+                                arr[idx] = 0;
+
+                                if ((level & 0xff) == LEVEL_FREEFOUR) { //
+                                    //pueh VCF
+                                    pushWinMoves(vcfWinMoves, moves.concat(idx));
+                                    post("printMoves", { winMoves: moves.concat(idx), color: color });
+                                    post("vConsole", `[${moveIndexToName(moves.concat(idx), 900)}]`);
+                                    post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
+                                    post("vConsole", "win");
+                                    console.warn(`[${moveIndexToName(moves.concat(idx), 900)}]`);
+                                    isConcat = false;
+                                    vcfTransTablePush(moves.length, sum, moves, arr);
+                                    if (++vcfCount == maxVCF) {
+                                        for (let j = moves.length - 1; j >= 0; j--) {
+                                            stackIdx.push(-1);
+                                        }
+                                        stackIdx.push(-1, -1);
                                         break;
                                     }
-                                    else if (info == THREE_NOFREE) {
-                                        lineInfo = THREE_NOFREE;
-                                    }
                                 }
-                                if (lineInfo == THREE_FREE)
-                                    threePoints.push(idx, level >> 8);
-                                else if (lineInfo == THREE_NOFREE)
-                                    threePoints = [idx, level >> 8].concat(threePoints);
-                                else if ((lineInfo & TWO_NOFREE) == TWO_NOFREE)
-                                    twoPoints.push(idx, level >> 8);
-                                else
-                                    fourPoints.push(idx, level >> 8);
+                                else {
+                                    let lineInfo = 0;
+                                    for (let direction = 0; direction < 4; direction++) {
+                                        let info = FOUL_MAX_FREE & testLine(idx, direction, color, arr);
+                                        if (info <= THREE_FREE && info > lineInfo) lineInfo = info;
+                                    }
+
+                                    if (lineInfo == THREE_FREE)
+                                        threePoints.push(idx, level >> 8);
+                                    else if (lineInfo == THREE_NOFREE)
+                                        threePoints = [idx, level >> 8].concat(threePoints);
+                                    else if ((lineInfo & TWO_NOFREE) == TWO_NOFREE)
+                                        twoPoints.push(idx, level >> 8);
+                                    else
+                                        fourPoints.push(idx, level >> 8);
+
+                                }
                             }
                         }
-                    }
-                    if (i < 0) {
-                        stackIdx = stackIdx.concat(fourPoints, twoPoints, threePoints);
-                        /*
-                        if (loopCount >= logStart && loopCount < (logStart + logCount))
-                            post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
-                        */
+                        if (isConcat) {
+                            stackIdx = stackIdx.concat(fourPoints, twoPoints, threePoints);
+
+                            /*if (loopCount >= logStart && loopCount < (logStart + logCount))
+                                post("vConsole", `[${moveIndexToName(stackIdx, 800)}]`);
+                            */
+                        }
                     }
                 }
             }
+            
         }
         else {
-            if (moves.length < 73) pushMoveCount++;
-            else pushPositionCount++;
+            
+            if (moves.length < vcfHashMaxMovesLen)
+                pushMoveCount++;
+            else
+                pushPositionCount++;
             vcfTransTablePush(moves.length, sum, moves, arr);
-            //console.info(`[${moves}]\n [${stackIdx}]\n ${colorIdx}`)
-        }
 
-        if (colorIdx == -1) { //back
             if (moves.length) {
                 let idx = moves.pop();
                 arr[idx] = 0;
@@ -2238,15 +2251,23 @@ function findVCF(arr, color) {
             }
             //console.info(`[${moveIndexToName(moves, 500)}]\n [${stackIdx}]\n ${colorIdx}`);
         }
+
         //done = done || pushMoveCount > 1000;
+        if (++loopCount >= maxLoop) { //break loop
+            stackIdx.push(-1, -1);
+        }
     }
 
     let isEq = true
     for (let i = 0; i < 225; i++) {
         if (arr[i] != initArr[i]) isEq = false;
     }
-    "alert" in self && alert(`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
-    post("vConsole", `time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}\nloop = ${loopCount}`)
+    if ("alert" in self)
+        console.info(`time: ${(new Date().getTime()-sTime)/1000}\nsum: ${sum}\n isEqArr: ${isEq}\npushMoveCount: ${pushMoveCount}\n pushPositionCount: ${pushPositionCount}\nhasCount: ${hasCount}\nloopCount: ${loopCount}`);
+    else
+        post("vConsole", `time: ${(new Date().getTime()-sTime)/1000}\nsum: ${sum}\n isEqArr: ${isEq}\npushMoveCount: ${pushMoveCount}\n pushPositionCount: ${pushPositionCount}\nhasCount: ${hasCount}\nloop: ${loopCount}`);
+    
+    return loopCount;
 }
 
 
