@@ -392,9 +392,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.01";
                         moveStack.push({ pMove: getRight(pMove), length: moveList.length - 1 });
                     }
 
-                    if (moveList.length % 2 === (path.length + 1) % 2) {
+                    if (moveList.length & 1 === (path.length + 1) & 1) {
                         if (idx === -1 ||
-                            moveList.length % 2 !== (idx + 1) % 2
+                            moveList.length & 1 !== (idx + 1) & 1
                         ) {
                             if (!jointNode) {
                                 jointNode = { pMove: pMove, length: moveList.length - 1 }
@@ -407,7 +407,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.01";
                     }
                     else {
                         if (idx === -1 ||
-                            moveList.length % 2 !== (idx + 1) % 2
+                            moveList.length & 1 !== (idx + 1) & 1
                         ) {
                             pMove = false;
                             continue;
@@ -415,7 +415,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.01";
                     }
 
                     if ((idx === -1 ||
-                            moveList.length % 2 === (idx + 1) % 2) &&
+                            moveList.length & 1 === (idx + 1) & 1) &&
                         moveList.length <= path.length + 1
                     ) {
                         if (moveList.length === path.length + 1) {
@@ -477,3 +477,4 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.01";
     exports.RenjuBranch = RenjuBranch;
     exports.RenjuTree = RenjuTree;
 })))
+

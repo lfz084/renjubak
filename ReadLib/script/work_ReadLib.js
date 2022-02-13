@@ -1,7 +1,7 @@
 "use strict"
 if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.01";
 
-if (self.importScripts){
+if ("importScripts" in self){
     self.importScripts(
         "../../script/IntervalPost.js",
         "../../script/RenjuTree.js",

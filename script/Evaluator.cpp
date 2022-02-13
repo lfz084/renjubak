@@ -3,7 +3,10 @@ typedef unsigned char BYTE;
 typedef unsigned int UINT; 
 typedef unsigned short DWORD;
 
-const char DIRECTIONS[4] = {0, 1, 2, 3}; //[→, ↓, ↘, ↗]; // 米字线
+const UINT _ONE_KB = 1024;
+const UINT _PAGE_SIZE = 1024*64; //64K
+const UINT _IO_BUFFER_SIZE = _PAGE_SIZE;
+
 const char FIND_ALL = 0;
 const char ONLY_FREE = 1; // 只找活3，活4
 const char ONLY_NOFREE = 2; // 只找眠3，眠4
@@ -60,36 +63,162 @@ const short FIVE = 10;
 const short SIX = 28;
 const short SHORT = 14; //空间不够
 
-char EMPTYLIST[15];
-
-char gameRules = RENJU_RULES;
 
 //  --------------------------  --------------------------
+BYTE cBoardSize = 15;
+BYTE gameRules = RENJU_RULES;
 
-char cBoardSize = 15;
+BYTE out_buffer[4] = {0};
+BYTE in_buffer[_IO_BUFFER_SIZE] = {0};
 
-BYTE idxLists[4 * 29 * 43]; // = createIdxLists(15);
+BYTE idxLists[4 * 29 * 43] = {0}; // = createIdxLists();
+BYTE idxTable[226 * 29 * 4] = {0}; // = createIdxTable();
+BYTE aroundIdxTable[(15 + 225) * 225] = {0}; // = createAroundIdxTable();
 
-short idxTable[226 * 29 * 4]; // = createIdxTable();
+char valueList[12] = {0}; //testLine, testLineThree...
+BYTE stackBuffer[36 * 12] = {0}; // isFoul stackBuffer
+BYTE getPoints[4] = {0}; // getBlockThreePoints, getFreeFourPoint
+BYTE freeFourPoints[4] = {0}; //testThree
 
-short aroundIdxTable[(15 + 225) * 225]; // = createAroundIdxTable();
+char cEmptyMoves[16] = {0}; //testLinePoint...
+BYTE emptyList[16] = {0}; //testFive ...
+BYTE emptyMoves[16] = {0}; //testLinePoint...testFive ...
+DWORD markArr[228] = {0};
+
+DWORD infoArr[228] = {0}; //level
+
+DWORD vcfInfoArr[228] = {0};   // findVCF
+char vcfInitArr[228] = {0};
+BYTE vcfMoves[228] = {0},
+    vcfTwoPoints[228] = {0},
+    vcfThreePoints[228] = {0},
+    vcfFreeThreePoints[228] = {0},
+    vcfElsePoint[228] = {0},
+    vcfFourPoints[228] = {0},
+    vcfStack[_PAGE_SIZE] = {0},
+    isvcfValues[228] = {0},    // isVCF
+    svcfFourPoints[228] = {0}, //simpleVCF
+    svcfVCF[228] = {0};
+
+BYTE blockBuf[952] = {0}; // getBlockVCF
+BYTE* const blockPoints = blockBuf;// getBlockVCF
+BYTE* const blockArr = (blockBuf + 228); //保存可能防点
+DWORD* const blockLineInfos = (DWORD*)(blockBuf + 456);
+DWORD* const blockFLineInfos= (DWORD*)(blockBuf + 464);
+DWORD* const blockLineInfoList = (DWORD*)(blockBuf + 472);
+DWORD* const blockInfoArr = (DWORD*)(blockBuf + 496);
+
+struct Moves {
+    struct Moves* next;
+    BYTE len;
+    BYTE* moves;
+};
+
+struct MovesList {
+    BYTE len;
+    struct Moves* firstMoves;
+};
+
+struct VCFinfo {
+    char* initArr;
+    char color;
+    BYTE maxVCF;
+    BYTE maxDepth;
+    BYTE vcfCount;
+    UINT maxNode;
+    UINT pushMoveCount;
+    UINT pushPositionCount;
+    UINT hasCount;
+    UINT nodeCount;
+    struct MovesList* winMoves;
+};
+
+struct VCFinfo vcfInfo = {0};
+struct MovesList vcfWinMoves = {0};
+BYTE bufVcfWinMoves[_PAGE_SIZE] = {0};
+BYTE* const vcfWinMovesEnd = (bufVcfWinMoves + _PAGE_SIZE - 268);
+BYTE*  vcfWinMovesNext = bufVcfWinMoves;
+
+//--------------------- log --------------------------
+
+extern void log(double num);
+
+extern void log(BYTE* buf, UINT len);
+
+//--------------------- IO_BUFFER --------------------
+
+BYTE* getInBuffer() {
+    return in_buffer;
+}
+
+BYTE* getOutBuffer() {
+    return out_buffer;
+}
+
+struct VCFinfo* getVcfInfo() {
+    return &vcfInfo;
+}
+
+struct MovesList* getVcfWinMoves() {
+    return &vcfWinMoves;
+} 
+
+BYTE* getVcfMoves() {
+    return vcfMoves;
+}
+
+//------------------ copyBuffer ---------------------
+
+void copyBuffer(BYTE* tBuf, BYTE* sBuf, long len) {
+    for (long i=0; i<len; i++) {
+        tBuf[i] = sBuf[i];
+    }
+}
+    
+void copyBuffer(DWORD* tBuf, DWORD* sBuf, long len) {
+    for (long i=0; i<len; i++) {
+        tBuf[i] = sBuf[i];
+    }
+}
+
+void copyBuffer(UINT* tBuf, UINT* sBuf, long len) {
+    for (long i=0; i<len; i++) {
+        tBuf[i] = sBuf[i];
+    }
+}
+
+//------------------ setBuffer ---------------------
+
+void setBuffer(BYTE* buf, long len, BYTE value) {
+    for (long i=0; i<len; i++) {
+        buf[i] = value;
+    }
+}
+    
+void setBuffer(DWORD* buf, long len, DWORD value) {
+    for (long i=0; i<len; i++) {
+        buf[i] = value;
+    }
+}
+
+void setBuffer(UINT* buf, long len, UINT value) {
+    for (long i=0; i<len; i++) {
+        buf[i] = value;
+    }
+}
 
 //--------------------- idxLists ---------------------
 
 // 创建空白lists 用来保存阳线，阴线的idx
-BYTE* createEmptyLists() {
+void createEmptyLists() {
     BYTE outIdx = 225;
-    for (int i = 4 * 29 * 43 - 1; i >= 0; i--) {
-        idxLists[i] = outIdx;
-    }
-    return idxLists;
+    setBuffer(idxLists, 4 * 29 * 43, outIdx);
 }
 
 //保存棋盘区域内每一条线的idx，每条线按照 line[n] < line[n+1] 排序
-BYTE* createIdxLists(BYTE cBoardSize) {
+void createIdxLists() {
     BYTE* List = NULL;
     
-    createEmptyLists();
     //direction = 0
     for (BYTE y = 0; y < 15; y++) {
         List = idxLists + y * 43;
@@ -97,6 +226,7 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + x] = x + y * 15;
         }
     }
+    
     //direction = 1
     for (BYTE x = 0; x < 15; x++) {
         List = idxLists + (29 + x) * 43;
@@ -104,6 +234,7 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + y] = x + y * 15;
         }
     }
+    
     //direction = 2
     for (BYTE i = 0; i < 15; i++) { // x + (14-y) = i, y = x + 14 - i
         List = idxLists + (2 * 29 + i) * 43;
@@ -113,7 +244,7 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
-    for (BYTE i = 13; i >= 0; i--) { // (14-x) + y = i, y = i - 14 + x;
+    for (BYTE i = 0; i < 14; i++) { // (14-x) + y = i, y = i - 14 + x;
         List = idxLists + (2 * 29 + 14 + 14 - i) * 43;
         for (BYTE j = 0; j <= i; j++) {
             BYTE x = 14 - i + j,
@@ -121,6 +252,7 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
+    
     //direction = 3
     for (BYTE i = 0; i < 15; i++) { // x + y = i, y = i - x
         List = idxLists + (3 * 29 + i) * 43;
@@ -130,7 +262,7 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
-    for (BYTE i = 13; i >= 0; i--) { // (14-x)+(14-y) = i, y = 28 - i - x
+    for (BYTE i = 0; i < 14; i++) { // (14-x)+(14-y) = i, y = 28 - i - x
         List = idxLists + (3 * 29 + 14 + 14 - i) * 43;
         for (BYTE j = 0; j <= i; j++) {
             BYTE x = 14 - j,
@@ -138,15 +270,15 @@ BYTE* createIdxLists(BYTE cBoardSize) {
             if (x < cBoardSize && y < cBoardSize) List[14 + j] = x + y * 15;
         }
     }
-    return idxLists;
+    
 }
 
 //------------------------- idxTable ----------------------
 
 // 创建索引表，快速读取阳线，阴线idx. 超出棋盘范围返回 outIdx = 225
-short* createIdxTable() {
+void createIdxTable() {
     BYTE outIdx = 225;
-    short* tb = idxTable;
+    
     for (BYTE idx = 0; idx < 225; idx++) {
         for (char move = -14; move < 15; move++) {
             for (BYTE direction = 0; direction < 4; direction++) {
@@ -155,60 +287,56 @@ short* createIdxTable() {
                 if (x >= 0 && x < cBoardSize && y >= 0 && y < cBoardSize) {
                     switch (direction) {
                         case 0:
-                            tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + y) * 43 + 14 + x + move];
+                            idxTable[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + y) * 43 + 14 + x + move];
                             break;
                         case 1:
-                            tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x) * 43 + 14 + y + move];
+                            idxTable[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x) * 43 + 14 + y + move];
                             break;
                         case 2:
-                            tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + 14 - y) * 43 + (x + 14 - y < 15 ? 14 + x + move : 14 + y + move)];
+                            idxTable[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + 14 - y) * 43 + (x + 14 - y < 15 ? 14 + x + move : 14 + y + move)];
                             break;
                         case 3:
-                            tb[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + y) * 43 + (x + y < 15 ? 14 + y + move : 28 - x + move)];
+                            idxTable[(idx * 29 + move + 14) * 4 + direction] = idxLists[(direction * 29 + x + y) * 43 + (x + y < 15 ? 14 + y + move : 28 - x + move)];
                             break;
                     }
                 }
                 else {
-                    tb[(idx * 29 + move + 14) * 4 + direction] = outIdx;
+                    idxTable[(idx * 29 + move + 14) * 4 + direction] = outIdx;
                 }
             }
         }
     }
+    
+    setBuffer(&idxTable[225 * 29 * 4],  29 * 4, outIdx);
 
-
-    for (BYTE i = 29 * 4 - 1; i >= 0; i--) {
-        tb[225 * 29 * 4 + i] = outIdx;
-    }
-
-    return tb;
 }
 
 // 按照阳线，阴线读取idx, 如果参数idx在棋盘外，直接返回 outIdx = 225
-short moveIdx(BYTE idx, char move, BYTE direction) {
+BYTE moveIdx(BYTE idx, char move, BYTE direction) {
     return idxTable[(idx * 29 + move + 14) * 4 + direction]; // 7s
 }
 
+// 取得一个点的值
+char getArrValue(BYTE idx, char move, BYTE direction, char* arr) {
+    return arr[moveIdx(idx, move, direction)];
+}
 
 //--------------------  aroundIdxTable  ------------------------
 
-short* createAroundIdxTable() {
-    short* idxTable = aroundIdxTable;
+void createAroundIdxTable() {
     BYTE outIdx = 225;
-    for (BYTE idx = 0; idx < 225; idx++) {
-        for (BYTE i = 0; i < 15; i++) {
-            idxTable[idx * 240 + i] = 0;
-        }
-        for (BYTE i = 0; i < 225; i++) {
-            idxTable[idx * 240 + 15 + i] = outIdx;
-        }
+    
+    for (BYTE idx = 0; idx < 225; idx++) { //RESET
+        setBuffer(&aroundIdxTable[idx * 240], 15, 0);
+        setBuffer(&aroundIdxTable[idx * 240 + 15], 225, outIdx);
         BYTE pIdx = 0,
             x = idx % 15,
             y = ~~(idx / 15);
         if (x < 0 || x >= cBoardSize || y < 0 || y >= cBoardSize) continue;
-        idxTable[idx * 240 + 15 + pIdx++] = idx;
-        idxTable[idx * 240] = pIdx;
+        aroundIdxTable[idx * 240 + 15 + pIdx++] = idx;
+        aroundIdxTable[idx * 240] = pIdx;
         for (BYTE radius = 1; radius < 15; radius++) {
-            short top = moveIdx(idx, -radius, 1),
+            BYTE top = moveIdx(idx, -radius, 1),
                 right = moveIdx(idx, radius, 0),
                 buttom = moveIdx(idx, radius, 1),
                 left = moveIdx(idx, -radius, 0),
@@ -216,76 +344,150 @@ short* createAroundIdxTable() {
             if (top != outIdx) {
                 for (char m = -radius + 1; m <= radius; m++) {
                     nIdx = moveIdx(top, m, 0);
-                    if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
+                    if (nIdx != outIdx) aroundIdxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (right != outIdx) {
                 for (char m = -radius + 1; m <= radius; m++) {
                     nIdx = moveIdx(right, m, 1);
-                    if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
+                    if (nIdx != outIdx) aroundIdxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (buttom != outIdx) {
                 for (char m = radius - 1; m >= -radius; m--) {
                     nIdx = moveIdx(buttom, m, 0);
-                    if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
+                    if (nIdx != outIdx) aroundIdxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
             if (left != outIdx) {
                 for (char m = radius - 1; m >= -radius; m--) {
                     nIdx = moveIdx(left, m, 1);
-                    if (nIdx != outIdx) idxTable[idx * 240 + 15 + pIdx++] = nIdx;
+                    if (nIdx != outIdx) aroundIdxTable[idx * 240 + 15 + pIdx++] = nIdx;
                 }
             }
-            idxTable[idx * 240 + radius] = pIdx;
+            aroundIdxTable[idx * 240 + radius] = pIdx;
         }
     }
-
-    return idxTable;
 }
 
 //返回centerIdx为中心，顺时针绕圈的第index个点，index=0时就直接返回centerIdx
-short aroundIdx(BYTE centerIdx, BYTE index) {
+BYTE aroundIdx(BYTE centerIdx, BYTE index) {
     return aroundIdxTable[centerIdx * 240 + 15 + index];
 }
 
 //返回centerIdx为中心，radius半径内的点的计数，radius=0时，返回1
-short getAroundIdxCount(BYTE centerIdx, BYTE radius) {
+BYTE getAroundIdxCount(BYTE centerIdx, BYTE radius) {
     return aroundIdxTable[centerIdx * 240 + radius];
 }
 
+//----------------------  Moves  --------------------------
 
-//----------------------  cBoardSize  --------------------------
-
-void setCBoardSize(char size) {
-    cBoardSize = size;
-    createIdxLists(cBoardSize);
-    createIdxTable();
-    createAroundIdxTable();
+bool isChildMove(BYTE* parentMove, BYTE pLen, BYTE* childMove, BYTE cLen) {
+    BYTE j, k;
+    // 判断一个颜色,最后一手活四级忽略
+    for (k = 1; k < pLen; k += 2) {
+        for (j = 1; j < cLen; j += 2) {
+            if (childMove[j] == parentMove[k]) {
+                break; //找到相同数据
+            }
+        }
+        if (j >= cLen) break; // 没有找到相同数据;
+    }
+    return k >= pLen;
 }
 
+bool isRepeatMove(BYTE* newMove, BYTE* oldMove, BYTE len) {
+    return isChildMove(newMove, len, oldMove, len);
+}
+/*
+struct Moves* NewMoves(BYTE*& nextMoves, BYTE* end, BYTE len) {
+    if (nextMoves < end) {
+        struct Moves* pMoves = (struct Moves*)nextMoves;
+        pMoves->next = NULL;
+        pMoves->len = len;
+        pMoves->moves = (BYTE*)pMoves + sizeof(struct Moves);
+        nextMoves += (sizeof(struct Moves) + len);
+        return pMoves;
+    }
+    else 
+        return NULL;
+}
 
-//----------------------------------------------------
+void addMoves(struct Moves* preMoves, struct Moves* newMoves) {
+    struct Moves* next = preMoves->next;
+    preMoves->next = newMoves;
+    newMoves->next = next;
+}
+
+void removeMoves(struct Moves* preMoves) {
+    struct Moves* next = preMoves->next;
+    preMoves->next = next->next;
+}
+*//*
+// 添加一个成立的VCF分支
+bool pushWinMoves(struct MovesList* winMoves, struct Moves* move) {
+    struct Moves head = {0};
+    struct Moves* preMoves = &head;
+    struct Moves* inserMoves = &head;
+    struct Moves* nextMoves = winMoves->firstMoves;
+    preMoves->next = nextMoves;*/
+    /*
+    while(nextMoves) {
+        if (move->len < nextMoves->len) {
+            if (isChildMove(move->moves, move->len, nextMoves->moves, nextMoves->len)) { // 把所有重复的替换掉
+                removeMoves(preMoves); //remove nextMoves
+                winMoves->len--;
+            }
+        }
+        else {
+            if (isChildMove(nextMoves->moves, nextMoves->len, move->moves, move->len)) {
+                return false;
+            }
+            inserMoves = nextMoves;
+        }
+        
+        preMoves = nextMoves;
+        nextMoves = preMoves->next;
+    }
+    */
+    /*addMoves(inserMoves, move);
+    winMoves->len++;
+    winMoves->firstMoves = head.next;
+    return true;
+}*/
+
+//----------------------  init  --------------------------
+
+
+int init(BYTE size, BYTE rules) {
+    gameRules = rules;
+	cBoardSize = size;
+	createEmptyLists();
+	createIdxLists();
+	createIdxTable();
+	createAroundIdxTable();
+	return 1;
+}
+
+//------------------------------------------------------
 
 // (long*)lineInfo,  (lineInfo >> 3) & 0b111
-function testLine(idx, direction, color, arr) {
-    let max = -1, // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
-        addFree = 0, // 0 | 1
+DWORD testLine(BYTE idx, BYTE direction, char color, char* arr) {
+    char max = -1; // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
+    BYTE addFree = 0, // 0 | 1
         addCount = 0,
         free = 0, // >= 0
         count = 0,
         markMove = 0,
         emptyCount = 0,
-        colorCount = 0,
-        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
-        ov = arr[idx];
-    arr[idx] = color;
-
-    vs[0] = getArrValue(idx, -5, direction, arr);
-    vs[1] = getArrValue(idx, -4, direction, arr);
-    for (let move = -4; move < 5; move++) {
-        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        let v = vs[move + 5];
+        colorCount = 0;
+    
+    // getArrValue(18 - 28次)，使用缓存快一些
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
+    for (char move = -4; move < 5; move++) {
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -299,7 +501,7 @@ function testLine(idx, direction, color, arr) {
         if (emptyCount + colorCount == 5) {
 
             if (gameRules == RENJU_RULES && color == 1 &&
-                (color == vs[move] || color == vs[move + 6]))
+                (color == valueList[move] || color == valueList[move + 6]))
             {
                 if (colorCount == 5 && colorCount > max) {
                     max = SIX;
@@ -331,7 +533,7 @@ function testLine(idx, direction, color, arr) {
 
             }
 
-            v = vs[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -343,38 +545,35 @@ function testLine(idx, direction, color, arr) {
         }
     }
 
-    arr[idx] = ov;
     max &= 0b111;
-    let lineFoul = max == 6 || max == 4 && count > 1 && !free ? 1 : 0;
+    BYTE lineFoul = (max == 6) || ((max == 4) && (count > 1) && (!free)) ? 1 : 0;
 
-    return direction << 12 |
-        free << 8 |
-        markMove << 5 |
-        lineFoul << 4 | // set lineFoul
-        max << 1 | // set maxNum
+    return (direction << 12) |
+        (free << 8) |
+        (markMove << 5) |
+        (lineFoul << 4) | // set lineFoul
+        (max << 1) | // set maxNum
         (free ? 1 : 0); // set free
 }
 
 
 
-function testLineFoul(idx, direction, color, arr) {
-    let max = 0, // 0 | 3 | 4 | 5 | SIX
-        addFree = 0, // 0 | 1
+DWORD testLineFoul(BYTE idx, BYTE direction, char color, char* arr) {
+    char max = 0; // 0 | 3 | 4 | 5 | SIX
+    BYTE addFree = 0, // 0 | 1
         addCount = 0,
         free = 0, // >= 0
         count = 0,
         markMove = 0,
         emptyCount = 0,
-        colorCount = 0,
-        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
-        ov = arr[idx];
-    arr[idx] = 1;
-
-    vs[0] = getArrValue(idx, -5, direction, arr);
-    vs[1] = getArrValue(idx, -4, direction, arr);
-    for (let move = -4; move < 5; move++) {
-        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        let v = vs[move + 5];
+        colorCount = 0;
+    
+    // getArrValue(18 - 28次)，使用缓存快一些
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
+    for (char move = -4; move < 5; move++) {
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -387,8 +586,8 @@ function testLineFoul(idx, direction, color, arr) {
         }
         if (emptyCount + colorCount == 5) {
             if (colorCount == 5) {
-                if (1 == vs[move] ||
-                    1 == vs[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 {
                     max = SIX;
                 }
@@ -401,8 +600,8 @@ function testLineFoul(idx, direction, color, arr) {
                 break;
             }
             else if (colorCount == 4) {
-                if (1 == vs[move] ||
-                    1 == vs[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 { //六腐形
                 }
                 else {
@@ -426,8 +625,8 @@ function testLineFoul(idx, direction, color, arr) {
                 }
             }
             else if (colorCount == 3 && max <= 3) {
-                if (1 == vs[move] ||
-                    1 == vs[move + 6])
+                if (1 == valueList[move] ||
+                    1 == valueList[move + 6])
                 { //六腐形
                 }
                 else {
@@ -451,7 +650,7 @@ function testLineFoul(idx, direction, color, arr) {
                 }
             }
 
-            v = vs[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -463,36 +662,31 @@ function testLineFoul(idx, direction, color, arr) {
         }
     }
 
-    arr[idx] = ov;
-
-    return direction << 12 |
-        free << 8 |
-        markMove << 5 |
-        (free ? max == 4 ? FOUR_FREE : THREE_FREE :
-            max == 4 && count > 1 ? LINE_DOUBLE_FOUR :
-            max << 1);
+    return (direction << 12) |
+        (free << 8) |
+        (markMove << 5) |
+        (free ?  (max == 4 ? FOUR_FREE : THREE_FREE) :
+            ((max == 4) && (count > 1) ? LINE_DOUBLE_FOUR :
+            max << 1));
 }
 
 
 
 // 不会验证x,y是否有棋子
 // idx,点在 direction指定这条线上是不是一个冲4点,活4
-function testLineFour(idx, direction, color, arr) {
-
-    let max = 0, // 0 | 4 | 5 | SIX
-        addFree = 0, // 0 | 1
+DWORD testLineFour(BYTE idx, BYTE direction, char color, char* arr) {
+    char max = 0; // 0 | 4 | 5 | SIX
+    BYTE addFree = 0, // 0 | 1
         addCount = 0,
         free = 0, // >= 0
         count = 0,
         markMove = 0,
         emptyCount = 0,
-        colorCount = 0,
-        ov = arr[idx];
-    arr[idx] = color;
+        colorCount = 0;
 
-    for (let move = -4; move < 5; move++) {
+    for (char move = -4; move < 5; move++) {
         // getArrValur(18 - 22次)直接 getArrValur 快一些
-        let v = getArrValue(idx, move, direction, arr);
+        char v = getArrValue(idx, move, direction, arr);
         if (v == 0) {
             emptyCount++;
         }
@@ -557,36 +751,33 @@ function testLineFour(idx, direction, color, arr) {
             }
         }
     }
-    arr[idx] = ov;
 
-    return direction << 12 |
-        free << 8 |
-        markMove << 5 |
+    return (direction << 12) |
+        (free << 8) |
+        (markMove << 5) |
         (free ? FOUR_FREE :
-            count > 1 ? LINE_DOUBLE_FOUR :
-            max << 1);
+            (count > 1 ? LINE_DOUBLE_FOUR :
+            (max << 1)));
 }
 
 
 
-function testLineThree(idx, direction, color, arr) {
-    let max = 0, // 0 | 3 | 4 | 5 | SIX
-        addFree = 0, // 0 | 1
+DWORD testLineThree(BYTE idx, BYTE direction, char color, char* arr) {
+    char max = 0; // 0 | 3 | 4 | 5 | SIX
+    BYTE addFree = 0, // 0 | 1
         addCount = 0,
         free = 0, // >= 0
         count = 0,
         markMove = 0,
         emptyCount = 0,
-        colorCount = 0,
-        vs = new Array(11), // getArrValue(18 - 28次)，使用缓存快一些
-        ov = arr[idx];
-    arr[idx] = color;
-
-    vs[0] = getArrValue(idx, -5, direction, arr);
-    vs[1] = getArrValue(idx, -4, direction, arr);
-    for (let move = -4; move < 5; move++) {
-        vs[move + 6] = getArrValue(idx, move + 1, direction, arr);
-        let v = vs[move + 5];
+        colorCount = 0;
+        
+    // getArrValue(18 - 28次)，使用缓存快一些
+    valueList[0] = getArrValue(idx, -5, direction, arr);
+    valueList[1] = getArrValue(idx, -4, direction, arr);
+    for (char move = -4; move < 5; move++) {
+        valueList[move + 6] = getArrValue(idx, move + 1, direction, arr);
+        char v = valueList[move + 5];
         if (v == 0) {
             emptyCount++;
         }
@@ -597,11 +788,12 @@ function testLineThree(idx, direction, color, arr) {
             emptyCount = 0;
             colorCount = 0;
         }
+        
         if (emptyCount + colorCount == 5) {
             if (colorCount == 5) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == vs[move] ||
-                        color == vs[move + 6]))
+                    (color == valueList[move] ||
+                        color == valueList[move + 6]))
                 {
                     max = SIX;
                 }
@@ -615,8 +807,8 @@ function testLineThree(idx, direction, color, arr) {
             }
             else if (colorCount == 4) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == vs[move] ||
-                        color == vs[move + 6])) {}
+                    (color == valueList[move] ||
+                        color == valueList[move + 6])) {}
                 else {
                     if (max < 4) {
                         max = 4;
@@ -639,8 +831,8 @@ function testLineThree(idx, direction, color, arr) {
             }
             else if (colorCount == 3 && max <= 3) {
                 if (gameRules == RENJU_RULES && color == 1 &&
-                    (color == vs[move] ||
-                        color == vs[move + 6]))
+                    (color == valueList[move] ||
+                        color == valueList[move + 6]))
                 { //六腐形
                 }
                 else {
@@ -664,7 +856,7 @@ function testLineThree(idx, direction, color, arr) {
                 }
             }
 
-            v = vs[move + 1];
+            v = valueList[move + 1];
             if (v == 0) {
                 emptyCount--;
                 addCount = 1;
@@ -675,111 +867,445 @@ function testLineThree(idx, direction, color, arr) {
             }
         }
     }
-
-    arr[idx] = ov;
-
-    return direction << 12 |
-        free << 8 |
-        markMove << 5 |
-        (free ? max == 4 ? FOUR_FREE : THREE_FREE :
-            max == 4 && count > 1 ? LINE_DOUBLE_FOUR :
-            max << 1);
+    
+    return (direction << 12) |
+        (free << 8) |
+        (markMove << 5) |
+        (free ? (max == 4 ? FOUR_FREE : THREE_FREE) :
+            ((max == 4) && (count > 1) ? LINE_DOUBLE_FOUR :
+            max << 1));
 }
 
 
 
-function testFoul() {
+void testLinePoint(BYTE idx, BYTE direction, char color, char* arr, DWORD* lineInfoList) {
+    BYTE emptyCount = 0,
+        colorCount = 0,
+        emptyStart = 0,
+        emptyEnd = 0;
+    setBuffer(lineInfoList, 10, 0);
+    for (char move = -4; move < 5; move++) {
+        char v = arr[moveIdx(idx, move, direction)];
+        if (v == 0) {
+            emptyCount++;
+            cEmptyMoves[emptyEnd] = move;
+            emptyList[emptyEnd++] = move + 4;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+            emptyStart = emptyEnd;
+        }
 
+        if (emptyCount + colorCount == 5) {
+            if (gameRules == RENJU_RULES && color == 1 &&
+                (color == arr[moveIdx(idx, move - 5, direction)] ||
+                    color == arr[moveIdx(idx, move + 1, direction)]))
+            { //六腐形
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    if (colorCount == 4 && (colorCount + 1) > (lineInfoList[emptyList[e]] & MAX)) {
+                        lineInfoList[emptyList[e]] = SIX | (BYTE)(move - cEmptyMoves[e]) << 5;
+                    }
+                }
+            }
+            else {
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    if (((lineInfoList[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                        lineInfoList[emptyList[e]] = ADD_MAX_COUNT | (BYTE)(move - cEmptyMoves[e]) << 5 | ((colorCount + 1) << 1);
+                    }
+
+                    if (((lineInfoList[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                        if (lineInfoList[emptyList[e]] & ADD_MAX_COUNT) {
+                            lineInfoList[emptyList[e]] += 0x1000; //count++
+                        }
+                        lineInfoList[emptyList[e]] &= 0x7fff;
+
+                        if (lineInfoList[emptyList[e]] & ADD_FREE_COUNT) {
+                            lineInfoList[emptyList[e]] += 0x100; //free++
+                            lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0xff1f) | (BYTE)(move - cEmptyMoves[e]) << 5; //set markMove
+                        }
+                        lineInfoList[emptyList[e]] |= ADD_FREE_COUNT;
+                    }
+                }
+            }
+
+            v = arr[moveIdx(idx, move - 4, direction)];
+            if (v == 0) {
+                emptyCount--;
+                emptyStart++;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    lineInfoList[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                }
+            }
+            else {
+                colorCount--;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    lineInfoList[emptyList[e]] &= 0xf7ff;
+                }
+            }
+        }
+    }
+    
+    for (BYTE e = 0; e < emptyEnd; e++) {
+        if (lineInfoList[emptyList[e]]) {
+            BYTE max = (lineInfoList[emptyList[e]] >> 1) & 0x07,
+                free = lineInfoList[emptyList[e]] & 0x0700 ? 1 : 0,
+                lineFoul = (max == 6) || (max == 4 && ((lineInfoList[emptyList[e]] & 0x7000) > 0x1000) && !free) ? 1 : 0;
+            
+            lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0x07e0) |
+                direction << 12 | lineFoul << 4 | max << 1 | free;
+        }
+    }
 }
 
 
 
-function isFoul(idx, arr) {
-    const LEN = 8,
-        VALUE = 0,
+void testLinePointFour(BYTE idx, BYTE direction, char color, char* arr, DWORD* lineInfoList) {
+    BYTE emptyCount = 0,
+        colorCount = 0,
+        emptyStart = 0,
+        emptyEnd = 0;
+    setBuffer(lineInfoList, 10, 0);
+    for (char move = -4; move < 5; move++) {
+        char v = arr[moveIdx(idx, move, direction)];
+        if (v == 0) {
+            emptyCount++;
+            cEmptyMoves[emptyEnd] = move;
+            emptyList[emptyEnd++] = move + 4;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+            emptyStart = emptyEnd;
+        }
+
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 4) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == arr[moveIdx(idx, move - 5, direction)] ||
+                        color == arr[moveIdx(idx, move + 1, direction)]))
+                {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        lineInfoList[emptyList[e]] = SIX | (BYTE)(move - cEmptyMoves[e]) << 5;
+                    }
+                }
+                else {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        lineInfoList[emptyList[e]] = FIVE | (BYTE)(move - cEmptyMoves[e]) << 5;
+                    }
+                }
+            }
+            else if (colorCount == 3) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == arr[moveIdx(idx, move - 5, direction)] ||
+                        color == arr[moveIdx(idx, move + 1, direction)]))
+                { //六腐形
+                }
+                else {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        if ((lineInfoList[emptyList[e]] & MAX) < FOUR_NOFREE) {
+                            lineInfoList[emptyList[e]] = ADD_MAX_COUNT | (BYTE)(move - cEmptyMoves[e]) << 5 | FOUR_NOFREE;
+                        }
+
+                        if ((lineInfoList[emptyList[e]] & MAX) == FOUR_NOFREE) {
+                            if (lineInfoList[emptyList[e]] & ADD_MAX_COUNT) {
+                                lineInfoList[emptyList[e]] += 0x1000; //count++
+                            }
+                            lineInfoList[emptyList[e]] &= 0x7fff;
+
+                            if (lineInfoList[emptyList[e]] & ADD_FREE_COUNT) {
+                                lineInfoList[emptyList[e]] += 0x100; //free++
+                                lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0xff1f) | (BYTE)(move - cEmptyMoves[e]) << 5; //set markMove
+                            }
+                            lineInfoList[emptyList[e]] |= ADD_FREE_COUNT;
+                        }
+                    }
+                }
+            }
+
+            v = arr[moveIdx(idx, move - 4, direction)];
+            if (v == 0) {
+                emptyCount--;
+                emptyStart++;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                       lineInfoList[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                }
+            }
+            else {
+                colorCount--;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    lineInfoList[emptyList[e]] &= 0xf7ff;
+                }
+            }
+        }
+    }
+
+    for (BYTE e = 0; e < emptyEnd; e++) {
+        if (lineInfoList[emptyList[e]]) {
+            BYTE four_max_free = lineInfoList[emptyList[e]] & 0x0700 ? FOUR_FREE :
+                (lineInfoList[emptyList[e]] & 0x7000) > 0x1000 ?
+                LINE_DOUBLE_FOUR : lineInfoList[emptyList[e]] & FOUL_MAX;
+
+            lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0x07e0) |
+                direction << 12 | four_max_free;
+        }
+    }
+}
+
+
+
+void testLinePointThree(BYTE idx, BYTE direction, char color, char* arr, DWORD* lineInfoList) {
+    BYTE emptyCount = 0,
+        colorCount = 0,
+        emptyStart = 0,
+        emptyEnd = 0;
+    setBuffer(lineInfoList, 10, 0);
+    for (char move = -4; move < 5; move++) {
+        char v = arr[moveIdx(idx, move, direction)];
+        if (v == 0) {
+            emptyCount++;
+            cEmptyMoves[emptyEnd] = move;
+            emptyList[emptyEnd++] = move + 4;
+        }
+        else if (v == color) {
+            colorCount++;
+        }
+        else { // v!=color || v==-1
+            emptyCount = 0;
+            colorCount = 0;
+            emptyStart = emptyEnd;
+        }
+
+        if (emptyCount + colorCount == 5) {
+            if (colorCount == 4) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == arr[moveIdx(idx, move - 5, direction)] ||
+                        color == arr[moveIdx(idx, move + 1, direction)]))
+                {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        lineInfoList[emptyList[e]] = SIX | (BYTE)(move - cEmptyMoves[e]) << 5;
+                    }
+                }
+                else {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        lineInfoList[emptyList[e]] = FIVE | (BYTE)(move - cEmptyMoves[e]) << 5;
+                    }
+                }
+            }
+            else if (4 > colorCount && colorCount > 1) {
+                if (gameRules == RENJU_RULES && color == 1 &&
+                    (color == arr[moveIdx(idx, move - 5, direction)] ||
+                        color == arr[moveIdx(idx, move + 1, direction)]))
+                { //六腐形
+                }
+                else {
+                    for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                        if (((lineInfoList[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                            lineInfoList[emptyList[e]] = ADD_MAX_COUNT | (BYTE)(move - cEmptyMoves[e]) << 5 | ((colorCount + 1) << 1);
+                        }
+
+                        if (((lineInfoList[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                            if (lineInfoList[emptyList[e]] & ADD_MAX_COUNT) {
+                                lineInfoList[emptyList[e]] += 0x1000; //count++
+                            }
+                            lineInfoList[emptyList[e]] &= 0x7fff;
+
+                            if (lineInfoList[emptyList[e]] & ADD_FREE_COUNT) {
+                                lineInfoList[emptyList[e]] += 0x100; //free++
+                                lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0xff1f) | (BYTE)(move - cEmptyMoves[e]) << 5; //set markMove
+                            }
+                            lineInfoList[emptyList[e]] |= ADD_FREE_COUNT;
+                        }
+                    }
+                }
+            }
+
+            v = arr[moveIdx(idx, move - 4, direction)];
+            if (v == 0) {
+                emptyCount--;
+                emptyStart++;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                    lineInfoList[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
+                }
+            }
+            else {
+                colorCount--;
+                for (BYTE e = emptyStart; e < emptyEnd; e++) {
+                       lineInfoList[emptyList[e]] &= 0xf7ff;
+                }
+            }
+        }
+    }
+
+    for (BYTE e = 0; e < emptyEnd; e++) {
+        if (lineInfoList[emptyList[e]]) {
+            BYTE foul_max = (lineInfoList[emptyList[e]] >> 1) & 0x0f,
+                four_max_free = lineInfoList[emptyList[e]] & 0x0700 ? (foul_max == 4 ? FOUR_FREE : THREE_FREE) :
+                    foul_max == 4 && (lineInfoList[emptyList[e]] & 0x7000) > 0x1000 ?
+                    LINE_DOUBLE_FOUR : foul_max << 1;
+
+            lineInfoList[emptyList[e]] = (lineInfoList[emptyList[e]] & 0x07e0) |
+                direction << 12 | four_max_free;
+        }
+    }
+}
+
+
+
+// 返回冲4的防点
+BYTE getBlockFourPoint(BYTE idx, char* arr, DWORD lineInfo) {
+    char move = (lineInfo >> 5) & 7;
+    BYTE direction = (lineInfo >> 12) & 7,
+        nIdx;
+    for (char m = 0; m > -5; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx] && nIdx != idx) return nIdx;
+    }
+    return 225; //return outIdx
+}
+
+UINT getBlockThreePoints(BYTE idx, char* arr, DWORD lineInfo) {
+    char move = (lineInfo >> 5) & 7;
+    BYTE freeCount = (lineInfo >> 8) & 7,
+        direction = (lineInfo >> 12) & 7,
+        nIdx;
+    BYTE* points = getPoints; //point array
+    
+    char m = 0;
+    *(UINT*)(points) = 0; //reset array
+    if (freeCount == 1) {
+        for (m = 0; m > -6; m--) {
+            nIdx = moveIdx(idx, move + m, direction);
+            if (0 == arr[nIdx] && nIdx != idx) points[++points[0]] = nIdx;
+        }
+    }
+    else if (freeCount == 2) {
+        for (m = 0; m > -5; m--) {
+            nIdx = moveIdx(idx, move + m, direction);
+            if (0 == arr[nIdx] && nIdx != idx) break; // skip first
+        }
+        for (m--; m > -6; m--) {
+            nIdx = moveIdx(idx, move + m, direction);
+            if (0 == arr[nIdx] && nIdx != idx) points[++points[0]] = nIdx;
+        }
+    }
+    
+    return *(UINT*)(points);
+}
+
+UINT getFreeFourPoint(BYTE idx, char* arr, DWORD lineInfo) {
+    char move = (lineInfo >> 5) & 7;
+    BYTE direction = (lineInfo >> 12) & 7,
+        nIdx;
+    BYTE* points = getPoints; //point array
+    
+    char m = 0;
+    *(UINT*)(points) = 0; //reset array
+    for (m = 0; m > -5; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx] && nIdx != idx) break; // skip first
+    }
+    for (m--; m > -6; m--) {
+        nIdx = moveIdx(idx, move + m, direction);
+        if (0 == arr[nIdx] && nIdx != idx) {
+            points[++points[0]] = nIdx;
+        }
+    }
+    points[0] = (lineInfo >> 8) & 7; //set freePoint num
+
+    return *(UINT*)(points);
+}
+
+
+
+bool isFoul(BYTE idx, char* arr) {
+    const BYTE LEN = 12, // [value, count, pIdx, idx, info[4]]
+        VALUE = 0, // if value > 1 then isFoul = true
         COUNT = 1,
         PIDX = 2,
         IDX = 3,
         INFO_START = 4;
-    let stack = new Array(36 * LEN),
-        stackIdx = 0,
+    char stackIdx = 0,
         threeCount = 0,
         fourCount = 0,
         foulCount = 0,
         ov = arr[idx];
 
     arr[idx] = 1;
-    stack[VALUE] = 0;
-    stack[COUNT] = 0;
-    stack[PIDX] = 0;
-    stack[IDX] = idx;
-    for (let direction = 0; direction < 4; direction++) {
-        let info = testLineThree(idx, direction, 1, arr),
-            v = FOUL_MAX_FREE & info;
+    stackBuffer[VALUE] = 0;
+    stackBuffer[COUNT] = 0;
+    stackBuffer[PIDX] = 0;
+    stackBuffer[IDX] = idx;
+    
+    for (BYTE direction = 0; direction < 4; direction++) {
+        DWORD info = testLineThree(idx, direction, 1, arr);
+        BYTE v = FOUL_MAX_FREE & info;
         if (v == FIVE) { // not foul
             stackIdx = -1;
             break;
         }
-        else if (v > FOUL) foulCount++;
+        else if (v >= FOUL) foulCount++;
         else if (v >= FOUR_NOFREE) fourCount++;
         else if (v == THREE_FREE) {
             threeCount++;
-            stack[INFO_START + stack[COUNT]++] = info & 0x8fff | (direction << 12);
+            *(DWORD*)(stackBuffer + INFO_START + stackBuffer[COUNT]*2) = (info & 0x8fff) | (direction << 12);
+            stackBuffer[COUNT]++;
         }
     }
 
     if (stackIdx > -1) {
-        //console.log(`>>>`)
-        if (fourCount > 1 || foulCount) { // is foul
-            stack[VALUE] = 2;
+        if ((fourCount > 1) || foulCount) { // is foul
+            stackBuffer[VALUE] = 2;
             stackIdx = -1;
         }
         else if (threeCount < 2) stackIdx = -1; //not foul
-
+        
         while (stackIdx > -1) { //continue test doubleThree
-
-            if (stackIdx % 2 == 0) { // test freeFourPoint and first doubleThree
-                //console.log(`stackIdx=${stackIdx}, \n[${stack}]`)
-                let idx = stack[stackIdx * LEN + IDX];
-                if (stack[stackIdx * LEN + VALUE] > 1) { // is doubleThree
-                    //console.log(1)
+            
+            if ((stackIdx & 1) == 0) { // test freeFourPoint and first doubleThree
+                
+                BYTE idx = stackBuffer[stackIdx * LEN + IDX];
+                if (stackBuffer[stackIdx * LEN + VALUE] > 1) { // is doubleThree
                     arr[idx] = 0;
                     stackIdx--;
-                    if (stackIdx == -1) stack[VALUE] = 2; // set first doubleThree
+                    if (stackIdx == -1) stackBuffer[VALUE] = 2; // set first doubleThree
                 }
-                else if (stack[stackIdx * LEN + PIDX] == stack[stackIdx * LEN + COUNT]) { // not doubleThree
-                    //console.log(2)
+                else if (2 > (stackBuffer[stackIdx * LEN + VALUE] + stackBuffer[stackIdx * LEN + COUNT] - stackBuffer[stackIdx * LEN + PIDX])) { // not doubleThree
                     arr[idx] = 0;
                     stackIdx--;
-                    if (stackIdx > -1) stack[stackIdx * LEN + VALUE] = 1; //set freeFourPoint
+                    if (stackIdx > -1) stackBuffer[stackIdx * LEN + VALUE] = 1; //set freeFourPoint
                 }
                 else {
-                    //console.log(3)
-                    let ps = getFreeFourPoint(idx, arr, stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + PIDX]++]);
+                    UINT fps = getFreeFourPoint(idx, arr, *(DWORD*)(stackBuffer + stackIdx * LEN + INFO_START + stackBuffer[stackIdx * LEN + PIDX]*2));
+                    BYTE* ps = (BYTE*)(&fps);
+                    stackBuffer[stackIdx * LEN + PIDX]++;
                     stackIdx++;
-                    stack[stackIdx * LEN + VALUE] = 0;
-                    stack[stackIdx * LEN + COUNT] = ps[0]; //count
-                    stack[stackIdx * LEN + PIDX] = 0;
-                    //stack[stackIdx * LEN + IDX] = idx;
-                    stack[stackIdx * LEN + INFO_START + 0] = ps[1];
-                    stack[stackIdx * LEN + INFO_START + 1] = ps[2];
+                    stackBuffer[stackIdx * LEN + VALUE] = 0;
+                    stackBuffer[stackIdx * LEN + COUNT] = ps[0]; //count
+                    stackBuffer[stackIdx * LEN + PIDX] = 0;
+                    //stackBuffer[stackIdx * LEN + IDX] = idx;
+                    stackBuffer[stackIdx * LEN + INFO_START + 0] = ps[1];
+                    stackBuffer[stackIdx * LEN + INFO_START + 1] = ps[2];
                 }
             }
             else { // test next doubleThree
-                //console.info(`stackIdx=${stackIdx}, \n[${stack}]`)
-                if (stack[stackIdx * LEN + VALUE] == 1) { // find freeFourPoint
-                    //console.info(1)
+                
+                if (stackBuffer[stackIdx * LEN + VALUE] == 1) { // find freeFourPoint
                     stackIdx--;
-                    stack[stackIdx * LEN + VALUE]++; // add one freeThree
+                    stackBuffer[stackIdx * LEN + VALUE]++; // add one freeThree
                 }
-                else if (stack[stackIdx * LEN + PIDX] == stack[stackIdx * LEN + COUNT]) { // not freeFourPoint
-                    //console.info(2)
+                else if (stackBuffer[stackIdx * LEN + PIDX] == stackBuffer[stackIdx * LEN + COUNT]) { // not freeFourPoint
                     stackIdx--;
                 }
                 else {
-                    //console.info(3)
-                    let skip = false,
-                        idx = stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + PIDX]++];
+                    bool skip = false;
+                    BYTE idx = stackBuffer[stackIdx * LEN + INFO_START + stackBuffer[stackIdx * LEN + PIDX]++];
 
                     threeCount = 0;
                     fourCount = 0;
@@ -787,24 +1313,25 @@ function isFoul(idx, arr) {
 
                     arr[idx] = 1;
                     stackIdx++;
-                    stack[stackIdx * LEN + VALUE] = 0;
-                    stack[stackIdx * LEN + COUNT] = 0; //count
-                    stack[stackIdx * LEN + PIDX] = 0;
-                    stack[stackIdx * LEN + IDX] = idx;
-                    for (let direction = 0; direction < 4; direction++) {
-                        let info = testLineThree(idx, direction, 1, arr),
-                            v = FOUL_MAX_FREE & info;
+                    stackBuffer[stackIdx * LEN + VALUE] = 0;
+                    stackBuffer[stackIdx * LEN + COUNT] = 0; //count
+                    stackBuffer[stackIdx * LEN + PIDX] = 0;
+                    stackBuffer[stackIdx * LEN + IDX] = idx;
+                    for (BYTE direction = 0; direction < 4; direction++) {
+                        DWORD info = testLineThree(idx, direction, 1, arr);
+                        BYTE v = FOUL_MAX_FREE & info;
                         if (v == FIVE) {
                             arr[idx] = 0;
                             stackIdx--; //not freeFourPoint
                             skip = true;
                             break;
                         }
-                        else if (v > FOUL) foulCount++;
+                        else if (v >= FOUL) foulCount++;
                         else if (v >= FOUR_NOFREE) fourCount++;
                         else if (v == THREE_FREE) {
                             threeCount++;
-                            stack[stackIdx * LEN + INFO_START + stack[stackIdx * LEN + COUNT]++] = info & 0x8fff | (direction << 12);
+                            *(DWORD*)(stackBuffer + stackIdx * LEN + INFO_START + stackBuffer[stackIdx * LEN + COUNT]*2) = (info & 0x8fff) | (direction << 12);
+                            stackBuffer[stackIdx * LEN + COUNT]++;
                         }
                     }
 
@@ -816,608 +1343,55 @@ function isFoul(idx, arr) {
                         else if (threeCount < 2) {
                             arr[idx] = 0;
                             stackIdx--; // is freeFourPoint
-                            stack[stackIdx * LEN + VALUE] = 1;
+                            stackBuffer[stackIdx * LEN + VALUE] = 1;
                         }
                     }
                 }
             }
         }
     }
-
+    
     arr[idx] = ov;
-    return stack[VALUE] > 1;
+    return stackBuffer[VALUE] > 1;
 }
 
 
-
-function isDoubleThreeFoul(idx, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-//判断 x,y 是否44
-function isFF(x, y, color, arr) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-function isThree(x, y, color, arr, free) {
-
-}
-
-function isThree_Point(point, color, arr, free) {
-    return isThree(point.x, point.y, color, arr, free);
-}
-
-function isThree_Idx(idx, color, arr, free) {
-    return isThree(getX(idx), getY(idx), color, arr, free);
-}
-
-
-
-// 不会验证x,y是否有棋子
-// x,y,点是否形成33
-function isTT(x, y, arr) {
-
-}
-
-function isTT_Point(point, arr) {
-    return isTT(point.x, point.y, arr);
-}
-
-function isTT_Idx(idx, arr) {
-    return isTT(getX(idx), getY(idx), arr);
-}
-
-
-
-// 不会验证x,y是否有棋子
-// x,y,点在direction指定这条线上面是否为3
-function isLineThree(x, y, direction, color, arr, free) {
-
-}
-
-
-
-function isLineThreeNode(x, y, direction, arr, free, node) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// x,y,点在direction指定这条线上面是否为2
-function isLineTwo(x, y, direction, color, arr, free) {
-
-}
-
-
-
-// 不会验证x,y是否有棋子
-// 判断是否是一条线上的44,不判断x，y是否五连
-function isLineFF(x, y, direction, color, arr) {
-
-}
-
-
-
-function isLineFFNode(x, y, direction, arr, node, LINEIDX) {
-
-}
-
-
-
-function getLine(idx, color, direction, arr, lineColor = "red", lineType) {
-
-}
-
-function getLines(idx, color, arr, level) {
-    let lines = [];
-    let x = getX(idx);
-    let y = getY(idx);
-    //console.log(`idx=${idx}, x=${x}, y=${y}`)
-    for (let i = 0; i < 4; i++) {
-        let line = getLine(DIRECTIONS[i]);
-        //console.log(line)
-        if (line) lines.push(line);
-    }
-    return lines;
-
-    function getLine(direction) {
-        let p;
-        let isf;
-        let count = 0;
-        let start, end;
-        let points = [];
-        arr[y][x] = color;
-        //console.log(direction)
-        switch (level) {
-            case 3:
-                for (let i = -3; i < 0; i++) {
-                    p = getArrPoint(x, y, i, direction);
-                    if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFour(p.x, p.y, direction, color, arr, true);
-                        if (isf) {
-                            points.push(p);
-                            break;
-                        }
-                    }
-                }
-                for (let i = 3; i > 0; i--) {
-                    p = getArrPoint(x, y, i, direction);
-                    if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFour(p.x, p.y, direction, color, arr, true);
-                        if (isf) {
-                            points.push(p);
-                            break;
-                        }
-                    }
-                }
-                setLine();
-                break;
-            case 4:
-                for (let i = -4; i < 0; i++) {
-                    p = getArrPoint(x, y, i, direction);
-                    if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFive(p.x, p.y, direction, color, arr);
-                        if (isf) {
-                            points.push(p);
-                            break;
-                        }
-                    }
-                }
-                for (let i = 4; i > 0; i--) {
-                    p = getArrPoint(x, y, i, direction);
-                    if (p.x != -1 && arr[p.y][p.x] == 0) {
-                        isf = isLineFive(p.x, p.y, direction, color, arr);
-                        if (isf) {
-                            points.push(p);
-                            break;
-                        }
-                    }
-                }
-                setLine();
-                break;
-            case 5:
-                if (isLineFive(x, y, direction, color, arr)) {
-                    points.push({ x: x, y: y });
-                }
-                setLine();
-                break;
-        }
-        arr[y][x] = 0;
-        if (start != end) {
-            //console.log(`start=${start}, end=${end}, direction=${direction}`)
-            return {
-                "start": start,
-                "end": end
-            };
-        }
-
-        function setLine() {
-            if (points.length) {
-                start = getArrIndex(points[0].x, points[0].y, 0, direction);
-                let j = 0;
-                while (true) {
-                    j--;
-                    let c = getArrValue(points[0].x, points[0].y, j, direction, arr);
-                    if (c == color) {
-                        start = getArrIndex(points[0].x, points[0].y, j, direction);
-                    }
-                    else {
-                        break;
-                    }
-                }
-                end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, 0, direction);
-                j = 0;
-                while (true) {
-                    j++;
-                    let c = getArrValue(points[points.length - 1].x, points[points.length - 1].y, j, direction, arr);
-                    if (c == color) {
-                        end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, j, direction);
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
+DWORD testPointFour(BYTE idx, char color, char* arr) {
+    DWORD info = 0;
+    BYTE max = 0;
+    char ov = arr[idx];
+    arr[idx] = color;
+    for (BYTE direction = 0; direction < 4; direction++) {
+        DWORD lineInfo = testLineFour(idx, direction, color, arr);
+        BYTE lineMax = lineInfo & FOUL_MAX_FREE;
+        if (lineMax > max) {
+            info = lineInfo;
+            max = lineMax;
         }
     }
+    arr[idx] = ov;
+    BYTE foulV = (gameRules == RENJU_RULES) && (color == 1) && (isFoul(idx, arr)) ? 1 : 0;
+
+    return info | (foulV << 4);
 }
 
 
-
-// 返回冲4的防点
-function getBlockFourPoint(idx, arr, lineInfo) {
-    let move = (lineInfo >> 5) & 7,
-        direction = (lineInfo >> 12) & 7,
-        nIdx;
-    for (let m = 0; m > -5; m--) {
-        nIdx = moveIdx(idx, move + m, direction);
-        if (0 == arr[nIdx]) return nIdx;
-    }
-}
-
-function getBlockThreePoints(idx, arr, lineInfo) {
-    let move = (lineInfo >> 5) & 7,
-        freeCount = (lineInfo >> 8) & 7,
-        direction = (lineInfo >> 12) & 7,
-        points = [0, 0, 0, 0],
-        m = 0,
-        nIdx;
-    if (freeCount == 1) {
-        for (m = 0; m > -6; m--) {
-            nIdx = moveIdx(idx, move + m, direction);
-            if (0 == arr[nIdx]) points[++points[0]] = nIdx;
-        }
-    }
-    else if (freeCount == 2) {
-        for (m = 0; m > -5; m--) {
-            nIdx = moveIdx(idx, move + m, direction);
-            if (0 == arr[nIdx]) break; // skip first
-        }
-        for (m--; m > -6; m--) {
-            nIdx = moveIdx(idx, move + m, direction);
-            if (0 == arr[nIdx]) points[++points[0]] = nIdx;
-        }
-    }
-
-    return points;
-}
-
-function getFreeFourPoint(idx, arr, lineInfo) {
-    let move = (lineInfo >> 5) & 7,
-        direction = (lineInfo >> 12) & 7,
-        points = [0, 0, 0],
-        m = 0,
-        nIdx;
-    for (m = 0; m > -5; m--) {
-        nIdx = moveIdx(idx, move + m, direction);
-        if (0 == arr[nIdx]) break; // skip first
-    }
-    for (m--; m > -6; m--) {
-        nIdx = moveIdx(idx, move + m, direction);
-        if (0 == arr[nIdx]) {
-            points[++points[0]] = nIdx;
-        }
-    }
-    points[0] = (lineInfo >> 8) & 7; //set freePoint num
-
-    return points;
-}
-
-/*
-function getBlockThree(idx, arr, info) {
-    let rt = new Array(4),
-        freeCount = (info >> 8) & 7,
-        move = (info >> 5) & 7,
-        direction = (info >> 12) & 7;
-    for (let m = 0; m > -5; m--) {
-        idx = moveIdx(idx, move + m, direction);
-        if (0 == arr[idx]) {
-            rt[1 + rt[0]++] = idx;
-        }
-    }
-}
-*/
-
-function getNextEmpty(x, y, arr, direction, color, move = 0, maxLen = 5) {
-
-}
-
-
-
-// 返回 idx 在 direction 这条线上面的子力
-function getPower(idx, arr, direction, color, power, move = 0) {
-    let emptyCount = 0,
-        colorCount = 0,
-        max = -1;
-    for (let move = -4; move < 5; move++) {
-        let v = getArrValue(idx, move, direction, arr);
-        if (v == 0) {
-            emptyCount++;
-        }
-        else if (v == color) {
-            colorCount++;
-        }
-        else { // v!=color || v==-1
-            emptyCount = 0;
-            colorCount = 0;
-        }
-        if (emptyCount + colorCount == 5) {
-            if (colorCount > max) max = colorCount;
-            v = getArrValue(idx, move - 4, direction, arr);
-            if (v == 0) emptyCount--;
-            else colorCount--;
-        }
-    }
-    return max;
-}
-
-
-
-function getKey(arr) {
-    let key = "";
-    for (let y = 0; y < 15; y++) {
-        for (let i = 0; i < 15; i += 5) {
-            let sum = 0;
-            for (let j = 0; j < 5; j++) {
-                let m = arr[y][i + j];
-                sum += m * Math.pow(3, j);
-            }
-            key += String.fromCharCode(sum);
-        }
-    }
-    return key;
-}
-
-
-
-function getArr2D(arr, setnum = 0, x = 15, y = 15) {
-    let j = 0;
-    arr.length = 0;
-    for (j = 0; j < y; j++) {
-        arr[j] = [];
-        for (let i = 0; i < x; i++) {
-            arr[j][i] = setnum;
-        }
-    }
-    return arr;
-}
-
-
-
-// 把arr 数组格式化成棋盘 字符串
-function printArr(arr) {
-    let s = "";
-    for (let i = 0; i < 15; i++) {
-        s += "\n";
-        for (let j = 0; j < 15; j++) {
-            s += arr[i][j] + "..";
-        }
-    }
-    return s;
-}
-
-
-
-function toStr(arr) {
-    let str = "";
-    for (let i = 0; i < 15; i++) {
-        str = str + `${arr[i]}\n`;
-    }
-    return str;
-}
-
-
-
-// 取得一个点的值
-function getArrValue(idx, move, direction, arr) {
-    return arr[moveIdx(idx, move, direction)];
-}
-
-
-
-function getArrValue_Idx(idx, move, direction, arr) {
-    let x = getX(idx);
-    let y = getY(idx);
-    return getArrValue(x, y, move, direction, arr);
-}
-
-
-
-// 取得一个点的x,y
-function getArrPoint(x, y, move, direction, arr) {
-    let nx = changeX(x, move, direction);
-    let ny = changeY(y, move, direction);
-    if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return {
-            x: nx,
-            y: ny
-        };
-    }
-    return {
-        x: -1,
-        y: -1
-    };
-}
-
-
-
-// 取得一个点的Index
-function getArrIndex(x, y, move, direction, arr) {
-    let nx = changeX(x, move, direction);
-    let ny = changeY(y, move, direction);
-    if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return ny * 15 + nx;
-    }
-    return -1;
-}
-
-
-
-function getX(idx) {
-    return idx % 15;
-}
-
-
-
-function getY(idx) {
-    return ~~(idx / 15);
-}
-
-function changeX(x, move, direction) {
-    switch (direction) {
-        case 0:
-            return x + move;
-            break;
-        case 1:
-            return x;
-            break;
-        case 2:
-            return x + move;
-            break;
-        case 3:
-            return x + move;
-            break;
-    }
-}
-
-
-
-function changeY(y, move, direction) {
-    switch (direction) {
-        case 0:
-            return y;
-            break;
-        case 1:
-            return y + move;
-            break;
-        case 2:
-            return y + move;
-            break;
-        case 3:
-            return y - move;
-            break;
-    }
-}
-
-
-
-// index ，转字母数字坐标
-function idxToName(idx) {
-    let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let x = getX(idx);
-    let y = getY(idx);
-    return (alpha.charAt(x) + (15 - y));
-}
-
-
-
-function moveIndexToName(moves, maxLength) {
-    let name = "";
-    for (let i = 0; i < moves.length; i++) {
-        name += `${i?",":""}${idxToName(moves[i])}`;
-        if (name.length >= maxLength) {
-            name += "......";
-            break;
-        }
-    }
-    return name;
-};
-
-
-
-function toArr(r, arr) {
-    arr = arr || getArr2D([]);
-    if (r.length == 225) {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                arr[y][x] = r[x + y * 15];
-            }
-        }
-    }
-    return arr;
-}
-
-
-function movesSort(fMoves, fun) {
-    for (let i = fMoves.length - 2; i >= 0; i--) {
-        for (let j = fMoves.length - 1; j > i; j--) {
-            if (fun(fMoves[j].length, fMoves[i].length)) {
-                let t = fMoves.splice(i, 1);
-                fMoves.splice(j, 0, t[0]);
-                break;
-            }
-        }
-    }
-}
-
-
-
-function findFoulPoint(arr, newarr, setnum) {
-
-    let narr = getArr2D([]);
-    findSixPoint(arr, 1, narr, setnum);
-    addFoulPoint(newarr, narr);
-    narr = getArr2D([]);
-    findFFPoint(arr, 1, narr, setnum);
-    addFoulPoint(newarr, narr);
-    narr = getArr2D([]);
-    findTTPoint(arr, 1, narr, setnum);
-    addFoulPoint(newarr, narr);
-    return newarr;
-
-    function addFoulPoint(newarr, narr) {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (narr[y][x] != 0) {
-                    newarr[y][x] = narr[y][x] * 1;
-                }
-            }
-        }
-    }
-}
-
-
-
-function findSixPoint(arr, color, newarr, setnum) {
-
-    let count = 0;
-    let nx;
-    let ny;
-    // 五连否定六连
-    findFivePoint(arr, color, newarr, -10000);
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            for (let i = 0; i < 4; i++) {
-                let pw = getPower(x, y, arr, DIRECTIONS[i], color)
-                if (pw == 4) {
-                    let p = getNextEmpty(x, y, arr, DIRECTIONS[i], color);
-                    if (getArrValue(x, y, -1, DIRECTIONS[i], arr) == color || getArrValue(x, y, 5, DIRECTIONS[i], arr) == color) {
-                        newarr[p.y][p.x] += Math.pow(10, i);
-                        count++;
-                    }
-                }
-            }
-        }
-    }
-    if (setnum != null) {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (newarr[y][x] != 0) {
-                    newarr[y][x] = setnum;
-                }
-            }
-        }
-    }
-    return count;
-}
-
-
-
-function testFive(arr, color, infoArr) {
-    let emptyList = new Array(15),
-        emptyMoves = new Array(15);
-    for (let i = 0; i < 225; i++) infoArr[i] = 0;
-    for (let direction = 0; direction < 4; direction++) {
-        let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
-        for (let list = listStart; list < listEnd; list++) {
-            let emptyCount = 0,
+void testFive(char* arr, char color, DWORD* infoArr) {
+    setBuffer(infoArr, 226, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 226, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
-            for (let move = moveStart; move < moveEnd; move++) {
-                let pIdx = (direction * 29 + list) * 43 + move,
-                    v = arr[idxLists[pIdx]];
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
                 if (v == 0) {
                     emptyCount++;
                     emptyMoves[emptyEnd] = move;
@@ -1438,12 +1412,12 @@ function testFive(arr, color, infoArr) {
                             (color == arr[idxLists[pIdx - 5]] ||
                                 color == arr[idxLists[pIdx + 1]]))
                         {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
                             }
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
                             }
                         }
@@ -1453,13 +1427,13 @@ function testFive(arr, color, infoArr) {
                     if (v == 0) {
                         emptyCount--;
                         emptyStart++;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
                         }
                     }
                     else {
                         colorCount--;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
                         }
                     }
@@ -1467,34 +1441,31 @@ function testFive(arr, color, infoArr) {
             }
         }
 
-        for (let idx = 0; idx < 225; idx++) {
-            let max = markArr[idx] & MAX;
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = markArr[idx] & MAX;
             if (FIVE == max) {
-                infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
             }
         }
     }
 }
 
-function testFour(arr, color, infoArr) {
-    let emptyList = new Array(15),
-        emptyMoves = new Array(15);
-    for (let i = 0; i < 225; i++) infoArr[i] = 0;
-    for (let direction = 0; direction < 4; direction++) {
-        let markArr = new Array(225),
-            listStart = direction == 2 ? 15 - cBoardSize : 0,
+void testFour(char* arr, char color, DWORD* infoArr) {
+    setBuffer(infoArr, 226, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 226, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
             listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
-        for (let list = listStart; list < listEnd; list++) {
-            let emptyCount = 0,
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
                 colorCount = 0,
                 moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
                 moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
-            for (let move = moveStart; move < moveEnd; move++) {
-                
-                let pIdx = (direction * 29 + list) * 43 + move,
-                    v = arr[idxLists[pIdx]];
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
                 if (v == 0) {
                     emptyCount++;
                     emptyMoves[emptyEnd] = move;
@@ -1515,12 +1486,12 @@ function testFour(arr, color, infoArr) {
                             (color == arr[idxLists[pIdx - 5]] ||
                                 color == arr[idxLists[pIdx + 1]]))
                         {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
                             }
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
                             }
                         }
@@ -1532,7 +1503,7 @@ function testFour(arr, color, infoArr) {
                         { //六腐形
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 if ((markArr[emptyList[e]] & MAX) < FOUR_NOFREE) {
                                     markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | FOUR_NOFREE;
                                 }
@@ -1545,7 +1516,7 @@ function testFour(arr, color, infoArr) {
 
                                     if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                         markArr[emptyList[e]] += 0x100; //free++
-                                        markArr[emptyList[e]] |= ((move - emptyMoves[e]) << 5); //set markMove
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
                                     }
                                     markArr[emptyList[e]] |= ADD_FREE_COUNT;
                                 }
@@ -1557,13 +1528,13 @@ function testFour(arr, color, infoArr) {
                     if (v == 0) {
                         emptyCount--;
                         emptyStart++;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
                         }
                     }
                     else {
                         colorCount--;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
                         }
                     }
@@ -1571,44 +1542,42 @@ function testFour(arr, color, infoArr) {
             }
         }
 
-        for (let idx = 0; idx < 225; idx++) {
-            let max = markArr[idx] & MAX;
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = markArr[idx] & MAX;
             if (FIVE == max) {
-                infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
             }
             else if (FOUR_NOFREE == max) {
                 markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0;
                 if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
                     if (gameRules == RENJU_RULES && color == 1) {
-                        let foul = isFoul(idx, arr) ? 1 : 0;
-                        infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12) | foul << 4;
+                        BYTE foul = isFoul(idx, arr) ? 1 : 0;
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12) | foul << 4;
                     }
                     else
-                        infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
                 }
             }
         }
     }
 }
 
-function testThree(arr, color, infoArr) {
-    let emptyList = new Array(15),
-        emptyMoves = new Array(15);
-    for (let i = 0; i < 225; i++) infoArr[i] = 0;
-    for (let direction = 0; direction < 4; direction++) {
-        let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
-        for (let list = listStart; list < listEnd; list++) {
-            let emptyCount = 0,
+void testThree(char* arr, char color, DWORD* infoArr) {
+    setBuffer(infoArr, 226, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 226, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
-            for (let move = moveStart; move < moveEnd; move++) {
-                let pIdx = (direction * 29 + list) * 43 + move,
-                    v = arr[idxLists[pIdx]];
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
                 if (v == 0) {
                     emptyCount++;
                     emptyMoves[emptyEnd] = move;
@@ -1622,20 +1591,19 @@ function testThree(arr, color, infoArr) {
                     colorCount = 0;
                     emptyStart = emptyEnd;
                 }
-                //console.log(idxLists[pIdx])
+                
                 if (emptyCount + colorCount == 5) {
-                    //console.info(`idx = ${idxLists[pIdx]}, emptyCount = ${emptyCount}, colorCount = ${colorCount}`)
                     if (colorCount == 4) {
                         if (gameRules == RENJU_RULES && color == 1 &&
                             (color == arr[idxLists[pIdx - 5]] ||
                                 color == arr[idxLists[pIdx + 1]]))
                         {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = SIX | ((move - emptyMoves[e]) << 5);
                             }
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
                             }
                         }
@@ -1647,9 +1615,9 @@ function testThree(arr, color, infoArr) {
                         { //六腐形
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 if (((markArr[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
-                                    markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | (colorCount + 1 << 1);
+                                    markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | ((colorCount + 1) << 1);
                                 }
 
                                 if (((markArr[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
@@ -1660,7 +1628,7 @@ function testThree(arr, color, infoArr) {
 
                                     if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                         markArr[emptyList[e]] += 0x100; //free++
-                                        markArr[emptyList[e]] |= ((move - emptyMoves[e]) << 5); //set markMove
+                                        markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
                                     }
                                     markArr[emptyList[e]] |= ADD_FREE_COUNT;
                                 }
@@ -1672,13 +1640,13 @@ function testThree(arr, color, infoArr) {
                     if (v == 0) {
                         emptyCount--;
                         emptyStart++;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] |= ADD_MAX_COUNT; //set addCount
                         }
                     }
                     else {
                         colorCount--;
-                        for (let e = emptyStart; e < emptyEnd; e++) {
+                        for (BYTE e = emptyStart; e < emptyEnd; e++) {
                             markArr[emptyList[e]] = markArr[emptyList[e]] & 0xf7ff;
                         }
                     }
@@ -1686,22 +1654,31 @@ function testThree(arr, color, infoArr) {
             }
         }
 
-        for (let idx = 0; idx < 225; idx++) {
-            let max = (markArr[idx] & MAX) >> 1;
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (markArr[idx] & MAX) >> 1;
             if (5 == max) {
-                infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
             }
             else if (5 > max && max > 2) {
                 markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0; //mark free
                 if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
-                    //console.log(`${idxToName(idx)}`)
                     if (gameRules == RENJU_RULES && color == 1) {
-                        let foul = isFoul(idx, arr) ? 1 : 0;
-                        infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12) | foul << 4;
-                        //console.log(`${idxToName(idx)}, foul=${foul}, infoArr[idx]=${infoArr[idx].toString(2)}`)
+                        BYTE foul = isFoul(idx, arr) ? 1 : 0;
+                        if((max == 3) && (markArr[idx] & FREE) && (foul == 0)) {
+                            arr[idx] = color;
+                            *(UINT*)(freeFourPoints) = getFreeFourPoint(idx, arr, ((markArr[idx] & 0x8fff) | (direction << 12)));
+                            BYTE i = 1;
+                            for (i=1; i<=freeFourPoints[0]; i++) { 
+                                BYTE f = isFoul(freeFourPoints[i], arr);
+                                if (!f) break; //freeFourPoints[i] is freeFour point
+                            }
+                            if (i > freeFourPoints[0]) markArr[idx] &= 0xf8fe; //clear free
+                            arr[idx] = 0;
+                        }
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12) | foul << 4;
                     }
                     else
-                        infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                        infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
                 }
             }
         }
@@ -1710,26 +1687,24 @@ function testThree(arr, color, infoArr) {
 
 
 
-function getLevel(arr, color) {
-    let infoArr = new Array(225),
-        isWin = false,
-        fiveIdx = -1;
-    let emptyList = new Array(15),
-        emptyMoves = new Array(15);
-    for (let direction = 0; direction < 4; direction++) {
-        let markArr = new Array(225),
-            listStart = direction < 2 ? 0 : 15 - cBoardSize + 4,
-            listEnd = direction < 2 ? listStart + 15 : listStart + cBoardSize * 2 - 9;
-        for (let list = listStart; list < listEnd; list++) {
-            let emptyCount = 0,
+DWORD getLevel(char* arr, char color) {
+    bool isWin = false;
+    BYTE fiveIdx = 0xff;
+    setBuffer(infoArr, 226, 0);
+    for (BYTE direction = 0; direction < 4; direction++) {
+        setBuffer(markArr, 226, 0);
+        BYTE listStart = direction == 2 ? 15 - cBoardSize : 0,
+            listEnd = direction < 2 ? listStart + cBoardSize : listStart + cBoardSize * 2 - 5;
+        for (BYTE list = listStart; list < listEnd; list++) {
+            BYTE emptyCount = 0,
                 colorCount = 0,
-                moveStart = 14,
-                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize - 4 ? moveStart + 5 + (list - listStart) : moveStart + 5 + ((cBoardSize - 5) * 2 - (list - listStart)),
+                moveStart = direction < 3 || list < cBoardSize ? 14 : list < 15 ? 15 + list - cBoardSize : 29 - cBoardSize,
+                moveEnd = direction < 2 ? moveStart + cBoardSize : list - listStart < cBoardSize ? moveStart + list - listStart + 1 : moveStart + cBoardSize - (list - listStart + 1 - cBoardSize),
                 emptyStart = 0,
                 emptyEnd = 0;
-            for (let move = moveStart; move < moveEnd; move++) {
-                let pIdx = (direction * 29 + list) * 43 + move,
-                    v = arr[idxLists[pIdx]];
+            for (BYTE move = moveStart; move < moveEnd; move++) {
+                long pIdx = (direction * 29 + list) * 43 + move;
+                char v = arr[idxLists[pIdx]];
                 if (v == 0) {
                     emptyCount++;
                     emptyMoves[emptyEnd] = move;
@@ -1765,7 +1740,7 @@ function getLevel(arr, color) {
                         { //
                         }
                         else {
-                            for (let e = emptyStart; e < emptyEnd; e++) {
+                            for (BYTE e = emptyStart; e < emptyEnd; e++) {
                                 markArr[emptyList[e]] = FIVE | ((move - emptyMoves[e]) << 5);
                             }
                         }
@@ -1783,10 +1758,10 @@ function getLevel(arr, color) {
             }
         }
 
-        for (let idx = 0; idx < 225; idx++) {
-            let max = (markArr[idx] & MAX) >> 1;
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (markArr[idx] & MAX) >> 1;
             if (5 == max) {
-                infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
+                infoArr[idx] = (markArr[idx] & 0x8fff) | (direction << 12);
             }
         }
     }
@@ -1795,14 +1770,14 @@ function getLevel(arr, color) {
         return LEVEL_WIN;
     }
     else {
-        for (let idx = 0; idx < 225; idx++) {
-            let max = (infoArr[idx] & MAX) >> 1;
+        for (BYTE idx = 0; idx < 225; idx++) {
+            BYTE max = (infoArr[idx] & MAX) >> 1;
             if (5 == max) {
-                if (fiveIdx == -1) fiveIdx = idx;
+                if (fiveIdx == 0xff) fiveIdx = idx;
                 else if (fiveIdx != idx) return (fiveIdx << 8) | LEVEL_FREEFOUR;
             }
         }
-        if (fiveIdx == -1)
+        if (fiveIdx == 0xff)
             return LEVEL_NONE;
         else if (gameRules == RENJU_RULES && color == 2 && isFoul(fiveIdx, arr))
             return (fiveIdx << 8) | LEVEL_FREEFOUR;
@@ -1811,379 +1786,670 @@ function getLevel(arr, color) {
     }
 }
 
-
-
 //--------------------- vcf ------------------------
-
-const VCF_NODES_LEN = 6000000, // 3*2000000
-    VCF_HASHTABLE_LEN = 1453950 + 9040000; //16155*90 + 226*40000
-let vcfHashTable = [],
-    vcfNextPosition = 0,
-    vcfTransMoves = [],
-    vcfNodes = [], //[0] = idx, [1]=down, [2]=right
-    vcfNextNode = 0;
-//vcfStackNodes = [],
-//vcfStackIndex = -1,
-//vcfInfoArray = new Array(1024);
-
-function resetVCF() {
-    vcfHashTable = new Array(VCF_HASHTABLE_LEN);
-    vcfNextPosition = 1453950;
-    for (let i = 0; i < 225; i++) { vcfTransMoves[i] = {}; };
-    vcfNodes = new Array(VCF_NODES_LEN);
-    vcfNextNode = 3;
-    //vcfStackNodes = [];
-    //vcfStackIndex = -1;
-    //vcfInfoArray[0] = 0;
+/*
+const UINT VCF_HASHTABLE_LEN = 5880420 + 6400000 + 116000000; //((135+224)*45)*91*4 + 80*80000 + 232*500000
+BYTE vcfHashTable[VCF_HASHTABLE_LEN + 256] = {0};
+UINT vcfHashNextValue = 0;
+BYTE vcfHashMaxMovesLen = 73;
+    
+void setVCFHashMaxMovesLen (BYTE maxLen) {
+    vcfHashMaxMovesLen = maxLen + 1;
 }
 
-function vcfPositionPush(keyLen, keySum, position) {
-    if (vcfNextPosition >= VCF_HASHTABLE_LEN) {
-        //alert(`vcfPositionPush out`)
+void resetVcfWinMoves() {
+    vcfWinMovesNext = bufVcfWinMoves;
+    vcfWinMoves.len = 0;
+    vcfWinMoves.firstMoves = NULL;
+}
+    
+void resetVCF(char* arr, char color, BYTE maxVCF, BYTE maxDepth, UINT maxNode) {
+    copyBuffer((BYTE*)vcfInitArr, (BYTE*)arr, 228);
+    resetVcfWinMoves();
+    
+    vcfInfo.initArr = vcfInitArr;
+    vcfInfo.winMoves = &vcfWinMoves;
+    vcfInfo.color = color;
+    vcfInfo.maxVCF = maxVCF;
+    vcfInfo.maxDepth = maxDepth;
+    vcfInfo.maxNode = maxNode;
+    vcfInfo.vcfCount = 0;
+    vcfInfo.pushMoveCount = 0;
+    vcfInfo.pushPositionCount = 0;
+    vcfInfo.hasCount = 0;
+    vcfInfo.nodeCount = 0;
+                
+    vcfHashNextValue = 5880420;
+    setBuffer(vcfHashTable, 5880420, 0);
+}
+
+UINT vcfPositionPush(BYTE keyLen, UINT keySum, char* position) {
+    if (vcfHashNextValue >= VCF_HASHTABLE_LEN) {
         return 0;
     }
-    let key = keyLen * 16155 + keySum,
-        pPosition = vcfHashTable[key];
+    
+    UINT pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pPosition = *(UINT*)(vcfHashTable + pNext);
     while (pPosition) {
-        key = pPosition + 225;
-        pPosition = vcfHashTable[key];
+        pNext = pPosition + 228;
+        pPosition =  *(UINT*)(vcfHashTable + pNext);
     }
 
-    vcfHashTable[key] = vcfNextPosition;
-    for (let i = 0; i < 225; i++) {
-        vcfHashTable[vcfNextPosition + i] = position[i];
+    *(UINT*)(vcfHashTable + pNext) = vcfHashNextValue;
+    
+    char* newPosition = (char*)(vcfHashTable + vcfHashNextValue);
+    for (BYTE i = 0; i < 225; i++) {
+        newPosition[i] = position[i];
     }
-    vcfNextPosition += 226;
-    return vcfNextPosition;
+    
+    pNext = vcfHashNextValue + 228;
+    *(UINT*)(vcfHashTable + pNext) = 0;
+    vcfHashNextValue += 232;
+    
+    return vcfHashNextValue;
 }
 
-function vcfPositionHas(keyLen, keySum, position) {
-    let key = keyLen * 16155 + keySum,
-        pPosition = vcfHashTable[key];
+
+bool vcfPositionHas(BYTE keyLen, UINT keySum, char* position) {
+    UINT pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pPosition = *(UINT*)(vcfHashTable + pNext);
     while (pPosition) {
-        let isEqual = true;
-        for (let i = 0; i < 225; i++) {
-            if (vcfHashTable[pPosition + i] != position[i]) {
+        bool isEqual = true;
+        char* nextPosition = (char*)(vcfHashTable + pPosition);
+        for (BYTE i = 0; i < 225; i++) {
+            if (nextPosition[i] != position[i]) {
                 isEqual = false;
                 break;
             }
         }
         if (isEqual) return true;
-        key = pPosition + 225;
-        pPosition = vcfHashTable[key];
+        pNext = pPosition + 228;
+        pPosition = *(UINT*)(vcfHashTable + pNext);
     }
     return false;
 }
 
-function vcfNewNode(idx) {
-    if (vcfNextNode >= VCF_NODES_LEN) {
-        //alert(`vcfNewNode out : ${(vcfNextNode-1453950)/3}`)
+
+UINT vcfMovesPush(BYTE keyLen, UINT keySum, BYTE* move) {
+    if (vcfHashNextValue >= VCF_HASHTABLE_LEN) {
         return 0;
     }
-    else {
-        vcfNodes[vcfNextNode] = idx;
-        vcfNodes[vcfNextNode + 1] = 0;
-        vcfNodes[vcfNextNode + 2] = 0;
-        vcfNextNode += 3;
-        return vcfNextNode - 3;
+    
+    BYTE movesByte = ((keyLen >> 2) + 1) << 2;
+    UINT pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pMoves =  *(UINT*)(vcfHashTable + pNext);
+    
+    while (pMoves) {
+        pNext = pMoves + movesByte;
+        pMoves = *(UINT*)(vcfHashTable + pNext);
     }
+    
+    *(UINT*)(vcfHashTable + pNext) = vcfHashNextValue;
+    
+    BYTE* newMoves = vcfHashTable + vcfHashNextValue;
+    newMoves[0] = keyLen;
+    newMoves++;
+    for (BYTE i = 0; i < keyLen; i++) {
+        newMoves[i] = move[i];
+    }
+    
+    pNext = vcfHashNextValue + movesByte;
+    *(UINT*)(vcfHashTable + pNext) = 0;
+    vcfHashNextValue = pNext+ 4;
+    
+    return vcfHashNextValue;
 }
 
-function vcfTransTablePush(keyLen, keySum, position, moves) {
-    if (keyLen < 37)
-        pushFailMoves(vcfTransMoves, moves);
-    else 
+// 对比VCF手顺是否相等
+bool vcfMovesHas(BYTE keyLen, UINT keySum, BYTE* move) {
+    BYTE movesByte = ((keyLen >> 2) + 1) << 2;
+    UINT pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+        pMoves = *(UINT*)(vcfHashTable + pNext);
+    while (pMoves) {
+        if(isRepeatMove(move, vcfHashTable + pMoves + 1, keyLen)) return true;
+        pNext = pMoves + movesByte;
+        pMoves = *(UINT*)(vcfHashTable + pNext);
+    }
+    return false;
+}
+
+void vcfTransTablePush(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
+    if (keyLen < vcfHashMaxMovesLen)
+        vcfMovesPush(keyLen, keySum, moves);
+    else
         vcfPositionPush(keyLen, keySum, position);
 }
 
-function vcfTransTableHas(keyLen, keySum, position, moves) {
-    if (keyLen < 37) 
-        return findMoves(vcfTransMoves, moves);
+bool vcfTransTableHas(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
+    if (keyLen < vcfHashMaxMovesLen)
+        return vcfMovesHas(keyLen, keySum, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
 }
 
-/*
-function vcfAddRightNode(pNode, newNode) {
-    vcfNodes[pNode+2] = newNode;
-}
-
-function vcfAddDownNode(pNode, newNode) {
-    vcfNodes[pNode+1] = newNode;
-}
-
-function vcfStackPush() {
-    
-}
-
-function vcfStackPop() {
-    if (vcfStackIndex < 0) return 0;
-    
-}
-
-function vcfStackCurrent() {
-    
+struct Moves* NewVcfMoves(BYTE* moves, BYTE movesLen, BYTE lastIdx) {
+    struct Moves* vcfMoves = NewMoves(vcfWinMovesNext, vcfWinMovesEnd, movesLen+1);
+    if (vcfMoves) {
+        copyBuffer(vcfMoves->moves, moves, movesLen);
+        (vcfMoves->moves)[movesLen] = lastIdx;
+    }
+    return vcfMoves;
 }
 */
-function findVCF(arr, color) {
-    //setCBoardSize(15)
-    let initArr = arr.slice(0),
-        sTime = new Date().getTime();
-    let centerIdx = 112,
-        colorIdx,
-        nColorIdx,
-        infoArr = new Array(225),
-        moves = new Array(0),
-        stackIdx = [-1,-1,225, 225],
-        sum = 0,
-        done = false,
+// movesLen 为单数
+bool isVCF(char color, char* arr, BYTE* moves, BYTE movesLen) {
+    bool isV = false;
+    BYTE isvcfValuesLen = 0;
+
+    for (BYTE i = 0; i < movesLen; i += 2) {
+        DWORD levelInfo = getLevel(arr, INVERT_COLOR[color]);
+        BYTE bIdx = (levelInfo >> 8) & 0xff,
+            level = levelInfo & 0xff;
+        if ((level < LEVEL_NOFREEFOUR && arr[moves[i]] == 0) ||
+            (level == LEVEL_NOFREEFOUR && bIdx == moves[i])) {
+            DWORD info = testPointFour(moves[i], color, arr);
+            if ((info & FOUL_MAX) == FOUR_NOFREE) {
+                isvcfValues[isvcfValuesLen++] = moves[i];
+                arr[moves[i]] = color;
+                if (i + 1 >= movesLen) {
+                    //所有手走完，判断是否出现胜形 (活4，44，冲4抓)
+                    isV = LEVEL_FREEFOUR == (0xff & getLevel(arr, color));
+                    break;
+                }
+                //后手不判断禁手
+                BYTE idx = getBlockFourPoint(moves[i], arr, info);
+                if (idx == moves[i + 1] && arr[idx] == 0) {
+                    isvcfValues[isvcfValuesLen++] = idx;
+                    arr[idx] = INVERT_COLOR[color];
+                }
+                else break;
+            }
+            else break;
+        }
+        else break;
+    }
+
+    // 还原改动的棋子
+    for (BYTE i = 0; i < isvcfValuesLen; i++) {
+        arr[isvcfValues[i]] = 0;
+    }
+
+    return isV;
+}
+
+
+// 去掉VCF无谓冲四，不会改变arr数组
+void simpleVCF(char color, char* arr, BYTE* moves, BYTE& movesLen) {
+
+    BYTE svcfFourPointsLen = 0,
+        svcfVCFLen = 0;
+        
+    BYTE leng = movesLen - 6;
+    for (BYTE j = 1; j <= leng; j += 2) { // add fourPoint
+        if (FOUR_NOFREE == (FOUL_MAX & testPointFour(moves[j], INVERT_COLOR[color], arr))) svcfFourPoints[svcfFourPointsLen++] = j;
+    }
+    if (svcfFourPointsLen) {
+        for (BYTE j = 0; j <= leng; j++) {
+            arr[moves[j]] = (j & 1) ? INVERT_COLOR[color] : color;
+        }
+    }
+    
+    while (svcfFourPointsLen) { //判断引起对手反四的手顺是否可以去除
+        BYTE st = 0;
+        BYTE l = 2;
+        for (BYTE j = svcfFourPointsLen - 1; j >= 0; j--) {
+            st = svcfFourPoints[j] - 1;
+            l += 2;
+            if ((j == 0) || (svcfFourPoints[j] - svcfFourPoints[j - 1] > 2)) {
+                svcfFourPointsLen -= ((l - 2) >> 1);
+                break;
+            }
+        }
+        
+        svcfVCFLen = 0; //concat
+        for (BYTE j=st; j<=leng; j++) arr[moves[j]] = 0;
+        leng = st;
+        for (BYTE j=st + l; j<movesLen; j++) svcfVCF[svcfVCFLen++] = moves[j];
+        if (isVCF(color, arr, svcfVCF, svcfVCFLen)) { //splice
+            movesLen = st;  //删除无谓冲四
+            for (BYTE j=0; j<svcfVCFLen; j++) moves[movesLen++] = svcfVCF[j];
+        }
+    }
+
+    leng = movesLen - 6;
+    for (BYTE j = 0; j <= leng; j++) { // 摆棋子
+        arr[moves[j]] = (j & 1) ? INVERT_COLOR[color] : color;
+    }
+
+    for (BYTE i = movesLen - 5; i >= 0; i -= 2) { // 从后向前逐个冲4尝试是否无谓冲4
+        svcfVCFLen = 0; //slice
+        for (BYTE j= i+2; j<movesLen; j++) svcfVCF[svcfVCFLen++] = moves[j];
+        if (isVCF(color, arr, svcfVCF, svcfVCFLen)) { //splice
+            movesLen = i;  //删除无谓冲四
+            for (BYTE j=0; j<svcfVCFLen; j++) moves[movesLen++] = svcfVCF[j];
+        }
+        // 复原两步，直到最后可以完全复原数组
+        if (i < 2) break; // i=0, break;
+        arr[moves[i - 1]] = 0;
+        arr[moves[i - 2]] = 0;
+    }
+}
+
+/*
+void findVCF(char* arr, char color, BYTE maxVCF, BYTE maxDepth, UINT maxNode) {
+    BYTE centerIdx = 112,
+        colorIdx = 0xff,
+        nColorIdx = 0xff;
+    BYTE movesLen = 0;
+    UINT stackLen = 0;
+    bool done = false;
+    UINT sum = 0,
         pushMoveCount = 0,
         pushPositionCount = 0,
-        pushCountByte = 0,
-        hasCount = 0;
-    resetVCF();
+        hasCount = 0,
+        loopCount = 0;
+        
+    resetVCF(arr, color, maxVCF, maxDepth, maxNode);
+    
+    vcfStack[stackLen++] = 0xff;
+    vcfStack[stackLen++] = 0xff;
+    vcfStack[stackLen++] = 225;
+    vcfStack[stackLen++] = 225;
+    
     while (!done) {
-        nColorIdx = stackIdx.pop();
-        colorIdx = stackIdx.pop();
-
-        if (colorIdx > -1) {
+        if(!(loopCount & 0xffff)) log(loopCount);
+        
+        nColorIdx = vcfStack[--stackLen];
+        //log(nColorIdx);
+        colorIdx = vcfStack[--stackLen];
+        //log(colorIdx);
+        
+        if (colorIdx < 0xff) {
             if (colorIdx < 225) {
                 arr[colorIdx] = color;
                 arr[nColorIdx] = INVERT_COLOR[color];
-                moves.push(colorIdx);
-                moves.push(nColorIdx);
+                vcfMoves[movesLen++] = colorIdx;
+                vcfMoves[movesLen++] = nColorIdx;
                 centerIdx = colorIdx;
                 sum += colorIdx;
-                stackIdx.push(-1, -1);
-                //console.log(`[${moveIndexToName(moves, 500)}]\n [${stackIdx}]\n ${colorIdx}`);
-                //console.warn(`${idxToName(vcfNodes[pCurrentNode])}`)
+                vcfStack[stackLen++] = 0xff;
+                vcfStack[stackLen++] = 0xff;
+                //log((BYTE*)(vcfMoves),movesLen);
             }
-            
-            //console.info(`${idxToName(vcfNodes[vcfNodes[pCurrentNode + 2]])}`)
-            if (vcfTransTableHas(moves.length / 2, sum, arr, moves)/*findMoves(vcfTransMoves, moves)*/) {
+
+            if (vcfTransTableHas(movesLen, sum, vcfMoves, arr)) {
                 hasCount++;
-                //console.error(`[${moveIndexToName(moves, 500)}]`);
             }
             else {
-                //console.log(`[${moveIndexToName(moves, 500)}]`);
-                testFour(arr, color, infoArr);
-                let nLevel = getLevel(arr, INVERT_COLOR[color]);
-                if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
-                    let end;
-                    if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
-                        end = 1;
-                        centerIdx = nLevel >> 8;
-                    }
-                    else {
-                        end = 225;
-                    }
+                if (movesLen < maxDepth) {
+                
+                    //if (loopCount >= logStart && loopCount < (logStart + logCount)) {
+                        //log(loopCount);
+                        //log((BYTE*)(vcfMoves), movesLen);
+                    //}
+                    
+                    testFour(arr, color, vcfInfoArr);
+                    DWORD nLevel = getLevel(arr, INVERT_COLOR[color]);
+                    //log(nLevel);
+                    if ((nLevel & 0xff) <= LEVEL_NOFREEFOUR) {
+                        BYTE end;
+                        if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
+                            end = 1;
+                            centerIdx = nLevel >> 8;
+                        }
+                        else {
+                            end = 225;
+                        }
 
-                    for (let i = end-1; i >= 0; i--) {
-                        let idx = aroundIdx(centerIdx, i),
-                            max = infoArr[idx] & FOUL_MAX;
-                        if (max == FOUR_NOFREE) {
+                        BYTE twoPointsLen = 0,
+                            threePointsLen = 0,
+                            freeThreePointsLen = 0,
+                            elsePointsLen = 0,
+                            fourPointsLen = 0;
+                        BYTE i = 0;
+                        for (i = 0; i < end; i++) {
+                            BYTE idx = aroundIdx(centerIdx, i);
+                            DWORD max = vcfInfoArr[idx] & FOUL_MAX;
+                            //if((max & MAX) == FOUR_NOFREE) log(max);
+                            if (max == FOUR_NOFREE) {
+                                arr[idx] = color;
+                                DWORD level = getLevel(arr, color);
+                                arr[idx] = 0;
+                                //log(level);
+                                //log((level & 0xff) == LEVEL_FREEFOUR);
 
-                            arr[idx] = color;
-                            let level = getLevel(arr, color);
-                            arr[idx] = 0;
-
-                            if ((level & 0xff) == LEVEL_FREEFOUR) { //
-                                //pueh VCF
-                                post("vConsole", `[${moveIndexToName(moves.concat(idx), 500)}]`)
-                                //console.warn(`[${moveIndexToName(moves.concat(idx), 500)}]`);
-                                //pushFailMoves(vcfTransMoves, moves);
-                                vcfTransTablePush(moves.length / 2, sum, arr, moves);
-                                for(let j=moves.length-1; j>=0; j--) {
-                                    stackIdx.push(-1);
+                                if ((level & 0xff) == LEVEL_FREEFOUR) { //
+                                    //push VCF
+                                    vcfTransTablePush(movesLen, sum, vcfMoves, arr);
+                                    //log(vcfMoves, movesLen);
+                                    struct Moves* winMoves = NewVcfMoves(vcfMoves, movesLen, idx);
+                                    //log(winMoves->moves, winMoves->len);
+                                    simpleVCF(color, vcfInitArr, winMoves->moves, winMoves->len);
+                                    if (winMoves) {
+                                        //log(winMoves->moves, winMoves->len);
+                                        pushWinMoves(&vcfWinMoves, winMoves);
+                                        vcfInfo.vcfCount = vcfWinMoves.len;
+                                        if (vcfInfo.vcfCount == maxVCF) {
+                                            for (BYTE j = 0; j < movesLen; j++) {
+                                                vcfStack[stackLen++] = 0xff;
+                                            }
+                                            vcfStack[stackLen++] = 0xff;
+                                            vcfStack[stackLen++] = 0xff;
+                                            break; // break while loop
+                                        }
+                                    }
+                                    
                                 }
-                                stackIdx.push(-1,-1);
-                                break;
+                                else {
+                                    vcfFourPoints[fourPointsLen++] = (level >> 8);
+                                    vcfFourPoints[fourPointsLen++] = idx;
+                                }
                             }
-                            else {
-                                stackIdx.push(idx);
-                                stackIdx.push(level >> 8);
+                        }
+                        if (i >= end) {
+                            
+                            //if (loopCount >= logStart && loopCount < (logStart + logCount)) {
+                                //log((BYTE*)(vcfFourPoints), fourPointsLen);
+                                //log((BYTE*)(vcfTwoPoints), twoPointsLen);
+                                //log((BYTE*)(vcfThreePoints), threePointsLen);
+                                //log((BYTE*)(vcfFreeThreePoints), freeThreePointsLen);
+                            //}
+                            
+                            for (BYTE i=1; i<fourPointsLen; i+=2) {
+                                arr[vcfFourPoints[i]] = color;
                             }
+                            
+                            for (BYTE i=1; i<fourPointsLen; i+=2) {
+                                DWORD lineInfo = 0;
+                                BYTE idx = vcfFourPoints[i];
+                                for (BYTE direction=0; direction<4; direction++) {
+                                    DWORD info = MAX_FREE & testLine(idx, direction, color, arr);
+                                    if (info <= FOUR_FREE && info > lineInfo) lineInfo = info;
+                                }
+                                switch (lineInfo) {
+                                    case THREE_FREE:
+                                        vcfFreeThreePoints[freeThreePointsLen++] = vcfFourPoints[i-1];
+                                        vcfFreeThreePoints[freeThreePointsLen++] = idx;
+                                        break;
+                                    case FOUR_FREE:
+                                    case FOUR_NOFREE:
+                                    case THREE_NOFREE:
+                                        vcfThreePoints[threePointsLen++] = idx;  //打乱顺序，搜索会更快
+                                        vcfThreePoints[threePointsLen++] = vcfFourPoints[i-1];
+                                        break;
+                                    case TWO_FREE:
+                                    case TWO_NOFREE:
+                                        vcfTwoPoints[twoPointsLen++] = vcfFourPoints[i-1];
+                                        vcfTwoPoints[twoPointsLen++] = idx;
+                                        break;
+                                    default:
+                                        vcfElsePoint[elsePointsLen++] = vcfFourPoints[i-1];
+                                        vcfElsePoint[elsePointsLen++] = idx;
+                                }
+                            }
+                                
+                            end = elsePointsLen;          
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfElsePoint[--elsePointsLen];
+                            end = twoPointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfTwoPoints[--twoPointsLen];
+                            end = threePointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfThreePoints[i];
+                            end = freeThreePointsLen;
+                            for (BYTE i=0; i<end; i++) vcfStack[stackLen++] = vcfFreeThreePoints[--freeThreePointsLen];
+                            
+                            for (BYTE i=1; i<fourPointsLen; i+=2) {
+                                arr[vcfFourPoints[i]] = 0;
+                            }
+                            
+                            //if (loopCount >= logStart && loopCount < (logStart + logCount)) 
+                                //log((BYTE*)(vcfStack), stackLen);
+                            
                         }
                     }
                 }
-                //vcfNodes[pNode + 1]==0 && pushFailMoves(vcfTransMoves,moves)
             }
+            
         }
         else {
-            if(moves.length > 72) pushPositionCount++;
-            else pushMoveCount++;
-            pushCountByte += moves.length / (1024 * 1024);
-            //pushFailMoves(vcfTransMoves, moves);
-            vcfTransTablePush(moves.length / 2, sum, arr, moves);
-            //console.info(`[${moves}]\n [${stackIdx}]\n ${colorIdx}`)
-        }
-
-        if (colorIdx == -1) { //back
-            if (moves.length) {
-                let idx = moves.pop();
+            
+            if (movesLen < vcfHashMaxMovesLen)
+                pushMoveCount++;
+            else
+                pushPositionCount++;
+            vcfTransTablePush(movesLen, sum, vcfMoves, arr);
+            
+            if (movesLen) {
+                BYTE idx = vcfMoves[--movesLen];
                 arr[idx] = 0;
-                idx = moves.pop();
+                idx = vcfMoves[--movesLen];
                 arr[idx] = 0;
                 sum -= idx;
             }
             else {
                 done = true;
             }
-            //console.info(`[${moveIndexToName(moves, 500)}]\n [${stackIdx}]\n ${colorIdx}`);
         }
-        //done = done || pushMoveCount > 1000;
+        
+        if (++loopCount >= maxNode) { //break loop
+            vcfStack[stackLen++] = 0xff;
+            vcfStack[stackLen++] = 0xff;
+        }
     }
     
-    let isEq = true 
-    for(let i=0; i<225; i++){
-        if(arr[i]!=initArr[i]) isEq = false;
+    vcfInfo.pushMoveCount = pushMoveCount;
+    vcfInfo.pushPositionCount = pushPositionCount;
+    vcfInfo.hasCount = hasCount;
+    vcfInfo.nodeCount = loopCount;
+}
+*/
+
+BYTE* getBlockVCF(char* arr, char color, BYTE* vcfMoves, BYTE vcfMovesLen, bool includeFour) {
+    bool fast = true;//默认采用快速搜索防点
+    BYTE fourCount = 0, //分析最后一手棋
+        infoIdx = 0,
+        fFourCount = 0, //分析被抓禁手点
+        fInfoIdx = 0,
+        end = 0,
+        endIdx = vcfMoves[vcfMovesLen - 1]; //保存最后一手棋
+    
+    setBuffer(blockBuf, 952, 0);
+    testFour(arr, INVERT_COLOR[color], blockInfoArr); // 搜索先手冲4
+
+    if (gameRules == RENJU_RULES) { //判断是否有复杂禁手防点
+        if (color == 1) { //黑棋VCF线路是否有复杂禁手防点
+            for (BYTE i = 0; i < vcfMovesLen; i += 2) {
+                arr[vcfMoves[end++]] = 1;
+
+                BYTE threeCount = 0;
+                for (BYTE direction = 0; direction < 4; direction++) {
+                    DWORD lineInfo = testLineThree(vcfMoves[i], direction, 1, arr);
+                    if (THREE_FREE == (MAX_FREE & lineInfo)) threeCount++;
+                    if (end == vcfMovesLen && FOUR_FREE == (MAX_FREE & lineInfo)) {
+                        fourCount += 2;
+                        blockLineInfos[infoIdx++] = lineInfo;
+                    }
+                }
+                if (threeCount > 1) { // 有33型,暴力搜索防点
+                    fast = false;
+                    break;
+                }
+
+                if (end < vcfMovesLen) arr[vcfMoves[end++]] = 2;
+            }
+        }
+        else { //白棋VCF线路是否有复杂禁手防点
+            for (BYTE i = 0; i < vcfMovesLen; i++) {
+                arr[vcfMoves[end++]] = (i & 1) ? 1 : 2;
+            }
+
+            for (BYTE direction = 0; direction < 4; direction++) {
+                DWORD lineInfo = testLineFour(endIdx, direction, 2, arr);
+                switch (lineInfo & FOUL_MAX_FREE) {
+                    case FOUR_FREE:
+                    case LINE_DOUBLE_FOUR:
+                        fourCount += 2;
+                        blockLineInfos[infoIdx++] = lineInfo;
+                        break;
+                    case FOUR_NOFREE:
+                        fourCount += 1;
+                        blockLineInfos[infoIdx++] = lineInfo;
+                        break;
+                }
+            }
+
+            if (fourCount == 1) { //抓禁
+                BYTE foulIdx = getBlockFourPoint(endIdx, arr, blockLineInfos[0]);
+                blockArr[foulIdx] = 1; //保存抓禁的直接防点
+                arr[foulIdx] = 1;
+                for (BYTE direction = 0; direction < 4; direction++) {
+                    DWORD lineInfo = testLineFour(foulIdx, direction, 1, arr);
+                    switch (lineInfo & FOUL_MAX_FREE) {
+                        case SIX:
+                            fFourCount += 3;
+                            break;
+                        case LINE_DOUBLE_FOUR:
+                            fFourCount += 2;
+                            blockFLineInfos[fInfoIdx++] = lineInfo;
+                            break;
+                        case FOUR_FREE:
+                            fFourCount += 1;
+                            break;
+                        case FOUR_NOFREE:
+                            fFourCount += 1;
+                            blockFLineInfos[fInfoIdx++] = lineInfo;
+                            break;
+                    }
+                }
+                arr[foulIdx] = 0;
+                if (fFourCount < 2)  fast = false; // 抓33,暴力搜索防点
+            }
+        }
     }
-    "alert" in self && alert(`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
-    post("vConsole",`time = ${(new Date().getTime()-sTime)/1000}\nsum = ${sum}\n isEqArr = ${isEq}\npushMoveCount = ${pushMoveCount}\n pushPositionCount = ${pushPositionCount}\n pushCountByte = ${pushCountByte}M\nhasCount = ${hasCount}`)
+
+    if (fast) { // 没有33，快速搜索防点
+        if (fourCount == 1) { // 找44解禁点
+            if (fFourCount == 2) {
+                BYTE foulIdx = getBlockFourPoint(endIdx, arr, blockLineInfos[0]);
+                for (BYTE i = 0; i < fInfoIdx; i++) {
+                    BYTE direction = (blockFLineInfos[i] >> 12) & 0x07,
+                        bIdx = getBlockFourPoint(foulIdx, arr, blockFLineInfos[i]),
+                        isLineFF = LINE_DOUBLE_FOUR == (blockFLineInfos[i] & FOUL_MAX_FREE),
+                        st;
+                    if (!isLineFF) arr[bIdx] = 1;
+                    st = isLineFF ? -1 : 0;
+                    for (char move = 1; move <= 5; move++) {
+                        BYTE idx = moveIdx(foulIdx, -move, direction);
+                        switch (arr[idx]) {
+                            case 0:
+                                st++;
+                                if (st) {
+                                    blockArr[idx] = idx;
+                                    move = -6;
+                                }
+                                break;
+                            case -1:
+                            case 2:
+                                move = -6;
+                                break;
+                        }
+                    }
+                    st = isLineFF ? -1 : 0;
+                    for (char move = 1; move <= 5; move++) {
+                        BYTE idx = moveIdx(foulIdx, move, direction);
+                        switch (arr[idx]) {
+                            case 0:
+                                st++;
+                                if (st) {
+                                    blockArr[idx] = idx;
+                                    move = 6;
+                                }
+                                break;
+                            case -1:
+                            case 2:
+                                move = 6;
+                                break;
+                        }
+                    }
+                    arr[bIdx] = 0;
+                }
+            }
+        }
+        else if (fourCount == 2) {
+            if (infoIdx == 1) { // 找活4，单线44防点
+                BYTE direction = (blockLineInfos[0] >> 12) & 0x07;
+                for (char move = 1; move <= 4; move++) {
+                    BYTE idx = moveIdx(endIdx, -move, direction);
+                    if (0 == arr[idx]) {
+                        blockArr[idx] = 1;
+                        break;
+                    }
+                }
+                for (char move = 1; move <= 4; move++) {
+                    BYTE idx = moveIdx(endIdx, move, direction);
+                    if (0 == arr[idx]) {
+                        blockArr[idx] = 1;
+                        break;
+                    }
+                }
+            }
+            else { //infoIdx == 2，双线44防点
+                BYTE idx = getBlockFourPoint(endIdx, arr, blockLineInfos[0]);
+                blockArr[idx] = 1;
+                idx = getBlockFourPoint(endIdx, arr, blockLineInfos[1]);
+                blockArr[idx] = 1;
+            }
+        }
+
+        arr[vcfMoves[--end]] = 0;
+        blockArr[vcfMoves[end]] = 1; // 搜索直接防和反防
+        for (BYTE i = 0; i < vcfMovesLen - 1; i += 2) {
+            end--;
+            for (BYTE direction = 0; direction < 4; direction++) {
+                testLinePointFour(vcfMoves[end], direction, INVERT_COLOR[color], arr, blockLineInfoList);
+                for (BYTE j = 0; j < 9; j++) {
+                    if (FOUR_NOFREE == (FOUL_MAX & blockLineInfoList[j])) {
+                        BYTE idx = moveIdx(vcfMoves[end], j - 4, direction);
+                        blockArr[idx] = 1;
+                    }
+                }
+            }
+            arr[vcfMoves[end]] = 0;
+            blockArr[vcfMoves[end]] = 1;
+            arr[vcfMoves[--end]] = 0;
+            blockArr[vcfMoves[end]] = 1;
+        }
+
+        for (BYTE i = 0; i < 225; i++) {
+            if (FOUR_NOFREE == (FOUL_MAX & blockInfoArr[i])) {
+                blockArr[i] = includeFour ? 1 : 0;
+            }
+            if (blockArr[i] &&
+                (gameRules != RENJU_RULES || color != 2 || !isFoul(i, arr))) {
+                blockPoints[++blockPoints[0]] = i;
+            }
+        }
+    }
+    else { // 有33，暴力搜索防点
+
+        for (BYTE i = 0; i < end; i++) {
+            arr[vcfMoves[i]] = 0;
+        }
+
+        for (BYTE i = 0; i < 225; i++) {
+            bool isPush = FOUR_NOFREE == (FOUL_MAX & blockInfoArr[i]) ? includeFour : true;
+            if (isPush && arr[i] == 0 &&
+                (gameRules != RENJU_RULES || color != 2 || !isFoul(i, arr))) {
+                arr[i] = INVERT_COLOR[color];
+                if (!isVCF(color, arr, vcfMoves, vcfMovesLen)) {
+                    blockPoints[++blockPoints[0]] = i;
+                }
+                arr[i] = 0;
+            }
+        }
+    }
+
+    return blockPoints;
 }
 
 //--------------------------------------------------
 
-// 找活四级别杀
-function findFFWin(arr, color, newarr) {
-    let wPoint = [];
-    let fPoint = findFourPoint(arr, color, newarr) || [];
-    for (let i = fPoint.length - 1; i >= 0; i--) {
-        let x = getX(fPoint[i]);
-        let y = getY(fPoint[i]);
-        if (isFFWin(x, y, color, arr)) {
-            arr[y][x] = "*";
-            arr[y][x] = 0;
-            wPoint.push(fPoint[i] * 1);
-            i = -1;
-        }
-    }
-    return wPoint;
-}
-
-
-
-function findFFPoint(arr, color, newarr, setnum) {
-
-    let count = 0;
-    findFour(arr, color, newarr);
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            if (newarr[y][x] > 0) {
-                if (isFF(x, y, color, arr)) {
-                    newarr[y][x] = 1;
-                    count++;
-                }
-                else {
-                    newarr[y][x] = 0;
-                }
-            }
-        }
-    }
-    if (setnum != null) {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (newarr[y][x] != 0) {
-                    newarr[y][x] = setnum;
-                }
-            }
-        }
-    }
-    return count;
-}
-
-
-
-// 找出正确的33点
-function findTTPoint(arr, color, newarr, setnum) {
-
-    let count = 0;
-    findThree(arr, color, newarr);
-    for (let y = 0; y < 15; y++) {
-        for (let x = 0; x < 15; x++) {
-            if (newarr[y][x] > 0) {
-                if (isTT(x, y, arr)) {
-                    newarr[y][x] = 1;
-                    count++;
-                }
-                else {
-                    newarr[y][x] = 0;
-                }
-            }
-        }
-    }
-    if (setnum != null) {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 15; x++) {
-                if (newarr[y][x] != 0) {
-                    newarr[y][x] = setnum;
-                }
-            }
-        }
-    }
-    return count;
-}
-
-
-
-// 剪切 FailMoves 保存到 localStorage
-function cutFailMoves(arrs, hash) {
-    arrs = [];
-    for (let i = 0; i < 225; i++) { arrs[i] = {}; };
-    let len = 0;
-    for (let i = 0; i < 225; i++) {
-        for (let key in hash[i]) {
-            let moves = hash[i][key];
-            arrs[i][key] = [];
-            for (let j = moves.length - 1; j >= 0; j--) {
-                arrs[i][key].push(moves[j].slice(0));
-                len += moves[j].length * 1.5;
-                if (len > 1024 * 1024) return arrs;
-            }
-        }
-    }
-    return arrs;
-}
-
-
-
-function getMoveKey(move) {
-    const MOVE_LEN = move.length;
-    let sum = 0; // 对每一手棋索引求，保存到数组最后位置。
-    for (let i = 0; i < MOVE_LEN; i += 2) {
-        sum += move[i];
-    }
-    return sum;
-}
-
-
-
-// 会改变moves
-// 添加失败分支
-function pushFailMoves(FailMoves, move) {
-
-    let mv = move.slice(0);
-    const MOVE_LEN = move.length;
-    const MOVE_KEY = getMoveKey(mv); // 对单色棋子索引求和，保存到数组最后位置。
-    // hash 数组保存失败分支;
-    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) {
-        FailMoves[MOVE_LEN][MOVE_KEY] = [];
-    }
-    FailMoves[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
-}
-
-
-
-// 对比VCF手顺是否相等
-function findMoves(FailMoves, move) {
-
-    let i;
-    const MOVE_LEN = move.length;
-    const MOVE_KEY = getMoveKey(move); // 对每一手棋索引求，保存到数组最后位置。
-    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) return false;
-    const FAILMOVES_MOVES_LEN = FailMoves[MOVE_LEN][MOVE_KEY].length;
-    for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
-        if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
-    }
-    return (i >= 0) ? true : false;
-}

@@ -1743,7 +1743,7 @@ function idxToName(idx) {
 
 
 
-function moveIndexToName(moves, maxLength) {
+function movesToName(moves, maxLength) {
     let name = "";
     for (let i = 0; i < moves.length; i++) {
         name += `${i?"":""}${idxToName(moves[i])}`;

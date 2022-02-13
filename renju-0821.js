@@ -881,6 +881,8 @@ var loadApp = () => { // 按顺序加载应用
                 }],
                 [SOURCE_FILES["button"]],
                 [SOURCE_FILES["emoji"]], // first load emoji
+                [SOURCE_FILES["EvaluatorWebassembly"]],
+                [SOURCE_FILES["EvaluatorJScript"]],
                 ], false)
         })
         .then(() => {

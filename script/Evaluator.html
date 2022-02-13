@@ -157,7 +157,7 @@
                 return (alpha.charAt(x) + (15 - y));
         }
 
-        window.moveIndexToName = function moveIndexToName(moves, maxLength) {
+        window.movesToName = function movesToName(moves, maxLength) {
             let name = "";
             for (let i = 0; i < moves.length; i++) {
                 name += `${i?",":""}${idxToName(moves[i])}`;
@@ -170,7 +170,6 @@
         };
     </script>
     <script>
-        
         function buf2String(buffer, pChar) {
             let BUF_LENGTH = 1024 * 64,
                 buf = new Uint8Array(buffer, pChar, BUF_LENGTH);
@@ -261,38 +260,7 @@
                 alert(err);
             }
         }
-        /*
-        function main() {
-            setTimeout(() => {
-                INPUT_CURRENT.value = exports._Z13getDataBufferv();
-                INPUT_LOADSIZE.value = load_length;
-                printBuffer();
-                log(buf2String(memory.buffer, exports._Z12getLogBufferv()));
-                document.querySelector('.sequence-memory').innerText = `${memory.buffer.byteLength/1024/1024}M`;
-            }, 1000);
-            try {
-                startTime = new Date().getTime();
-                document.querySelector('.sequence-time').innerText = `......`;
-                //exports._Z14test_newCPointj(1024*1024*8);
-                //exports._Z16test_newMoveNodej(1024*1024);
-                //log(exports._Z10test_Stacki(1024*1024));
-                //log(`getVariant = ${exports._Z15test_getVariantv()}`);
-                (grow(~~(LIB_SIZE / 1024 / 64 / 6 * 28) + 1),
-                    log(`checkVersion = ${exports._Z12checkVersionv()}`),
-                    log(`loadAllMoveNode() = ${exports._Z15loadAllMoveNodev()}`),
-                    log(`createRenjuTree = ${exports._Z15createRenjuTreev()}`),
-                    log(`getAutoMove = ${exports._Z11getAutoMovev()}`),
-                    alert("end"));
-                getBranchNodes([112, 98, 128, 126, 160, 96]);
-                document.querySelector('.sequence-time').innerText = ` ${new Date().getTime() - startTime}`;
-            }
-            catch (err) {
-                alert(err);
-                log(err);
-            }
 
-        }
-        */
         const FREE_BUFFER_ADDRESS = 65536 * 158;
         let current_Data = 0,
             libData = new Uint8Array([255, 82, 101, 110, 76, 105, 98, 255, 3, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 120, 0, 121, 128, 106, 192, 91, 192, 76, 64, 122, 128, 107, 192, 92, 192, 77, 64, 123, 0, 108, 192, 93, 192, 78, 64]),
@@ -303,22 +271,36 @@
             importObject = {
                 env: {
                     memcpy: function(param1, param2, param3) {
-                        log(`memcpy: start=${param1}, value=${param2}, length=${param3}`);
-                        let buf = new Uint8Array(memory.buffer, 0, memory.buffer.byteLength);
-                        for (let i = 0; i < param3; i++) {
-                            buf[param1 + i] = buf[param2 + i];
+                        //log(`memcpy: param1=${param1}, param2=${param2}, length=${param3}`);
+                        if ((param1 & 1) == 0 && (param2 & 1) == 0 && (param3 & 1) == 0) {
+                            param3 >>= 1;
+                            let buf1 = new Uint16Array(memory.buffer, param1, param3),
+                                buf2 = new Uint16Array(memory.buffer, param2, param3);
+                            for (let i = 0; i < param3; i++) {
+                                buf1[i] = buf2[i];
+                            }
                         }
+                        else {
+                            let buf1 = new Uint8Array(memory.buffer, param1, param3),
+                                buf2 = new Uint8Array(memory.buffer, param2, param3);
+                            for (let i = 0; i < param3; i++) {
+                                buf1[i] = buf2[i];
+                            }
+                        }
+
                         return param1;
                     },
                     memset: function(param1, param2, param3) {
                         //log(`memset: start=${param1}, value=${param2}, length=${param3}`);
-                        if ((param1 & 1) || (param3 & 1)) {
-                            let buf = new Uint8Array(memory.buffer, param1, param3);
+                        if ((param1 & 3) == 0 && (param3 & 3) == 0) {
+                            param2 |= ((param2 << 24) | (param2 << 16) | (param2 << 8));
+                            param3 >>= 2;
+                            let buf = new Uint32Array(memory.buffer, param1, param3);
                             for (let i = 0; i < param3; i++) {
                                 buf[i] = param2;
                             }
                         }
-                        else if ((param1 & 3) || (param3 & 3)) {
+                        else if ((param1 & 1) == 0 && (param3 & 1) == 0) {
                             param2 |= (param2 << 8);
                             param3 >>= 1;
                             let buf = new Uint16Array(memory.buffer, param1, param3);
@@ -327,17 +309,16 @@
                             }
                         }
                         else {
-                            param2 |= ((param2 << 24) | (param2 << 16) | (param2 << 8));
-                            param3 >>= 2;
-                            let buf = new Uint32Array(memory.buffer, param1, param3);
+                            let buf = new Uint8Array(memory.buffer, param1, param3);
                             for (let i = 0; i < param3; i++) {
                                 buf[i] = param2;
                             }
                         }
+
                         return param1;
                     },
                     _Z3logPhj: function(buf, len) {
-                        log(`[${moveIndexToName(new Uint8Array(memory.buffer, buf, len))}]`);
+                        log(`[${movesToName(new Uint8Array(memory.buffer, buf, len))}]`);
                     },
                     _Z3logd: function(num) {
                         log(`log: ${num}`);
@@ -366,9 +347,11 @@
                     _Z4growj: grow,
                 }
             };
+
+
         //从远程加载一个WASM的模块，并将该模块中的内容转换成二进制数据
         let startTime = new Date().getTime(),
-            url = "eng.wasm";
+            url = "Evaluator.wasm";
         document.querySelector('.sequence-url').innerText = url;
         fetch(url)
             .then(response => {
@@ -384,7 +367,7 @@
                 try {
                     exports = results.instance.exports;
                     memory = exports.memory;
-                    memory.grow(100);
+                    //memory.grow(100);
 
                     //输出下载，编译及实例化模块花费的时间
                     document.querySelector('.sequence-time').innerText = ` ${new Date().getTime() - startTime}`;
@@ -423,43 +406,12 @@
                         arrBuffer1 = new Int8Array(memory.buffer, ARR1, 226),
                         movesBuffer = new Uint8Array(memory.buffer, MOVES, 225),
                         movesBuffer1 = new Uint8Array(memory.buffer, MOVES1, 225);
-                    for (let i = 112; i < 113; i++) {
-                        //arrBuffer[i] = arrBuffer[i] = COLOR;
-                    }
-                    arrBuffer[0] = arrBuffer1[0] = COLOR;
-                    arrBuffer[1] = arrBuffer1[1] = COLOR;
-                    arrBuffer[2] = arrBuffer1[2] = COLOR;
-                    arrBuffer[15] = arrBuffer1[15] = COLOR;
-                    arrBuffer[30] = arrBuffer1[30] = COLOR;
-                    arrBuffer[225] = arrBuffer1[225] = -1;
-
-                    /*
-                    arrBuffer[82] = arrBuffer1[82] = COLOR;
-                    arrBuffer[97] = arrBuffer1[97] = COLOR;
-                    */
-                    //arrBuffer[100] = arrBuffer1[100] = COLOR;
-                    //arrBuffer[102] = arrBuffer1[102] = COLOR;
-                    /*
-                    arrBuffer[113] = arrBuffer1[113] = COLOR;
-                    arrBuffer[114] = arrBuffer1[114] = COLOR;
-                    arrBuffer[115] = arrBuffer1[115] = COLOR;
-                    arrBuffer[116] = arrBuffer1[115] = 2;
-                    */
-                    //arrBuffer[116] = arrBuffer1[116] = COLOR;
-                    //arrBuffer[128] = arrBuffer1[128] = COLOR;
-                    //arrBuffer[129] = arrBuffer1[129] = COLOR;
-                    //arrBuffer[143] = arrBuffer1[143] = COLOR;
-                    /*
-                    arrBuffer[116] = arrBuffer1[116] = COLOR;
-                    arrBuffer[117] = arrBuffer1[117] = COLOR;
-                    */
-
 
                     for (let i = 0; i < 112; i++) {
                         movesBuffer1[i] = movesBuffer[i] = i;
                     }
                     //movesBuffer1[70] = 55;
-
+                    alert(exports._Z11isChildMovePhhS_h(ARR, 60, ARR, 50));
                     //alert(exports._Z12isRepeatMovePhS_h(MOVES, MOVES1, 72));
                     //alert(exports._Z11isChildMovePhhS_h(MOVES, 72, MOVES1, 72));
 
@@ -467,7 +419,7 @@
                     let initArr = arrBuffer.slice(0),
                         sTime = new Date().getTime();
                     // 1S, 3S, 160S, 90S
-                    let vcfArr = [0,1,0,0,0,0,0,0,1,0,0,0,1,2,2,2,2,0,0,0,2,0,1,0,0,0,1,0,2,0,2,1,0,0,0,0,0,0,0,2,0,0,0,1,0,2,1,0,0,1,2,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,2,1,2,0,1,0,0,0,0,2,1,0,0,0,0,2,0,2,0,0,0,0,0,0,1,0,0,0,0,2,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,0,0,0,2,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,2,2,1,0,0,0,1,0,0,0,2,0,1,1,2,2,2,-1];
+                    let vcfArr = [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2, 2, 2, 0, 0, 0, 2, 0, 1, 0, 0, 0, 1, 0, 2, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 2, 0, 1, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 2, 2, 1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 2, 2, 2, -1];
                     //let vcfArr = [2,2,0,0,0,0,2,0,2,0,1,0,0,2,2,1,0,1,0,0,0,0,0,1,2,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,1,1,0,1,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1,2,0,0,0,1,0,1,0,0,0,0,2,0,1,2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,2,1,0,1,0,0,0,0,0,1,1,0,0,0,2,0,0,0,1,0,2,0,2,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,2,0,0,0,2,2,1,0,0,0,2,0,2,1,2,2,0,0,0,2,0,1,0,0,0,0,1,0,1,0,1,0,0,1,1,-1];
                     //let vcfArr = [1, 0, 1, 1, 0, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 2, 0, 1, 2, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 2, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 2, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 1, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 1, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 2, 0, 1, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 1, 2, 0, 0, 1, 1, 0, 0, 0, 2, 0, 2, 0, 1, 0, 0, 1, -1];
                     //let vcfArr = [0,2,2,0,0,0,1,1,0,0,1,2,2,2,2,1,0,0,1,0,0,0,0,0,0,1,0,1,0,1,1,0,0,0,1,0,0,0,0,0,2,1,2,2,2,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,2,0,1,0,2,0,0,2,0,0,0,0,0,2,0,2,1,0,0,0,1,0,0,2,0,0,0,0,1,0,0,0,0,0,0,2,2,0,0,0,1,0,0,0,1,2,0,0,0,0,2,1,0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,0,2,2,2,0,0,0,1,0,0,0,0,0,2,0,0,0,0,2,0,0,2,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,1,0,1,2,2,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,2,1,2,1,2,0,0,2,0,0,0,0,1,0,0,0,1,0,1,-1];
@@ -479,9 +431,57 @@
                     alert(arrBuffer);
 
                     sTime = new Date().getTime();
-                    exports._Z7findVCFPcc(ARR, 1);
+                    exports._Z7findVCFPcchhj(ARR, 1, 1, 180, 1000000);
                     alert(new Date().getTime() - sTime);
                     alert(new Uint8Array(memory.buffer, exports._Z14getVcfWinMovesv(), 225));
+                    return;
+                    function testIsVCF() {
+                        let vcfList = [
+                            {
+                                arr: [0, 0, 0, 1, 2, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 1, 2, 1, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+                                color: 1,
+                                moves: [68, 83, 67, 69, 51, 19, 65, 64, 36, 37, 81, 96, 95]
+                            },
+                            {
+                                arr: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 1, 2, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 2, 0, 0, 2, 1, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+                                color: 1,
+                                moves: [122, 94, 123, 121, 109, 111, 107, 106, 155, 170, 139]
+                            },
+                            {
+                                arr: [0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 2, 0, 2, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 1, 2, 0, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 2, 1, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 2, 2, 0, 0, 1, 0, 1, 0, 1, 0, 0, 2, 2, 1, -1],
+                                color: 1,
+                                moves: [218, 216, 220, 221, 164, 178, 209, 179, 207, 208, 203, 204, 187, 171, 201, 173, 197, 200, 195, 196, 150, 165, 166, 214, 152, 138, 167, 137, 183, 151, 169, 141, 153, 185, 139, 181, 109, 154, 111, 125, 93, 61, 113, 110, 115, 114, 101, 73, 143, 129, 175, 191, 160, 145, 161, 189, 157, 158, 172, 202, 170, 168, 133, 147, 85, 117, 37, 53, 79, 51, 107, 121, 91, 123, 63, 49, 47, 95, 62, 92, 66, 64, 68, 67, 40, 12, 34, 2, 32, 17, 31, 15, 35, 33, 38, 36, 39, 41, 84, 99, 86, 83, 70, 102, 98]
+                            },
+                        ];
+
+                        function next() {
+                            try {
+                                log(`vcfList.length: ${vcfList.length}`);
+                                if (vcfList.length) {
+                                    let test = vcfList.pop();
+                                    for (let i = 0; i < 226; i++) {
+                                        arrBuffer[i] = test.arr[i];
+                                    }
+                                    for (let i = 0; i < test.moves.length; i++) {
+                                        movesBuffer[i] = test.moves[i];
+                                    }
+                                    log(exports._Z5isVCFcPcPhh(test.color, ARR, MOVES, test.moves.length));
+                                    movesBuffer[test.moves.length - 1] = 225;
+                                    log(exports._Z5isVCFcPcPhh(test.color, ARR, MOVES, test.moves.length));
+                                    setTimeout(next, 0);
+                                }
+                                else {
+                                    log(`testIsVCF finish`);
+                                }
+                            }
+                            catch (err) {
+                                alert(err.message)
+                            }
+                        }
+                        next();
+                    }
+                    testIsVCF();
+                    return;
 
 
 

@@ -1167,7 +1167,7 @@ window.checkerBoard = (function() {
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
-            if (markLine.direction % 2) {
+            if (markLine.direction & 1) {
                 let nIdx = idx + (markLine.direction < 5 ? 0 - this.SLTX : this.SLTX);
                 let nIdx1 = idx + (nIdx < idx ? (markLine.direction == 1 ? -1 : 1) : (markLine.direction == 5 ? 1 : -1));
                 if (nIdx >= 0 && nIdx < this.P.length) {
@@ -1190,7 +1190,7 @@ window.checkerBoard = (function() {
             this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
             this.refreshMarkArrow(oldIdx);
         }
-        if ((markLine.direction + 1) % 2) {
+        if ((markLine.direction + 1) & 1) {
             let idx1, idx2;
             switch (markLine.direction) {
                 case 0:
@@ -1238,7 +1238,7 @@ window.checkerBoard = (function() {
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
-            if (markArrow.direction % 2) {
+            if (markArrow.direction & 1) {
                 let nIdx = idx + (markArrow.direction < 5 ? 0 - this.SLTX : this.SLTX);
                 let nIdx1 = idx + (nIdx < idx ? (markArrow.direction == 1 ? -1 : 1) : (markArrow.direction == 5 ? 1 : -1));
                 if (nIdx >= 0 && nIdx < this.P.length) {
@@ -1262,7 +1262,7 @@ window.checkerBoard = (function() {
             this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
             this.refreshMarkArrow(oldIdx);
         }
-        if ((markArrow.direction + 1) % 2) {
+        if ((markArrow.direction + 1) & 1) {
             let idx1, idx2;
             switch (markArrow.direction) {
                 case 0:
@@ -1532,7 +1532,7 @@ window.checkerBoard = (function() {
                 s = this.drawLine.selectDiv.style;
                 s.borderWidth = this.gW / 8 + "px";
                 s.borderColor = mk.color;
-                s.width = mk.direction % 2 ? this.gW * (mk.P.length - 1) / SIN45 + "px" : this.gW * (mk.P.length - 1) + "px";
+                s.width = mk.direction & 1 ? this.gW * (mk.P.length - 1) / SIN45 + "px" : this.gW * (mk.P.length - 1) + "px";
                 s.height = this.gH / 2 + "px";
                 s.left = x - parseInt(s.borderWidth) + this.canvas.offsetLeft + "px";
                 s.top = y - parseInt(s.height) / 2 - parseInt(s.borderWidth) + this.canvas.offsetTop + "px";
@@ -1605,7 +1605,7 @@ window.checkerBoard = (function() {
     checkerBoard.prototype.getAutoColor = function(msIndex) {
 
         let i = msIndex > -1 ? msIndex : this.MSindex;
-        const AUTOCOLOR = this.firstColor == "black" ? ((i % 2) ? "white" : "black") : ((i % 2) ? "black" : "white");
+        const AUTOCOLOR = this.firstColor == "black" ? ((i & 1) ? "white" : "black") : ((i & 1) ? "black" : "white");
         return this.autoColor || AUTOCOLOR;
     }
 
@@ -1665,8 +1665,7 @@ window.checkerBoard = (function() {
             }
         }
 
-        return ml.toUpperCase();
-        ll
+        return ml;
     };
 
 
@@ -2211,7 +2210,7 @@ window.checkerBoard = (function() {
         let color;
         for (let i = 0; i <= this.MSindex; i++)
         {
-            color = (i % 2) ? this.wNumColor : this.bNumColor;
+            color = (i & 1) ? this.wNumColor : this.bNumColor;
             this.printPoint(this.MS[i], "", color, TYPE_NUMBER);
             this.refreshMarkArrow(this.MS[i]);
         }
@@ -2233,7 +2232,10 @@ window.checkerBoard = (function() {
 
         let x = (idx % 15);
         let y = ~~(idx / 15);
-        return (this.alpha.charAt(x) + (this.SLTY - y)).toLowerCase();
+        if (x < 0 || x >= this.size || y < 0 || y >= this.size)
+            return "--";
+        else
+            return this.alpha.charAt(x) + (15 - y);
     };
 
 
@@ -2259,7 +2261,7 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.nextColor = function() {
-        return this.MSindex % 2 ? 1 : 2;
+        return this.MSindex & 1 ? 1 : 2;
     }
 
 
@@ -2630,8 +2632,8 @@ window.checkerBoard = (function() {
             let arrow = [];
             let lineWidth = cBd.gW / 8;
             lineWidth *= cleArrow ? 1.6 : 1;
-            let arrowWidth = direction % 2 ? cBd.gW * 0.8 * SIN45 : cBd.gW * 0.8;
-            let arrowHeight = direction % 2 ? lineWidth * 4 * SIN45 : lineWidth * 4;
+            let arrowWidth = direction & 1 ? cBd.gW * 0.8 * SIN45 : cBd.gW * 0.8;
+            let arrowHeight = direction & 1 ? lineWidth * 4 * SIN45 : lineWidth * 4;
             arrowWidth += cleArrow ? 1 : 0;
             arrowHeight += cleArrow ? 1 : 0;
             switch (direction) {
@@ -2911,7 +2913,6 @@ window.checkerBoard = (function() {
         r = r == null ? true : Boolean(r);
         d = d == null ? true : Boolean(d);
         l = l == null ? true : Boolean(l);
-        let alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         let p = tempp;
         let m;
         let ctx = this.bakCanvas.getContext("2d");
@@ -2925,7 +2926,7 @@ window.checkerBoard = (function() {
                 m = j == 0 ? -this.gH : this.gH;
                 p.setxy(this.P[i + j].x, this.P[i + j].y + m);
 
-                ctx.fillText(alpha.charAt(i), p.x, p.y);
+                ctx.fillText(this.alpha.charAt(i), p.x, p.y);
 
 
             }
@@ -3109,19 +3110,19 @@ window.checkerBoard = (function() {
             if (i == moves.length - 1) {
                 fontColor = this.moveLastFontColor;
                 if (firstColor == 1) {
-                    color = i % 2 ? this.moveWhiteColor : this.moveBlackColor;
+                    color = i & 1 ? this.moveWhiteColor : this.moveBlackColor;
                 }
                 else {
-                    color = i % 2 ? this.moveBlackColor : this.moveWhiteColor;
+                    color = i & 1 ? this.moveBlackColor : this.moveWhiteColor;
                 }
             }
             else if (firstColor == 1) {
-                color = i % 2 ? this.moveWhiteColor : this.moveBlackColor;
-                fontColor = i % 2 ? this.moveWhiteFontColor : this.moveBlackFontColor;
+                color = i & 1 ? this.moveWhiteColor : this.moveBlackColor;
+                fontColor = i & 1 ? this.moveWhiteFontColor : this.moveBlackFontColor;
             }
             else {
-                color = i % 2 ? this.moveBlackColor : this.moveWhiteColor;
-                fontColor = i % 2 ? this.moveBlackFontColor : this.moveWhiteFontColor;
+                color = i & 1 ? this.moveBlackColor : this.moveWhiteColor;
+                fontColor = i & 1 ? this.moveBlackFontColor : this.moveWhiteFontColor;
             }
 
             this.wLb(moves[i], i + 1, fontColor, color, false);
@@ -4218,7 +4219,7 @@ window.checkerBoard = (function() {
         if (display) {
             let arr = cBoard.getArray2D();
             let newarr = getArr2D([]);
-            this.size == 15 && findFoulPoint(arr, newarr);
+            findFoulPoint(arr, newarr);
             for (let y = 0; y < this.SLTY; y++) {
                 for (let x = 0; x < this.SLTX; x++) {
                     if (newarr[y][x] > 0) {
@@ -4336,7 +4337,7 @@ window.checkerBoard = (function() {
         let txt;
         for (let i = 0; i <= this.MSindex; i++)
         {
-            color = (i % 2) ? this.wNumColor : this.bNumColor;
+            color = (i & 1) ? this.wNumColor : this.bNumColor;
             //从设定的手数开始显示序号
             txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
             txt = parseInt(txt) < 1 ? "" : txt;
@@ -4573,8 +4574,8 @@ window.checkerBoard = (function() {
             findFoulPoint(arr, newarr);
             if (!this.autoColor) this.printArray(newarr, EMOJI_FOUL, "red");
             let nd,
-                txt = MSindex % 2 ? "W" : "L",
-                lvl = MSindex % 2 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
+                txt = MSindex & 1 ? "W" : "L",
+                lvl = MSindex & 1 ? getLevel(arr, this.tree.firstColor == "black" ? 2 : 1) : getLevel(arr, this.tree.firstColor == "black" ? 1 : 2);
 
             if (MSindex - 1 == moveNodesIndex) {
                 nd = MSindex == 0 ? this.tree : moveNodes[MSindex - 1];
@@ -4606,7 +4607,7 @@ window.checkerBoard = (function() {
                 }
 
                 if (!nd) {
-                    if (MSindex % 2) {
+                    if (MSindex & 1) {
                         if (lvl.level >= 4 && lvl.p) {
                             //log(moveNodes[moveNodes.length - 1])
                             nd = new Node(-1, moveNodes[moveNodes.length - 1], [{ idx: lvl.p.y * 15 + lvl.p.x }]);

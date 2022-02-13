@@ -522,7 +522,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1202.01";
             putPath(PH);
             //post("log",`${new Uint8Array(memory.buffer, in_buffer, path.length*POINT_SIZE)}`);
             wasm_exports._Z14getBranchNodesP6CPointi(in_buffer, path.length);
-            NS = getNodes(out_buffer, path.length % 2 ? "○" : "●");
+            NS = getNodes(out_buffer, path.length & 1 ? "○" : "●");
             //post("log",NS)
             normalizeNS = normalizeNodes(NS, i);
             //post("log",normalizeNS)
