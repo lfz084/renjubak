@@ -567,7 +567,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
 
             }
             
-            if ((1 || number < 752201) && this.m_MoveList.index() == 1 && (!isEq(this.m_MoveList))) {
+            /*if ((1 || number < 752201) && this.m_MoveList.index() == 1 && (!isEq(this.m_MoveList))) {
                 let s = `${number}, `;
                 list.length = 0;
                 for (let i = 1; i <= this.m_MoveList.index(); i++) {
@@ -575,9 +575,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
                     list.push(this.m_MoveList.get(i));
                 }
                 post("log", s);
-            }
-            number == post_number_start && post("info", `MoveList: ${this.m_MoveList.getNames()}`);
-            number>= post_number_start && number<post_number_start+ 500 && post("log", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
+            }*/
+            //number == post_number_start && post("info", `MoveList: ${this.m_MoveList.getNames()}`);
+            //number>= post_number_start && number<post_number_start+ 500 && post("log", `${number}, len=${this.m_MoveList.index()}, ${next.getName()}, isDown=${next.isDown()}, isRight=${next.isRight()},\n ${next.Info2Code()}`);
 
             if (next.isOldComment() || next.isNewComment()) {
 
@@ -745,7 +745,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
             return nodes1.concat(nodes2);
         }
 
-        function _getBranchNodes(path) {
+            function _getBranchNodes(path) {
             let done = false,
                 pMove = this.m_MoveList.getRoot().getDown(),
                 nodes = [],
@@ -753,20 +753,21 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
                 jointNode = null,
                 moveList = [],
                 moveStack = [];
+                
             while (!done) {
                 if (pMove) {
                     let idx = path.indexOf(getIdx(pMove));
                     moveList.push(getIdx(pMove));
-
+                    post("log", `moveList: [${moveList}]`);
                     if (pMove.getRight() &&
                         moveList.length <= path.length + 1
                     ) {
                         moveStack.push({ pMove: pMove.getRight(), length: moveList.length - 1 });
                     }
 
-                    if (moveList.length & 1 === (path.length + 1) & 1) {
+                    if ((moveList.length & 1) === (path.length + 1 & 1)) {
                         if (idx === -1 ||
-                            moveList.length & 1 !== (idx + 1) & 1
+                            (moveList.length & 1) !== (idx + 1 & 1)
                         ) {
                             if (!jointNode) {
                                 jointNode = { pMove: pMove, length: moveList.length - 1 }
@@ -779,7 +780,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
                     }
                     else {
                         if (idx === -1 ||
-                            moveList.length & 1 !== (idx + 1) & 1
+                            (moveList.length & 1) !== (idx + 1 & 1)
                         ) {
                             pMove = false;
                             continue;
@@ -787,7 +788,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
                     }
 
                     if ((idx === -1 ||
-                            moveList.length & 1 === (idx + 1) & 1) &&
+                            (moveList.length & 1) === (idx + 1 & 1)) &&
                         moveList.length <= path.length + 1
                     ) {
                         if (moveList.length === path.length + 1) {
@@ -829,11 +830,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
         for (let i = 0; i < 8; i++) {
             //if (i==1) break;
             PH = transposePath(path, i);
-            //post("log",`i=${i}, path=[${PH}]`)
+            post("log",`i=${i}, path=[${PH}]`)
             NS = _getBranchNodes.call(this, PH);
-            //post("log",NS)
+            post("log",NS);
             normalizeNS = normalizeNodes(NS, i);
-            //post("log",normalizeNS)
+            //post("log",normalizeNS)p>
             nodes = pushNodes(nodes, normalizeNS);
             let info = searchInnerHTMLInfo.call(this, PH);
             if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
@@ -859,63 +860,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc"] = "v1202.01";
             }
         }
         return path;
-    }
-
-
-    CRenLibDoc.prototype.toRenjuTree = function(renjuTree = new RenjuTree()) {
-        let m_Stack = new Stack();
-
-        let pMove = [this.m_MoveList.getRoot()],
-            rNode = renjuTree,
-            r_MoveList = new MoveList();
-
-        this.m_MoveList.clearAll();
-
-        let done = false;
-        post("log", "copying...")
-        let t_start = new Date().getTime();
-        let number = 0,
-            removeCount = 0;
-        while (!done) {
-            intervalPost.post("createTree", { current: number, end: this.nodeCount })
-            if (pMove[0]) {
-                number++
-                //if (number < 0) post("log", `${number}, ${this.m_MoveList.index()}, ${pMove[0].pos2Name(pMove[0].mPos) || " "}, ${pMove[0].mPos} \n Stack = [${m_Stack.toArray("nMove")}]`)
-
-                if (this.m_MoveList.index() > -1) {
-                    rNode = pMove[0].toRenjuNode();
-                    r_MoveList.current().pushChildNode(rNode)
-                }
-
-                this.m_MoveList.add(pMove[0]);
-                r_MoveList.add(rNode)
-
-                if (pMove[0].getRight()) {
-                    //if (number < 0) post("log", "stack push")
-                    m_Stack.push(this.m_MoveList.index(), pMove[0].getRight());
-                }
-
-                pMove[0] = pMove[0].getDown()
-            }
-            else if (!m_Stack.isEmpty()) {
-                let nMove = [0],
-                    count = number - removeCount;
-                m_Stack.pop(nMove, pMove);
-                this.m_MoveList.setIndex(nMove[0] - 1);
-                r_MoveList.setIndex(nMove[0] - 1);
-            }
-            else {
-                this.m_MoveList.setRootIndex();
-                r_MoveList.setRootIndex();
-                pMove[0] = this.m_MoveList.current();
-                done = true;
-                //post(number - removeCount);
-            }
-        }
-        post("createTree", { current: number - 1, end: this.nodeCount })
-        post("info", `end number = ${number}, timer = ${new Date().getTime() - t_start}`)
-        this.m_MoveList.clearEnd();
-        return renjuTree;
     }
 
 

@@ -1,5 +1,5 @@
 self.SCRIPT_VERSIONS["checkerBoard"] = "v1202.01";
-window.checkerBoard = (function() {
+window.CheckerBoard = (function() {
 
     "use strict";
     const TEST_CHECKER_BOARD = true;
@@ -9,7 +9,9 @@ window.checkerBoard = (function() {
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
     const TYPE_WHITE = 4; // 无序号 添加的黑棋
     const TYPE_MOVE = 5; //VCF手顺
-    const TYPE_MARK_FOUL = 6;
+    const TYPE_MARKFOUL = 6;
+    const TYPE_MARKARROW = 7;
+    const TYPE_MARKLINE = 8;
 
     const COORDINATE_NONE = 0;
     const COORDINATE_ALL = 1;
@@ -146,7 +148,7 @@ window.checkerBoard = (function() {
         this.text = "";
         this.color = null;
         this.bkColor = null;
-
+        this.path = undefined;
     }
 
 
@@ -163,6 +165,7 @@ window.checkerBoard = (function() {
         this.text = "";
         this.color = null;
         this.bkColor = null;
+        this.path = null;
         //alert("p.cle")
     };
 
@@ -295,11 +298,10 @@ window.checkerBoard = (function() {
         this.isShowNum = true; // 是否显示手顺
         this.isShowFoul = false;
         this.isShowAutoLine = false;
-        this.timerShowFoul = null;
         this.timerAutoShow = null;
 
-        this.P = new Array(225); //用来保存225个点
-        this.DIV = new Array(225); //原来保存225 DIV 标签的引用
+        this.P = new Array(226); //用来保存225个点
+        this.DIV = new Array(226); //原来保存225 DIV 标签的引用
         this.MS = []; //保存落子顺序,index
         this.MS.length = 0;
         this.MSindex = -1; //  指针，指向当前棋盘最后一手在MS索引   
@@ -312,7 +314,6 @@ window.checkerBoard = (function() {
         this.notShowLastNum = false; // = true ,取消最后一手高亮显示
         this.alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         this.printMovesTimer = 0;
-        this.autoColor = undefined;
 
         this.XL = 0; //棋盘落子范围，左右上下的4条边
         this.XR = 0;
@@ -367,10 +368,8 @@ window.checkerBoard = (function() {
         };
         this.oldFirstColor = "black";
         this.oldResetNum = 0;
-        this.oldCode = "";
         this.tree = new this.node();
         this.unpacking = false;
-        this.threePoints = {};
 
         //页面显示的棋盘
         this.scale = 1;
@@ -419,13 +418,13 @@ window.checkerBoard = (function() {
         this.cutDiv.ontouchend = function() { if (event) event.preventDefault(); };
         this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
 
-        for (var i = 0; i < 225; i++) {
+        for (var i = 0; i < 226; i++) {
             this.DIV[i] = document.createElement("div");
             this.DIV[i].style.borderRadius = "50%";
             this.parentNode.appendChild(this.DIV[i]);
             this.DIV[i].ontouchend = function() { if (event) event.preventDefault(); };
             this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
-            this.P[i] = new point(0, 0, this.DIV[i]);
+            this.P[i] = new point(-500, -500, this.DIV[i]);
         }
 
         this.startIdx = -1;
@@ -487,34 +486,14 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.addTree = function(tree) {
-        let code = this.getCode();
-        let arr = this.getArray2D();
 
         this.oldFirstColor = this.firstColor; // 在this.cle 前面
-        this.cle();
-        this.firstColor = tree ? tree.firstColor : null || "white";
-        for (let y = 0; y < this.SLTY; y++) {
-            for (let x = 0; x < this.SLTX; x++) {
-                let idx = y * 15 + x;
-                switch (arr[y][x]) {
-                    case 1:
-                        this.wNb(idx, "black", undefined, TYPE_BLACK, undefined, 100);
-                        break;
-                    case 2:
-                        this.wNb(idx, "white", undefined, TYPE_WHITE, undefined, 100);
-                        break;
-                }
-            }
-        }
+        this.firstColor = "black";
+
         this.oldResetNum = this.resetNum;
         this.resetNum = 0;
-        this.oldCode = code; //要放在循环之后，不要改变顺序
         log(tree);
-        this.tree = new RenjuTree(tree || new this.node());
-        this.autoColor = this.tree.autoColor;
-        log(`addTree ${this.autoColor}`)
-        this.tree.moveNodes = [];
-        this.tree.moveNodesIndex = -1;
+        this.tree = tree; //new RenjuTree(tree || new this.node());
         this.autoShow();
     };
 
@@ -522,12 +501,14 @@ window.checkerBoard = (function() {
 
     checkerBoard.prototype.autoShow = function(timer = "now") {
 
-        let playmodel = control.getPlayModel();
-        //log(`playmofel=${control.getPlayModel()}`)
-        if (playmodel != control.renjuModel &&
-            playmodel != control.libModel &&
-            playmodel != control.arrowModel &&
-            playmodel != control.lineModel) return;
+        let playMode = control.getPlayMode();
+        //log(`playmofel=${control.getPlayMode()}`)
+        if (playMode != control.renjuMode &&
+            playMode != control.renlibMode &&
+            playMode != control.readLibMode &&
+            playMode != control.editLibMode &&
+            playMode != control.arrowMode &&
+            playMode != control.lineMode) return;
 
         if (this.timerAutoShow) {
             clearTimeout(this.timerAutoShow);
@@ -535,25 +516,26 @@ window.checkerBoard = (function() {
         }
         let cBoard = this;
         if (timer == "now") {
-            show();
+            //show();
+            timer = 100;
+            this.timerAutoShow = setTimeout(show, parseInt(timer));
         }
         else {
             this.timerAutoShow = setTimeout(show, parseInt(timer));
         }
 
         function show() {
-            if (cBoard.oldCode) {
+            if (playMode == control.readLibMode || playMode == control.editLibMode) {
                 cBoard.unpackTree();
             }
-            else if (playmodel == control.libModel) {
-                log("autoshow")
+            else if (playMode == control.renlibMode) {
                 RenjuLib.showBranchs({ path: cBoard.MS.slice(0, cBoard.MSindex + 1), position: cBoard.getArray2D() });
-                cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
+                cBoard.showFoul((findMoves() + 1) ? false : cBoard.isShowFoul, true);
             }
             else {
                 //log(`isShowAutoLine=${findMoves()+1 ? false : cBoard.isShowAutoLine}`)
-                cBoard.showFoul((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowFoul, true);
-                cBoard.showAutoLine((findMoves() + 1) || cBoard.threePoints.arr ? false : cBoard.isShowAutoLine, true);
+                cBoard.showFoul((findMoves() + 1) ? false : cBoard.isShowFoul, true);
+                cBoard.showAutoLine((findMoves() + 1) ? false : cBoard.isShowAutoLine, true);
             }
         }
 
@@ -697,84 +679,69 @@ window.checkerBoard = (function() {
 
     // 顺时针 翻转棋盘90°
     checkerBoard.prototype.boardCW = function(isShowNum) {
-
-        if (this.oldCode || this.threePoints.arr) {
-            msgbox(`确定删除计算结果吗`, "确定",
-                () => {
-                    boardCW.call(this);
-                }, "取消"
-            );
-        }
-        else {
-            boardCW.call(this);
-        }
-
-        function boardCW() {
-            if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-            let tMS = [];
-            let tMS1 = [];
-            let wMS = [];
-            let bMS = [];
-            let tMSindex = this.MSindex;
-            let idx;
-            let x;
-            let y;
-            let nx;
-            let ny;
-            for (let x = 0; x < this.SLTX; x++) {
-                for (let y = 0; y < this.SLTY; y++) {
-                    let idx = x + y * 15;
-                    if (this.P[idx].type == TYPE_WHITE) {
-                        wMS.push(idx);
-                    }
-                    else if (this.P[idx].type == TYPE_BLACK) {
-                        bMS.push(idx);
-                    }
+        let tMS = [];
+        let tMS1 = [];
+        let wMS = [];
+        let bMS = [];
+        let tMSindex = this.MSindex;
+        let idx;
+        let x;
+        let y;
+        let nx;
+        let ny;
+        for (let x = 0; x < this.SLTX; x++) {
+            for (let y = 0; y < this.SLTY; y++) {
+                let idx = x + y * 15;
+                if (this.P[idx].type == TYPE_WHITE) {
+                    wMS.push(idx);
+                }
+                else if (this.P[idx].type == TYPE_BLACK) {
+                    bMS.push(idx);
                 }
             }
+        }
 
-            for (let j = 0; j < 3; j++) {
-                tMS = [];
-                tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
-                for (let i = 0; i < tMS1.length; i++) {
+        for (let j = 0; j < 3; j++) {
+            tMS = [];
+            tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
+            for (let i = 0; i < tMS1.length; i++) {
 
-                    idx = tMS1[i];
-
+                idx = tMS1[i];
+                if (idx >= 0 && idx <= 224) {
                     y = ~~(idx / 15);
                     nx = this.SLTY - 1 - y; // 新的 x坐标是原来 y坐标的翻转;
                     ny = idx % 15; // 旋转后新的 y坐标是原来的 x坐标
 
                     idx = ny * 15 + nx;
-                    tMS[i] = idx;
+                }
+                tMS[i] = idx;
 
-                }
-                if (j == 0) {
-                    wMS = tMS.slice();
-                }
-                else if (j == 1) {
-                    bMS = tMS.slice();
-                }
             }
-            let resetNum = this.resetNum;
-            let firstColor = this.firstColor;
-            this.cle(); // 清空棋盘
-            this.resetNum = resetNum;
-            this.firstColor = firstColor;
-            this.MS = tMS;
-
-            //  打印棋盘
-            for (let i = 0; i <= tMSindex; i++) {
-                this.toNext(isShowNum, 100);
+            if (j == 0) {
+                wMS = tMS.slice();
             }
-            for (let i = 0; i < wMS.length; i++) {
-                this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
+            else if (j == 1) {
+                bMS = tMS.slice();
             }
-            for (let i = 0; i < bMS.length; i++) {
-                this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
-            }
-            this.autoShow(100);
         }
+        let resetNum = this.resetNum;
+        let firstColor = this.firstColor;
+        this.cle(); // 清空棋盘
+        this.resetNum = resetNum;
+        this.firstColor = firstColor;
+        this.MS = tMS;
 
+        //  打印棋盘
+        for (let i = 0; i <= tMSindex; i++) {
+            this.toNext(isShowNum, 100);
+        }
+        for (let i = 0; i < wMS.length; i++) {
+            this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
+        }
+        for (let i = 0; i < bMS.length; i++) {
+            this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
+        }
+        this.autoShow(100);
     };
 
 
@@ -782,7 +749,6 @@ window.checkerBoard = (function() {
     // 逆时针 翻转棋盘90°
     checkerBoard.prototype.boardCCW = function(isShowNum) {
 
-        if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
         let tMS = [];
         let tMS1 = [];
         let wMS = [];
@@ -812,13 +778,15 @@ window.checkerBoard = (function() {
             for (let i = 0; i < tMS1.length; i++) {
 
                 idx = tMS1[i]; // 取得旧的index
-                // 新的 x坐标是原来 y坐标;   
-                nx = ~~(idx / 15);
-                // 旋转后新的 y坐标是原来的 x坐标翻转
-                x = idx % 15;
-                ny = this.SLTX - 1 - x;
-                // 求得新的index，暂时保存
-                idx = ny * 15 + nx;
+                if (idx >= 0 && idx <= 224) {
+                    // 新的 x坐标是原来 y坐标;   
+                    nx = ~~(idx / 15);
+                    // 旋转后新的 y坐标是原来的 x坐标翻转
+                    x = idx % 15;
+                    ny = this.SLTX - 1 - x;
+                    // 求得新的index，暂时保存
+                    idx = ny * 15 + nx;
+                }
                 tMS[i] = idx;
 
             }
@@ -855,7 +823,6 @@ window.checkerBoard = (function() {
     // 上下 翻转棋盘
     checkerBoard.prototype.boardFlipX = function(isShowNum) {
 
-        if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
         let tMS = [];
         let tMS1 = [];
         let wMS = [];
@@ -885,12 +852,13 @@ window.checkerBoard = (function() {
             for (let i = 0; i < tMS1.length; i++) {
 
                 idx = tMS1[i]; // 取得旧的index
+                if (idx >= 0 && idx <= 224) {
+                    nx = idx % 15; // 新的 x坐标是原来 x坐标不变;
+                    y = ~~(idx / 15);
+                    ny = this.SLTY - 1 - y; // 旋转后新的 y坐标是原来的 y坐标翻转;
 
-                nx = idx % 15; // 新的 x坐标是原来 x坐标不变;
-                y = ~~(idx / 15);
-                ny = this.SLTY - 1 - y; // 旋转后新的 y坐标是原来的 y坐标翻转;
-
-                idx = ny * 15 + nx;
+                    idx = ny * 15 + nx;
+                }
                 tMS[i] = idx;
 
             }
@@ -927,85 +895,70 @@ window.checkerBoard = (function() {
     // 左右 翻转棋盘180°
     checkerBoard.prototype.boardFlipY = function(isShowNum) {
 
-        if (this.oldCode || this.threePoints.arr) {
-            msgbox(`确定删除计算结果吗`, "确定",
-                () => {
-                    boardFlipY.call(this);
-                }, "取消"
-            );
-        }
-        else {
-            boardFlipY.call(this);
-        }
+        let tMS = [];
+        let tMS1 = [];
+        let wMS = [];
+        let bMS = [];
+        let tMSindex = this.MSindex;
+        let idx;
+        let x;
+        let y;
+        let nx;
+        let ny;
 
-        function boardFlipY() {
-            if (this.oldCode) this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-            let tMS = [];
-            let tMS1 = [];
-            let wMS = [];
-            let bMS = [];
-            let tMSindex = this.MSindex;
-            let idx;
-            let x;
-            let y;
-            let nx;
-            let ny;
-
-            for (let x = 0; x < this.SLTX; x++) {
-                for (let y = 0; y < this.SLTY; y++) {
-                    let idx = x + y * 15;
-                    if (this.P[idx].type == TYPE_WHITE) {
-                        wMS.push(idx);
-                    }
-                    else if (this.P[idx].type == TYPE_BLACK) {
-                        bMS.push(idx);
-                    }
+        for (let x = 0; x < this.SLTX; x++) {
+            for (let y = 0; y < this.SLTY; y++) {
+                let idx = x + y * 15;
+                if (this.P[idx].type == TYPE_WHITE) {
+                    wMS.push(idx);
+                }
+                else if (this.P[idx].type == TYPE_BLACK) {
+                    bMS.push(idx);
                 }
             }
+        }
 
-            for (let j = 0; j < 3; j++) {
-                tMS = [];
-                tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
-                for (let i = 0; i < tMS1.length; i++) {
+        for (let j = 0; j < 3; j++) {
+            tMS = [];
+            tMS1 = j == 0 ? wMS : j == 1 ? bMS : this.MS;
+            for (let i = 0; i < tMS1.length; i++) {
 
-                    idx = tMS1[i]; // 取得旧的index              
-
+                idx = tMS1[i]; // 取得旧的index              
+                if (idx >= 0 && idx <= 224) {
                     x = idx % 15;
                     nx = this.SLTX - 1 - x; // 新的 x坐标是原来 x坐标的翻转;
                     ny = ~~(idx / 15); // 新的 y坐标是原来的 y坐标不变;
 
                     idx = ny * 15 + nx;
-                    tMS[i] = idx;
-
                 }
-                if (j == 0) {
-                    wMS = tMS.slice();
-                }
-                else if (j == 1) {
-                    bMS = tMS.slice();
-                }
+                tMS[i] = idx;
             }
-
-            let resetNum = this.resetNum;
-            let firstColor = this.firstColor;
-            this.cle(); // 清空棋盘
-            this.resetNum = resetNum;
-            this.firstColor = firstColor;
-            this.MS = tMS;
-
-            //  打印棋盘
-            for (let i = 0; i <= tMSindex; i++) {
-                this.toNext(isShowNum, 100);
+            if (j == 0) {
+                wMS = tMS.slice();
             }
-            for (let i = 0; i < wMS.length; i++) {
-                this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
+            else if (j == 1) {
+                bMS = tMS.slice();
             }
-            for (let i = 0; i < bMS.length; i++) {
-                this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
-            }
-            this.autoShow(100);
         }
 
+        let resetNum = this.resetNum;
+        let firstColor = this.firstColor;
+        this.cle(); // 清空棋盘
+        this.resetNum = resetNum;
+        this.firstColor = firstColor;
+        this.MS = tMS;
+
+        //  打印棋盘
+        for (let i = 0; i <= tMSindex; i++) {
+            this.toNext(isShowNum, 100);
+        }
+        for (let i = 0; i < wMS.length; i++) {
+            this.wNb(wMS[i], `white`, undefined, undefined, undefined, 100);
+        }
+        for (let i = 0; i < bMS.length; i++) {
+            this.wNb(bMS[i], `black`, undefined, undefined, undefined, 100);
+        }
+        this.autoShow(100);
     };
 
 
@@ -1022,24 +975,8 @@ window.checkerBoard = (function() {
         this.removeMarkLine("all");
         this.removeMarkLine(this.autoLines);
         this.drawLineEnd();
-        this.removeTree();
-        this.cleThreePoints();
-
+        //this.removeTree();
     };
-
-
-
-    checkerBoard.prototype.cleThreePoints = function() {
-        if (this.threePoints.arr) {
-            cleTPS.call(this);
-            window.blockUnload && window.blockUnload();
-        }
-
-        function cleTPS() {
-            this.threePoints = {};
-            this.cleLb("all");
-        }
-    }
 
 
 
@@ -1091,23 +1028,23 @@ window.checkerBoard = (function() {
     // 删除一颗棋子,不删除MS的记录
     checkerBoard.prototype.cleNb = function(idx, showNum, timer = "now") {
 
-        if (idx < 0 || idx > 224) return;
-        if (this.P[idx].type == TYPE_NUMBER) {
+        if (idx < 0 || idx > 225) return;
+        if (idx == 225 || this.P[idx].type == TYPE_NUMBER) {
             this.cletLbMoves();
             let i = this.MSindex;
             if (i < 0) return;
             this.clePoint(this.MS[i]);
             refreshLine.call(this, this.MS[i]);
             this.MSindex--;
-            this.showLastNum(showNum);
+            this.showLastNb(showNum);
         }
         else if (this.P[idx].type == TYPE_BLACK || this.P[idx].type == TYPE_WHITE) {
-            if (this.oldCode) return;
+            if (control.getPlayMode() == control.readLibMode || control.getPlayMode() == control.editLibMode) return;
             this.cletLbMoves();
             this.clePoint(idx);
             refreshLine.call(this, idx);
         }
-        if (this.threePoints.arr) this.cleThreePoints();
+        
         this.autoDelay(bind(function() {
             this.onMove(idx);
             this.autoShow();
@@ -1163,7 +1100,7 @@ window.checkerBoard = (function() {
             if (oldIdx + 1) {
                 this.refreshMarkLine(oldIdx, this.autoLines);
                 this.refreshMarkLine(oldIdx);
-                this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+                this.printPointB(oldIdx, this.isShowNum);
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
@@ -1173,13 +1110,13 @@ window.checkerBoard = (function() {
                 if (nIdx >= 0 && nIdx < this.P.length) {
                     this.refreshMarkLine(nIdx, this.autoLines);
                     this.refreshMarkLine(nIdx);
-                    this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
+                    this.printPointB(nIdx, this.isShowNum);
                     this.refreshMarkArrow(nIdx);
                 }
                 if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                     this.refreshMarkLine(nIdx1, this.autoLines);
                     this.refreshMarkLine(nIdx1);
-                    this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
+                    this.printPointB(nIdx1, this.isShowNum);
                     this.refreshMarkArrow(nIdx1);
                 }
             }
@@ -1187,7 +1124,7 @@ window.checkerBoard = (function() {
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx, this.autoLines);
             this.refreshMarkLine(oldIdx);
-            this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+            this.printPointB(oldIdx, this.isShowNum);
             this.refreshMarkArrow(oldIdx);
         }
         if ((markLine.direction + 1) & 1) {
@@ -1234,7 +1171,7 @@ window.checkerBoard = (function() {
             if (oldIdx + 1) {
                 this.refreshMarkLine(oldIdx, this.autoLines);
                 this.refreshMarkLine(oldIdx);
-                this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+                this.printPointB(oldIdx, this.isShowNum);
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
@@ -1244,13 +1181,13 @@ window.checkerBoard = (function() {
                 if (nIdx >= 0 && nIdx < this.P.length) {
                     this.refreshMarkLine(nIdx, this.autoLines);
                     this.refreshMarkLine(nIdx);
-                    this.printPointB(nIdx, this.P[nIdx].text, this.P[nIdx].color, this.P[nIdx].type, this.isShowNum, this.P[nIdx].bkColor);
+                    this.printPointB(nIdx, this.isShowNum);
                     this.refreshMarkArrow(nIdx);
                 }
                 if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                     this.refreshMarkLine(nIdx1, this.autoLines);
                     this.refreshMarkLine(nIdx1);
-                    this.printPointB(nIdx1, this.P[nIdx1].text, this.P[nIdx1].color, this.P[nIdx1].type, this.isShowNum, this.P[nIdx1].bkColor);
+                    this.printPointB(nIdx1, this.isShowNum);
                     this.refreshMarkArrow(nIdx1);
                 }
             }
@@ -1259,7 +1196,7 @@ window.checkerBoard = (function() {
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx, this.autoLines);
             this.refreshMarkLine(oldIdx);
-            this.printPointB(oldIdx, this.P[oldIdx].text, this.P[oldIdx].color, this.P[oldIdx].type, this.isShowNum, this.P[oldIdx].bkColor);
+            this.printPointB(oldIdx, this.isShowNum);
             this.refreshMarkArrow(oldIdx);
         }
         if ((markArrow.direction + 1) & 1) {
@@ -1602,15 +1539,6 @@ window.checkerBoard = (function() {
 
 
 
-    checkerBoard.prototype.getAutoColor = function(msIndex) {
-
-        let i = msIndex > -1 ? msIndex : this.MSindex;
-        const AUTOCOLOR = this.firstColor == "black" ? ((i & 1) ? "white" : "black") : ((i & 1) ? "black" : "white");
-        return this.autoColor || AUTOCOLOR;
-    }
-
-
-
     //判断用户点击了棋盘上面的哪一个点，在返回这个点的index
     checkerBoard.prototype.getPIndex = function(x, y) {
 
@@ -1706,7 +1634,7 @@ window.checkerBoard = (function() {
         let arr = new Array(225 + 1);
         for (let idx = 0; idx < 225; idx++) {
             let x = idx % 15,
-                y = ~~(idx/15);
+                y = ~~(idx / 15);
             if (x < 0 || x >= this.size || y < 0 || y >= this.size) {
                 arr[idx] = -1;
             }
@@ -2211,7 +2139,7 @@ window.checkerBoard = (function() {
         for (let i = 0; i <= this.MSindex; i++)
         {
             color = (i & 1) ? this.wNumColor : this.bNumColor;
-            this.printPoint(this.MS[i], "", color, TYPE_NUMBER);
+            this.printPoint(this.MS[i]);
             this.refreshMarkArrow(this.MS[i]);
         }
 
@@ -2232,10 +2160,10 @@ window.checkerBoard = (function() {
 
         let x = (idx % 15);
         let y = ~~(idx / 15);
-        if (x < 0 || x >= this.size || y < 0 || y >= this.size)
-            return "--";
-        else
-            return this.alpha.charAt(x) + (15 - y);
+        //if (x < 0 || x >= this.size || y < 0 || y >= this.size)
+        //return "--";
+        //else
+        return this.alpha.charAt(x) + (15 - y);
     };
 
 
@@ -2271,7 +2199,7 @@ window.checkerBoard = (function() {
 
         let x = name.toLowerCase().charCodeAt() - "a".charCodeAt();
         name = name.substr(1);
-        let y = this.SLTY - name; //转换成第一行为0，依次为1,2,3...
+        let y = 15 - name; //转换成第一行为0，依次为1,2,3...
         return x + y * 15;
 
     };
@@ -2280,98 +2208,87 @@ window.checkerBoard = (function() {
 
     // 平移棋盘
     checkerBoard.prototype.moveCheckerBoard = function(move) {
-
-        if (this.oldCode || this.threePoints.arr) {
-            msgbox(`确定删除计算结果吗`, "确定",
-                () => {
-                    moveCBD.call(this);
-                }, "取消"
-            );
-        }
-        else {
-            moveCBD.call(this);
-        }
-
-        function moveCBD() {
-            let i;
-            let j;
-            let idx;
-            switch (move) {
-                case "left":
-                    for (i = 0; i < 15 * 15; i += 15) {
-                        if (this.P[i].type != TYPE_EMPTY) break;
-                    }
-                    if (i < 15 * 15) return;
-                    // 转换MS数组
-                    this.MS.length = this.MSindex + 1;
-                    for (i = 0; i < this.MS.length; i++) {
+        let i;
+        let j;
+        let idx;
+        switch (move) {
+            case "left":
+                for (i = 0; i < 15 * 15; i += 15) {
+                    if (this.P[i].type != TYPE_EMPTY) break;
+                }
+                if (i < 15 * 15) return;
+                // 转换MS数组
+                this.MS.length = this.MSindex + 1;
+                for (i = 0; i < this.MS.length; i++) {
+                    if (this.MS[i] >= 0 && this.MS[i] <= 224)
                         this.MS[i] = this.MS[i] - 1;
+                }
+                // 复制棋盘每个落子点
+                for (i = 1; i < 15; i++) {
+                    for (j = 0; j < 15; j++) {
+                        idx = i + j * 15;
+                        copyP(this, idx - 1, idx);
                     }
-                    // 复制棋盘每个落子点
-                    for (i = 1; i < 15; i++) {
-                        for (j = 0; j < 15; j++) {
-                            idx = i + j * 15;
-                            copyP(this, idx - 1, idx);
-                        }
-                    }
-                    break;
-                case "right":
-                    for (i = 15 - 1; i < 15 * 15; i += 15) {
-                        if (this.P[i].type != TYPE_EMPTY) break;
-                    }
-                    if (i < 15 * 15) return;
-                    this.MS.length = this.MSindex + 1;
-                    for (i = 0; i < this.MS.length; i++) {
+                }
+                break;
+            case "right":
+                for (i = 15 - 1; i < 15 * 15; i += 15) {
+                    if (this.P[i].type != TYPE_EMPTY) break;
+                }
+                if (i < 15 * 15) return;
+                this.MS.length = this.MSindex + 1;
+                for (i = 0; i < this.MS.length; i++) {
+                    if (this.MS[i] >= 0 && this.MS[i] <= 224)
                         this.MS[i] = this.MS[i] + 1;
+                }
+                for (i = 15 - 2; i >= 0; i--) {
+                    for (j = 0; j < 15; j++) {
+                        idx = i + j * 15;
+                        copyP(this, idx + 1, idx);
                     }
-                    for (i = 15 - 2; i >= 0; i--) {
-                        for (j = 0; j < 15; j++) {
-                            idx = i + j * 15;
-                            copyP(this, idx + 1, idx);
-                        }
-                    }
-                    break;
-                case "top":
-                    for (i = 0; i < 15; i++) {
-                        if (this.P[i].type != TYPE_EMPTY) break;
-                    }
-                    if (i < 15) return;
-                    this.MS.length = this.MSindex + 1;
-                    for (i = 0; i < this.MS.length; i++) {
+                }
+                break;
+            case "top":
+                for (i = 0; i < 15; i++) {
+                    if (this.P[i].type != TYPE_EMPTY) break;
+                }
+                if (i < 15) return;
+                this.MS.length = this.MSindex + 1;
+                for (i = 0; i < this.MS.length; i++) {
+                    if (this.MS[i] >= 0 && this.MS[i] <= 224)
                         this.MS[i] = this.MS[i] - 15;
+                }
+                for (i = 1; i < 15; i++) {
+                    for (j = 0; j < 15; j++) {
+                        idx = i * 15 + j;
+                        copyP(this, idx - 15, idx);
                     }
-                    for (i = 1; i < 15; i++) {
-                        for (j = 0; j < 15; j++) {
-                            idx = i * 15 + j;
-                            copyP(this, idx - 15, idx);
-                        }
-                    }
-                    break;
-                case "bottom":
-                    for (i = 15 * (15 - 1); i < 15 * 15; i++) {
-                        if (this.P[i].type != TYPE_EMPTY) break;
-                    }
-                    if (i < 15 * 15) return;
-                    this.MS.length = this.MSindex + 1;
-                    for (i = 0; i < this.MS.length; i++) {
+                }
+                break;
+            case "bottom":
+                for (i = 15 * (15 - 1); i < 15 * 15; i++) {
+                    if (this.P[i].type != TYPE_EMPTY) break;
+                }
+                if (i < 15 * 15) return;
+                this.MS.length = this.MSindex + 1;
+                for (i = 0; i < this.MS.length; i++) {
+                    if (this.MS[i] >= 0 && this.MS[i] <= 224)
                         this.MS[i] = this.MS[i] + 15;
+                }
+                for (i = 15 - 2; i >= 0; i--) {
+                    for (j = 0; j < 15; j++) {
+                        idx = i * 15 + j;
+                        copyP(this, idx + 15, idx);
                     }
-                    for (i = 15 - 2; i >= 0; i--) {
-                        for (j = 0; j < 15; j++) {
-                            idx = i * 15 + j;
-                            copyP(this, idx + 15, idx);
-                        }
-                    }
-                    break;
-            }
-
-            this.removeMarkArrow("all");
-            this.removeMarkLine("all");
-            this.MSToMoves();
-            this.removeTree();
-            this.cleThreePoints();
-            this.autoShow();
+                }
+                break;
         }
+
+        this.removeMarkArrow("all");
+        this.removeMarkLine("all");
+        this.MSToMoves();
+        //this.removeTree();
+        this.autoShow();
 
         // 复制一个点，同时打印出来
         function copyP(board, idx, idx1) {
@@ -2380,13 +2297,7 @@ window.checkerBoard = (function() {
             board.P[idx].type = board.P[idx1].type;
             board.P[idx].color = board.P[idx1].color;
             if (board.P[idx].type != TYPE_EMPTY) {
-                let txt = board.P[idx].text;
-                if (board.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
-                    txt = parseInt(board.P[idx].text) - board.resetNum;
-                    txt = parseInt(txt) < 1 ? "" : txt;
-                    txt = board.isShowNum ? txt : "";
-                }
-                board.printPoint(idx, txt, board.P[idx].color, board.P[idx].type, board.isShowNum);
+                board.printPoint(idx, board.isShowNum);
                 board.clePoint(idx1);
             }
         }
@@ -2419,33 +2330,6 @@ window.checkerBoard = (function() {
                 }
             }
         }
-    };
-
-
-
-    checkerBoard.prototype.printThreePoints = function() {
-        this.cleLb("all");
-        this.removeMarkArrow("all");
-        this.removeMarkLine("all");
-        this.removeMarkLine(this.autoLines);
-        for (let i = this.threePoints.points.length - 1; i >= 0; i--) {
-            if (this.threePoints.points[i]) {
-                this.wLb(i, this.threePoints.points[i].txt, this.threePoints.points[i].txtColor, undefined, false);
-            }
-        }
-        this.threePoints.index = -1;
-    };
-
-
-
-    checkerBoard.prototype.printThreePointMoves = function(idx) {
-        if (!this.threePoints.points[idx]) return;
-        let firstColor = this.threePoints.color;
-        let color = firstColor == 1 ? this.moveBlackColor : this.moveWhiteColor;
-        let fontColor = firstColor == 1 ? this.moveBlackFontColor : this.moveWhiteFontColor;
-        this.printMoves(this.threePoints.points[idx].moves, firstColor);
-        this.wLb(idx, this.threePoints.points[idx].txt, fontColor, color, false);
-        this.threePoints.index = idx;
     };
 
 
@@ -2884,7 +2768,7 @@ window.checkerBoard = (function() {
         function refreshIdx(idx) {
             let txt = "";
             if (this.P[idx].text) txt = this.P[idx].text;
-            this.printPointB(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, this.P[idx].bkColor);
+            this.printPointB(idx, this.isShowNum);
             this.refreshMarkArrow(idx);
         }
 
@@ -3030,7 +2914,6 @@ window.checkerBoard = (function() {
         canvas2.height = canvas.height;
         //canvas2.style.width = canvas.width*this.scale + "px";
         //canvas2.style.height = canvas.height*this.scal1 + "px";
-        //图片转移后，重新设置每个点的坐标
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
 
     };
@@ -3129,6 +3012,126 @@ window.checkerBoard = (function() {
         }
     };
 
+
+
+    checkerBoard.prototype.printNb = function(idx, showNum) {
+        let color = this.P[idx].color;
+        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
+        let ctx = this.canvas.getContext("2d");
+        let p = { x: this.P[idx].x, y: this.P[idx].y };
+        // 画棋子
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "black";
+        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+        ctx.fillStyle = color
+        ctx.fill();
+        ctx.stroke();
+
+        // 设置字体
+        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
+        // 由棋子颜色决定字体颜色
+        ctx.fillStyle = color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor;
+        if (showNum && this.P[idx].text) { // 显示数字
+            let txt = parseInt(this.P[idx].text) - this.resetNum;
+            txt = parseInt(txt) < 1 ? "" : txt;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(txt, p.x, p.y);
+        }
+        ctx = null;
+    }
+
+
+
+    checkerBoard.prototype.printLastNb = function(idx, showNum) {
+        let color = this.P[idx].color;
+        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
+        let ctx = this.canvas.getContext("2d");
+        let p = { x: this.P[idx].x, y: this.P[idx].y };
+        // 画棋子
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "black";
+        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+        ctx.fillStyle = color
+        ctx.fill();
+        ctx.stroke();
+
+        // 设置字体
+        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
+        // 由棋子颜色决定字体颜色
+        ctx.fillStyle = this.notShowLastNum ?
+            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor :
+            color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
+        if (showNum && this.P[idx].text) { // 显示数字
+            // 判断最后一手是否高亮显示
+            let txt = parseInt(this.P[idx].text) - this.resetNum;
+            txt = parseInt(txt) < 1 ? "" : txt;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(txt, p.x, p.y);
+
+        }
+        else { // 隐藏数字
+            // 判断最后一手是否高亮显示
+            if (!this.notShowLastNum) {
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("◤", p.x - w * 0.15, p.y - w * 0.15);
+            }
+        }
+        ctx = null;
+    }
+
+
+
+    checkerBoard.prototype.printLb = function(idx) {
+
+        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
+        let ctx = this.canvas.getContext("2d");
+        let p = { x: this.P[idx].x, y: this.P[idx].y };
+        let text = this.P[idx].text || "";
+        //打印标签
+        ctx.beginPath();
+        ctx.fillStyle = this.P[idx].bkColor || this.LbBackgroundColor;
+        if (this.P[idx].bkColor) {
+            ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARKFOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = this.P[idx].color;
+
+        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
+        if (text.length == 1) { // 两位数数数字不需要放大字体
+            let code = text.charCodeAt();
+            // 再把一位数字排除
+            if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
+                switch (text) {
+                    case EMOJI_TRIANGLE_BLACK:
+                    case EMOJI_SQUARE_BLACK:
+                    case EMOJI_STAR:
+                    case EMOJI_ROUND_DOUBLE:
+                    case EMOJI_FORK:
+                        ctx.font = "bolder " + ~~(w * 1.1) + "px  mHeiTi";
+                        break;
+                    default: // 把数字和特殊标记排除，其它一位字符统一放大字体
+                        ctx.font = "bolder " + ~~(w * 1.5) + "px  mHeiTi";
+                        break;
+                }
+            }
+        }
+        else if (text.length == 3) {
+            ctx.font = "bolder " + ~~(w * 0.9) + "px  mHeiTi";
+        }
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, p.x, p.y);
+        ctx = null;
+    }
 
 
     // 在PDF文档画棋盘
@@ -3350,66 +3353,18 @@ window.checkerBoard = (function() {
 
 
     // 在棋盘上打印一个点
-    checkerBoard.prototype.printPoint = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum, refresh) {
-
-        let p = tempp;
-        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        let ctx = this.canvas.getContext("2d");
-        p.setxy(this.P[idx].x, this.P[idx].y);
-        // 打印棋子
+    checkerBoard.prototype.printPoint = function(idx, showNum, refresh) {
+        let type = this.P[idx].type;
         if (type == TYPE_NUMBER || type == TYPE_WHITE || type == TYPE_BLACK) {
-            ctx.lineWidth = w / 25;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-            ctx.fillStyle = color;
-            ctx.fill(); // 填充
-            ctx.stroke(); // 描边
-            ctx.fillStyle = color == this.wNumColor ? this.wNumFontColor : color == this.bNumColor ? this.bNumFontColor : color;
-            //ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
+            this.printNb(idx, showNum);
         }
         else { //  打印标签
-            ctx.beginPath();
-            ctx.fillStyle = backgroundColor || this.LbBackgroundColor;
-            //log(backgroundColor)
-            if (backgroundColor) {
-                //this.P[idx].bkColor = ctx.fillStyle;
-                ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-                ctx.fill();
-                //ctx.stroke();
-            }
-            //ctx.beginPath();
-            ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARK_FOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.fillStyle = color;
-            //ctx.font = "bolder " + ~~(w * 1.1) + "px  mHeiTi";
+            this.printLb(idx);
         }
-
-
-        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-        if (text.length == 1) { // 两位数数数字不需要放大字体
-            let code = text.charCodeAt();
-            // 再把一位数字排除
-            if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                if (text == EMOJI_TRIANGLE_BLACK || text == EMOJI_SQUARE_BLACK || text == EMOJI_STAR || text == EMOJI_ROUND_DOUBLE || text == EMOJI_FORK) {
-                    ctx.font = "bolder " + ~~(w * 1.1) + "px  mHeiTi";
-                }
-                else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-                    ctx.font = "bolder " + ~~(w * 1.5) + "px  mHeiTi";
-                }
-            }
-        }
-        else if (text.length == 3) {
-            ctx.font = "bolder " + ~~(w * 0.9) + "px  mHeiTi";
-        }
-
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, p.x, p.y);
-        ctx = null;
 
         //log(`text=${text}, notShowLastNum=${notShowLastNum}`)
-        if (type == TYPE_NUMBER && !notShowLastNum) {
-            this.showLastNum(showNum);
+        if (type == TYPE_NUMBER && !(idx != this.MS[this.MSindex] || this.notShowLastNum)) {
+            this.showLastNb(showNum);
         }
         if (appData.renjuSave && !refresh) appData.renjuSave(this);
         return true;
@@ -3417,20 +3372,14 @@ window.checkerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printPointB = function(idx, text, color, type, showNum, backgroundColor, notShowLastNum) {
+    checkerBoard.prototype.printPointB = function(idx, showNum) {
 
         if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == TYPE_EMPTY) return;
-        let txt = text;
         if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) { //控制从第几手显示❶
-            if (this.P[idx].type == TYPE_NUMBER) {
-                txt = parseInt(this.P[idx].text) - this.resetNum;
-                txt = parseInt(txt) < 1 ? "" : txt;
-                txt = showNum ? txt : "";
-            }
-            this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum, undefined, true);
+            this.printPoint(idx, showNum);
         }
         else { //this.P[idx].type == TYPE_MARK;
-            this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
+            this.printPoint(idx);
         }
 
     }
@@ -3482,7 +3431,7 @@ window.checkerBoard = (function() {
             //this.P[idx].type = TYPE_MARK;
             //this.P[idx].text = text;
             //this.refreshMarkLine(idx);
-            //this.printPointB(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
+            //this.printPointB(idx);
             //this.refreshMarkArrow(idx);
         }
 
@@ -3496,21 +3445,15 @@ window.checkerBoard = (function() {
 
         for (let idx = this.P.length - 1; idx >= 0; idx--) {
             if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) {
-                let txt = this.P[idx].text;
-                if (this.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
-                    txt = parseInt(this.P[idx].text) - this.resetNum;
-                    txt = parseInt(txt) < 1 ? "" : txt;
-                    txt = this.isShowNum ? txt : "";
-                }
-                this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, this.isShowNum, undefined, true);
+                this.printPoint(idx, this.isShowNum);
                 //log(this.P[idx].type)
             }
             else if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
-                this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
+                this.printPoint(idx);
                 //log(this.P[idx].type)
             }
         }
-        if (this.MS.length) this.showLastNum(this.isShowNum);
+        if (this.MS.length) this.showLastNb(this.isShowNum);
         this.refreshMarkLine("all");
         this.refreshMarkArrow("all");
         this.autoShow();
@@ -3630,19 +3573,11 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.removeTree = function() {
-        if (this.oldCode) {
-            removeT.call(this);
-        }
 
-        function removeT() {
-            this.firstColor = "black";
-            this.autoColor = undefined;
-            this.oldCode = "";
-            this.tree = new this.node();
-            this.cleLb("all");
-            let exWindow = control.getEXWindow();
-            exWindow.close();
-        }
+        this.firstColor = "black";
+        this.tree = undefined;
+        this.cleLb("all");
+        control.getEXWindow().close();
     }
 
 
@@ -3931,7 +3866,6 @@ window.checkerBoard = (function() {
 
                 if (d >= 0 && d <= 14) break; // 找到英文字母为止;
             }
-            if (d < 0 && d > 14) break; //没有找到英文字母，退出
 
             while (m.length) {
 
@@ -3941,8 +3875,6 @@ window.checkerBoard = (function() {
                 if (d >= 0 && d <= 9) break; // 找到一个数字为止;
 
             }
-            if (d < 0 && d > 9) break; //没有找到数字，退出
-
 
             //每个棋子落点横坐标用A-O表示，纵坐标用1-15来表
             //判断棋子纵坐标是否是2位，是则继续截取，补足3位。
@@ -3951,11 +3883,12 @@ window.checkerBoard = (function() {
                 n += m.substr(0, 1);
                 m = m.substr(1);
             }
-            // 排除不存在的坐标，同时去掉重复的坐标
-            if (~~(n) <= 15 && ~~(n) > 0) {
 
+            let isPass = (a + n).toLowerCase() == "a0";
+            // 排除不存在的坐标，同时去掉重复的坐标
+            if ((~~(n) <= 15 && ~~(n) > 0) || isPass) {
                 let index = codeStr.indexOf(a + n);
-                if (index < 0) {
+                if (index < 0 || isPass) {
                     // 没有重复
                     codeStr = codeStr + a + n;
                 }
@@ -3994,13 +3927,6 @@ window.checkerBoard = (function() {
         this.size = size;
         this.printCheckerBoard();
         this.refreshCheckerBoard();
-        if (this.threePoints.arr) {
-            this.cleThreePoints();
-            this.autoShow();
-        }
-        else if (this.oldCode) {
-            this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-        }
         this.onSetSize.call(this);
     }
 
@@ -4200,16 +4126,10 @@ window.checkerBoard = (function() {
 
 
     checkerBoard.prototype.showFoul = function(display, notChange) {
-        /*
-        if (this.timerShowFoul) {
-            clearTimeout(this.timerShowFoul);
-            this.timerShowFoul = null;
-        }
-        */
+
         let cBoard = this;
-        //this.timerShowFoul = setTimeout(function() {
         for (let i = cBoard.P.length - 1; i >= 0; i--) {
-            if (cBoard.P[i].type == TYPE_MARK_FOUL) {
+            if (cBoard.P[i].type == TYPE_MARKFOUL) {
                 cBoard.P[i].cle();
                 cBoard.clePointB(i);
                 cBoard.refreshMarkLine(i);
@@ -4226,10 +4146,10 @@ window.checkerBoard = (function() {
                         let idx = x + 15 * y;
                         this.P[idx].color = "red";
                         this.P[idx].bkColor = null;
-                        this.P[idx].type = TYPE_MARK_FOUL;
+                        this.P[idx].type = TYPE_MARKFOUL;
                         this.P[idx].text = EMOJI_FOUL
                         this.refreshMarkLine(idx);
-                        this.printPointB(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
+                        this.printPointB(idx);
                         this.refreshMarkArrow(idx);
                     }
                 }
@@ -4237,13 +4157,12 @@ window.checkerBoard = (function() {
             //cBoard.printArray(newarr, EMOJI_FOUL "red");
         }
         if (!notChange) cBoard.isShowFoul = display;
-        //}, 100);
     };
 
 
 
     // 根据用户设置 决定是否高亮显示 最后一手棋
-    checkerBoard.prototype.showLastNum = function(showNum) {
+    checkerBoard.prototype.showLastNb = function(showNum) {
 
         let p = tempp;
         let idx;
@@ -4253,44 +4172,7 @@ window.checkerBoard = (function() {
         else { // 不存在倒数第1手，退出
             return;
         }
-        //this.refreshMarkLine(idx);
-        // 取得棋子颜色
-        let color = this.P[idx].color;
-        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        let ctx = this.canvas.getContext("2d");
-        p.setxy(this.P[idx].x, this.P[idx].y);
-        // 画棋子
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "black";
-        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-        ctx.fillStyle = color
-        ctx.fill();
-        ctx.stroke();
-
-        // 设置字体
-        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-        // 由棋子颜色决定字体颜色
-        ctx.fillStyle = this.notShowLastNum ?
-            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor :
-            color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
-        if (showNum) { // 显示数字
-            // 判断最后一手是否高亮显示
-            let txt = parseInt(this.P[idx].text) - this.resetNum;
-            txt = parseInt(txt) < 1 ? "" : txt;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(txt, p.x, p.y);
-
-        }
-        else { // 隐藏数字
-            // 判断最后一手是否高亮显示
-            if (!this.notShowLastNum) {
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("◤", p.x - w * 0.15, p.y - w * 0.15);
-            }
-        }
+        this.printLastNb(idx, showNum);
         this.refreshMarkArrow(idx);
 
 
@@ -4300,29 +4182,7 @@ window.checkerBoard = (function() {
         else { // 不存在倒数第二手，退出
             return;
         }
-        //this.refreshMarkLine(idx);
-        //画倒数第二棋子
-        color = this.P[idx].color;
-        p.setxy(this.P[idx].x, this.P[idx].y);
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "black";
-        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.stroke();
-
-        let txt = parseInt(this.P[idx].text) - this.resetNum;
-        txt = parseInt(txt) < 1 ? "" : txt;
-        if (showNum) {
-            ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-            ctx.fillStyle = color == this.wNumColor ? this.wNumFontColor : color == this.bNumColor ? this.bNumFontColor : color;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(txt, p.x, p.y);
-        }
-
-        ctx = null;
+        this.printNb(idx, showNum);
         this.refreshMarkArrow(idx);
         return true;
 
@@ -4334,18 +4194,12 @@ window.checkerBoard = (function() {
     checkerBoard.prototype.showNum = function() {
 
         let color;
-        let txt;
-        for (let i = 0; i <= this.MSindex; i++)
-        {
+        for (let i = 0; i <= this.MSindex; i++) {
             color = (i & 1) ? this.wNumColor : this.bNumColor;
-            //从设定的手数开始显示序号
-            txt = parseInt(this.P[this.MS[i]].text) - this.resetNum;
-            txt = parseInt(txt) < 1 ? "" : txt;
-            this.printPoint(this.MS[i], txt, color, TYPE_NUMBER, true, undefined, true);
+            this.printPoint(this.MS[i], true);
             this.refreshMarkArrow(this.MS[i]);
         }
-        this.showLastNum(true);
-
+        //this.showLastNb(true);
     };
 
 
@@ -4353,23 +4207,9 @@ window.checkerBoard = (function() {
     //跳到最后一手
     checkerBoard.prototype.toEnd = function(isShowNum) {
 
-        if (this.threePoints.arr) {
-
-        }
-        else if (this.MSindex < this.MS.length - 1) {
+        if (this.MSindex < this.MS.length - 1) {
             while (this.MSindex < this.MS.length - 1) {
                 this.toNext(isShowNum, 100);
-            }
-        }
-        else {
-            if (this.oldCode) { // auto move
-
-                let moveNodes = this.tree.moveNodes;
-                let moveNodesIndex = this.tree.moveNodesIndex;
-                let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
-                let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
-                this.wNb(idx, "auto", isShowNum, undefined, undefined, 100);
-
             }
         }
     };
@@ -4379,67 +4219,27 @@ window.checkerBoard = (function() {
     // 跳到下一手
     checkerBoard.prototype.toNext = function(isShowNum, timer = "now") {
 
-        if (this.threePoints.arr) {
-            if (this.threePoints.index == -1) {
-                for (let i = 0; i < 15 * 15; i++) {
-                    if (this.threePoints.points[i]) {
-                        this.printThreePointMoves(i);
-                        break;
-                    }
-                }
-            }
-        }
-        else {
             if (this.MS.length - 1 > this.MSindex) {
-                this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum, undefined, undefined, timer);
-            }
-            else {
-                if (this.oldCode) { // auto move
-
-                    let moveNodes = this.tree.moveNodes;
-                    let moveNodesIndex = this.tree.moveNodesIndex;
-                    let nd = moveNodesIndex > -1 ? moveNodes[moveNodesIndex] : this.tree;
-                    let idx = nd.childNode[0] ? nd.childNode[0].idx : -1;
-                    //log(`index=${moveNodesIndex}, idx=${idx}`)
-                    this.wNb(idx, "auto", isShowNum, undefined, undefined, timer);
-
+                let msIndex = this.MSindex + 1;
+                while (this.MS[msIndex] < 0 || this.MS[msIndex] > 224) {
+                    this.wNb(this.MS[msIndex], "auto", isShowNum, undefined, undefined, timer);
+                    msIndex++;
+                    if (msIndex >= this.MS.length) return;
                 }
-                //if (this.oldCode == "") this.addTree();
+                this.wNb(this.MS[msIndex], "auto", isShowNum, undefined, undefined, timer);
             }
-        }
     };
 
 
 
     // 返回上一手
     checkerBoard.prototype.toPrevious = function(isShowNum, timer = "now") {
-
-        if (this.threePoints.arr) {
-            if (this.threePoints.index > -1) {
-                this.printThreePoints();
-            }
-            else {
-                msgbox(`确定删除计算结果吗`, "确定",
-                    () => {
-                        this.cleThreePoints();
-                    }, "取消"
-                );
-            }
-            this.autoShow();
-        }
-        else {
             if (this.MSindex >= 0) {
                 this.cleNb(this.MS[this.MSindex], isShowNum, timer);
+                while (this.MS[this.MSindex] < 0 || this.MS[this.MSindex] > 224) {
+                    this.cleNb(this.MS[this.MSindex], isShowNum, timer);
+                }
             }
-            else if (this.oldCode) {
-                msgbox(`确定删除计算结果吗`, "确定",
-                    () => {
-                        this.unpackCode(isShowNum, this.oldCode, this.oldResetNum, this.oldFirstColor);
-                    }, "取消"
-                );
-            }
-        }
-
     };
 
 
@@ -4447,15 +4247,10 @@ window.checkerBoard = (function() {
     // 跳到第 0 手。
     checkerBoard.prototype.toStart = function(isShowNum) {
 
-        if (this.threePoints.arr) {
-
-        }
-        else {
             while (this.MSindex > 0) {
                 this.toPrevious(isShowNum, 100);
             }
-            if (this.oldCode) this.toPrevious(isShowNum, 100);
-        }
+            if (control.getPlayMode() == control.readLibMode || control.getPlayMode() == control.editLibMode) this.toPrevious(isShowNum, 100);
     };
 
 
@@ -4507,7 +4302,38 @@ window.checkerBoard = (function() {
                 m = m.substr(1);
             }
             // 棋谱坐标转成 index 后添加棋子
-            this.wNb(this.nameToIndex(a), color, showNum, undefined, undefined, 100)
+            if (color == "auto") {
+                console.log(`unpackMoves color == "auto"`);
+                this.wNb(this.nameToIndex(a), "auto", showNum, undefined, undefined, 100);
+            }
+            else if (color == "black") {
+                console.log(`unpackMoves color == "black"`);
+                switch (control.getPlayMode()) {
+                    case control.renlibMode:
+                    case control.readLibMode:
+                    case control.editLibMode:
+                        if (0 == (this.MSindex & 1)) this.wNb(225, "auto", showNum, undefined, undefined, 100);
+                        this.wNb(this.nameToIndex(a), "auto", showNum, undefined, undefined, 100);
+                        break;
+                    case control.renjuMode:
+                        this.wNb(this.nameToIndex(a), "black", showNum, undefined, undefined, 100);
+                        break;
+                }
+            }
+            else if (color == "white") {
+                console.log(`unpackMoves color == "white"`);
+                switch (control.getPlayMode()) {
+                    case control.renlibMode:
+                    case control.readLibMode:
+                    case control.editLibMode:
+                        if (1 == (this.MSindex & 1)) this.wNb(225, "auto", showNum, undefined, undefined, 100);
+                        this.wNb(this.nameToIndex(a), "auto", showNum, undefined, undefined, 100);
+                        break;
+                    case control.renjuMode:
+                        this.wNb(this.nameToIndex(a), "white", showNum, undefined, undefined, 100);
+                        break;
+                }
+            }
         }
     };
 
@@ -4555,9 +4381,16 @@ window.checkerBoard = (function() {
                 if (node.childNode[i].idx == idx) return node.childNode[i];
             }
         }
+
         //log(this.tree)
         if (this.unpacking || this.oldCode == "") return;
+        this.cleLb("all");
+        let nodes = this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1));
+        for (let i = 0; i < nodes.length; i++) {
+            this.wLb(nodes[i].idx, nodes[i].boardTXT || EMOJI_ROUND, "black", undefined, nodes[i].path);
+        }
 
+        return;
         if (this.oldCode) {
             let nodes = null, //this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1)),
                 MS = this.MS,
@@ -4704,7 +4537,7 @@ window.checkerBoard = (function() {
 
 
     //  在棋盘的一个点上面，打印一个标记
-    checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor) {
+    checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor, path) {
         if (idx < 0 || idx > 224) return;
         if (this.P[idx].type != TYPE_EMPTY) {
             if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
@@ -4719,8 +4552,9 @@ window.checkerBoard = (function() {
         //log(backgroundColor)
         this.P[idx].type = backgroundColor ? TYPE_MOVE : TYPE_MARK;
         this.P[idx].text = text;
+        this.P[idx].path = path;
         //this.refreshMarkLine(idx);
-        this.printPoint(idx, this.P[idx].text, this.P[idx].color, undefined, undefined, this.P[idx].bkColor);
+        this.printPoint(idx);
         this.refreshMarkArrow(idx);
     };
 
@@ -4729,8 +4563,8 @@ window.checkerBoard = (function() {
     // 在棋盘的一个点上面，摆一颗棋子
     checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
 
-        if (idx < 0 || idx > 224) return;
-        if (this.P[idx].type != TYPE_EMPTY) {
+        if (idx < 0 || idx > 225) return;
+        if (idx != 225 && this.P[idx].type != TYPE_EMPTY) {
             if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
                 this.cleLb(idx);
             }
@@ -4739,13 +4573,11 @@ window.checkerBoard = (function() {
             }
         }
         let i = this.MSindex + 1;
-        if (this.oldCode) {
-            if (color != "auto") return;
-        }
-        let c = color == "auto" ? this.getAutoColor(i) : color;
-        if (isFoulPoint && c == "black" && !this.autoColor) {
-            showLabel(EMOJI_FOUL_THREE + "禁手不能落子" + EMOJI_FOUL_THREE)
-            return;
+
+        let colorName = this.firstColor == "black" ? ["white", "black"] : ["black", "white"],
+            c = color == "auto" ? colorName[this.MSindex & 1] : color;
+        if (isFoulPoint && c == "black") {
+            showLabel(EMOJI_FOUL_THREE + idxToName(idx) + " 是禁手" + EMOJI_FOUL_THREE)
         }
         this.cletLbMoves();
         if (color == "auto" || type == TYPE_NUMBER) { // 顺序添加棋子
@@ -4763,15 +4595,8 @@ window.checkerBoard = (function() {
         this.P[idx].color = c == "black" ? this.bNumColor : this.wNumColor;
         this.P[idx].type = type == null ? color == "auto" ? TYPE_NUMBER : c == this.wNumColor ? TYPE_WHITE : TYPE_BLACK : type;
         this.P[idx].text = this.P[idx].type == TYPE_NUMBER ? String(i + 1) : "";
-        let txt = this.P[idx].text;
-        if (this.P[idx].type == TYPE_NUMBER) { //控制从第几手显示❶
-            txt = parseInt(this.P[idx].text) - this.resetNum;
-            txt = parseInt(txt) < 1 ? "" : txt;
-            txt = showNum ? txt : "";
-        }
 
-        this.printPoint(idx, txt, this.P[idx].color, this.P[idx].type, showNum);
-        if (this.threePoints.arr) this.cleThreePoints();
+        this.printPoint(idx, showNum);
 
         this.refreshMarkArrow(idx);
         this.autoDelay(bind(function() {
@@ -4823,7 +4648,9 @@ window.checkerBoard = (function() {
     window.TYPE_BLACK = TYPE_BLACK; // 无序号 添加的黑棋
     window.TYPE_WHITE = TYPE_WHITE; // 无序号 添加的黑棋
     window.TYPE_MOVE = TYPE_MOVE; //VCF手顺
-    window.TYPE_MARK_FOUL = TYPE_MARK_FOUL;
+    window.TYPE_MARKFOUL = TYPE_MARKFOUL;
+    window.TYPE_MARKARROW = TYPE_MARKARROW;
+    window.TYPE_MARKLINE = TYPE_MARKLINE;
 
     window.COORDINATE_ALL = COORDINATE_ALL;
     window.COORDINATE_LEFT_UP = COORDINATE_LEFT_UP;

@@ -39,15 +39,13 @@ window.RenjuLib = (() => {
         newGame,
         cBoard,
         getShowNum,
-        setPlayModel,
         isLoading = false,
-        lock = false,
         colour = false,
         buffer_scale = 5,
         post_number_start = 999999999,
         centerPos = {x:8, y:8};
 
-    const MODEL_RENLIB = 7;
+    const MODE_RENLIB = 7;
 
     const CMD = {
         /*
@@ -67,10 +65,6 @@ window.RenjuLib = (() => {
             loading(data);
         },
         finish: function() {
-            lock = true;
-            newGame();
-            lock = false;
-            setPlayModel(MODEL_RENLIB);
             enable = true;
             finish();
         },
@@ -225,7 +219,7 @@ window.RenjuLib = (() => {
         console.info(data.nodes)
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
-            if (cBoard.size < 14 || cBoard.nextColor()===2 || !isFoul(nodes[i].idx % 15, ~~(nodes[i].idx / 15), data.position)) {
+            if (cBoard.nextColor()===2 || !isFoul(nodes[i].idx, data.position)) {
                 cBoard.wLb(nodes[i].idx, nodes[i].txt, colour ? nodes[i].color : "black");
                 if (nextMove.level < level.indexOf(nodes[i].txt)) {
                     nextMove.level = level.indexOf(nodes[i].txt);
@@ -241,7 +235,7 @@ window.RenjuLib = (() => {
 
     function autoMove(path) {
         for (let i = 0; i < path.length; i++) {
-            cBoard.wNb(path[i], "auto", getShowNum(), undefined, undefined, 0);
+            cBoard.wNb(path[i], "auto", getShowNum(), undefined, undefined, 100);
         }
     }
 
@@ -263,17 +257,24 @@ window.RenjuLib = (() => {
             newGame = param.newGame;
             cBoard = param.cBoard;
             getShowNum = param.getShowNum;
-            setPlayModel = param.setPlayModel;
         },
         isEmpty: function(){
             return !enable;
         },
         openLib: function(file) {
-            if (isBusy()) return;
+            if (isBusy()) return Promise.reject();
             load(file);
+            return new Promise((resolve, reject) => {
+                let timer = setInterval(()=>{
+                    if (!isLoading) {
+                        if (enable) resolve();
+                        else reject();
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            })
         },
         closeLib: function() {
-            if (lock) return;
             wk && removeWorker();
             enable = false;
             //wk = createWorker();

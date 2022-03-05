@@ -7,9 +7,9 @@
     <link rel="preload" href="./style/font/PFSCMedium1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link rel="preload" href="./style/font/PFSCHeavy1.woff" as="font" type="font/woff" crossorigin="anonymous">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="./script/viewport-0821.js" as="script">
-    <link rel="preload" href="./script/button-0821.js" as="script">
-    <link rel="preload" href="./script/msgbox-0821.js" as="script">
+    <link rel="preload" href="./script/View.js" as="script">
+    <link rel="preload" href="./script/Button.js" as="script">
+    <link rel="preload" href="./script/msgbox.js" as="script">
     <title>五子棋涂鸦</title>
 </head>
 
@@ -17,9 +17,9 @@
     <script>
         window.SCRIPT_VERSIONS = {};
     </script>
-    <script src="./script/button-0821.js"></script>
-    <script src="./script/viewport-0821.js"></script>
-    <script src="./script/msgbox-0821.js"></script>
+    <script src="./script/Button.js"></script>
+    <script src="./script/View.js"></script>
+    <script src="./script/msgbox.js"></script>
     <script src="./script/debug/vconsole.min.js"></script>
     <script>
         const TYPE_MARK = 1; // 用于point.type,表示当前点上面存在一个标签
@@ -617,7 +617,7 @@
         dh = d.documentElement.clientHeight;
         let cWidth = dw < dh ? dw * 0.95 : dh * 0.95;
         cWidth = dw < dh ? cWidth : dh < dw / 2 ? dh : dw / 2;
-        let viewport = new view(dw);
+        let viewport = new View(dw);
 
         let XL = 0; //棋盘落子范围，左右上下的4条边
         let XR = 0;
@@ -653,21 +653,21 @@
         let menuLeft = parseInt(fileDiv.style.left) + sw * 0.1;
         let menuWidth = sw * 0.8;
         let menuFontSize = sw / 20;
-        let chkLock = new button(fileDiv, "checkbox", cW * 0, cT, cW, cH);
+        let chkLock = new Button(fileDiv, "checkbox", cW * 0, cT, cW, cH);
         chkLock.show();
         chkLock.setText("选定棋盘");
         chkLock.setChecked(0);
         chkLock.setontouchend(function() {
             lockClkB();
         });
-        let fileField = new button(fileDiv, "file", cW * 1.33, cT, cW, cH);
+        let fileField = new Button(fileDiv, "file", cW * 1.33, cT, cW, cH);
         fileField.show();
         fileField.input.accept = "image/*";
         fileField.setText("选择图片");
         fileField.setonchange(function() {
             cimg();
         });
-        let slty = new button(fileDiv, "select", cW * 2.66, cT, cW, cH);
+        let slty = new Button(fileDiv, "select", cW * 2.66, cT, cW, cH);
         for (let i = 15; i > 5; i--) {
             slty.addOption(i, i + "\b行");
         }
@@ -677,7 +677,7 @@
         slty.setonchange(function(but) {
             sltyChang();
         });
-        let sltx = new button(fileDiv, "select", cW * 3.99, cT, cW, cH);
+        let sltx = new Button(fileDiv, "select", cW * 3.99, cT, cW, cH);
         for (let i = 15; i > 5; i--) {
             sltx.addOption(i, i + "\b列");
         }
@@ -707,7 +707,7 @@
             setTop(0);
         }
 
-        let cRefresh = new button(fileDiv, "button", cW * 0, cT, cW, cH);
+        let cRefresh = new Button(fileDiv, "button", cW * 0, cT, cW, cH);
         cRefresh.show();
         cRefresh.setColor("black");
         cRefresh.setText("分享图片");
@@ -715,7 +715,7 @@
             share();
         });
 
-        let cPrevious = new button(fileDiv, "button", cW * 1.33, cT, cW, cH);
+        let cPrevious = new Button(fileDiv, "button", cW * 1.33, cT, cW, cH);
         cPrevious.show();
         cPrevious.setColor("black");
         cPrevious.setText("<<");
@@ -725,7 +725,7 @@
             loadHistory();
         });
 
-        let cNext = new button(fileDiv, "button", cW * 2.66, cT, cW, cH);
+        let cNext = new Button(fileDiv, "button", cW * 2.66, cT, cW, cH);
         cNext.show();
         cNext.setColor("black");
         cNext.setText(">>");
@@ -735,7 +735,7 @@
             loadHistory();
         });
 
-        let cDelete = new button(fileDiv, "button", cW * 3.99, cT, cW, cH);
+        let cDelete = new Button(fileDiv, "button", cW * 3.99, cT, cW, cH);
         cDelete.show();
         cDelete.setColor("black");
         cDelete.setText("删除记录");
@@ -773,7 +773,7 @@
 
         cT = 0;
         cH *= 0.9;
-        let rL0 = new button(ndiv, "radio", cW * 0, cT, cW, cH);
+        let rL0 = new Button(ndiv, "radio", cW * 0, cT, cW, cH);
         //rL0.show();
         rL0.setText("添加棋子");
         rL0.setChecked(1);
@@ -781,7 +781,7 @@
             rLclk(rL0);
         });
         //cT += cH*1.8;
-        let rNC2 = new button(ndiv, "radio", cW * 0, cT, cW, cH);
+        let rNC2 = new Button(ndiv, "radio", cW * 0, cT, cW, cH);
         rNC2.show();
         rNC2.input.setAttribute("id", "rNC2");
         rNC2.setText("黑先棋子");
@@ -789,21 +789,21 @@
         rNC2.setontouchend(function() {
             rNCclk(rNC2);
         });
-        let rNC1 = new button(ndiv, "radio", cW * 1.33, cT, cW, cH);
+        let rNC1 = new Button(ndiv, "radio", cW * 1.33, cT, cW, cH);
         rNC1.show();
         rNC1.input.setAttribute("id", "rNC1");
         rNC1.setText("白先棋子");
         rNC1.setontouchend(function() {
             rNCclk(rNC1);
         });
-        let rNC3 = new button(ndiv, "radio", cW * 2.66, cT, cW, cH);
+        let rNC3 = new Button(ndiv, "radio", cW * 2.66, cT, cW, cH);
         rNC3.show();
         rNC3.input.setAttribute("id", "rNC3");
         rNC3.setText("绿红数字");
         rNC3.setontouchend(function() {
             rNCclk(rNC3);
         });
-        let rNC4 = new button(ndiv, "radio", cW * 3.99, cT, cW, cH);
+        let rNC4 = new Button(ndiv, "radio", cW * 3.99, cT, cW, cH);
         rNC4.show();
         rNC4.input.setAttribute("id", "rNC4");
         rNC4.setText("红绿数字");
@@ -811,32 +811,32 @@
             rNCclk(rNC4);
         });
         cT += cH * 1.8;
-        let rL1 = new button(ndiv, "radio", cW * 0, cT, cW, cH);
+        let rL1 = new Button(ndiv, "radio", cW * 0, cT, cW, cH);
         rL1.show();
         rL1.setText("■ \b标记");
         rL1.setontouchend(function() {
             rLclk(rL1);
         });
-        let rL2 = new button(ndiv, "radio", cW * 1.33, cT, cW, cH);
+        let rL2 = new Button(ndiv, "radio", cW * 1.33, cT, cW, cH);
         rL2.show();
         rL2.setText("▲ \b标记");
         rL2.setontouchend(function() {
             rLclk(rL2);
         });
-        let rL3 = new button(ndiv, "radio", cW * 2.66, cT, cW, cH);
+        let rL3 = new Button(ndiv, "radio", cW * 2.66, cT, cW, cH);
         rL3.show();
         rL3.setText("◆ \b标记");
         rL3.setontouchend(function() {
             rLclk(rL3);
         });
-        let rL4 = new button(ndiv, "radio", cW * 3.99, cT, cW, cH);
+        let rL4 = new Button(ndiv, "radio", cW * 3.99, cT, cW, cH);
         rL4.show();
         rL4.setText("● \b标记");
         rL4.setontouchend(function() {
             rLclk(rL4);
         });
         cT += cH * 1.8;
-        let rLC1 = new button(ndiv, "radio", cW * 0, cT, cW, cH);
+        let rLC1 = new Button(ndiv, "radio", cW * 0, cT, cW, cH);
         rLC1.show();
         rLC1.setColor("black");
         rLC1.setText("黑色标记");
@@ -844,21 +844,21 @@
         rLC1.setontouchend(function() {
             rLCclk(rLC1);
         });
-        let rLC2 = new button(ndiv, "radio", cW * 1.33, cT, cW, cH);
+        let rLC2 = new Button(ndiv, "radio", cW * 1.33, cT, cW, cH);
         rLC2.show();
         rLC2.setColor("red");
         rLC2.setText("红色标记");
         rLC2.setontouchend(function() {
             rLCclk(rLC2);
         });
-        let rLC3 = new button(ndiv, "radio", cW * 2.66, cT, cW, cH);
+        let rLC3 = new Button(ndiv, "radio", cW * 2.66, cT, cW, cH);
         rLC3.show();
         rLC3.setColor("green");
         rLC3.setText("绿色标记");
         rLC3.setontouchend(function() {
             rLCclk(rLC3);
         });
-        let rLC4 = new button(ndiv, "radio", cW * 3.99, cT, cW, cH);
+        let rLC4 = new Button(ndiv, "radio", cW * 3.99, cT, cW, cH);
         rLC4.show();
         rLC4.setColor("white");
         rLC4.setText("白色标记");
@@ -1817,7 +1817,7 @@
             try {
                     window.DEBUG = true;
                 //测试脚本是否加载成功;
-                if (!button || !view) { location.reload(); return; }
+                if (!("Button" in self) || !("View" in self)) { location.reload(); return; }
                 if (String(window.location).indexOf("http://localhost") == 0) {
                     let vConsole;
                     if (vConsole == null) vConsole = new VConsole();
@@ -2095,7 +2095,7 @@
         let bkCanvas = document.createElement("canvas");
         //imgWindow.appendChild(bkCanvas);
         //取消按钮
-        let butShareCancel = new button(imgWindow, "button", 50, 50, 50, 50);
+        let butShareCancel = new Button(imgWindow, "button", 50, 50, 50, 50);
         let timerShareClose = null;
 
         function xyPageToObj(p, obj) {

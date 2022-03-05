@@ -2,3 +2,8 @@
 //game code: {B1D10D1F10F8F1H10H8J8J3L5L3M2}{}
 findVCF(cBoard.getArray(), 1, 1, 180, 1500);
 cBoard.printMoves(vcfWinMoves[0], 1);
+
+cBoard.addTree(new RenjuTree());
+cBoard.firstColor = "black";
+control.setPlayMode(9);
+control.getPlayMode();

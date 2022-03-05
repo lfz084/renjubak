@@ -1,9 +1,10 @@
 "use strict"
 if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.01";
 
-if ("importScripts" in self){
+if ("importScripts" in self) {
     self.importScripts(
         "../../script/IntervalPost.js",
+        "../../script/TypeBuffer.js",
         "../../script/RenjuTree.js",
         "./UNICODE2GBK.js",
         "./JFile.js",
@@ -56,18 +57,18 @@ function openLib(file) {
         .then(function(buf) {
              return renLibDoc.addLibrary(buf);
         })
-        .then(function(rt){
-            post("finish");
-            return Promise.resolve();
-        })
         .then(function() {
             try {
                 getAutoMove();
-                Promise.resolve();
+                return Promise.resolve();
             }
             catch (err) {
-                Promise.rejecte(err.message);
+                return Promise.rejecte(err.message);
             }
+        })
+        .then(function() {
+            post("finish");
+            return Promise.resolve();
         })
         .catch(function(err) {
             post("onerror", err.message || err);

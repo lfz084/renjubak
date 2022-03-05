@@ -28,11 +28,11 @@
          };
          */
          //确认按钮
-         let butEnter = new button(windowDiv, "button", 50, 50, 50, 50);
+         let butEnter = new Button(windowDiv, "button", 50, 50, 50, 50);
          butEnter.show();
 
          //取消按钮
-         let butCancel = new button(windowDiv, "button", 50, 50, 50, 50);
+         let butCancel = new Button(windowDiv, "button", 50, 50, 50, 50);
          butCancel.show();
 
 

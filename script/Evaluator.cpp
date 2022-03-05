@@ -170,19 +170,28 @@ BYTE* getVcfMoves() {
 //------------------ copyBuffer ---------------------
 
 void copyBuffer(BYTE* tBuf, BYTE* sBuf, long len) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        tBuf[i] = sBuf[i];
+    }
+    for (long i=1; i<len; i+=2) {
         tBuf[i] = sBuf[i];
     }
 }
     
 void copyBuffer(DWORD* tBuf, DWORD* sBuf, long len) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        tBuf[i] = sBuf[i];
+    }
+    for (long i=1; i<len; i+=2) {
         tBuf[i] = sBuf[i];
     }
 }
 
 void copyBuffer(UINT* tBuf, UINT* sBuf, long len) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        tBuf[i] = sBuf[i];
+    }
+    for (long i=1; i<len; i+=2) {
         tBuf[i] = sBuf[i];
     }
 }
@@ -190,19 +199,28 @@ void copyBuffer(UINT* tBuf, UINT* sBuf, long len) {
 //------------------ setBuffer ---------------------
 
 void setBuffer(BYTE* buf, long len, BYTE value) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        buf[i] = value;
+    }
+    for (long i=1; i<len; i+=2) {
         buf[i] = value;
     }
 }
     
 void setBuffer(DWORD* buf, long len, DWORD value) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        buf[i] = value;
+    }
+    for (long i=1; i<len; i+=2) {
         buf[i] = value;
     }
 }
 
 void setBuffer(UINT* buf, long len, UINT value) {
-    for (long i=0; i<len; i++) {
+    for (long i=0; i<len; i+=2) {
+        buf[i] = value;
+    }
+    for (long i=1; i<len; i+=2) {
         buf[i] = value;
     }
 }

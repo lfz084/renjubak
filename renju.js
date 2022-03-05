@@ -271,7 +271,7 @@ var loadApp = () => { // 按顺序加载应用
         }
     }
 
-    function resetNoSleep() { //设置防休眠
+    function initNoSleep() { //设置防休眠
         let noSleep;
         let isNoSleep = false; // bodyTouchStart 防止锁屏
         let noSleepTime = 0;
@@ -828,7 +828,7 @@ var loadApp = () => { // 按顺序加载应用
             downDiv.style.top = dw > dh ? parseInt(upDiv.style.top) + ~~(cWidth / 13) + "px" : cWidth * 2.06 + "px";
             //downDiv.style.backgroundColor = "blue";
 
-            cBoard = new checkerBoard(upDiv, 0, 0, cWidth, cWidth);
+            cBoard = new CheckerBoard(upDiv, 0, 0, cWidth, cWidth);
             cBoard.printCheckerBoard();
 
             control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
@@ -869,8 +869,8 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => {
             window._loading.text("20%");
             return loadScriptAll([ //顺序 同步加载
-                [SOURCE_FILES["viewport"], () => {
-                    window.viewport1 = new view(dw);
+                [SOURCE_FILES["Viewport"], () => {
+                    window.viewport1 = new View(dw);
                 }],
                 [SOURCE_FILES["vconsole"], () => {
                     testBrowser();
@@ -879,8 +879,9 @@ var loadApp = () => { // 按顺序加载应用
                             log(`serviceWorker.state: ${serviceWorker_state_history.join(" --> ")}`, "warn")
                         })
                 }],
-                [SOURCE_FILES["button"]],
+                [SOURCE_FILES["Button"]],
                 [SOURCE_FILES["emoji"]], // first load emoji
+                [SOURCE_FILES["String2Buffer"]],
                 [SOURCE_FILES["EvaluatorWebassembly"]],
                 [SOURCE_FILES["EvaluatorJScript"]],
                 ], false)
@@ -888,11 +889,12 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => {
             window._loading.text("35%");
             return loadScriptAll([
-                [SOURCE_FILES["checkerBoard"]],
+                [SOURCE_FILES["CheckerBoard"]],
                 [SOURCE_FILES["control"]],
                 [SOURCE_FILES["msgbox"]],
                 [SOURCE_FILES["appData"]],
                 [SOURCE_FILES["Evaluator"]],
+                [SOURCE_FILES["TypeBuffer"]],
                 [SOURCE_FILES["engine"]],
                 [SOURCE_FILES["NoSleep"]],
                 [SOURCE_FILES["jspdf"]],
@@ -934,7 +936,7 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => {
             window._loading.text("99%");
             removeMlog();
-            resetNoSleep();
+            initNoSleep();
             const UI = createUI();
             window.viewport1.resize();
             window._loading.lock(false);

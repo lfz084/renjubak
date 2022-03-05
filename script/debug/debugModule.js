@@ -897,6 +897,118 @@
             cBoard.wLb(ps[i], "b", "blue");
         }
     }
+    
+    window.testRenjuNodeSize = function() {
+        let count = 0,
+            root = new RenjuNode(),
+            preNode = root;
+        function newNode() {
+            while (++count & 0x0ffff) {
+                let nNode = new RenjuNode(1, preNode);
+                nNode.txt = "w";
+                nNode.innerHtml = "abcdefg";
+                preNode = nNode;
+            }   
+            console.log(count);
+            setTimeout(newNode, 0);
+        }
+        newNode();
+    }
+    
+    window.testPage = function() {
+        let count = 0,
+            pages = [];
+        function newPage() {
+            try{
+            pages.push(new Page());
+            console.log(++count);
+            setTimeout(newPage, 0);
+            }
+            catch(err) {
+                console.error(err);
+            }
+        }
+        newPage();
+    }
+    
+    window.testTypeBuffer = function() {
+        let tBuffer = new TypeBuffer(29, 10, 11),
+            l = [1,2,3],
+            m = new Array(Page.PAGE_SIZE),
+            r = [4, 5, 6];
+        tBuffer.writeMemory(l.concat(m,r), Page.PAGE_SIZE - 3, Page.PAGE_SIZE + 6);
+        tBuffer.setMemory(0, Page.PAGE_SIZE*10, 1);
+        //tBuffer.current += tBuffer.typeSize;
+        //tBuffer.setUint8(0, 0);
+        
+        console.log(`${tBuffer.alloc()}`);
+        
+        let read1 = [],
+            read2 = [];
+        tBuffer.readMemory(read1, Page.PAGE_SIZE - 6, 6);
+        tBuffer.readMemory(read2, Page.PAGE_SIZE * 3 , 6);
+        console.log(`${read1}`);
+        console.log(`${read2}`);
+        
+    }
+    
+    window.testString2Buffer = function(str) {
+        let buf = String2Buffer(str);
+        console.log(`buf: [${buf}]`);
+        let str1 = Buffer2String(buf);
+        console.log(`str: ${str1}`);
+    }
+    
+    window.testRenjuTree = function() {
+    try {
+        let tree = new RenjuTree(1, 1024),
+            preNode = tree.root;
+        console.log(`tree.root.idx: ${tree.root.idx}`);
+        /*
+        for (let i=0; i<5; i++) {
+            let node = tree.newNode();
+            node.idx = i;
+            node.level = i << 1;
+            node.boardTXT = "这个字符";
+            node.comment = "这个字符串中需要转码的元素的位置。返回返回值是在字符串中的给定索引的编码单元体现的数字， 如果在索引处没找到元素则返回 undefined。描述如果在指定的位置没有元素则返回 undefined。 如果在索引处开始没有UTF - 16 代理对， 将直接返回在那个索引处的编码单元。Surrogate Pair是UTF - 16 中用于扩展字符而使用的编码方式， 是一种采用四个字节(两个UTF - 16 编码) 来表示一个字符， 称作代理对";
+            console.log(node);
+            console.info(`idx: ${node.idx}\nlevel: ${node.level}\nboardTxT: ${node.boardTXT}\ncomment: ${node.comment}\n`);
+            preNode.right = node;
+            preNode = node;
+            //node.free();
+            //tree.nodeBuf.current = 4;
+        }
+        */
+        for (let i = 0; i < 0xfffff; i++) {
+            let node = tree.newNode();
+            if(node) {
+                node.idx = i;
+                node.level = i << 1;
+                node.boardTXT = "a";
+                //node.comment = "这个字符串中需要转码的元素的位置。返回返回值是在字符串中的对";
+                preNode.right = node;
+                preNode = node;
+            }
+            else{
+                console.error(`i = ${i}, node: null`);
+                break;
+            }
+        }
+        
+        console.info(tree);
+        
+        let maxLoop = 5;
+        preNode = tree.root;
+        while(preNode && maxLoop--) {
+            console.warn(`idx: ${preNode.idx}\nlevel: ${preNode.level}\nboardTxT: ${preNode.boardTXT}\ncomment: ${preNode.comment}\n`);
+            preNode = preNode.right;
+        }
+        
+    }
+    catch(err) {
+        console.error(err);
+    }
+    }
     /*
     let arr = cBoard.getArray();
     testEv(({ codeStr, inputStr }) => {
@@ -1147,4 +1259,144 @@
             alert(`${err.message}\n${err.Stack}`)
         }
     }
+    
+
+        function testEv(fun, time = 5000) {
+            setTimeout(() => {
+                input()
+                    .then(fun)
+                    .then(() => {
+                        testEv(fun, time);
+                    })
+            }, time)
+        }
+
+        function testIf(value, value1) {
+            if (value == 0) {
+                return false;
+            }
+            else if (value == 1 && 1 == value1) {
+                return true;
+            }
+            else if (value == 2 && 2 == value1) {
+                return true;
+            }
+            else if (value == -1) {
+                return false;
+            }
+            return false;
+        }
+
+        function testSwitch(value, value1) {
+            switch (value) {
+                case 0:
+                    return false;
+                    break;
+                case 1:
+                    if (1 == value1) return true;
+                    else return false;
+                    break;
+                case 2:
+                    if (2 == value1) return true;
+                    else return false;
+                    break;
+                case -1:
+                    return false;
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        function testIfSwitch({ butCode, inputStr }) {
+            inputStr = parseInt(inputStr);
+            let startTime;
+            startTime = new Date().getTime();
+            for (let i = 0; i < inputStr; i++) {
+                testSwitch(1, -1)
+            }
+            alert("testSwitch:" + (new Date().getTime() - startTime));
+
+            startTime = new Date().getTime();
+            for (let i = 0; i < inputStr; i++) {
+                testIf(1, -1)
+            }
+            alert("testIf:" + (new Date().getTime() - startTime));
+        }
+
+        function testGetPower({ butCode, inputStr }) {
+            let ps = [];
+            for (let direction = 0; direction < 4; direction++) {
+                ps.push(getPower(inputStr * 1, cBoard.getArray(), direction, 1));
+            }
+            alert(`${ps}`);
+        }
+
+        function testFunctionTime(funs, loop) {
+            try {
+                let times = [],
+                    ts = [],
+                    names = [],
+                    lineInfoStr = [],
+                    arr = cBoard.getArray(),
+                    arr2D = cBoard.getArray2D(),
+                    lineInfo = new Uint32Array(4),
+                    startTime = 0;
+                for (let f = 0; f < funs.length; f++) {
+                    startTime = new Date().getTime();
+                    for (let i = 0; i < loop; i++) {
+                        for (let idx = 0; idx < 225; idx++) {
+                            for (let direction = 0; direction < 4; direction++) {
+                                ts[direction] = funs[f](idx, direction, 1, arr);
+                            }
+                        }
+                    }
+                    times[f] = `${funs[f].name}: ${new Date().getTime() - startTime}`;
+                }
+
+                alert(`${times.join("\n")}`)
+            }
+            catch (err) {
+                alert(err.message)
+            }
+        }
+
+        function input() {
+            return msg({
+                text: "112",
+                type: "input",
+                lineNum: 1,
+                butNum: 1
+            })
+        }
+
+        function testMoveIdx({ butCode, inputStr }) {
+            let startTime = new Date().getTime();
+
+            inputStr = parseInt(inputStr);
+            for (let i = 0; i < inputStr; i++) {
+                for (let direction = 0; direction < 4; direction++) {
+                    for (let move = -14; move < 15; move++) {
+                        moveIdx(112, move, direction);
+                    }
+                }
+            }
+
+            alert(new Date().getTime() - startTime);
+        }
+
+        function testGetArrValue({ butCode, inputStr }) {
+            let str = "";
+            inputStr = parseInt(inputStr);
+
+            for (let direction = 0; direction < 4; direction++) {
+                str += "[";
+                for (let move = -5; move < 6; move++) {
+                    //str += `${moveIdx(inputStr, move, direction)},`;
+                    str += `${getArrValue(inputStr, move, direction, cBoard.getArray())},`;
+                }
+                str += "]\n";
+            }
+            alert(str)
+        }
 })()

@@ -28,7 +28,7 @@ window.control = (() => {
     window.blockUnload = function(enable) {
         setTimeout(function() {
             if (isBusy(false) ||
-                (cBd && (cBd.oldCode || cBd.threePoints.arr || (getRenjuSelColor() == cObjVCF.color && bArr(cBd.getArray2D(), cObjVCF.arr)))) ||
+                (cBd && (cBd.oldCode || (getRenjuSelColor() == cObjVCF.color && bArr(cBd.getArray2D(), cObjVCF.arr)))) ||
                 (RenjuLib && !RenjuLib.isEmpty())
             ) {
                 window.onbeforeunload = function(e) {
@@ -50,17 +50,16 @@ window.control = (() => {
     };
 
     const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
-    setTimeout(function() {
-        //alert(MAX_THREAD_NUM);
-    }, 3000);
-    const MODEL_RENJU = 0,
-        MODEL_LOADIMG = 1,
-        MODEL_LINE_EDIT = 2,
-        MODEL_ARROW_EDIT = 3,
-        MODEL_UNPACK_TREE = 4,
-        MODEL_UNPACK_THREEPOINT = 5,
-        MODEL_UNPACK_FOULPOINT = 6,
-        MODEL_RENLIB = 7;
+    const MODE_RENJU = 0,
+        MODE_LOADIMG = 1,
+        MODE_LINE_EDIT = 2,
+        MODE_ARROW_EDIT = 3,
+        MODE_READ_TREE = 4,
+        MODE_READ_THREEPOINT = 5,
+        MODE_READ_FOULPOINT = 6,
+        MODE_RENLIB = 7,
+        MODE_READLIB = 8,
+        MODE_EDITLIB = 9;
 
     let cBd,
         engine,
@@ -70,9 +69,8 @@ window.control = (() => {
         dw,
         dh;
 
-    let playModel = MODEL_RENJU;
-    let oldPlayModel = playModel;
-    //let lbColor = [{"colName":"黑色标记", "color":"black"} , {"colName":"白色标记", "color":"white"}, {"colName":"蓝色标记", "color":"#3333ff"}];
+    let playMode = MODE_RENJU;
+    //let oldPlayMode = playMode;
     let lbColor = [
         { "colName": "黑色标记", "color": "black" },
         { "colName": "红色标记", "color": "red" },
@@ -140,7 +138,7 @@ window.control = (() => {
         cCutImage = null,
         cSelBlack = null,
         cSelWhite = null,
-        cPrintVCF = null,
+        cMode = null,
         cFindPoint = null,
         cFindVCF = null,
         cCancelFind = null,
@@ -250,6 +248,7 @@ window.control = (() => {
     }
 
     function newGame() {
+        
         engine.postMsg("cancelFind");
         let h1 = ~~(cBd.width);
         let h2 = ~~(cBd.canvas.height);
@@ -261,7 +260,7 @@ window.control = (() => {
         cBd.hideCutDiv();
         cBd.drawLineEnd();
         cObjVCF.arr = [];
-        playModel = MODEL_RENJU;
+        setPlayMode(MODE_RENJU);
         blackwhiteRadioChecked(cSelBlack);
         markRadioChecked(cAutoadd);
         parentNode.style.top = h1 + parentNode.offsetTop - h2 + "px";
@@ -435,7 +434,7 @@ window.control = (() => {
 
 
     function createMenu(left, top, width, height, fontSize, options = [], onchange = () => {}) {
-        let menu = new button(cBd.parentNode, "select", left, top, width, height);
+        let menu = new Button(cBd.parentNode, "select", left, top, width, height);
         menu.index = -1;
         menu.addOptions(options);
         menu.setonchange(onchange);
@@ -607,28 +606,28 @@ window.control = (() => {
         w = sw / 5;
 
 
-        cStart = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cStart = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
             if (isBusy()) return;
             cBd.toStart(getShowNum());
         });
 
-        cPrevious = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cPrevious = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
             if (isBusy()) return;
             cBd.toPrevious(getShowNum());
         });
 
-        cNext = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cNext = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cNext.setText(">>");
         cNext.setontouchend(function() {
             if (isBusy()) return;
             cBd.toNext(getShowNum());
         });
 
-        cEnd = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cEnd = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
             if (isBusy()) return;
@@ -636,7 +635,7 @@ window.control = (() => {
         });
 
 
-        cMoveL = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cMoveL = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveL.setColor("black");
         cMoveL.setText("←");
         cMoveL.setontouchend(function() {
@@ -644,7 +643,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("left");
         });
 
-        cMoveR = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cMoveR = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveR.setColor("black");
         cMoveR.setText("→ ");
         cMoveR.setontouchend(function() {
@@ -652,7 +651,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("right");
         });
 
-        cMoveT = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cMoveT = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveT.setColor("black");
         cMoveT.setText(" ↑");
         cMoveT.setontouchend(function() {
@@ -660,7 +659,7 @@ window.control = (() => {
             cBd.moveCheckerBoard("top");
         });
 
-        cMoveB = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cMoveB = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cMoveB.setColor("black");
         cMoveB.setText("↓");
         cMoveB.setontouchend(function() {
@@ -668,21 +667,21 @@ window.control = (() => {
             cBd.moveCheckerBoard("bottom");
         });
 
-        cFlipY = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cFlipY = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cFlipY.setText("↔180°");
         cFlipY.setontouchend(function() {
             if (isBusy()) return;
             cBd.boardFlipY(getShowNum());
         });
 
-        cCW = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cCW = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cCW.setText(" ↗90°");
         cCW.setontouchend(function() {
             if (isBusy()) return;
             cBd.boardCW(getShowNum());
         });
 
-        cCleLb = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cCleLb = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cCleLb.setColor("black");
         cCleLb.setText(" 清空标记");
         cCleLb.setontouchend(function() {
@@ -690,22 +689,20 @@ window.control = (() => {
             cBd.removeMarkLine("all");
             cBd.removeMarkArrow("all");
             cBd.cleLb("all");
-            cBd.threePoints = {};
         });
 
-        cNewGame = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cNewGame = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cNewGame.setText("新棋局");
         cNewGame.setontouchend(function() {
             if (isBusy()) return;
             newGame();
         });
 
-        cInputcode = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cInputcode = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cInputcode.setColor("black");
         cInputcode.setText("输入代码");
 
         function inputCode(msgStr) {
-            // 成功设置棋盘 ，就开始解析棋盘摆盘
             !checkCommand(msgStr) &&
                 cBd.unpackCode(getShowNum(), msgStr);
 
@@ -721,7 +718,7 @@ window.control = (() => {
                 inputCode, undefined, undefined, 10);
         });
 
-        cOutputcode = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cOutputcode = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cOutputcode.setColor("black");
         cOutputcode.setText("输出代码");
         cOutputcode.setontouchend(function() {
@@ -752,7 +749,7 @@ window.control = (() => {
                 RenjuLib.setBufferScale(but.input.value * 1);
             });
 
-        cLoadImg = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cLoadImg = new Button(renjuCmddiv, "select", 0, 0, w, h);
         cLoadImg.addOption(1, "打开 图片");
         cLoadImg.addOption(2, "打开 lib 棋谱");
         cLoadImg.addOption(3, "设置内存大小");
@@ -800,8 +797,8 @@ window.control = (() => {
             cBd.resetCutDiv();
             parentNode.removeChild(renjuCmddiv);
             parentNode.appendChild(imgCmdDiv);
-            oldPlayModel = playModel;
-            playModel = MODEL_LOADIMG;
+            //oldPlayMode = playMode;
+            setPlayMode(MODE_LOADIMG);
             cLockImg.setChecked(0);
             cAddblack2.setChecked(1);
             cAddwhite2.setChecked(0);
@@ -841,10 +838,13 @@ window.control = (() => {
             cBd.drawLineEnd();
             let file = fileInput.files[0];
             fileInput.value = "";
-            RenjuLib.openLib(file);
+            RenjuLib.openLib(file)
+            .then(function(){
+                setPlayMode(MODE_RENLIB);
+            })
         }
 
-        cCutImage = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cCutImage = new Button(renjuCmddiv, "select", 0, 0, w, h);
         //cCutImage.addOption(0, "________图片________");
         //cCutImage.addOption(1, "分享图片");
         cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩图片");
@@ -882,7 +882,7 @@ window.control = (() => {
             but.input.value = 0;
         });
 
-        cCancelFind = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cCancelFind = new Button(renjuCmddiv, "button", 0, 0, w, h);
         //cCancelFind.show();
         cCancelFind.setText(`${EMOJI_STOP} 停止`);
         //cCancelFind.setColor("red");
@@ -891,17 +891,17 @@ window.control = (() => {
             RenjuLib.isLoading() && RenjuLib.cancal();
         });
 
-        cAutoadd = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cAutoadd = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cAutoadd.setText(` ${EMOJI_ROUND_BLACK_WHITE} 棋`);
         cAutoadd.setChecked(1);
 
-        cAddblack = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cAddblack = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddblack.setText(` ${EMOJI_ROUND_BLACK} 棋`);
 
-        cAddwhite = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cAddwhite = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cAddwhite.setText(` ${EMOJI_ROUND} 棋`);
 
-        cNextone = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cNextone = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cNextone.setColor("black");
         cNextone.setText(`下手为${EMOJI_ROUND_ONE}`);
         cNextone.setontouchend(function() {
@@ -910,13 +910,13 @@ window.control = (() => {
             cBd.isShowNum = getShowNum();
         });
 
-        cLba = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cLba = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cLba.setText(` ${EMOJI_SQUARE_BLACK} `);
 
-        cLbb = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cLbb = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbb.setText(` ${EMOJI_ROUND_DOUBLE} `);
 
-        cLABC = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cLABC = new Button(renjuCmddiv, "select", 0, 0, w, h);
         //cLABC.addOption(-1, "︾");
         cLABC.addOption(0, "←  箭头");
         cLABC.addOption(1, "__ 线条");
@@ -930,7 +930,7 @@ window.control = (() => {
         cLABC.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
 
         cLABC.setonchange(function() {
-            changePlayModel();
+            if (cLABC.input.value > 1) cBd.drawLineEnd();
             if (cLABC.input.value == 5) {
                 let w = cBd.width * 0.8;
                 let h = w;
@@ -950,7 +950,7 @@ window.control = (() => {
         cLABC.hideMenu = function(ms, callback) {
             hm.call(this, ms, callback);
             //log(this.input.value)
-            changePlayModel();
+            if (cLABC.input.value > 1) cBd.drawLineEnd();
         };
 
         let newContinueLabel = function(msgStr) {
@@ -969,23 +969,8 @@ window.control = (() => {
             if (labels.length) continueLabel = labels;
         };
 
-        let changePlayModel = function() {
-            if (cLABC.input.value == 0) {
-                playModel = MODEL_ARROW_EDIT;
-                //log("MODEL_ARROW_EDIT")
-            }
-            else if (cLABC.input.value == 1) {
-                playModel = MODEL_LINE_EDIT;
-                //log("MODEL_LINE_EDIT")
-            }
-            else {
-                playModel = MODEL_RENJU;
-                cBd.drawLineEnd();
-                //log("MODEL_RENJU")
-            }
-        };
 
-        cResetnum = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cResetnum = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cResetnum.setColor("black");
         cResetnum.setText(" 重置手数");
         cResetnum.setontouchend(function() {
@@ -995,13 +980,13 @@ window.control = (() => {
             cBd.isShowNum = getShowNum();
         });
 
-        cLbc = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cLbc = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbc.setText(` ${EMOJI_TRIANGLE_BLACK} `);
 
-        cLbd = new button(renjuCmddiv, "radio", 0, 0, w, h);
+        cLbd = new Button(renjuCmddiv, "radio", 0, 0, w, h);
         cLbd.setText(` ${EMOJI_FORK} `);
 
-        cLbColor = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cLbColor = new Button(renjuCmddiv, "select", 0, 0, w, h);
         //cLbColor.addOption(-1, "︾");
         for (let i = 0; i < lbColor.length; i++) {
             cLbColor.addOption(i, lbColor[i].colName);
@@ -1035,54 +1020,40 @@ window.control = (() => {
             cLABC.setColor(lbColor[but.input.value].color);
         });
 
-        cPrintVCF = new button(renjuCmddiv, "select", 0, 0, w, h);
-        //cPrintVCF.addOption(0, "︾");
-        cPrintVCF.addOption(1, "第1套VCF");
-        cPrintVCF.addOption(2, "第2套VCF");
-        cPrintVCF.addOption(3, "第3套VCF");
-        cPrintVCF.addOption(4, "第4套VCF");
-        cPrintVCF.addOption(5, "第5套VCF");
-        cPrintVCF.addOption(6, "第6套VCF");
-        cPrintVCF.addOption(7, "第7套VCF");
-        cPrintVCF.addOption(8, "第8套VCF");
-        //cPrintVCF.addOption(9, "︽");
-        cPrintVCF.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
-        cPrintVCF.setText("➩ VCF ");
-        cPrintVCF.setonchange(function(but) {
-            but.setText("➩ VCF ");
+        cMode = new Button(renjuCmddiv, "select", 0, 0, w, h);
+        //cMode.addOption(0, "︾");
+        cMode.addOption(1, "摆棋模式");
+        cMode.addOption(2, "读谱模式");
+        cMode.addOption(3, "制谱模式");
+        //cMode.addOption(9, "︽");
+        cMode.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
+        cMode.setText("摆棋");
+        cMode.setonchange(function(but) {
             if (isBusy()) return;
-            if (but.input.value * 1) {
-                let color = getRenjuSelColor();
-                let arr = cBd.getArray2D();
-                if (color == cObjVCF.color && bArr(arr, cObjVCF.arr)) {
-                    if (cObjVCF.winMoves.length >= but.input.value) {
-                        let moves = cObjVCF.winMoves[but.input.value - 1].slice(0, cObjVCF.winMoves[but.input.value - 1].length);
-                        cBd.printMoves(moves, cObjVCF.color);
-                    }
-                    else {
-                        let str = ` ${color==1?"黑棋":"白棋"} 只找到 ${cObjVCF.winMoves.length} 套 VCF 记录`;
-                        showLabel(str);
-                    }
-                }
-                else {
-                    let str = `请先 找全 ${color==1?"黑棋":"白棋"} VCF`;
-                    showLabel(str);
-                }
-                but.input.value = 0;
+            switch (but.input.value * 1) {
+                case 1:
+                    setPlayMode(MODE_RENJU);
+                    break;
+                case 2:
+                    setPlayMode(MODE_READLIB);
+                    break;
+                case 3:
+                    setPlayMode(MODE_EDITLIB);
+                    break;
             }
         });
 
-        cSelBlack = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
+        cSelBlack = new Button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelBlack.setText("黑先");
         cSelBlack.setChecked(1);
 
-        cSelWhite = new button(renjuCmddiv, "checkbox", 0, 0, w, h);
+        cSelWhite = new Button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelWhite.setText("白先");
 
         const CALCULATE = 1;
         let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
-        cFindPoint = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cFindPoint = new Button(renjuCmddiv, "select", 0, 0, w, h);
         if (CALCULATE) {
             //cFindPoint.addOption(0, "︾" );
             cFindPoint.addOption(1, "VCT选点");
@@ -1222,7 +1193,7 @@ window.control = (() => {
         });
         //cFindPoint.setontouchend(function() {});
 
-        cFindVCF = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cFindVCF = new Button(renjuCmddiv, "select", 0, 0, w, h);
         if (CALCULATE) {
             //cFindVCF.addOption(0, "︾");
             cFindVCF.addOption(1, "快速找  VCF");
@@ -1256,7 +1227,7 @@ window.control = (() => {
                 return;
             }
             viewport1.resize();
-            let arr = cBd.getArray();// cBd.getArray2D();
+            let arr = cBd.getArray(); // cBd.getArray2D();
             switch (but.input.value * 1) {
                 case 1:
                     engine.postMsg("findVCF", {
@@ -1369,7 +1340,7 @@ window.control = (() => {
         });
         cFindVCF.setontouchend(function() {});
 
-        cShareWhite = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cShareWhite = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cShareWhite.setColor("black");
         cShareWhite.setText(" 分享图片");
         cShareWhite.setontouchend(function() {
@@ -1377,7 +1348,7 @@ window.control = (() => {
             share("white");
         });
 
-        cShare = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cShare = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cShare.setColor("black");
         cShare.setText(" 分享原图");
         cShare.setontouchend(function() {
@@ -1439,7 +1410,7 @@ window.control = (() => {
                     renjuCmdSettings.idx = but.input.value * 1;
                     editButtons("renjuCmdSettings", renjuCmdSettings);
                 }),
-            cShownumTop = new button(renjuCmddiv, "button", 0, 0, w, h);
+            cShownumTop = new Button(renjuCmddiv, "button", 0, 0, w, h);
 
         cShownumTop.setText(" 设置 ");
         cShownumTop.setontouchend(function() {
@@ -1447,7 +1418,7 @@ window.control = (() => {
             cShownum.defaultontouchend();
         });
 
-        cShownum = new button(renjuCmddiv, "select", 0, 0, w, h);
+        cShownum = new Button(renjuCmddiv, "select", 0, 0, w, h);
         cShownum.addOption(0, "显示手数");
         cShownum.addOption(1, "显示禁手");
         cShownum.addOption(2, "显示线路");
@@ -1529,11 +1500,10 @@ window.control = (() => {
         };
         scaleCBoard = function(isScale, timer = "now") {
             if (isScale) {
-                if (playModel != MODEL_LINE_EDIT &&
-                    playModel != MODEL_ARROW_EDIT)
+                if (cBd.startIdx < 0)
                     cBd.setScale(1.5, timer);
                 else
-                    showLabel(`${EMOJI_STOP} 画线模式,不能放大`);
+                    showLabel(`${EMOJI_STOP} 画线模式,不能放大棋盘`);
             }
             else {
                 cBd.setScale(1, timer);
@@ -1553,7 +1523,7 @@ window.control = (() => {
             return cShownum.menu.lis[0].checked;
         };
 
-        cHelp = new button(renjuCmddiv, "button", 0, 0, w, h);
+        cHelp = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cHelp.setColor("black");
         cHelp.setText(" 帮助 ");
         cHelp.setontouchend(function() {
@@ -1566,7 +1536,6 @@ window.control = (() => {
 
         markRadioChecked = setRadio([cLba, cLbb, cLbc, cLbd, cAutoadd, cAddblack, cAddwhite, cLABC], function() {
             if (this != cLABC) {
-                playModel = MODEL_RENJU;
                 cBd.drawLineEnd();
             }
         });
@@ -1596,15 +1565,15 @@ window.control = (() => {
                 cAutoadd,
                 cAddblack,
                 cAddwhite,
-                cNextone,
+                cMode,
                 cLba,
                 cLbb,
                 cLABC,
-                cResetnum,
+                cNextone,
                 cLbc,
                 cLbd,
                 cLbColor,
-                cPrintVCF,
+                cResetnum,
                 cSelBlack,
                 cSelWhite,
                 cFindPoint,
@@ -1728,7 +1697,7 @@ window.control = (() => {
                 VIEW.setAttribute("class", "hideEXWindow");
                 VIEW.parentNode && setTimeout(() => VIEW.parentNode.removeChild(VIEW), 350);
                 msgbox("是否保存更改?", "保存", undefined, "取消", undefined)
-                    .then(function({butCode}) {
+                    .then(function({ butCode }) {
                         if (butCode == window.MSG_ENTER) { // save change
                             pButtonsIdx.length = 0;
                             for (let i = 0; i < newButtonsIdx.length; i++) {
@@ -1950,7 +1919,7 @@ window.control = (() => {
                 newGame: newGame,
                 cBoard: cBd,
                 getShowNum: getShowNum,
-                setPlayModel: (model) => { playModel = model }
+                setPlayMode: setPlayMode
             });
 
             let continueData = appData.loadContinueData(cBd);
@@ -1983,7 +1952,7 @@ window.control = (() => {
         let menuWidth = sw * 0.8;
         let menuFontSize = sw / 20;
 
-        cLockImg = new button(imgCmdDiv, "checkbox", w * 0, t, w, h);
+        cLockImg = new Button(imgCmdDiv, "checkbox", w * 0, t, w, h);
         cLockImg.show();
         cLockImg.setText("选定棋盘");
         cLockImg.setontouchend(function() {
@@ -2084,7 +2053,7 @@ window.control = (() => {
 
         }
 
-        cAutoPut = new button(imgCmdDiv, "button", w * 1.33, t, w, h);
+        cAutoPut = new Button(imgCmdDiv, "button", w * 1.33, t, w, h);
         cAutoPut.show();
         cAutoPut.setColor("black");
         cAutoPut.setText(" 自动识别");
@@ -2101,7 +2070,7 @@ window.control = (() => {
 
 
 
-        cPutBoard = new button(imgCmdDiv, "button", w * 2.66, t, w, h);
+        cPutBoard = new Button(imgCmdDiv, "button", w * 2.66, t, w, h);
         cPutBoard.show();
         cPutBoard.setColor("black");
         cPutBoard.setText(" 摆入棋盘");
@@ -2116,7 +2085,7 @@ window.control = (() => {
 
 
 
-        cCleAll = new button(imgCmdDiv, "button", w * 3.99, t, w, h);
+        cCleAll = new Button(imgCmdDiv, "button", w * 3.99, t, w, h);
         cCleAll.show();
         cCleAll.setColor("black");
         cCleAll.setText(" 清空棋盘");
@@ -2126,14 +2095,14 @@ window.control = (() => {
 
         t += h * 1.5;
 
-        cAddblack2 = new button(imgCmdDiv, "radio", w * 0, t, w, h);
+        cAddblack2 = new Button(imgCmdDiv, "radio", w * 0, t, w, h);
         cAddblack2.show();
         cAddblack2.setText(` ${EMOJI_ROUND_BLACK} 棋`);
         cAddblack2.setontouchend(function() {
             autoblackwhiteRadioChecked(cAddblack2);
         });
 
-        cAddwhite2 = new button(imgCmdDiv, "radio", w * 1.33, t, w, h);
+        cAddwhite2 = new Button(imgCmdDiv, "radio", w * 1.33, t, w, h);
         cAddwhite2.show();
         cAddwhite2.setText(` ${EMOJI_ROUND} 棋`);
         cAddwhite2.setontouchend(function() {
@@ -2141,7 +2110,7 @@ window.control = (() => {
         });
 
 
-        cSLTY = new button(imgCmdDiv, "select", w * 2.66, t, w, h);
+        cSLTY = new Button(imgCmdDiv, "select", w * 2.66, t, w, h);
         //cSLTY.addOption(16, "︾");
         for (let i = 15; i >= 5; i--) {
             cSLTY.addOption(i, i);
@@ -2164,7 +2133,7 @@ window.control = (() => {
             }
         });
 
-        cSLTX = new button(imgCmdDiv, "select", w * 3.99, t, w, h);
+        cSLTX = new Button(imgCmdDiv, "select", w * 3.99, t, w, h);
         //cSLTX.addOption(16, "︾");
         for (let i = 15; i >= 5; i--) {
             cSLTX.addOption(i, i);
@@ -2303,8 +2272,10 @@ window.control = (() => {
         //处理触摸结束事件
         function bodyTouchEnd(evt) {
 
-            setTimeout(() => { isCancelMenuClick = false;
-                isCancelCanvasClick = false }, 250);
+            setTimeout(() => {
+                isCancelMenuClick = false;
+                isCancelCanvasClick = false
+            }, 250);
             let cancelClick = false;
             let touches = evt.changedTouches;
             let idx = onTouchesIndex(touches[0].identifier, bodyStartTouches);
@@ -2462,7 +2433,7 @@ window.control = (() => {
 
         function canvasKeepTouch(x, y) {
 
-            if (playModel != MODEL_LOADIMG) {
+            if (playMode != MODE_LOADIMG) {
                 renjuKeepTouch(x, y);
             }
             else {
@@ -2482,8 +2453,8 @@ window.control = (() => {
             //log(`event.button=${event.button}, typeof(x)=${typeof(x)}, x=${x}, y=${y}`);
             x = event.type == "click" ? event.pageX : x;
             y = event.type == "click" ? event.pageY : y;
-            //log(`get=${playModel },ren=${MODEL_RENJU}`)
-            if (playModel != MODEL_LOADIMG) {
+            //log(`get=${playMode },ren=${MODE_RENJU}`)
+            if (playMode != MODE_LOADIMG) {
                 renjuClick(x, y);
             }
             else if (!cLockImg.checked) {
@@ -2509,7 +2480,7 @@ window.control = (() => {
 
         function canvasDblClick(x, y) {
 
-            if (playModel != MODEL_LOADIMG) {
+            if (playMode != MODE_LOADIMG) {
                 if (event.type == "dblclick")
                     renjuDblClick(event.pageX, event.pageY);
                 else
@@ -2519,7 +2490,7 @@ window.control = (() => {
 
         function continueSetCutDivStart() {
 
-            if (playModel != MODEL_LOADIMG ||
+            if (playMode != MODE_LOADIMG ||
                 cLockImg.checked)
                 return;
             //log("continueSetCutDivStart")
@@ -2548,7 +2519,7 @@ window.control = (() => {
 
         function continueSetCutDivEnd() {
             //log("continueSetCutDivEnd")
-            if (playModel != MODEL_LOADIMG || cLockImg.checked) return;
+            if (playMode != MODE_LOADIMG || cLockImg.checked) return;
             exitContinueSetCutDivMove = true;
             cBd.resetP();
             cBd.printBorder();
@@ -2824,33 +2795,40 @@ window.control = (() => {
 
 
     //返回参数确认 添加棋子 还是标签
-    function getRenjuCmd() {
+    //info = {type, boardTXT, isShowNum};
+    function createCommandInfo() {
 
-        let isShow = getShowNum() ? true : false;
-        let idx;
-        let lbIdx;
-        let code;
-        let tcode;
-        let txt;
+        let isShow = getShowNum() ? true : false,
+            color = getRenjuLbColor(),
+            idx,
+            lbIdx,
+            code,
+            tcode,
+            txt;
+
         switch (true) {
 
             case cAutoadd.checked:
-                return { type: TYPE_NUMBER, cmd: "auto", showNum: isShow };
+                return { type: TYPE_NUMBER, color: "auto", isShowNum: isShow };
             case cAddblack.checked:
-                return { type: TYPE_BLACK, cmd: "black", showNum: isShow };
+                return { type: TYPE_BLACK, color: "black", isShowNum: isShow };
             case cAddwhite.checked:
-                return { type: TYPE_WHITE, cmd: "white", showNum: isShow };
+                return { type: TYPE_WHITE, color: "white", isShowNum: isShow };
             case cLba.checked:
-                return { type: TYPE_MARK, cmd: EMOJI_SQUARE_BLACK, showNum: isShow };
+                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_SQUARE_BLACK };
             case cLbb.checked:
-                return { type: TYPE_MARK, cmd: EMOJI_ROUND_DOUBLE, showNum: isShow };
+                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_ROUND_DOUBLE };
             case cLbc.checked:
-                return { type: TYPE_MARK, cmd: EMOJI_TRIANGLE_BLACK, showNum: isShow };
+                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_TRIANGLE_BLACK };
             case cLbd.checked:
-                return { type: TYPE_MARK, cmd: EMOJI_FORK, showNum: isShow };
+                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_FORK };
             case cLABC.checked:
 
                 switch (cLABC.input.value * 1) {
+                    case 0:
+                        return { type: TYPE_MARKARROW, color: color };
+                    case 1:
+                        return { type: TYPE_MARKLINE, color: color };
                     case 2:
                         // 搜索棋盘上最大的字母;
                         code = "A".charCodeAt(); // 65→90
@@ -2863,7 +2841,7 @@ window.control = (() => {
                             }
                         }
                         txt = String.fromCharCode(code);
-                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, color: color, boardTXT: txt };
 
                     case 3:
 
@@ -2878,7 +2856,7 @@ window.control = (() => {
                             }
                         }
                         txt = String.fromCharCode(code);
-                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, color: color, boardTXT: txt };
 
                     case 4:
                         // 搜索棋盘上最大的数字
@@ -2892,7 +2870,7 @@ window.control = (() => {
                             }
                         }
                         txt = code;
-                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, color: color, boardTXT: txt };
                     case 5:
                         lbIdx = 0;
                         for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
@@ -2905,21 +2883,18 @@ window.control = (() => {
                             }
                         }
                         txt = continueLabel[lbIdx];
-                        return { type: TYPE_MARK, cmd: txt, showNum: isShow };
+                        return { type: TYPE_MARK, color: color, boardTXT: txt };
                     case 6:
-                        return { type: TYPE_MARK, cmd: EMOJI_STAR, showNum: isShow };
+                        return { type: TYPE_MARK, color: color, boardTXT: EMOJI_STAR };
                     case 7:
-                        return { type: TYPE_MARK, cmd: EMOJI_FOUL, showNum: isShow };
-
+                        return { type: TYPE_MARK, color: color, boardTXT: EMOJI_FOUL };
                 }
         }
-
     }
 
 
 
     function getRenjuLbColor() {
-
         return lbColor[cLbColor.input.value].color;
     }
 
@@ -2933,103 +2908,259 @@ window.control = (() => {
 
 
     let timerCancelKeepTouch = null; // 防止悔棋触发取消红色显示
-    let cancelKeepTouck = function() {
+    let cancelKeepTouch = function() {
         if (timerCancelKeepTouch) return true;
-        timerCancelKeepTouch = setTimeout("timerCancelKeepTouch=null", 800);
+        timerCancelKeepTouch = setTimeout(function() { timerCancelKeepTouch = null; }, 800);
     }
-
-
 
     function renjuClick(x, y) {
 
         if (isBusy()) return;
-        let idx = cBd.getPIndex(x, y);
-        if (playModel == MODEL_RENJU || playModel == MODEL_RENLIB) {
-            if (idx > -1) {
-                let cmds = getRenjuCmd();
-                let arr = cBd.getArray2D();
-                if (cBd.oldCode || playModel == MODEL_RENLIB) cmds.type = TYPE_NUMBER;
-                if (cBd.threePoints && cBd.threePoints.arr) {
-                    if (cBd.threePoints.index > -1) {
-                        cBd.printThreePoints();
-                        return;
-                    }
-                    else {
-                        cBd.printThreePointMoves(idx);
-                        return;
+        let idx = cBd.getPIndex(x, y),
+            arr = cBd.getArray(),
+            isF = isFoul(idx, arr),
+            pInfo = createCommandInfo();
+
+        if (idx < 0) return;
+        cancelKeepTouch();
+        switch (playMode) {
+            case MODE_RENJU:
+                if (pInfo.type == TYPE_NUMBER) {
+                    if (cBd.P[idx].type == TYPE_NUMBER)
+                        cBd.cleNb(idx, pInfo.isShowNum); //点击棋子，触发悔棋
+                    else if (cBd.P[idx].type == TYPE_EMPTY)
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF); // 添加棋子  
+                }
+                else if (pInfo.type == TYPE_BLACK) {
+                    if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK)
+                        cBd.cleNb(idx); //点击棋子，触发悔棋
+                    else if (cBd.P[idx].type == TYPE_EMPTY)
+                        cBd.wNb(idx, "black", pInfo.isShowNum, undefined, isF); // 添加棋子  
+                }
+                else if (pInfo.type == TYPE_WHITE) {
+                    if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK)
+                        cBd.cleNb(idx); //点击棋子，触发悔棋
+                    else if (cBd.P[idx].type == TYPE_EMPTY)
+                        cBd.wNb(idx, "white", pInfo.isShowNum); // 添加棋子 
+                }
+                else if (pInfo.type == TYPE_MARK) {
+                    if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE)
+                        cBd.cleLb(idx); // 点击标记，删除标记
+                    else if (cBd.P[idx].type == TYPE_EMPTY)
+                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                    else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
+                        if (cBd.P[idx].text) {
+                            cBd.P[idx].text = "";
+                            cBd.printPointB(idx);
+                            cBd.refreshMarkArrow(idx);
+                        }
+                        else {
+                            cBd.P[idx].text = pInfo.boardTXT;
+                            cBd.printPointB(idx);
+                            cBd.refreshMarkArrow(idx);
+                        }
                     }
                 }
-                switch (cmds.type) {
-                    case TYPE_NUMBER:
-                        cancelKeepTouck();
-                        if (cBd.P[idx].type == TYPE_NUMBER) {
-                            //点击棋子，触发悔棋
-                            cBd.cleNb(idx, cmds.showNum);
-                        }
-                        else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playModel == MODEL_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
-                            // 添加棋子  wNb(idx,color,showNum)
-                            let isF = 0 //cBd.size == 15 ? isFoul(idx % 15, ~~(idx / 15), arr) : false;
-                            cBd.wNb(idx, "auto", cmds.showNum, undefined, isF);
-                        }
-                        break;
-
-                    case TYPE_BLACK:
-                        if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
-                            //点击棋子，触发悔棋
-                            cBd.cleNb(idx);
-                        }
-                        else if (cBd.P[idx].type == TYPE_EMPTY) {
-                            // 添加棋子  wNb(idx,color,showNum)
-                            cBd.wNb(idx, "black", cmds.showNum);
-                        }
-                        break;
-
-                    case TYPE_WHITE:
-                        if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
-                            //点击棋子，触发悔棋
-                            cBd.cleNb(idx);
-                        }
-                        else if (cBd.P[idx].type == TYPE_EMPTY) {
-                            // 添加棋子  wNb(idx,color,showNum)
-                            cBd.wNb(idx, "white", cmds.showNum);
-                        }
-                        break;
-
-                    case TYPE_MARK:
-                        if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE) {
-                            // 点击标记，删除标记
-                            cBd.cleLb(idx);
-                        }
-                        else if (cBd.P[idx].type == TYPE_EMPTY) {
-                            // 添加标记 wLb(idx,text,color, showNum:isShow) 
-                            cBd.wLb(idx, cmds.cmd, getRenjuLbColor());
-                        }
-                        else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
-                            if (cBd.P[idx].text) {
-                                cBd.P[idx].text = "";
-                                cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
-                                cBd.refreshMarkArrow(idx);
-                            }
-                            else {
-                                cBd.P[idx].text = cmds.cmd;
-                                cBd.printPointB(idx, cBd.P[idx].text, cBd.P[idx].color, cBd.P[idx].type, cBd.isShowNum, cBd.P[idx].bkColor);
-                                cBd.refreshMarkArrow(idx);
-                            }
-                        }
-                        break;
+                else if (pInfo.type == TYPE_MARKARROW) {
+                    cBd.drawLineStart(idx, pInfo.color, "arrow");
                 }
-
-            }
+                else if (pInfo.type == TYPE_MARKLINE) {
+                    cBd.drawLineStart(idx, pInfo.color, "line");
+                }
+                break;
+            case MODE_LOADIMG:
+                break;
+            case MODE_READ_TREE:
+                break;
+            case MODE_READ_THREEPOINT:
+                break;
+            case MODE_RENLIB:
+            case MODE_READLIB:
+            case MODE_READ_FOULPOINT:
+                if (cBd.P[idx].type == TYPE_NUMBER) {
+                    if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE)
+                        cBd.toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
+                }
+                else if (cBd.P[idx].type == TYPE_EMPTY) {
+                    if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE) {
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF); // 添加棋子
+                    }
+                    else if (pInfo.type == TYPE_MARK) {
+                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                    }
+                }
+                else if (cBd.P[idx].type == TYPE_MARK) {
+                    let path = cBd.P[idx].path;
+                    if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE) {
+                        if (path) {
+                            while (cBd.MSindex > -1) {
+                                cBd.toPrevious(pInfo.isShowNum, 100);
+                            }
+                            for (let i = 0; i < path.length; i++) {
+                                cBd.wNb(path[i], "auto", pInfo.isShowNum, undefined, undefined, 100);
+                            }
+                        }
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                    }
+                    else if (pInfo.type == TYPE_MARK) {
+                        inputLabel(idx, pInfo.boardTXT);
+                    }
+                }
+                break;
+            case MODE_EDITLIB:
+                if (cBd.P[idx].type == TYPE_NUMBER) {
+                    if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE)
+                        cBd.toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
+                }
+                else if (cBd.P[idx].type == TYPE_EMPTY) {
+                    if (pInfo.type == TYPE_NUMBER) {
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                    }
+                    else if (pInfo.type == TYPE_BLACK) {
+                        if (0 == (cBd.MSindex & 1)) cBd.wNb(225, "auto", pInfo.isShowNum, undefined, isF);
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                    }
+                    else if (pInfo.type == TYPE_WHITE) {
+                        if (1 == (cBd.MSindex & 1)) cBd.wNb(225, "auto", pInfo.isShowNum, undefined, isF);
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                    }
+                    else if (pInfo.type == TYPE_MARK) {
+                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                    }
+                    cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+                }
+                else if (cBd.P[idx].type == TYPE_MARK) {
+                    let path = cBd.P[idx].path;
+                    if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE) {
+                        if (path && path.length) {
+                            while (cBd.MSindex > -1) {
+                                cBd.toPrevious(pInfo.isShowNum, 100);
+                            }
+                            for (let i = 0; i < path.length; i++) {
+                                cBd.wNb(path[i], "auto", pInfo.isShowNum, undefined, undefined, 100);
+                            }
+                        }
+                        cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                    }
+                    else if (pInfo.type == TYPE_MARK) {
+                        inputLabel(idx, pInfo.boardTXT)
+                            .then(function(boardTXT) {
+                                path = path && path.length ? path.concat([idx]) : cBd.MS.slice(0, cBd.MSindex + 1).concat([idx]);
+                                let node = cBd.tree.seek(path);
+                                node && (node.boardTXT = boardTXT);
+                            })
+                    }
+                }
+                break;
         }
-        else if (playModel == MODEL_LINE_EDIT) {
-            cBd.drawLineStart(idx, getRenjuLbColor(), "line");
-        }
-        else if (playModel == MODEL_ARROW_EDIT) {
-            cBd.drawLineStart(idx, getRenjuLbColor(), "arrow");
-        }
-
     }
 
+
+    /*
+        function renjuClick(x, y) {
+
+            if (isBusy()) return;
+            let idx = cBd.getPIndex(x, y);
+            if (playMode == MODE_RENJU || playMode == MODE_RENLIB) {
+                if (idx > -1) {
+                    let pInfo = createCommandInfo();
+                    let arr = cBd.getArray();
+                    if (playMode == MODE_RENLIB) pInfo.type = TYPE_NUMBER;
+                    if (cBd.threePoints && cBd.threePoints.arr) {
+                        if (cBd.threePoints.index > -1) {
+                            cBd.printThreePoints();
+                            return;
+                        }
+                        else {
+                            cBd.printThreePointMoves(idx);
+                            return;
+                        }
+                    }
+                    let isF = isFoul(idx, arr);
+                    switch (pInfo.type) {
+                        case TYPE_NUMBER:
+                            cancelKeepTouch();
+                            if (cBd.P[idx].type == TYPE_NUMBER) {
+                                //点击棋子，触发悔棋
+                                cBd.cleNb(idx, pInfo.isShowNum);
+                            }
+                            else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playMode == MODE_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
+                                // 添加棋子  wNb(idx,color,showNum)
+                                cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                            }
+                            break;
+
+                        case TYPE_BLACK:
+                            if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
+                                //点击棋子，触发悔棋
+                                cBd.cleNb(idx);
+                            }
+                            else if (cBd.P[idx].type == TYPE_EMPTY || ((cBd.oldCode || playMode == MODE_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
+                                // 添加棋子  wNb(idx,color,showNum)
+                                //cBd.wNb(idx, "black", pInfo.isShowNum);
+                                let path = cBd.P[idx].path;
+                                console.log(`[${path}]`)
+                                if (path) {
+                                    while (cBd.MSindex > -1) {
+                                        cBd.toPrevious(pInfo.isShowNum, 100);
+                                    }
+                                    for (let i = 0; i < path.length; i++) {
+                                        cBd.wNb(path[i], "auto", pInfo.isShowNum, undefined, undefined, 100);
+                                    }
+                                }
+                                else if (0 == (cBd.MSindex & 1)) cBd.wNb(225, "auto", pInfo.isShowNum, undefined, isF);
+                                cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
+                            }
+                            break;
+
+                        case TYPE_WHITE:
+                            if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
+                                //点击棋子，触发悔棋
+                                cBd.cleNb(idx);
+                            }
+                            else if (cBd.P[idx].type == TYPE_EMPTY ||  ((cBd.oldCode || playMode == MODE_RENLIB || cBd.P[idx].text == EMOJI_FOUL) && cBd.P[idx].type == TYPE_MARK)) {
+                                // 添加棋子  wNb(idx,color,showNum)
+                                //cBd.wNb(idx, "white", pInfo.isShowNum);
+                                if (1 == (cBd.MSindex & 1)) cBd.wNb(225, "auto", pInfo.isShowNum);
+                                cBd.wNb(idx, "auto", pInfo.isShowNum);
+                            }
+                            break;
+
+                        case TYPE_MARK:
+                            if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE) {
+                                // 点击标记，删除标记
+                                cBd.cleLb(idx);
+                            }
+                            else if (cBd.P[idx].type == TYPE_EMPTY) {
+                                // 添加标记 wLb(idx,text,color, isShowNum:isShow) 
+                                cBd.wLb(idx, pInfo.boardTXT, pInfo.color);
+                            }
+                            else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
+                                if (cBd.P[idx].text) {
+                                    cBd.P[idx].text = "";
+                                    cBd.printPointB(idx);
+                                    cBd.refreshMarkArrow(idx);
+                                }
+                                else {
+                                    cBd.P[idx].text = pInfo.boardTXT;
+                                    cBd.printPointB(idx);
+                                    cBd.refreshMarkArrow(idx);
+                                }
+                            }
+                            break;
+                    }
+
+                }
+            }
+            else if (playMode == MODE_LINE_EDIT) {
+                cBd.drawLineStart(idx, pInfo.color, "line");
+            }
+            else if (playMode == MODE_ARROW_EDIT) {
+                cBd.drawLineStart(idx, pInfo.color, "arrow");
+            }
+
+        }
+    */
 
     function renjuDblClick(x, y) {
 
@@ -3039,20 +3170,19 @@ window.control = (() => {
             // 触发快速悔棋
             if (cBd.P[idx].type == TYPE_NUMBER) {
                 if (idx != cBd.MS[cBd.MSindex]) {
-                    for (let i = cBd.MSindex + 1; i > parseInt(cBd.P[idx].text); i--) {
-                        cBd.cleNb(idx, getShowNum());
+                    while (cBd.MS[cBd.MSindex] != idx) {
+                        cBd.cleNb(cBd.MS[cBd.MSindex], getShowNum());
                     }
                 }
                 else { // 
-                    if (!cancelKeepTouck()) renjuKeepTouch(x, y);
+                    if (!cancelKeepTouch()) renjuKeepTouch(x, y);
                 }
             } // 触发，手动输入标记
             else if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) && !cAutoadd.checked && !cAddblack.checked && !cAddwhite.checked) {
                 inputLabel(idx);
             }
-
         }
-    }
+    }   
 
 
     function renjuKeepTouch(x, y) {
@@ -3108,9 +3238,12 @@ window.control = (() => {
                 }
             }, undefined, 2);
         }
+        else if(cBd.P[idx].type == TYPE_MARK && playMode == MODE_EDITLIB) {
+            alert("removeBranch")
+        }
         else {
             //log(`top=${window.scrollY}, left=${window.scrollX}`);
-            if (!cBd.isOut(x, y, cBd.viewBox, -~~(cBd.width / 8))) {
+            if (!cBd.isOut(x, y, cBd.viewBox, -~~(cBd.width / 17))) {
                 cMenu.idx = idx;
                 cMenu.showMenu(undefined, y - window.scrollY - cMenu.menu.fontSize * 2.5 * 3);
             }
@@ -3119,26 +3252,29 @@ window.control = (() => {
                 scaleCBoard(cBd.scale == 1, 1);
             }
         }
-
     }
 
 
-    function inputLabel(idx) {
+    function inputLabel(idx, boardTXT = "") {
         let w = cBd.width * 0.8;
         let h;
         let l = (dw - w) / 2;
         let t = dh / 7;
         let color = getRenjuLbColor();
         // 设置弹窗，让用户手动输入标记
-        msg("", "input", l, t, w, h, "输入标记", undefined, function(msgStr) {
-                if (checkCommand(msgStr)) return;
-                let str = msgStr.substr(0, 3);
-                cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
-                if (str != "" && str != " ") cBd.wLb(idx, str, color);
-            },
-            function(msgStr) { //用户取消，删除标记
-                //cBd.clePoint(idx);
-            });
+        return msg(boardTXT, "input", l, t, w, h, "输入标记", undefined, function(msgStr) {
+                    if (checkCommand(msgStr)) return;
+                    let str = msgStr.substr(0, 3);
+                    boardTXT = str;
+                    cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
+                    if (str != "" && str != " ") cBd.wLb(idx, str, color);
+                },
+                function(msgStr) { //用户取消，删除标记
+                    boardTXT = "";
+                })
+            .then(function(rt) {
+                return Promise.resolve(boardTXT);
+            })
     }
 
 
@@ -3164,6 +3300,70 @@ window.control = (() => {
         }
         window.blockUnload && window.blockUnload(value);
     }
+
+    function getPlayMode() {
+        return playMode;
+    }
+
+    function setPlayMode(mode) {
+        
+        switch (playMode) {
+            case MODE_RENJU:
+                if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
+                    let code = cBd.getCode(),
+                        tree = new RenjuTree();
+                    playMode = MODE_EDITLIB;
+                    cBd.unpackCode(getShowNum(), code);
+                    cBd.addTree(tree);
+                    cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+                }
+                break;
+            case MODE_RENLIB:
+                //remove Tree
+                if (mode == MODE_RENLIB || mode == MODE_EDITLIB || mode == MODE_READLIB) {
+                    RenjuLib.closeLib();
+                }
+                //create Tree
+                if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
+                    let code = cBd.getCode(),
+                        tree = new RenjuTree();
+                    playMode = MODE_EDITLIB;
+                    cBd.unpackCode(getShowNum(), code);
+                    cBd.addTree(tree);
+                    cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+                }
+                break;
+            case MODE_READLIB:
+            case MODE_EDITLIB:
+                //remove Tree
+                if (mode == MODE_RENJU || mode == MODE_RENLIB) {
+                    let code = cBd.getCode();
+                    cBd.removeTree();
+                    playMode = MODE_RENJU;
+                    cBd.unpackCode(getShowNum(), code);
+                }
+                break;
+        }
+        playMode = mode;
+        switch (mode) {
+            case MODE_RENJU:
+                cMode.setText("摆棋");
+                break;
+            case MODE_READLIB:
+                cMode.setText("读谱");
+                cBd.autoShow();
+                break;
+            case MODE_EDITLIB:
+                cMode.setText("制谱");
+                cBd.autoShow();
+                break;
+            case MODE_RENLIB:
+                cMode.setText("RenLib");
+                cBd.autoShow();
+                break;
+        }
+    }
+
 
 
     let share = (() => {
@@ -3308,14 +3508,21 @@ window.control = (() => {
         };
     })();
 
+
+
     return {
-        "getPlayModel": () => { return playModel },
-        "setPlayModel": (model) => { playModel = model },
-        "renjuModel": MODEL_RENJU,
-        "imgModel": MODEL_LOADIMG,
-        "lineModel": MODEL_LINE_EDIT,
-        "arrowModel": MODEL_ARROW_EDIT,
-        "libModel": MODEL_RENLIB,
+        "getPlayMode": getPlayMode,
+        "setPlayMode": setPlayMode,
+        "renjuMode": MODE_RENJU,
+        "imgMode": MODE_LOADIMG,
+        "lineMode": MODE_LINE_EDIT,
+        "arrowMode": MODE_ARROW_EDIT,
+        "readTreeMode": MODE_READ_TREE,
+        "readThreePointMode": MODE_READ_THREEPOINT,
+        "renlibMode": MODE_RENLIB,
+        "readFoulPointMode": MODE_READ_FOULPOINT,
+        "readLibMode": MODE_READLIB,
+        "editLibMode": MODE_EDITLIB,
         "cLockImgChecked": () => { return cLockImg.checked; },
         "cAddwhite2Checked": () => { return cAddwhite2.checked; },
         "putCheckerBoard": putCheckerBoard,

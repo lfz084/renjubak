@@ -1,5 +1,5 @@
 self.SCRIPT_VERSIONS["button"] = "v1202.01";
-window.button = (() => {
+window.Button = (() => {
 
     "use strict";
     const ANIMATION_TIMEOUT = 300;
@@ -25,7 +25,7 @@ window.button = (() => {
         }
         let print = command[type] || console.log;
         if (TEST_BUTTON && DEBUG)
-            print(`[button.js]\n>> ` + param);
+            print(`[Button.js]\n>> ` + param);
     }
 
     // 定制按钮，button，file，Radio，select。
