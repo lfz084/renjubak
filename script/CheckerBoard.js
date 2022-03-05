@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["checkerBoard"] = "v1202.01";
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1202.07";
 window.CheckerBoard = (function() {
 
     "use strict";
@@ -39,7 +39,7 @@ window.CheckerBoard = (function() {
         }
         let print = command[type] || console.log;
         if (TEST_CHECKER_BOARD && DEBUG)
-            print(`[checkerBoard.js]\n>> ` + param);
+            print(`[CheckerBoard.js]\n>> ` + param);
     }
 
     function bind(callback, _this) {
@@ -283,7 +283,7 @@ window.CheckerBoard = (function() {
 
 
     //定义一个棋盘
-    function checkerBoard(parentNode, left, top, width, height) {
+    function CheckerBoard(parentNode, left, top, width, height) {
 
         if (!width || !height) {
             width = dw < dh ? dw + "px" : dh + "px";
@@ -485,7 +485,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.addTree = function(tree) {
+    CheckerBoard.prototype.addTree = function(tree) {
 
         this.oldFirstColor = this.firstColor; // 在this.cle 前面
         this.firstColor = "black";
@@ -499,7 +499,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.autoShow = function(timer = "now") {
+    CheckerBoard.prototype.autoShow = function(timer = "now") {
 
         let playMode = control.getPlayMode();
         //log(`playmofel=${control.getPlayMode()}`)
@@ -554,7 +554,7 @@ window.CheckerBoard = (function() {
 
 
     // 将传入的二维数组顺时针90°
-    checkerBoard.prototype.CW = function(arr2D, count) {
+    CheckerBoard.prototype.CW = function(arr2D, count) {
 
         let x;
         let y;
@@ -585,7 +585,7 @@ window.CheckerBoard = (function() {
 
 
     // 将传入的二维数组逆时针90°
-    checkerBoard.prototype.CCW = function(arr2D, count) {
+    CheckerBoard.prototype.CCW = function(arr2D, count) {
 
         let x;
         let y;
@@ -616,7 +616,7 @@ window.CheckerBoard = (function() {
 
 
     // 二维数组上下反转
-    checkerBoard.prototype.flipX = function(arr2D) {
+    CheckerBoard.prototype.flipX = function(arr2D) {
 
         let x;
         let y;
@@ -647,7 +647,7 @@ window.CheckerBoard = (function() {
 
 
     // 二维数组左右翻转
-    checkerBoard.prototype.flipY = function(arr2D) {
+    CheckerBoard.prototype.flipY = function(arr2D) {
 
         let x;
         let y;
@@ -678,7 +678,7 @@ window.CheckerBoard = (function() {
 
 
     // 顺时针 翻转棋盘90°
-    checkerBoard.prototype.boardCW = function(isShowNum) {
+    CheckerBoard.prototype.boardCW = function(isShowNum) {
         let tMS = [];
         let tMS1 = [];
         let wMS = [];
@@ -747,7 +747,7 @@ window.CheckerBoard = (function() {
 
 
     // 逆时针 翻转棋盘90°
-    checkerBoard.prototype.boardCCW = function(isShowNum) {
+    CheckerBoard.prototype.boardCCW = function(isShowNum) {
 
         let tMS = [];
         let tMS1 = [];
@@ -821,7 +821,7 @@ window.CheckerBoard = (function() {
 
 
     // 上下 翻转棋盘
-    checkerBoard.prototype.boardFlipX = function(isShowNum) {
+    CheckerBoard.prototype.boardFlipX = function(isShowNum) {
 
         let tMS = [];
         let tMS1 = [];
@@ -893,7 +893,7 @@ window.CheckerBoard = (function() {
 
 
     // 左右 翻转棋盘180°
-    checkerBoard.prototype.boardFlipY = function(isShowNum) {
+    CheckerBoard.prototype.boardFlipY = function(isShowNum) {
 
         let tMS = [];
         let tMS1 = [];
@@ -964,7 +964,7 @@ window.CheckerBoard = (function() {
 
 
     // 清空棋盘上每一个点的显示，和记录
-    checkerBoard.prototype.cle = function() {
+    CheckerBoard.prototype.cle = function() {
 
         this.MSindex = -1;
         this.MS.length = 0;
@@ -981,7 +981,7 @@ window.CheckerBoard = (function() {
 
 
     // 取消虚线显示棋子位置
-    checkerBoard.prototype.cleAllPointBorder = function() {
+    CheckerBoard.prototype.cleAllPointBorder = function() {
 
         for (let i = 0; i < 225; i++) {
             this.DIV[i].style.borderStyle = "none";
@@ -992,7 +992,7 @@ window.CheckerBoard = (function() {
 
 
     // 删除一个标记
-    checkerBoard.prototype.cleLb = function(idx) {
+    CheckerBoard.prototype.cleLb = function(idx) {
 
         if (typeof(idx) == "string" && idx == "all") {
             for (let i = 0; i < 15 * 15; i++) {
@@ -1026,7 +1026,7 @@ window.CheckerBoard = (function() {
 
 
     // 删除一颗棋子,不删除MS的记录
-    checkerBoard.prototype.cleNb = function(idx, showNum, timer = "now") {
+    CheckerBoard.prototype.cleNb = function(idx, showNum, timer = "now") {
 
         if (idx < 0 || idx > 225) return;
         if (idx == 225 || this.P[idx].type == TYPE_NUMBER) {
@@ -1065,7 +1065,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.cletLbMoves = function() {
+    CheckerBoard.prototype.cletLbMoves = function() {
 
         for (let i = 0; i < 15 * 15; i++) {
             if (this.P[i].type == TYPE_MOVE) {
@@ -1077,14 +1077,14 @@ window.CheckerBoard = (function() {
 
 
     // 清空棋盘对象记录的棋谱
-    checkerBoard.prototype.cleMoves = function() {
+    CheckerBoard.prototype.cleMoves = function() {
 
         this.Moves = "";
     };
 
 
 
-    checkerBoard.prototype.cleMarkLine = function(markLine) {
+    CheckerBoard.prototype.cleMarkLine = function(markLine) {
 
         let oldIdx = -1;
         let color = markLine.color;
@@ -1155,7 +1155,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.cleMarkArrow = function(markArrow) {
+    CheckerBoard.prototype.cleMarkArrow = function(markArrow) {
 
         let oldIdx = -1;
         let color = markArrow.color;
@@ -1227,7 +1227,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.center = function() {
+    CheckerBoard.prototype.center = function() {
         if (this.scale == 1) return;
         let x = this.canvas.width * (this.scale - 1) / 2,
             y = this.canvas.height * (this.scale - 1) / 2;
@@ -1237,7 +1237,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.cleSearchPoint = function() {
+    CheckerBoard.prototype.cleSearchPoint = function() {
         for (let i = this.searchPoints.length - 1; i >= 0; i--) {
             this.printSearchPoint(i);
         }
@@ -1245,7 +1245,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.createMarkArrow = function(start, end, color) {
+    CheckerBoard.prototype.createMarkArrow = function(start, end, color) {
 
         let x1 = start % 15;
         let y1 = ~~(start / 15);
@@ -1281,7 +1281,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.createMarkLine = function(start, end, color, lines) {
+    CheckerBoard.prototype.createMarkLine = function(start, end, color, lines) {
         let x1 = start % 15;
         let y1 = ~~(start / 15);
         let x2 = end % 15;
@@ -1318,7 +1318,7 @@ window.CheckerBoard = (function() {
 
 
     //棋盘上清空一个棋子,标记的显示
-    checkerBoard.prototype.clePoint = function(idx, refresh, width, height) {
+    CheckerBoard.prototype.clePoint = function(idx, refresh, width, height) {
 
         if (!refresh) this.P[idx].cle(); // 清除点的数据
         // 棋盘上打印空点
@@ -1352,14 +1352,14 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.clePointB = function(idx, width, height) {
+    CheckerBoard.prototype.clePointB = function(idx, width, height) {
         this.clePoint(idx, true, width, height);
     }
 
 
 
     //把后台空棋盘的一个点的图像剪下来备用;
-    checkerBoard.prototype.cutBkPoint = function(idx, width, height) {
+    CheckerBoard.prototype.cutBkPoint = function(idx, width, height) {
 
         let p = tempp;
         p.setxy(this.P[idx].x, this.P[idx].y);
@@ -1378,7 +1378,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.drawLineStart = function(idx, color, cmd) {
+    CheckerBoard.prototype.drawLineStart = function(idx, color, cmd) {
 
         const SIN45 = 0.707105;
         let s = this.drawLine.startPoint.style;
@@ -1519,7 +1519,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.drawLineEnd = function() {
+    CheckerBoard.prototype.drawLineEnd = function() {
 
         this.drawLine.startPoint.style.zIndex = -100;
         this.drawLine.selectDiv.style.zIndex = -100;
@@ -1540,7 +1540,7 @@ window.CheckerBoard = (function() {
 
 
     //判断用户点击了棋盘上面的哪一个点，在返回这个点的index
-    checkerBoard.prototype.getPIndex = function(x, y) {
+    CheckerBoard.prototype.getPIndex = function(x, y) {
 
         let i;
         let j;
@@ -1564,7 +1564,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.getCode = function() {
+    CheckerBoard.prototype.getCode = function() {
         let code = this.getMoves();
         code += "\n{" + this.getMoves(TYPE_BLACK) + "}";
         code += "{" + this.getMoves(TYPE_WHITE) + "}";
@@ -1574,7 +1574,7 @@ window.CheckerBoard = (function() {
 
 
     // 当前棋盘显示的棋子， 转成棋谱 返回
-    checkerBoard.prototype.getMoves = function(type) {
+    CheckerBoard.prototype.getMoves = function(type) {
 
         var ml = "";
         if (type == TYPE_WHITE || type == TYPE_BLACK) {
@@ -1599,7 +1599,7 @@ window.CheckerBoard = (function() {
 
 
     // 传一个一维 空数组进来转成二维数组，把当前棋盘MS记录写入数组
-    checkerBoard.prototype.getArray2D = function() {
+    CheckerBoard.prototype.getArray2D = function() {
         let arr2D = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
 
         for (let x = 0; x < 15; x++) {
@@ -1630,7 +1630,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.getArray = function() {
+    CheckerBoard.prototype.getArray = function() {
         let arr = new Array(225 + 1);
         for (let idx = 0; idx < 225; idx++) {
             let x = idx % 15,
@@ -1661,7 +1661,7 @@ window.CheckerBoard = (function() {
 
 
     // 自动识别图片中的棋子
-    checkerBoard.prototype.autoPut = function() {
+    CheckerBoard.prototype.autoPut = function() {
 
         let arr = getArr2D([], 0, this.SLTX, this.SLTY);
         let max = 0;
@@ -1953,7 +1953,7 @@ window.CheckerBoard = (function() {
 
 
     // 把棋盘图片转成SVG,返回SVG代码
-    checkerBoard.prototype.getSVG = function() {
+    CheckerBoard.prototype.getSVG = function() {
 
         let showNum = this.isShowNum;
         let size = 2000 / this.canvas.width;
@@ -1965,7 +1965,7 @@ window.CheckerBoard = (function() {
         let y2;
         let lineWidth;
         let canvas = this.canvas;
-        //log("checkerBoard.getSVG");
+        //log("CheckerBoard.getSVG");
         for (let i = 0; i < this.SLTX; i++) {
             lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
             x1 = this.P[i].x * size;
@@ -2133,7 +2133,7 @@ window.CheckerBoard = (function() {
 
 
     // 顺序棋盘上棋子，隐藏手数
-    checkerBoard.prototype.hideNum = function() {
+    CheckerBoard.prototype.hideNum = function() {
 
         let color;
         for (let i = 0; i <= this.MSindex; i++)
@@ -2147,7 +2147,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.hideCutDiv = function() {
+    CheckerBoard.prototype.hideCutDiv = function() {
 
         this.cutDiv.style.borderStyle = "none";
         this.cutDiv.style.zIndex = -100;
@@ -2156,7 +2156,7 @@ window.CheckerBoard = (function() {
 
 
     // P 数组的index ，转字母数字坐标
-    checkerBoard.prototype.idxToName = function(idx) {
+    CheckerBoard.prototype.idxToName = function(idx) {
 
         let x = (idx % 15);
         let y = ~~(idx / 15);
@@ -2169,7 +2169,7 @@ window.CheckerBoard = (function() {
 
 
     //  判断坐标是否出界，出界返回 true
-    checkerBoard.prototype.isOut = function(x, y, htmlObj, width) {
+    CheckerBoard.prototype.isOut = function(x, y, htmlObj, width) {
         width = width ? width : 0;
         let xL = 0 - width;
         let xR = xL + parseInt(htmlObj.style.width) + 2 * width;
@@ -2188,14 +2188,14 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.nextColor = function() {
+    CheckerBoard.prototype.nextColor = function() {
         return this.MSindex & 1 ? 1 : 2;
     }
 
 
 
     // 字母数字坐标，返回 P数组的index
-    checkerBoard.prototype.nameToIndex = function(name) {
+    CheckerBoard.prototype.nameToIndex = function(name) {
 
         let x = name.toLowerCase().charCodeAt() - "a".charCodeAt();
         name = name.substr(1);
@@ -2207,7 +2207,7 @@ window.CheckerBoard = (function() {
 
 
     // 平移棋盘
-    checkerBoard.prototype.moveCheckerBoard = function(move) {
+    CheckerBoard.prototype.moveCheckerBoard = function(move) {
         let i;
         let j;
         let idx;
@@ -2306,7 +2306,7 @@ window.CheckerBoard = (function() {
 
 
     // MS 数组记录 转成棋谱代码
-    checkerBoard.prototype.MSToMoves = function() {
+    CheckerBoard.prototype.MSToMoves = function() {
 
         this.Moves = "";
         for (let i = 0; i <= this.MSindex; i++) {
@@ -2317,7 +2317,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printArray = function(arr, txt, color) {
+    CheckerBoard.prototype.printArray = function(arr, txt, color) {
 
         let idx = 0;
         this.showFoul(false, true);
@@ -2334,7 +2334,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.getMarkArrowPoints = function(markArrow, idx, cleArrow) {
+    CheckerBoard.prototype.getMarkArrowPoints = function(markArrow, idx, cleArrow) {
 
         const SIN45 = 0.707105;
         let x = this.P[markArrow.P[0]].x;
@@ -2584,7 +2584,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
+    CheckerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
 
         let arrowDrawPoints = this.getMarkArrowPoints(markArrow, idx, cleArrow);
         let ctx = this.canvas.getContext("2d");
@@ -2608,7 +2608,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.getMarkLinePoints = function(markLine, idx, cleLine) {
+    CheckerBoard.prototype.getMarkLinePoints = function(markLine, idx, cleLine) {
 
         let points = {
             line: [],
@@ -2739,7 +2739,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
+    CheckerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
 
         let lineDrawPoints = this.getMarkLinePoints(markLine, idx, cleLine);
         let ctx = this.canvas.getContext("2d");
@@ -2777,7 +2777,7 @@ window.CheckerBoard = (function() {
 
 
     //  用虚线表示棋子的位置
-    checkerBoard.prototype.printBorder = function() {
+    CheckerBoard.prototype.printBorder = function() {
 
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
@@ -2791,7 +2791,7 @@ window.CheckerBoard = (function() {
 
 
     // 打印棋盘坐标
-    checkerBoard.prototype.printCoordinate = function(t, r, d, l) {
+    CheckerBoard.prototype.printCoordinate = function(t, r, d, l) {
 
         t = t == null ? true : Boolean(t);
         r = r == null ? true : Boolean(r);
@@ -2831,7 +2831,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printEmptyCBoard = function() {
+    CheckerBoard.prototype.printEmptyCBoard = function() {
         this.viewBox.style.width = this.width + "px";
         this.viewBox.style.height = this.height + "px";
         let canvas = this.bakCanvas; // 准备在后台画棋盘
@@ -2921,7 +2921,7 @@ window.CheckerBoard = (function() {
 
 
     // 画空棋盘
-    checkerBoard.prototype.printCheckerBoard = function() {
+    CheckerBoard.prototype.printCheckerBoard = function() {
 
         this.SLTX = this.size;
         this.SLTY = this.SLTX;
@@ -2970,7 +2970,7 @@ window.CheckerBoard = (function() {
 
 
     // 在棋盘上面打印一个VCF手顺   
-    checkerBoard.prototype.printMoves = function(moves, firstColor) {
+    CheckerBoard.prototype.printMoves = function(moves, firstColor) {
 
         let nowTimer = new Date().getTime();
         let idx = 0;
@@ -3014,7 +3014,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printNb = function(idx, showNum) {
+    CheckerBoard.prototype.printNb = function(idx, showNum) {
         let color = this.P[idx].color;
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
         let ctx = this.canvas.getContext("2d");
@@ -3044,7 +3044,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printLastNb = function(idx, showNum) {
+    CheckerBoard.prototype.printLastNb = function(idx, showNum) {
         let color = this.P[idx].color;
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
         let ctx = this.canvas.getContext("2d");
@@ -3086,7 +3086,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printLb = function(idx) {
+    CheckerBoard.prototype.printLb = function(idx) {
 
         let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
         let ctx = this.canvas.getContext("2d");
@@ -3135,7 +3135,7 @@ window.CheckerBoard = (function() {
 
 
     // 在PDF文档画棋盘
-    checkerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) {
+    CheckerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) {
 
         fontName_normal = fontName_normal || "arial";
         fontName_bold = fontName_bold || "arial";
@@ -3353,7 +3353,7 @@ window.CheckerBoard = (function() {
 
 
     // 在棋盘上打印一个点
-    checkerBoard.prototype.printPoint = function(idx, showNum, refresh) {
+    CheckerBoard.prototype.printPoint = function(idx, showNum, refresh) {
         let type = this.P[idx].type;
         if (type == TYPE_NUMBER || type == TYPE_WHITE || type == TYPE_BLACK) {
             this.printNb(idx, showNum);
@@ -3372,7 +3372,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.printPointB = function(idx, showNum) {
+    CheckerBoard.prototype.printPointB = function(idx, showNum) {
 
         if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == TYPE_EMPTY) return;
         if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) { //控制从第几手显示❶
@@ -3387,7 +3387,7 @@ window.CheckerBoard = (function() {
 
 
     // 在棋盘上打印当前正在计算的点
-    checkerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
+    CheckerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
 
         let size;
         let temp;
@@ -3439,7 +3439,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.refreshCheckerBoard = function() {
+    CheckerBoard.prototype.refreshCheckerBoard = function() {
 
         this.printEmptyCBoard();
 
@@ -3461,7 +3461,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.refreshMarkLine = function(idx, lines) {
+    CheckerBoard.prototype.refreshMarkLine = function(idx, lines) {
 
         lines = lines || this.LINES;
         lines = idx === this.autoLines ? this.autoLines : lines;
@@ -3481,7 +3481,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.refreshMarkArrow = function(idx) {
+    CheckerBoard.prototype.refreshMarkArrow = function(idx) {
         if (idx == "all" || idx == "All") {
             for (let i = 0; i < this.ARROWS.length; i++) {
                 this.printMarkArrow(this.ARROWS[i]);
@@ -3499,7 +3499,7 @@ window.CheckerBoard = (function() {
 
 
     // 涂鸦模式，边框初始化
-    checkerBoard.prototype.resetCutDiv = function() {
+    CheckerBoard.prototype.resetCutDiv = function() {
 
         let canvas = this.canvas;
         let w = ~~(canvas.width);
@@ -3540,7 +3540,7 @@ window.CheckerBoard = (function() {
 
 
     // 后台设置棋盘所有点的坐标。不会改变棋盘的显示
-    checkerBoard.prototype.resetP = function(xL, xR, yT, yB) {
+    CheckerBoard.prototype.resetP = function(xL, xR, yT, yB) {
         let i;
         let j;
         let l;
@@ -3572,7 +3572,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.removeTree = function() {
+    CheckerBoard.prototype.removeTree = function() {
 
         this.firstColor = "black";
         this.tree = undefined;
@@ -3582,7 +3582,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.removeMarkArrow = function(idx) {
+    CheckerBoard.prototype.removeMarkArrow = function(idx) {
         if (idx == "all" || idx == "All") {
             for (let i = this.ARROWS.length - 1; i >= 0; i--) {
                 let mkArrow = this.ARROWS[i]
@@ -3602,7 +3602,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.removeMarkLine = function(idx, lines) {
+    CheckerBoard.prototype.removeMarkLine = function(idx, lines) {
         lines = lines || this.LINES;
         lines = idx === this.autoLines ? this.autoLines : lines;
         if (idx == "all" || idx == "All" || idx === this.autoLines) {
@@ -3624,7 +3624,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.saveAsImage = function(type) {
+    CheckerBoard.prototype.saveAsImage = function(type) {
 
         function toBlob(callback, type, quality) {
             function reqListener() {
@@ -3665,7 +3665,7 @@ window.CheckerBoard = (function() {
 
 
     // 棋盘保存PDF文件
-    checkerBoard.prototype.saveAsPDF = function(fontName) {
+    CheckerBoard.prototype.saveAsPDF = function(fontName) {
 
         if (typeof jsPDF != "function") {
             showLabel(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
@@ -3680,7 +3680,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.saveAsSVG = function(type) {
+    CheckerBoard.prototype.saveAsSVG = function(type) {
 
         let filename = this.autoFileName();
         filename += type == "html" ? ".html" : ".svg";
@@ -3691,7 +3691,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.saveAs = function(blob, filename) {
+    CheckerBoard.prototype.saveAs = function(blob, filename) {
 
         if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 
@@ -3724,7 +3724,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.autoFileName = function() {
+    CheckerBoard.prototype.autoFileName = function() {
 
         let d = new Date();
         let filename = `${d.getFullYear()}_${(f(d.getMonth() + 1))}${f(d.getDate())}_${f(d.getHours())}${f(d.getMinutes())}${f(d.getSeconds())}`;
@@ -3739,7 +3739,7 @@ window.CheckerBoard = (function() {
 
 
     //涂鸦模式 手动调整选择棋盘边框
-    checkerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘的边框范围，用 mdiv 实时显示效果
+    CheckerBoard.prototype.setCutDiv = function(x, y, passResetP) { //调整棋盘的边框范围，用 mdiv 实时显示效果
         let xL;
         let xM;
         let xR;
@@ -3821,7 +3821,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.setCoordinate = function(coordinateType) {
+    CheckerBoard.prototype.setCoordinate = function(coordinateType) {
         if (coordinateType < 0 || coordinateType > 5) return;
         this.coordinateType = coordinateType;
         this.printCheckerBoard();
@@ -3832,7 +3832,7 @@ window.CheckerBoard = (function() {
 
 
     // 设置最后一手是否高亮显示
-    checkerBoard.prototype.setNotShowLastNum = function(idx) {
+    CheckerBoard.prototype.setNotShowLastNum = function(idx) {
 
         if (this.MSindex >= 0 && this.MS[this.MSindex] == idx) {
             this.notShowLastNum = !this.notShowLastNum;
@@ -3847,7 +3847,7 @@ window.CheckerBoard = (function() {
 
 
     //设置棋谱
-    checkerBoard.prototype.setMoves = function(codeStr) {
+    CheckerBoard.prototype.setMoves = function(codeStr) {
 
         // 对传入的棋谱代码排错;
         let m = codeStr ? codeStr.toUpperCase() : "";
@@ -3913,7 +3913,7 @@ window.CheckerBoard = (function() {
 
 
     // 设置从第几手开始显示序号， 默认==0 时第一手开始显示，==1 时第二手显示❶
-    checkerBoard.prototype.setResetNum = function(num) {
+    CheckerBoard.prototype.setResetNum = function(num) {
 
         this.resetNum = parseInt(num);
         this.showNum();
@@ -3921,7 +3921,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.setSize = function(size = 15) {
+    CheckerBoard.prototype.setSize = function(size = 15) {
         size = ~~(size);
         size = size < 6 ? 6 : size > 15 ? 15 : size;
         this.size = size;
@@ -3932,7 +3932,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.setScale = function(scl, timer = "now") {
+    CheckerBoard.prototype.setScale = function(scl, timer = "now") {
         this.scale = scl;
         //log(`scl=${scl}`,"info")
         if (timer == "now") {
@@ -3955,7 +3955,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.setViewBoxBorder = function(value) {
+    CheckerBoard.prototype.setViewBoxBorder = function(value) {
         if (value) {
             let bw = ~~(this.width / 100),
                 p = { x: 0, y: 0 };
@@ -3975,7 +3975,7 @@ window.CheckerBoard = (function() {
 
 
     // 选取棋盘边框模式，设置一个移动的坐标点
-    checkerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用来 调整棋盘边框位置，支持微调
+    CheckerBoard.prototype.setxy = function(p, speed) { //返回一个xy坐标，用来 调整棋盘边框位置，支持微调
 
         let s = this.cutDiv.style;
         let n = this.cutDiv;
@@ -4080,7 +4080,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.showAutoLine = function(display, notChange) {
+    CheckerBoard.prototype.showAutoLine = function(display, notChange) {
         if (this.size < 15) return;
         for (let i = this.autoLines.length - 1; i >= 0; i--) {
             this.removeMarkLine(i, this.autoLines);
@@ -4125,7 +4125,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.showFoul = function(display, notChange) {
+    CheckerBoard.prototype.showFoul = function(display, notChange) {
 
         let cBoard = this;
         for (let i = cBoard.P.length - 1; i >= 0; i--) {
@@ -4162,7 +4162,7 @@ window.CheckerBoard = (function() {
 
 
     // 根据用户设置 决定是否高亮显示 最后一手棋
-    checkerBoard.prototype.showLastNb = function(showNum) {
+    CheckerBoard.prototype.showLastNb = function(showNum) {
 
         let p = tempp;
         let idx;
@@ -4191,7 +4191,7 @@ window.CheckerBoard = (function() {
 
 
     // 刷新棋盘上棋子显示手数
-    checkerBoard.prototype.showNum = function() {
+    CheckerBoard.prototype.showNum = function() {
 
         let color;
         for (let i = 0; i <= this.MSindex; i++) {
@@ -4205,7 +4205,7 @@ window.CheckerBoard = (function() {
 
 
     //跳到最后一手
-    checkerBoard.prototype.toEnd = function(isShowNum) {
+    CheckerBoard.prototype.toEnd = function(isShowNum) {
 
         if (this.MSindex < this.MS.length - 1) {
             while (this.MSindex < this.MS.length - 1) {
@@ -4217,7 +4217,7 @@ window.CheckerBoard = (function() {
 
 
     // 跳到下一手
-    checkerBoard.prototype.toNext = function(isShowNum, timer = "now") {
+    CheckerBoard.prototype.toNext = function(isShowNum, timer = "now") {
 
             if (this.MS.length - 1 > this.MSindex) {
                 let msIndex = this.MSindex + 1;
@@ -4233,7 +4233,7 @@ window.CheckerBoard = (function() {
 
 
     // 返回上一手
-    checkerBoard.prototype.toPrevious = function(isShowNum, timer = "now") {
+    CheckerBoard.prototype.toPrevious = function(isShowNum, timer = "now") {
             if (this.MSindex >= 0) {
                 this.cleNb(this.MS[this.MSindex], isShowNum, timer);
                 while (this.MS[this.MSindex] < 0 || this.MS[this.MSindex] > 224) {
@@ -4245,7 +4245,7 @@ window.CheckerBoard = (function() {
 
 
     // 跳到第 0 手。
-    checkerBoard.prototype.toStart = function(isShowNum) {
+    CheckerBoard.prototype.toStart = function(isShowNum) {
 
             while (this.MSindex > 0) {
                 this.toPrevious(isShowNum, 100);
@@ -4255,7 +4255,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.unpackCode = function(showNum, codeStr, resetNum, firstColor) {
+    CheckerBoard.prototype.unpackCode = function(showNum, codeStr, resetNum, firstColor) {
         let st = 0;
         let end = codeStr.indexOf("{");
         end = end == -1 ? codeStr.length : end;
@@ -4284,7 +4284,7 @@ window.CheckerBoard = (function() {
 
 
     //解析（已经通过this.getMoves 格式化）棋谱,摆棋盘
-    checkerBoard.prototype.unpackMoves = function(showNum, color, moves) {
+    CheckerBoard.prototype.unpackMoves = function(showNum, color, moves) {
         color = color || "auto";
         if (color == "auto") {
             this.MS.length = 0; //清空数组
@@ -4339,7 +4339,7 @@ window.CheckerBoard = (function() {
 
 
 
-    checkerBoard.prototype.unpackTree = function() {
+    CheckerBoard.prototype.unpackTree = function() {
 
         function getInnerHTML(nd) {
             while (nd) {
@@ -4492,7 +4492,7 @@ window.CheckerBoard = (function() {
 
 
     // 解析二维数组后，摆棋
-    checkerBoard.prototype.unpackArray = function(arr2D, isShowNum) {
+    CheckerBoard.prototype.unpackArray = function(arr2D, isShowNum) {
 
         let bNarr = [];
         let wNarr = [];
@@ -4537,7 +4537,7 @@ window.CheckerBoard = (function() {
 
 
     //  在棋盘的一个点上面，打印一个标记
-    checkerBoard.prototype.wLb = function(idx, text, color, backgroundColor, path) {
+    CheckerBoard.prototype.wLb = function(idx, text, color, backgroundColor, path) {
         if (idx < 0 || idx > 224) return;
         if (this.P[idx].type != TYPE_EMPTY) {
             if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
@@ -4561,7 +4561,7 @@ window.CheckerBoard = (function() {
 
 
     // 在棋盘的一个点上面，摆一颗棋子
-    checkerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
+    CheckerBoard.prototype.wNb = function(idx, color, showNum, type, isFoulPoint, timer = "now") {
 
         if (idx < 0 || idx > 225) return;
         if (idx != 225 && this.P[idx].type != TYPE_EMPTY) {
@@ -4608,7 +4608,7 @@ window.CheckerBoard = (function() {
 
 
     // 把 page 坐标 转成 canvas 坐标
-    checkerBoard.prototype.xyPageToObj = function(p, canvas) {
+    CheckerBoard.prototype.xyPageToObj = function(p, canvas) {
 
         let l = canvas.offsetLeft;
         let t = canvas.offsetTop;
@@ -4626,7 +4626,7 @@ window.CheckerBoard = (function() {
 
 
     // 把 canvas 坐标 转成 page 坐标
-    checkerBoard.prototype.xyObjToPage = function(p, canvas) {
+    CheckerBoard.prototype.xyObjToPage = function(p, canvas) {
 
         let l = canvas.offsetLeft;
         let t = canvas.offsetTop;
@@ -4659,5 +4659,5 @@ window.CheckerBoard = (function() {
     window.COORDINATE_LEFT_DOWN = COORDINATE_LEFT_DOWN;
     window.COORDINATE_NONE = COORDINATE_NONE;
 
-    return checkerBoard;
+    return CheckerBoard;
 })();

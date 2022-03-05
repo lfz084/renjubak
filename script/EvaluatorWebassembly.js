@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.07";
 
 function loadEvaluatorWebassembly() {
     (function(global, factory) {
@@ -23,7 +23,7 @@ function loadEvaluatorWebassembly() {
             importObject = {
                 env: {
                     memcpy: function(param1, param2, param3) {
-                        //console.log(`memcpy: param1=${param1}, param2=${param2}, length=${param3}`);
+                        console.log(`memcpy: param1=${param1}, param2=${param2}, length=${param3}`);
                         if ((param1 & 1) == 0 && (param2 & 1) == 0 && (param3 & 1) == 0) {
                             param3 >>= 1;
                             let buf1 = new Uint16Array(memory.buffer, param1, param3),

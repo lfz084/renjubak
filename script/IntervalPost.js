@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["IntervalPost"] = "v1202.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["IntervalPost"] = "v1202.07";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

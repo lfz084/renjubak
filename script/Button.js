@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["button"] = "v1202.01";
+self.SCRIPT_VERSIONS["button"] = "v1202.07";
 window.Button = (() => {
 
     "use strict";

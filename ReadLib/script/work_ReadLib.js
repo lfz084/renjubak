@@ -1,11 +1,11 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.01";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.07";
 
 if ("importScripts" in self) {
     self.importScripts(
         "../../script/IntervalPost.js",
-        "../../script/TypeBuffer.js",
-        "../../script/RenjuTree.js",
+        //"../../script/TypeBuffer.js",
+        //"../../script/RenjuTree.js",
         "./UNICODE2GBK.js",
         "./JFile.js",
         "./JPoint.js",

@@ -45,7 +45,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1202.01";
+        window.APP_VERSION = "v1202.07";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -60,7 +60,7 @@
             Button: "script/Button.js",
             emoji: "script/emoji.js",
             String2Buffer: "script/String2Buffer.js",
-            CheckerBoard: "script/checkerBoard.js",
+            CheckerBoard: "script/CheckerBoard.js",
             control: "script/control.js",
             msgbox: "script/msgbox.js",
             appData: "script/appData.js",
@@ -105,7 +105,7 @@
             viewport: "???",
             button: "???",
             emoji: "???",
-            checkerBoard: "???",
+            CheckerBoard: "???",
             control: "???",
             msgbox: "???",
             appData: "???",
@@ -135,7 +135,7 @@
                          "增加退出提示,防止误操作丢失数据"],
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
-            "v1202.01": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
+            "v1202.07": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
         }
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
@@ -314,7 +314,7 @@
                     return loadApp()
                 })
                 .then(() => {
-                    return _loadScript(SOURCE_FILES["debugModule"]);
+                    //return _loadScript(SOURCE_FILES["debugModule"]);
                     /*
                     var allsuspects = document.getElementsByTagName("script");
                     
