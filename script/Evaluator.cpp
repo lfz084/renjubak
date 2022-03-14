@@ -2274,7 +2274,7 @@ BYTE* getBlockVCF(char* arr, char color, BYTE* vcfMoves, BYTE vcfMovesLen, bool 
     testFour(arr, INVERT_COLOR[color], blockInfoArr); // 搜索先手冲4
 
     if (gameRules == RENJU_RULES) { //判断是否有复杂禁手防点
-        if (color == 1) { //黑棋VCF线路是否有复杂禁手防点
+        if (color == 1) { //黑棋VCF路线是否有复杂禁手防点
             for (BYTE i = 0; i < vcfMovesLen; i += 2) {
                 arr[vcfMoves[end++]] = 1;
 
@@ -2295,7 +2295,7 @@ BYTE* getBlockVCF(char* arr, char color, BYTE* vcfMoves, BYTE vcfMovesLen, bool 
                 if (end < vcfMovesLen) arr[vcfMoves[end++]] = 2;
             }
         }
-        else { //白棋VCF线路是否有复杂禁手防点
+        else { //白棋VCF路线是否有复杂禁手防点
             for (BYTE i = 0; i < vcfMovesLen; i++) {
                 arr[vcfMoves[end++]] = (i & 1) ? 1 : 2;
             }

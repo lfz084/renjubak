@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.07";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.12";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -15,7 +15,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.07";
     const AND_PAGE_SIZE = PAGE_SIZE - 1;
 
     class Page {
-        static PAGE_SIZE = PAGE_SIZE;
+        /*部分浏览器不支持 static 变量*/
+        //static PAGE_SIZE = 0x00100000; 
 
         constructor() {
             //try{
@@ -36,12 +37,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.07";
     }
 
     class TypeBuffer {
-        static UINT32 = UINT32;
-        static UINT16 = UINT16;
-        static UINT8 = UINT8;
-        static INT32 = INT32;
-        static INT16 = INT16;
-        static INT8 = INT8;
+        /*部分浏览器不支持 static 变量*/
+        //static UINT32 = 4;
+        //static UINT16 = 2;
+        //static UINT8 = 1;
+        //static INT32 = -4;
+        //static INT16 = -2;
+        //static INT8 = -1;
 
         constructor(typeSize, initPages = 1, maxPages = 64) {
             initPages = initPages > maxPages ? maxPages : initPages;
@@ -72,10 +74,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.07";
     };
 
     TypeBuffer.prototype.clePages = function() {
+        let pagesNum = this.pages.length;
         this.current = 4;
         this.size = this.pages.length * PAGE_SIZE;
         this.pages = [];
-        for (let i = 0; i < this.pages.length; i++) {
+        for (let i = 0; i < pagesNum; i++) {
             this.pages[i] = new Page();
         }
         this.pages.length && (this.isFull = false);
@@ -300,7 +303,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1202.07";
             bIdx = pointer & AND_PAGE_SIZE;
         return this.pages[pIdx].int8[bIdx];
     };
-
+    
+    
+    exports.PAGE_SIZE_TYPEBUFFER = PAGE_SIZE; //pageSize 1Mb;
+    
     exports.Page = Page;
     exports.TypeBuffer = TypeBuffer;
 })))

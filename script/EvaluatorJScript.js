@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.07";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.12";
 
 function loadEvaluatorJScript() {
     (function(global, factory) {
@@ -201,9 +201,18 @@ function loadEvaluatorJScript() {
         let aroundIdxTable = createAroundIdxTable();
 
         //----------------------------------------------------
-
-        // (long*)lineInfo,  (lineInfo >> 3) & 0b111
+        
         function testLine(idx, direction, color, arr) {
+            let rt,
+                ov = arr[idx];
+            arr[idx] = color;
+            rt = _testLine(idx, direction, color, arr);
+            arr[idx] = ov;
+            return rt;
+        }
+        
+        // (long*)lineInfo,  (lineInfo >>> 3) & 0b111
+        function _testLine(idx, direction, color, arr) {
             let max = -1, // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
                 addFree = 0, // 0 | 1
                 addCount = 0,
@@ -290,9 +299,17 @@ function loadEvaluatorJScript() {
                 (free ? 1 : 0); // set free
         }
 
-
-
         function testLineFoul(idx, direction, color, arr) {
+            let rt,
+                ov = arr[idx];
+            arr[idx] = color;
+            rt = _testLineFoul(idx, direction, color, arr);
+            arr[idx] = ov;
+            return rt;
+        }
+
+
+        function _testLineFoul(idx, direction, color, arr) {
             let max = 0, // 0 | 3 | 4 | 5 | SIX
                 addFree = 0, // 0 | 1
                 addCount = 0,
@@ -408,11 +425,19 @@ function loadEvaluatorJScript() {
                     max << 1);
         }
 
+        function testLineFour(idx, direction, color, arr) {
+            let rt,
+                ov = arr[idx];
+            arr[idx] = color;
+            rt = _testLineFour(idx, direction, color, arr);
+            arr[idx] = ov;
+            return rt;
+        }
 
 
         // 不会验证x,y是否有棋子
         // idx,点在 direction指定这条线上是不是一个冲4点,活4
-        function testLineFour(idx, direction, color, arr) {
+        function _testLineFour(idx, direction, color, arr) {
 
             let max = 0, // 0 | 4 | 5 | SIX
                 addFree = 0, // 0 | 1
@@ -502,9 +527,17 @@ function loadEvaluatorJScript() {
                     max << 1);
         }
 
-
-
         function testLineThree(idx, direction, color, arr) {
+            let rt,
+                ov = arr[idx];
+            arr[idx] = color;
+            rt = _testLineThree(idx, direction, color, arr);
+            arr[idx] = ov;
+            return rt;
+        }
+
+
+        function _testLineThree(idx, direction, color, arr) {
             let max = 0, // 0 | 3 | 4 | 5 | SIX
                 addFree = 0, // 0 | 1
                 addCount = 0,
@@ -659,11 +692,11 @@ function loadEvaluatorJScript() {
                     }
                     else {
                         for (let e = emptyStart; e < emptyEnd; e++) {
-                            if (((lineInfoList[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                            if (((lineInfoList[emptyList[e]] & MAX) >>> 1) < colorCount + 1) {
                                 lineInfoList[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | (colorCount + 1 << 1);
                             }
 
-                            if (((lineInfoList[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                            if (((lineInfoList[emptyList[e]] & MAX) >>> 1) == colorCount + 1) {
                                 if (lineInfoList[emptyList[e]] & ADD_MAX_COUNT) {
                                     lineInfoList[emptyList[e]] += 0x1000; //count++
                                 }
@@ -697,7 +730,7 @@ function loadEvaluatorJScript() {
 
             for (let e = 0; e < emptyEnd; e++) {
                 if (lineInfoList[emptyList[e]]) {
-                    let max = (lineInfoList[emptyList[e]] >> 1) & 0x07,
+                    let max = (lineInfoList[emptyList[e]] >>> 1) & 0x07,
                         free = lineInfoList[emptyList[e]] & 0x0700 ? 1 : 0,
                         lineFoul = (max == 6) || (max == 4 && (lineInfoList[emptyList[e]] & 0x7000) > 0x1000 && !free) ? 1 : 0;
 
@@ -854,11 +887,11 @@ function loadEvaluatorJScript() {
                         }
                         else {
                             for (let e = emptyStart; e < emptyEnd; e++) {
-                                if (((lineInfoList[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                                if (((lineInfoList[emptyList[e]] & MAX) >>> 1) < colorCount + 1) {
                                     lineInfoList[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | (colorCount + 1 << 1);
                                 }
 
-                                if (((lineInfoList[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                                if (((lineInfoList[emptyList[e]] & MAX) >>> 1) == colorCount + 1) {
                                     if (lineInfoList[emptyList[e]] & ADD_MAX_COUNT) {
                                         lineInfoList[emptyList[e]] += 0x1000; //count++
                                     }
@@ -893,7 +926,7 @@ function loadEvaluatorJScript() {
 
             for (let e = 0; e < emptyEnd; e++) {
                 if (lineInfoList[emptyList[e]]) {
-                    let foul_max = (lineInfoList[emptyList[e]] >> 1) & 0x0f,
+                    let foul_max = (lineInfoList[emptyList[e]] >>> 1) & 0x0f,
                         four_max_free = lineInfoList[emptyList[e]] & 0x0700 ? (foul_max == 4 ? FOUR_FREE : THREE_FREE) :
                         foul_max == 4 && (lineInfoList[emptyList[e]] & 0x7000) > 0x1000 ?
                         LINE_DOUBLE_FOUR : foul_max << 1;
@@ -907,8 +940,8 @@ function loadEvaluatorJScript() {
 
         // 返回冲4的防点
         function getBlockFourPoint(idx, arr, lineInfo) {
-            let move = (lineInfo >> 5) & 7,
-                direction = (lineInfo >> 12) & 7,
+            let move = (lineInfo >>> 5) & 7,
+                direction = (lineInfo >>> 12) & 7,
                 nIdx;
             for (let m = 0; m > -5; m--) {
                 nIdx = moveIdx(idx, move + m, direction);
@@ -918,9 +951,9 @@ function loadEvaluatorJScript() {
 
 
         function getBlockThreePoints(idx, arr, lineInfo) {
-            let move = (lineInfo >> 5) & 7,
-                freeCount = (lineInfo >> 8) & 7,
-                direction = (lineInfo >> 12) & 7,
+            let move = (lineInfo >>> 5) & 7,
+                freeCount = (lineInfo >>> 8) & 7,
+                direction = (lineInfo >>> 12) & 7,
                 points = [0, 0, 0, 0],
                 m = 0,
                 nIdx;
@@ -946,8 +979,8 @@ function loadEvaluatorJScript() {
 
 
         function getFreeFourPoint(idx, arr, lineInfo) {
-            let move = (lineInfo >> 5) & 7,
-                direction = (lineInfo >> 12) & 7,
+            let move = (lineInfo >>> 5) & 7,
+                direction = (lineInfo >>> 12) & 7,
                 points = [0, 0, 0],
                 m = 0,
                 nIdx;
@@ -961,7 +994,7 @@ function loadEvaluatorJScript() {
                     points[++points[0]] = nIdx;
                 }
             }
-            points[0] = (lineInfo >> 8) & 7; //set freePoint num
+            points[0] = (lineInfo >>> 8) & 7; //set freePoint num
 
             return points;
         }
@@ -987,7 +1020,7 @@ function loadEvaluatorJScript() {
             stack[PIDX] = 0;
             stack[IDX] = idx;
             for (let direction = 0; direction < 4; direction++) {
-                let info = testLineThree(idx, direction, 1, arr),
+                let info = _testLineThree(idx, direction, 1, arr),
                     v = FOUL_MAX_FREE & info;
                 if (v == FIVE) { // not foul
                     stackIdx = -1;
@@ -1065,7 +1098,7 @@ function loadEvaluatorJScript() {
                             stack[stackIdx * LEN + PIDX] = 0;
                             stack[stackIdx * LEN + IDX] = idx;
                             for (let direction = 0; direction < 4; direction++) {
-                                let info = testLineThree(idx, direction, 1, arr),
+                                let info = _testLineThree(idx, direction, 1, arr),
                                     v = FOUL_MAX_FREE & info;
                                 if (v == FIVE) {
                                     arr[idx] = 0;
@@ -1107,7 +1140,7 @@ function loadEvaluatorJScript() {
                 ov = arr[idx];
             arr[idx] = color;
             for (let direction = 0; direction < 4; direction++) {
-                let lineInfo = testLineFour(idx, direction, color, arr),
+                let lineInfo = _testLineFour(idx, direction, color, arr),
                     lineMax = lineInfo & FOUL_MAX_FREE;
                 if (lineMax > max) {
                     info = lineInfo;
@@ -1118,122 +1151,6 @@ function loadEvaluatorJScript() {
             let foulV = (gameRules == RENJU_RULES) && (color == 1) && (isFoul(idx, arr)) ? 1 : 0;
 
             return info | (foulV << 4);
-        }
-
-
-
-        function getLines(idx, color, arr, level) {
-            let lines = [];
-            let x = getX(idx);
-            let y = getY(idx);
-            //console.log(`idx=${idx}, x=${x}, y=${y}`)
-            for (let i = 0; i < 4; i++) {
-                let line = getLine(DIRECTIONS[i]);
-                //console.log(line)
-                if (line) lines.push(line);
-            }
-            return lines;
-
-            function getLine(direction) {
-                let p;
-                let isf;
-                let count = 0;
-                let start, end;
-                let points = [];
-                arr[y][x] = color;
-                //console.log(direction)
-                switch (level) {
-                    case 3:
-                        for (let i = -3; i < 0; i++) {
-                            p = getArrPoint(x, y, i, direction);
-                            if (p.x != -1 && arr[p.y][p.x] == 0) {
-                                isf = isLineFour(p.x, p.y, direction, color, arr, true);
-                                if (isf) {
-                                    points.push(p);
-                                    break;
-                                }
-                            }
-                        }
-                        for (let i = 3; i > 0; i--) {
-                            p = getArrPoint(x, y, i, direction);
-                            if (p.x != -1 && arr[p.y][p.x] == 0) {
-                                isf = isLineFour(p.x, p.y, direction, color, arr, true);
-                                if (isf) {
-                                    points.push(p);
-                                    break;
-                                }
-                            }
-                        }
-                        setLine();
-                        break;
-                    case 4:
-                        for (let i = -4; i < 0; i++) {
-                            p = getArrPoint(x, y, i, direction);
-                            if (p.x != -1 && arr[p.y][p.x] == 0) {
-                                isf = isLineFive(p.x, p.y, direction, color, arr);
-                                if (isf) {
-                                    points.push(p);
-                                    break;
-                                }
-                            }
-                        }
-                        for (let i = 4; i > 0; i--) {
-                            p = getArrPoint(x, y, i, direction);
-                            if (p.x != -1 && arr[p.y][p.x] == 0) {
-                                isf = isLineFive(p.x, p.y, direction, color, arr);
-                                if (isf) {
-                                    points.push(p);
-                                    break;
-                                }
-                            }
-                        }
-                        setLine();
-                        break;
-                    case 5:
-                        if (isLineFive(x, y, direction, color, arr)) {
-                            points.push({ x: x, y: y });
-                        }
-                        setLine();
-                        break;
-                }
-                arr[y][x] = 0;
-                if (start != end) {
-                    //console.log(`start=${start}, end=${end}, direction=${direction}`)
-                    return {
-                        "start": start,
-                        "end": end
-                    };
-                }
-
-                function setLine() {
-                    if (points.length) {
-                        start = getArrIndex(points[0].x, points[0].y, 0, direction);
-                        let j = 0;
-                        while (true) {
-                            j--;
-                            let c = getArrValue(points[0].x, points[0].y, j, direction, arr);
-                            if (c == color) {
-                                start = getArrIndex(points[0].x, points[0].y, j, direction);
-                            }
-                            else {
-                                break;
-                            }
-                        }
-                        end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, 0, direction);
-                        j = 0;
-                        while (true) {
-                            j++;
-                            let c = getArrValue(points[points.length - 1].x, points[points.length - 1].y, j, direction, arr);
-                            if (c == color) {
-                                end = getArrIndex(points[points.length - 1].x, points[points.length - 1].y, j, direction);
-                            }
-                            else {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -1514,12 +1431,12 @@ function loadEvaluatorJScript() {
                                 }
                                 else {
                                     for (let e = emptyStart; e < emptyEnd; e++) {
-                                        if (((markArr[emptyList[e]] & MAX) >> 1) < colorCount + 1) {
+                                        if (((markArr[emptyList[e]] & MAX) >>> 1) < colorCount + 1) {
                                             markArr[emptyList[e]] = ADD_MAX_COUNT | ((move - emptyMoves[e]) << 5) | (colorCount + 1 << 1);
-                                            //if(idxToName(emptyList[e])=="L7") console.error(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
+                                            //if(idxToName(emptyList[e])=="L7") console.error(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
                                         }
 
-                                        if (((markArr[emptyList[e]] & MAX) >> 1) == colorCount + 1) {
+                                        if (((markArr[emptyList[e]] & MAX) >>> 1) == colorCount + 1) {
                                             if (markArr[emptyList[e]] & ADD_MAX_COUNT) {
                                                 markArr[emptyList[e]] += 0x1000; //count++
                                             }
@@ -1528,7 +1445,7 @@ function loadEvaluatorJScript() {
                                             if (markArr[emptyList[e]] & ADD_FREE_COUNT) {
                                                 markArr[emptyList[e]] += 0x100; //free++
                                                 markArr[emptyList[e]] = (markArr[emptyList[e]] & 0xff1f) | ((move - emptyMoves[e]) << 5); //set markMove
-                                                //if(idxToName(emptyList[e])=="L7") console.info(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
+                                                //if(idxToName(emptyList[e])=="L7") console.info(`direction: ${direction}\n markMove: ${(markArr[emptyList[e]] & 0xe0)>>>5}\n move: ${move} \nemptyMoves[e]: ${emptyMoves[e]}`);
                                             }
                                             markArr[emptyList[e]] |= ADD_FREE_COUNT;
                                         }
@@ -1555,14 +1472,14 @@ function loadEvaluatorJScript() {
                 }
 
                 for (let idx = 0; idx < 225; idx++) {
-                    let max = (markArr[idx] & MAX) >> 1;
+                    let max = (markArr[idx] & MAX) >>> 1;
                     if (5 == max) {
                         infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
                     }
                     else if (5 > max && max > 2) {
                         markArr[idx] |= (markArr[idx] & FREE_COUNT) ? 1 : 0; //mark free
                         if ((markArr[idx] & FOUL_MAX_FREE) > (infoArr[idx] & FOUL_MAX_FREE)) {
-                            //console.log(`idx: ${idxToName(idx)}\n direction: ${direction}, \n markMove:  ${(markArr[idx] & 0xe0) >> 5}`);
+                            //console.log(`idx: ${idxToName(idx)}\n direction: ${direction}, \n markMove:  ${(markArr[idx] & 0xe0) >>> 5}`);
                             if (gameRules == RENJU_RULES && color == 1) {
                                 let foul = isFoul(idx, arr) ? 1 : 0;
                                 if ((max == 3) && (markArr[idx] & FREE) && (foul == 0)) {
@@ -1668,7 +1585,7 @@ function loadEvaluatorJScript() {
                 }
 
                 for (let idx = 0; idx < 225; idx++) {
-                    let max = (markArr[idx] & MAX) >> 1;
+                    let max = (markArr[idx] & MAX) >>> 1;
                     if (5 == max) {
                         infoArr[idx] = markArr[idx] & 0x8fff | (direction << 12);
                     }
@@ -1680,7 +1597,7 @@ function loadEvaluatorJScript() {
             }
             else {
                 for (let idx = 0; idx < 225; idx++) {
-                    let max = (infoArr[idx] & MAX) >> 1;
+                    let max = (infoArr[idx] & MAX) >>> 1;
                     if (5 == max) {
                         if (fiveIdx == -1) fiveIdx = idx;
                         else if (fiveIdx != idx) return (fiveIdx << 8) | LEVEL_FREEFOUR;
@@ -1704,7 +1621,7 @@ function loadEvaluatorJScript() {
 
             for (let i = 0; i < l; i += 2) {
                 let levelInfo = getLevel(arr, INVERT_COLOR[color]),
-                    bIdx = (levelInfo >> 8) & 0xff,
+                    bIdx = (levelInfo >>> 8) & 0xff,
                     level = levelInfo & 0xff;
                 if ((level < LEVEL_NOFREEFOUR && arr[moves[i]] == 0) ||
                     (level == LEVEL_NOFREEFOUR && bIdx == moves[i])) {
@@ -1753,7 +1670,7 @@ function loadEvaluatorJScript() {
                     st = fs[j] - 1;
                     l += 2;
                     if (j == 0 || fs[j] - fs[j - 1] > 2) {
-                        fs.length -= ((l -2) >> 1);
+                        fs.length -= ((l -2) >>> 1);
                         break;
                     }
                 }
@@ -1799,7 +1716,7 @@ function loadEvaluatorJScript() {
             //console.warn(`color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
             //post("vConsole", `color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
             while (!done) {
-                if (!(loopCount & 0xffff)) post("vConsole", loopCount);
+                if (!(loopCount & 0xffff) && typeof post == "function") post({cmd: "moves", param: {moves: moves, firstColor: color}});
                 nColorIdx = stackIdx.pop();
                 colorIdx = stackIdx.pop();
 
@@ -1836,7 +1753,7 @@ function loadEvaluatorJScript() {
                                 let end;
                                 if ((nLevel & 0xff) == LEVEL_NOFREEFOUR) {
                                     end = 1;
-                                    centerIdx = nLevel >> 8;
+                                    centerIdx = nLevel >>> 8;
                                 }
                                 else {
                                     end = 225;
@@ -1866,6 +1783,7 @@ function loadEvaluatorJScript() {
                                             //console.warn(`[${movesToName(moves.concat(idx), 900)}]`);
                                             isConcat = false;
                                             vcfInfo.vcfCount++;
+                                            "post" in self && post({cmd: "vcfInfo", param: {vcfInfo: vcfInfo}});
                                             vcfTransTablePush(moves.length, sum, moves, arr);
                                             if (vcfInfo.vcfCount == maxVCF) {
                                                 for (let j = moves.length - 1; j >= 0; j--) {
@@ -1876,7 +1794,7 @@ function loadEvaluatorJScript() {
                                             }
                                         }
                                         else {
-                                            fourPoints.push(idx, level >> 8);
+                                            fourPoints.push(idx, level >>> 8);
                                         }
                                     }
                                 }
@@ -1890,7 +1808,7 @@ function loadEvaluatorJScript() {
                                         let lineInfo = 0,
                                             idx = fourPoints[i];
                                         for (let direction = 0; direction < 4; direction++) {
-                                            let info = MAX_FREE & testLine(idx, direction, color, arr);
+                                            let info = MAX_FREE & _testLine(idx, direction, color, arr);
                                             if (info <= FOUR_FREE && info > lineInfo) lineInfo = info;
                                         }
                                         switch (lineInfo) {
@@ -1979,13 +1897,13 @@ function loadEvaluatorJScript() {
             testFour(arr, INVERT_COLOR[color], infoArr); // 搜索先手冲4
 
             if (gameRules == RENJU_RULES) { //判断是否有复杂禁手防点
-                if (color == 1) { //黑棋VCF线路是否有复杂禁手防点
+                if (color == 1) { //黑棋VCF路线是否有复杂禁手防点
                     for (let i = 0; i < len; i += 2) {
                         arr[vcfMoves[end++]] = 1;
 
                         let threeCount = 0;
                         for (let direction = 0; direction < 4; direction++) {
-                            let lineInfo = testLineThree(vcfMoves[i], direction, 1, arr);
+                            let lineInfo = _testLineThree(vcfMoves[i], direction, 1, arr);
                             if (THREE_FREE == (MAX_FREE & lineInfo)) threeCount++;
                             if (end == len && FOUR_FREE == (MAX_FREE & lineInfo)) {
                                 fourCount += 2;
@@ -2000,13 +1918,13 @@ function loadEvaluatorJScript() {
                         (end < len) && (arr[vcfMoves[end++]] = 2);
                     }
                 }
-                else { //白棋VCF线路是否有复杂禁手防点
+                else { //白棋VCF路线是否有复杂禁手防点
                     for (let i = 0; i < len; i++) {
                         arr[vcfMoves[end++]] = (i & 1) ? 1 : 2;
                     }
 
                     for (let direction = 0; direction < 4; direction++) {
-                        let lineInfo = testLineFour(endIdx, direction, 2, arr);
+                        let lineInfo = _testLineFour(endIdx, direction, 2, arr);
                         switch (lineInfo & FOUL_MAX_FREE) {
                             case FOUR_FREE:
                             case LINE_DOUBLE_FOUR:
@@ -2025,7 +1943,7 @@ function loadEvaluatorJScript() {
                         blockArr[foulIdx] = 1; //保存抓禁的直接防点
                         arr[foulIdx] = 1;
                         for (let direction = 0; direction < 4; direction++) {
-                            let lineInfo = testLineFour(foulIdx, direction, 1, arr);
+                            let lineInfo = _testLineFour(foulIdx, direction, 1, arr);
                             switch (lineInfo & FOUL_MAX_FREE) {
                                 case SIX:
                                     fFourCount += 3;
@@ -2056,7 +1974,7 @@ function loadEvaluatorJScript() {
                     if (fFourCount == 2) {
                         let foulIdx = getBlockFourPoint(endIdx, arr, lineInfoList[0]);
                         for (let i = 0; i < fInfoIdx; i++) {
-                            let direction = (fLineInfoList[i] >> 12) & 0x07,
+                            let direction = (fLineInfoList[i] >>> 12) & 0x07,
                                 bIdx = getBlockFourPoint(foulIdx, arr, fLineInfoList[i]),
                                 isLineFF = LINE_DOUBLE_FOUR == (fLineInfoList[i] & FOUL_MAX_FREE),
                                 st;
@@ -2101,7 +2019,7 @@ function loadEvaluatorJScript() {
                 }
                 else if (fourCount == 2) {
                     if (infoIdx == 1) { // 找活4，单线44防点
-                        let direction = (lineInfoList[0] >> 12) & 0x07;
+                        let direction = (lineInfoList[0] >>> 12) & 0x07;
                         for (let move = -1; move >= -4; move--) {
                             let idx = moveIdx(endIdx, move, direction);
                             if (0 == arr[idx]) {
@@ -2180,26 +2098,6 @@ function loadEvaluatorJScript() {
 
         //--------------------------------------------------
 
-        // 找活四级别杀
-        function findFFWin(arr, color, newarr) {
-            let wPoint = [],
-                infoArr = new Array(225);
-            testFour(arr, color, infoArr);
-            for (let i = 0; i < 225; i++) {
-                if (FOUR_NOFREE == (FOUL_MAX & infoArr[i])) {
-                    arr[i] = color;
-                    let levelInfo = getLevel(arr, color);
-                    if (LEVEL_FREEFOUR == (levelInfo & 0xff)) {
-                        wPoint.push(i);
-                        i = 999;
-                    }
-                    arr[i] = 0;
-                }
-            }
-            return wPoint;
-        }
-
-        
         exports.moveIdx = moveIdx;
         exports.getArrValue = getArrValue;
         exports.aroundIdx = aroundIdx;

@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.07";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.12";
 const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
 const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
@@ -85,12 +85,156 @@ let cBoardSize = 15;
 //---------------  ------------------ ------------------
 
 if ("WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
-    loadEvaluatorWebassembly();
+    loadEvaluatorWebassembly.call(this);
     console.warn("loadEvaluatorWebassembly");
 }
 else {
-    loadEvaluatorJScript();
+    loadEvaluatorJScript.call(this);
     console.warn("loadEvaluatorJScript");
+}
+
+//--------------------- line -------------------------
+
+function getLines(arr, color) {
+    try {
+        let infoArr = new Array(226),
+            lineINFO = new Uint32Array(226),
+            lines = [];
+        testThree(arr, color, infoArr); //取得活三以上的点
+
+        infoArr.map((info, idx) => { //分析每个点保存路线,3开始,1结束
+            if (THREE_FREE <= (info & FOUL_MAX_FREE) && (info & FOUL_MAX_FREE) <= FIVE) {
+                for (let direction = 0; direction < 4; direction++) {
+                    let lineInfo = testLineThree(idx, direction, color, arr),
+                        move = (lineInfo & 0xff) >>> 5,
+                        i;
+                    switch (FOUL_MAX_FREE & lineInfo) {
+                        case FIVE:
+                            for (let m = -4; m < 0; m++) {
+                                i = moveIdx(idx, m + (move), direction);
+                                lineINFO[i] |= (3 << 6 << direction * 8);
+                            }
+                            i = moveIdx(idx, move, direction);
+                            lineINFO[i] |= (1 << 6 << direction * 8);
+                            break;
+                        case FOUR_FREE:
+                            for (let m = -5; m < 0; m++) {
+                                i = moveIdx(idx, m + (move), direction);
+                                lineINFO[i] |= (3 << 4 << direction * 8);
+                            }
+                            i = moveIdx(idx, move, direction);
+                            lineINFO[i] |= (1 << 4 << direction * 8);
+                            break;
+                        case FOUR_NOFREE:
+                            for (let m = -4; m < 0; m++) {
+                                i = moveIdx(idx, m + (move), direction);
+                                lineINFO[i] |= (3 << 2 << direction * 8);
+                            }
+                            i = moveIdx(idx, move, direction);
+                            lineINFO[i] |= (1 << 2 << direction * 8);
+                            break;
+                        case THREE_FREE:
+                            for (let m = -5; m < 0; m++) {
+                                i = moveIdx(idx, m + (move), direction);
+                                lineINFO[i] |= (3 << direction * 8);
+                            }
+                            i = moveIdx(idx, move, direction);
+                            lineINFO[i] |= (1 << direction * 8);
+                            break;
+                    }
+                }
+            }
+        });
+
+        for (let direction = 0; direction < 4; direction++) {
+            let idxLists = [];
+            switch (direction) { //生成阴线，阳线
+                case 0:
+                    for (let y = 0; y < 15; y++) {
+                        idxLists[y] = [];
+                        for (let x = 0; x < 15; x++) {
+                            idxLists[y][x] = y * 15 + x;
+                        }
+                    }
+                    break;
+                case 1:
+                    for (let x = 0; x < 15; x++) {
+                        idxLists[x] = [];
+                        for (let y = 0; y < 15; y++) {
+                            idxLists[x][y] = y * 15 + x;
+                        }
+                    }
+                    break;
+                case 2:
+                    for (let i = 0; i < 15; i++) {
+                        idxLists[i] = [];
+                        for (let j = 0; j <= i; j++) {
+                            let x = 0 + j,
+                                y = x + 14 - i;
+                            idxLists[i][j] = y * 15 + x;
+                        }
+                    }
+                    for (let i = 13; i >= 0; i--) {
+                        idxLists[28 - i] = [];
+                        for (let j = 0; j <= i; j++) {
+                            let x = 14 - i + j,
+                                y = i - 14 + x;
+                            idxLists[28 - i][j] = y * 15 + x;
+                        }
+                    }
+                    break;
+                case 3:
+                    for (let i = 0; i < 15; i++) {
+                        idxLists[i] = [];
+                        for (let j = 0; j <= i; j++) {
+                            let x = i - j,
+                                y = i - x;
+                            idxLists[i][j] = y * 15 + x;
+                        }
+                    }
+                    for (let i = 13; i >= 0; i--) {
+                        idxLists[28 - i] = [];
+                        for (let j = 0; j <= i; j++) {
+                            let x = 14 - j,
+                                y = 28 - i - x;
+                            idxLists[28 - i][j] = y * 15 + x;
+                        }
+                    }
+                    break;
+            }
+        
+            //console.warn(`direction: ${direction}`)
+            idxLists.map(list => { //找出每一条线
+                const LVL = ["THREE_FREE", "FOUR_NOFREE", "FOUR_FREE", "FIVE"];
+                let lineStart = [-1, -1, -1, -1],
+                    lineEnd = [-1, -1, -1, -1];
+                list.map(idx => {
+                    let v = [0, 0, 0, 0];
+                    v[0] = (lineINFO[idx] & (3 << direction * 8)) >>> direction * 8;
+                    v[1] = (lineINFO[idx] & (3 << 2 << direction * 8)) >>> 2 >>> direction * 8;
+                    v[2] = (lineINFO[idx] & (3 << 4 << direction * 8)) >>> 4 >>> direction * 8;
+                    v[3] = (lineINFO[idx] & (3 << 6 << direction * 8)) >>> 6 >>> direction * 8;
+                    //console.log(`direction: ${direction}, ${lineINFO[idx].toString(2)},\n${v[0].toString(2)}, ${v[1].toString(2)}, ${v[2].toString(2)}, ${v[3].toString(2)}`)
+                    for (let vi = 0; vi < 4; vi++) {
+                        if (v[vi] == 3) {
+                            if (lineStart[vi] == -1) lineStart[vi] = idx;
+                            else lineEnd[vi] = idx;
+                        }
+                        else if (v[vi] == 1) {
+                            if (lineStart[vi] > -1 && lineEnd[vi] > -1) {
+                                lines.push({ "start": lineStart[vi], "end": idx, "level": LVL[vi] });
+                            }
+                            lineStart[vi] = lineEnd[vi] = -1;
+                        }
+                    }
+                });
+            });
+        }
+        return lines;
+    }
+    catch (err) {
+        console.error(err)
+    }
 }
 
 //---------------  ------------------ ------------------
@@ -142,7 +286,7 @@ function copyMoves(moves) {
 }
 
 //  复制一个arr二维数组, 
-function copyArr(arr, arr2) {
+function copyArr2D(arr, arr2) {
     getArr2D(arr);
     for (let y = 0; y < 15; y++) {
         for (let x = 0; x < 15; x++) {
@@ -152,72 +296,12 @@ function copyArr(arr, arr2) {
     return arr;
 }
 
-// 取得一个点的x,y
-function getArrPoint(x, y, move, direction, arr) {
-    let nx = changeX(x, move, direction);
-    let ny = changeY(y, move, direction);
-    if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return {
-            x: nx,
-            y: ny
-        };
-    }
-    return {
-        x: -1,
-        y: -1
-    };
-}
-
-// 取得一个点的Index
-function getArrIndex(x, y, move, direction, arr) {
-    let nx = changeX(x, move, direction);
-    let ny = changeY(y, move, direction);
-    if (nx >= 0 && nx <= 14 && ny >= 0 && ny <= 14) {
-        return ny * 15 + nx;
-    }
-    return -1;
-}
-
 function getX(idx) {
     return idx % 15;
 }
 
 function getY(idx) {
     return ~~(idx / 15);
-}
-
-function changeX(x, move, direction) {
-    switch (direction) {
-        case 0:
-            return x + move;
-            break;
-        case 1:
-            return x;
-            break;
-        case 2:
-            return x + move;
-            break;
-        case 3:
-            return x + move;
-            break;
-    }
-}
-
-function changeY(y, move, direction) {
-    switch (direction) {
-        case 0:
-            return y;
-            break;
-        case 1:
-            return y + move;
-            break;
-        case 2:
-            return y + move;
-            break;
-        case 3:
-            return y - move;
-            break;
-    }
 }
 
 // index ，转字母数字坐标
@@ -401,8 +485,8 @@ function vcfMovesPush(keyLen, keySum, move) {
         return 0;
     }
 
-    let movesByte = ((keyLen >> 2) + 1) << 2,
-        pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+    let movesByte = ((keyLen >>> 2) + 1) << 2,
+        pNext = ((keyLen >>> 1) * 16155 + keySum) << 2,
         pMoves = new Uint32Array(vcfHashTable, pNext, 1);
     while (pMoves[0]) {
         pNext = pMoves[0] + movesByte;
@@ -429,8 +513,8 @@ function vcfMovesPush(keyLen, keySum, move) {
 
 // 对比VCF手顺是否相等
 function vcfMovesHas(keyLen, keySum, move) {
-    let movesByte = ((keyLen >> 2) + 1) << 2,
-        pNext = ((keyLen >> 1) * 16155 + keySum) << 2,
+    let movesByte = ((keyLen >>> 2) + 1) << 2,
+        pNext = ((keyLen >>> 1) * 16155 + keySum) << 2,
         pMoves = new Uint32Array(vcfHashTable, pNext, 1);
     while (pMoves[0]) {
         if (isRepeatMove(move, new Uint8Array(vcfHashTable, pMoves[0] + 1, keyLen))) return true;

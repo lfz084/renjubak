@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.07";
+self.SCRIPT_VERSIONS["renju"] = "v1202.12";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -356,20 +356,20 @@ var loadApp = () => { // 按顺序加载应用
             head.appendChild(link);
         });
     }
-
-    function loadFont(url) { //加载字体文件
+    
+    function loadFile(url, msgTitle = "loadFile_Error") { //加载文件
         url = url.split("?")[0] + window.URL_VERSION;
         const filename = url.split("/").pop().split("?")[0];
         return new Promise((resolve, reject) => {
             function reqListener() {
-                //log(`loadFont "${filename}"`);
+                //log(`${msgTitle} "${filename}"`);
                 setTimeout(() => {
                     resolve()
                 }, 0)
             }
 
             function err(err) {
-                let message = `loadFont_Error: "${filename}"`;
+                let message = `${msgTitle}: "${filename}"`;
                 reject(new Error(message));
                 //log(message);
             }
@@ -381,52 +381,12 @@ var loadApp = () => { // 按顺序加载应用
         });
     }
 
-    function loadFile(url) { //加载文件
-        url = url.split("?")[0] + window.URL_VERSION;
-        const filename = url.split("/").pop().split("?")[0];
-        return new Promise((resolve, reject) => {
-            function reqListener() {
-                //log(`loadFile "${filename}"`);
-                setTimeout(() => {
-                    resolve()
-                }, 0)
-            }
-
-            function err(err) {
-                let message = `loadFile_Error: "${filename}"`;
-                reject(new Error(message));
-                //log(message);
-            }
-            let oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.addEventListener("error", err);
-            oReq.open("GET", url);
-            oReq.send();
-        });
+    function loadFont(url) { //加载字体文件
+        return loadFile(url, "loadFont_Error");
     }
 
     function loadTxT(url) { //加载文件
-        url = url.split("?")[0] + window.URL_VERSION;
-        const filename = url.split("/").pop().split("?")[0];
-        return new Promise((resolve, reject) => {
-            function reqListener() {
-                //log(`loadTxT "${filename}"`);
-                setTimeout(() => {
-                    resolve(oReq.response)
-                }, 0)
-            }
-
-            function err(err) {
-                let message = `loadTxT_Error: "${filename}"`;
-                reject(new Error(message));
-                //log(message);
-            }
-            let oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.addEventListener("error", err);
-            oReq.open("GET", url);
-            oReq.send();
-        });
+        return loadFile(url, "loadTxT_Error");
     }
 
     function loadScript(url) { //加载脚本
@@ -756,7 +716,7 @@ var loadApp = () => { // 按顺序加载应用
         log(Msg, "warn")
     }
 
-        function openVConsole() {
+    function openVConsole() {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 try {
@@ -832,7 +792,8 @@ var loadApp = () => { // 按顺序加载应用
             cBoard.printCheckerBoard();
 
             control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
-            appData.renjuLoad(cBoard);
+            if(window.gameCode) cBoard.unpackCode(true, window.gameCode);
+            else appData.renjuLoad(cBoard);
 
             return bodyDiv;
         }

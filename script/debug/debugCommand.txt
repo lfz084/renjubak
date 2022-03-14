@@ -7,3 +7,51 @@ cBoard.addTree(new RenjuTree());
 cBoard.firstColor = "black";
 control.setPlayMode(9);
 control.getPlayMode();
+
+let sTime,
+arr = new Array(0xffffff),
+arr1 = new Array(0xffffff);
+
+sTime = new Date().getTime();
+for(let i=0; i<0xffffff; i++) {
+    arr1[i] = i;
+}
+alert(new Date().getTime()-sTime);
+
+
+
+arr = new Array(0xffff
+
+ff);
+arr1 = new Array(0xffffff);
+
+sTime = new Date().getTime();
+arr1 = arr.map(a=>a);
+alert(new Date().getTime()-sTime);
+
+window.t = new Thread("./script/worker.js");
+let sTime = new Date().getTime();
+engine.findVCF({arr:cBoard.getArray(), color:1, maxVCF:1, maxDepth:180, maxNode: 1000000})
+.then(moves => console.warn(`VCF: ${movesToName(moves)}\n\ntime: ${new Date().getTime()-sTime}`))
+
+
+async function f(thread) {
+    setTimeout(() => {
+        thread.unlock();
+        console.log(666);
+    }, 3000);
+}
+
+async function p() {
+    try {
+        for(let i=0; i<30; i++){
+            let thread = await engine.getThread();
+            f(thread);
+            console.log(i);
+        }
+    }
+    catch(err) {
+        console.error(err);
+    }
+}
+p()

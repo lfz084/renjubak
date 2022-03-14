@@ -32,20 +32,25 @@
 <body>
     <div id="mlog"></div>
     <script>
-        let re1 = /\?(v|V)\=/;
+        let re1 = /\?(v|V)\=/,
+            reCode = /\?(code|CODE)\=/;
         window.reloadApp = function() {
             window.onbeforeunload = null;
             window.location.href = window.location.href.split("?")[0] + "?v=" + new Date().getTime();
         };
-        let oldTime = window.location.href.split(re1)[2] || 0;
-        if ((new Date().getTime() - oldTime) / 1000 > 300) {
-            reloadApp();
+
+        window.gameCode = window.location.href.split(reCode)[2];
+        if (!gameCode) {
+            let oldTime = window.location.href.split(re1)[2] || 0;
+            if ((new Date().getTime() - oldTime) / 1000 > 300) {
+                reloadApp();
+            }
         }
     </script>
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1202.07";
+        window.APP_VERSION = "v1202.12";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -98,7 +103,7 @@
             RenjuLib: "./ReadLib/script/RenjuLib.js",
             RenLib_wasm: "./ReadLib/script/RenLib.wasm",
             RenLibDoc_wasm: "./ReadLib/script/RenLibDoc_wasm.js",
-            
+
             debugModule: "script/debug/debugModule.js"
         }
         window.SCRIPT_VERSIONS = {
@@ -135,8 +140,8 @@
                          "增加退出提示,防止误操作丢失数据"],
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
-            "v1202.07": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
-        }
+            "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
+        };
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
                 let ver = self.SCRIPT_VERSIONS[filename];
@@ -160,7 +165,7 @@
                     resolve();
                 }
             });
-        }
+        };
         window.checkAppVersion = function() {
             return new Promise((resolve, reject) => {
                 mlog("checkAppVersion ...")
@@ -184,7 +189,7 @@
                     resolve();
                 }
             })
-        }
+        };
         window.removeAppCache = function() {
             return new Promise((resolve, reject) => {
                 let removeCaches, removeLocalStorage;
@@ -211,7 +216,7 @@
                 }
                 Promise.all([removeCaches, removeLocalStorage]).then(resolve).catch(resolve)
             })
-        }
+        };
         window.postVersion = function() {
             return new Promise((resolve, reject) => {
                 if (navigator.serviceWorker && navigator.serviceWorker.controller) {
@@ -242,7 +247,7 @@
                     resolve();
                 }
             })
-        }
+        };
     </script>
     <script>
         const BUT = document.getElementById("mlog");
@@ -273,7 +278,10 @@
             }
         }
 
+
+
         document.body.onload = () => {
+
             function _loadScript(url) { //加载脚本
                 url = url.split("?")[0] + window.URL_VERSION;
                 const filename = url.split("/").pop().split("?")[0];
@@ -314,7 +322,8 @@
                     return loadApp()
                 })
                 .then(() => {
-                    //return _loadScript(SOURCE_FILES["debugModule"]);
+                    
+                    return _loadScript(SOURCE_FILES["debugModule"]);
                     /*
                     var allsuspects = document.getElementsByTagName("script");
                     

@@ -1,6 +1,7 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.07";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.12";
 
 function loadEvaluatorWebassembly() {
+    
     (function(global, factory) {
         (global = global || self, factory(global));
     }(this, (function(exports) {
@@ -8,7 +9,7 @@ function loadEvaluatorWebassembly() {
         //console.log(exports);
         let wGlobal,
             memory;
-
+    
         function grow(pages = 100) {
             try {
                 memory.grow(pages);
@@ -19,7 +20,7 @@ function loadEvaluatorWebassembly() {
             }
         }
 
-        let url = "script/Evaluator.wasm",
+        let url =  /Worker/.exec(`${exports}`) ? "Evaluator.wasm" : "script/Evaluator.wasm",
             importObject = {
                 env: {
                     memcpy: function(param1, param2, param3) {
@@ -78,7 +79,7 @@ function loadEvaluatorWebassembly() {
                     _Z4growj: grow,
                 }
             };
-
+        
         fetch(url)
             .then(response => {
                 return response.arrayBuffer()
@@ -169,19 +170,39 @@ function loadEvaluatorWebassembly() {
                 }
 
                 function testLine(idx, direction, color, arr) {
-                    return wGlobal._Z8testLinehhcPc(idx, direction, color, putArr(arr));
+                    let rt,
+                        ov = arr[idx];
+                    arr[idx] = color;
+                    rt = wGlobal._Z8testLinehhcPc(idx, direction, color, putArr(arr));
+                    arr[idx] = ov;
+                    return rt;
                 }
 
                 function testLineFoul(idx, direction, color, arr) {
-                    return wGlobal._Z12testLineFoulhhcPc(idx, direction, color, putArr(arr));
+                    let rt,
+                        ov = arr[idx];
+                    arr[idx] = color;
+                    rt = wGlobal._Z12testLineFoulhhcPc(idx, direction, color, putArr(arr));
+                    arr[idx] = ov;
+                    return rt;
                 }
 
                 function testLineFour(idx, direction, color, arr) {
-                    return wGlobal._Z12testLineFourhhcPc(idx, direction, color, putArr(arr));
+                    let rt,
+                        ov = arr[idx];
+                    arr[idx] = color;
+                    rt = wGlobal._Z12testLineFourhhcPc(idx, direction, color, putArr(arr));
+                    arr[idx] = ov;
+                    return rt;
                 }
 
                 function testLineThree(idx, direction, color, arr) {
-                    return wGlobal._Z19getBlockThreePointshPct(idx, direction, color, putArr(arr));
+                    let rt,
+                        ov = arr[idx];
+                    arr[idx] = color;
+                    rt = wGlobal._Z19getBlockThreePointshPct(idx, direction, color, putArr(arr));
+                    arr[idx] = ov;
+                    return rt;
                 }
 
                 function testLinePoint(idx, direction, color, arr, lineInfoList) {
@@ -279,7 +300,7 @@ function loadEvaluatorWebassembly() {
                     resetVCF(arr, color, maxVCF, maxDepth, maxNode);
 
                     while (!done) {
-                        if (!(loopCount & 0xffff)) post("vConsole", loopCount);
+                        if (!(loopCount & 0xffff) && typeof post == "function") post({cmd: "moves", param:  {moves: moves, firstColor: color}});
                         nColorIdx = stackIdx.pop();
                         colorIdx = stackIdx.pop();
 
@@ -339,6 +360,7 @@ function loadEvaluatorWebassembly() {
                                                     //console.warn(vcfWinMoves[0]);
                                                     isConcat = false;
                                                     vcfInfo.vcfCount++;
+                                                    "post" in self && post({cmd: "vcfInfo", param: {vcfInfo: vcfInfo}});
                                                     vcfTransTablePush(moves.length, sum, moves, int8Arr);
                                                     if (vcfInfo.vcfCount == maxVCF) {
                                                         for (let j = moves.length - 1; j >= 0; j--) {

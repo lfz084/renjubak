@@ -1,4 +1,4 @@
- self.SCRIPT_VERSIONS["msgbox"] = "v1202.07";
+ self.SCRIPT_VERSIONS["msgbox"] = "v1202.12";
  // 弹窗代码
  (function() {
      "use strict";
@@ -38,22 +38,12 @@
 
 
          function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter, callCancel, butNum, lineNum, textAlign) {
-
+        
              isMsgShow = true; // 屏蔽 bodytouch 事件;
              if (closeTimer) {
                  clearTimeout(closeTimer);
                  closeTimer = null;
              }
-             /*
-             MsgBoxobj.ontouchend = MsgBoxobj.click = function() {
-                 setTimeout(function() {
-                     if (!msgTextarea.readOnly) {
-                         msgTextarea.focus();
-                         if (event) event.preventDefault();
-                     }
-                 }, 500);
-             };
-             */
 
              left = left || (dw - cWidth * 0.8) / 2;
              top = top || dh / 11;
@@ -193,9 +183,10 @@
      window.MSG_CANCEL = -1;
 
      window.msg = function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter = () => {}, callCancel = () => {}, butNum, lineNum, textAlign) {
+         
          if (typeof text == "object") {
              const data = text;
-             text = data.text || text;
+             text = data.title || data.text || "";
              type = data.type || type;
              left = data.left || left;
              top = data.top || top;
@@ -203,12 +194,13 @@
              height = data.height || height;
              enterTXT = data.enterTXT || enterTXT;
              cancelTXT = data.cancelTXT || cancelTXT;
-             callEnter = data.callEnter || callEnter;
-             callCancel = data.callCancel || callCancel;
+             callEnter = data.enterFunction || data.callEnter || callEnter;
+             callCancel = data.cancelFunction || data.callCancel || callCancel;
              butNum = data.butNum || butNum;
              lineNum = data.lineNum || lineNum;
              textAlign = data.textAlign || textAlign;
          }
+         
          return new Promise((resolve, reject) => {
              try {
                  let newCallEnter = (param) => {
@@ -230,11 +222,11 @@
      window.msgbox = function msgbox(title, enterTXT, enterFunction = () => {}, cancelTXT, cancelFunction = () => {}, butNum, timer) {
          if (typeof title == "object") {
              const data = title;
-             title = data.title || title;
+             title = data.title || data.text || "";
              enterTXT = data.enterTXT || enterTXT;
              cancelTXT = data.cancelTXT || cancelTXT;
-             enterFunction = data.enterFunction || enterFunction;
-             cancelFunction = data.cancelFunction || cancelFunction;
+             enterFunction = data.enterFunction || data.callEnter || enterFunction;
+             cancelFunction = data.cancelFunction || data.callCancel || cancelFunction;
              butNum = data.butNum || butNum;
              timer = data.timer || timer;
          }
