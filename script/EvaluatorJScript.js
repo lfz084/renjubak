@@ -2097,7 +2097,8 @@ function loadEvaluatorJScript() {
 
 
         //--------------------------------------------------
-
+        
+        exports.setGameRules = rules => gameRules = rules;
         exports.moveIdx = moveIdx;
         exports.getArrValue = getArrValue;
         exports.aroundIdx = aroundIdx;

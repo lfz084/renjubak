@@ -24,8 +24,9 @@ window.control = (() => {
         if (TEST_CONTROL && DEBUG)
             print(`[control.js]\n>> ` + param);
     }
-
-    const MAX_THREAD_NUM = 0 || window.navigator.hardwareConcurrency - 2 || 4;
+    
+ //--------------------------------------------------------------
+ 
     const MODE_RENJU = 0,
         MODE_LOADIMG = 1,
         MODE_LINE_EDIT = 2,
@@ -35,7 +36,8 @@ window.control = (() => {
         MODE_READ_FOULPOINT = 6,
         MODE_RENLIB = 7,
         MODE_READLIB = 8,
-        MODE_EDITLIB = 9;
+        MODE_EDITLIB = 9,
+        MODE_RENJU_FREE = 10;
 
     let cBd,
         engine,
@@ -252,7 +254,7 @@ window.control = (() => {
 
     function newGame() {
 
-        engine.postMsg("cancelFind");
+        engine.cancel();
         let h1 = ~~(cBd.width);
         let h2 = ~~(cBd.canvas.height);
         scaleCBoard(false);
@@ -432,8 +434,22 @@ window.control = (() => {
         }
         return true;
     }
-
-
+    
+    function execFunction(callback) {
+        switch(callback.constructor.name) {
+            case "Function":
+                setBusy(true);
+                callback();
+                setBusy(false);
+                break;
+            case "AsyncFunction":
+                setBusy(true);
+                callback()
+                .then(() => {setBusy(false)})
+                .catch(() => {setBusy(false)})
+                break;
+        }
+    }
 
     function createMenu(left, top, width, height, fontSize, options = [], onchange = () => {}) {
         let menu = new Button(cBd.parentNode, "select", left, top, width, height);
@@ -482,72 +498,54 @@ window.control = (() => {
         ],
             function(but) {
                 if (isBusy()) return;
-                let idx = but.idx;
-                let x = but.menu.offsetLeft;
-                let y = but.menu.offsetTop;
-                switch (but.input.value * 1) {
-                    case 0:
-                        cShownum.showMenu(x, y);
-                        break;
-                    case 1:
-                        cLoadImg.showMenu(x, y);
-                        break;
-                    case 2:
-                        cCutImage.showMenu(x, y);
-                        break;
-                    case 3:
-                        cFindPoint.showMenu(x, y);
-                        break;
-                    case 4:
-                        cFindVCF.showMenu(x, y);
-                        break;
-                    case 5:
-                        cNewGame.touchend();
-                        break;
-                    case 6:
-                        if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY) {
+                let idx = but.idx,
+                    x = but.menu.offsetLeft,
+                    y = but.menu.offsetTop;
+                const FUN = {
+                    0: () => {cShownum.showMenu(x, y)},
+                    1: () => {cLoadImg.showMenu(x, y)},
+                    2: () => {cCutImage.showMenu(x, y)},
+                    3: () => {cFindPoint.showMenu(x, y)},
+                    4: () => {cFindVCF.showMenu(x, y)},
+                    5: () => {cNewGame.touchend()},
+                    6: () => {
+                        if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY)
                             inputLabel(idx);
-                        }
-                        break;
-                    case 7:
-                        cCleLb.touchend();
-                        break;
-                    case 8:
-                        cShareWhite.touchend();
-                        break;
-                    case 9:
-                        cShare.touchend();
-                        break;
-                    case 10:
-                        cNextone.touchend();
-                        break;
-                    case 11:
-                        cResetnum.touchend();
-                        break;
-                    case 12:
+                    },
+                    7: () => {cCleLb.touchend()},
+                    8: () => {cShareWhite.touchend()},
+                    9: () => {cShare.touchend()},
+                    10:() => {cNextone.touchend()},
+                    11:() => {cResetnum.touchend()},
+                    12:() => {
                         cBd.showNum();
                         setShowNum(true);
                         cBd.isShowNum = getShowNum();
-                        break;
-                    case 13:
+                    },
+                    13:() => {
                         cBd.hideNum();
                         setShowNum(false);
                         cBd.isShowNum = getShowNum();
-                        break;
-                    case 14:
-                        cInputcode.touchend();
-                        break;
-                    case 15:
-                        cOutputcode.touchend();
-                        break;
-                    case 16:
-                        typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload();
-                        break;
+                    },
+                    14:() => {cInputcode.touchend()},
+                    15:() => {cOutputcode.touchend()},
+                    16:() => {typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload()},
                 }
+                execFunction(FUN[but.input.value]);
             });
     }
+    
+    async function addTree(tree) {
+        cBd.cle();
+        setPlayMode(MODE_READLIB);
+        cBd.addTree(tree);
+    }
 
-
+    async function mergeTree(tree) {
+        cBd.cle();
+        setPlayMode(MODE_READLIB);
+        cBd.mergeTree(tree);
+    }
 
     function moveButtons(settings) {
 
@@ -582,7 +580,6 @@ window.control = (() => {
         appData.setObject(key, obj);
     }
 
-
     // renju 模式控制面板
     function createRenjuCmdDiv(parentNode, left, top, width, height) {
 
@@ -610,28 +607,28 @@ window.control = (() => {
         cStart.setText("‖<<");
         cStart.setontouchend(function() {
             if (isBusy()) return;
-            cBd.toStart(getShowNum());
+            toStart(getShowNum());
         });
 
         cPrevious = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cPrevious.setText(" <<");
         cPrevious.setontouchend(function() {
             if (isBusy()) return;
-            cBd.toPrevious(getShowNum());
+            toPrevious(getShowNum());
         });
 
         cNext = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cNext.setText(">>");
         cNext.setontouchend(function() {
             if (isBusy()) return;
-            cBd.toNext(getShowNum());
+            toNext(getShowNum());
         });
 
         cEnd = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cEnd.setText(" >>‖");
         cEnd.setontouchend(function() {
             if (isBusy()) return;
-            cBd.toEnd(getShowNum());
+            toEnd(getShowNum());
         });
 
 
@@ -770,21 +767,24 @@ window.control = (() => {
         cLoadImg.setonchange(function(but) {
             but.setText(`打开`);
             if (isBusy()) return;
-            switch (but.input.value * 1) {
-                case 1:
+            console.log(`setonchange`)
+            const FUN = {
+                1: () => {
                     fileInput.accept = "image/*";
                     fileInput.onchange = openImg;
                     fileInput.click()
-                    break;
-                case 2:
+                },
+                2: () => {
+                    console.log(`setonchange1`)
                     fileInput.accept = "application/lib";
                     fileInput.onchange = openLib;
+                    console.log(`setonchange2`)
                     fileInput.click()
-                    break;
-                case 3:
-                    setMemoryMenu.showMenu()
-                    break;
+                    console.log(`setonchange3`)
+                },
+                3: () => {setMemoryMenu.showMenu()},
             }
+            execFunction(FUN[but.input.value]);
             but.input.value = 0;
         });
 
@@ -825,7 +825,7 @@ window.control = (() => {
 
         function openImg() {
             if (isBusy()) return;
-            engine.postMsg("cancelFind");
+            engine.cancel();
             cBd.drawLineEnd();
             let reader = new FileReader();
             let file = fileInput.files[0];
@@ -846,7 +846,7 @@ window.control = (() => {
         function openLib() {
             if (isBusy()) return;
             newGame();
-            engine.postMsg("cancelFind");
+            engine.cancel();
             cBd.drawLineEnd();
             let file = fileInput.files[0];
             fileInput.value = "";
@@ -871,33 +871,22 @@ window.control = (() => {
         cCutImage.setonchange(function(but) {
             but.setText(`保存`);
             if (isBusy()) return;
-            switch (but.input.value * 1) {
-                case 1:
-                    share();
-                    break;
-                case 2:
-                    cBd.saveAsImage("jpeg");
-                    break;
-                case 3:
-                    cBd.saveAsImage("png");
-                    break;
-                case 4:
-                    cBd.saveAsSVG("svg");
-                    break;
-                case 5:
-                    cBd.saveAsSVG("html");
-                    break;
-                case 6:
-                    cBd.saveAsPDF();
-                    break;
+            const FUN = {
+                1: () => {share()},
+                2: () => {cBd.saveAsImage("jpeg")},
+                3: () => {cBd.saveAsImage("png")},
+                4: () => {cBd.saveAsSVG("svg")},
+                5: () => {cBd.saveAsSVG("html")},
+                6: () => {cBd.saveAsPDF()},
             }
+            execFunction(FUN[but.input.value]);
             but.input.value = 0;
         });
 
         cCancelFind = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cCancelFind.setText(`${EMOJI_STOP} 停止`);
         cCancelFind.setontouchend(function(but) {
-            engine.postMsg("cancelFind");
+            engine.cancel();
             RenjuLib.isLoading() && RenjuLib.cancal();
         });
 
@@ -1027,23 +1016,20 @@ window.control = (() => {
 
         cMode = new Button(renjuCmddiv, "select", 0, 0, w, h);
         cMode.addOption(1, "经典摆棋模式");
-        cMode.addOption(2, "棋谱阅读模式");
-        cMode.addOption(3, "棋谱编辑模式");
+        cMode.addOption(2, "无序摆棋模式");
+        cMode.addOption(3, "棋谱阅读模式");
+        cMode.addOption(4, "棋谱编辑模式");
         cMode.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cMode.setText("摆棋");
         cMode.setonchange(function(but) {
             if (isBusy()) return;
-            switch (but.input.value * 1) {
-                case 1:
-                    setPlayMode(MODE_RENJU);
-                    break;
-                case 2:
-                    setPlayMode(MODE_READLIB);
-                    break;
-                case 3:
-                    setPlayMode(MODE_EDITLIB);
-                    break;
+            const FUN = {
+                1: () => {setPlayMode(MODE_RENJU)},
+                2: () => {setPlayMode(MODE_RENJU_FREE)},
+                3: () => {setPlayMode(MODE_READLIB)},
+                4: () => {setPlayMode(MODE_EDITLIB)},
             }
+            execFunction(FUN[but.input.value]);
         });
 
         cSelBlack = new Button(renjuCmddiv, "checkbox", 0, 0, w, h);
@@ -1063,13 +1049,14 @@ window.control = (() => {
             cFindPoint.addOption(3, "做43杀(白单冲4杀)");
             cFindPoint.addOption(4, "活三级别");
             cFindPoint.addOption(5, "活三");
-            cFindPoint.addOption(6, `${EMOJI_FOUL} 三三`);
-            cFindPoint.addOption(7, `${EMOJI_FOUL} 四四`);
-            cFindPoint.addOption(8, `${EMOJI_FOUL} 长连`);
-            cFindPoint.addOption(9, "五连");
+            //cFindPoint.addOption(6, `${EMOJI_FOUL} 三三`);
+            //cFindPoint.addOption(7, `${EMOJI_FOUL} 四四`);
+            //cFindPoint.addOption(8, `${EMOJI_FOUL} 长连`);
+            cFindPoint.addOption(9, "眠三");
             cFindPoint.addOption(10, "活四");
             cFindPoint.addOption(11, "冲四");
-            cFindPoint.addOption(12, "眠三");
+            cFindPoint.addOption(12, "五连");
+            
         }
         else {
             for (let i = 0; i < tMsg.length; i++) {
@@ -1087,109 +1074,84 @@ window.control = (() => {
                 return;
             }
             viewport1.resize();
-            let arr = cBd.getArray2D();
-            let newarr = getArr2D([]);
-            switch (but.input.value * 1) {
-                case 1:
-                    engine.postMsg("vctSelectPoint", {
+            let arr = cBd.getArray();
+            const FUN = {
+                1: async function() {
+                    return engine.createTreePointsVCT({
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: newarr
-                    });
-                    break;
-                case 2:
-                    engine.postMsg("isLevelThreePoint", {
+                        ftype: FIND_ALL,
+                        maxVCF: 1,
+                        maxDepth: 180,
+                        maxNode: 500000
+                    })
+                },
+                2: async function() {
+                    return engine.createTreeLevelThree({
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: newarr,
-                        ftype: ONLY_VCF
-                    });
-                    break;
-
-                case 3:
-                    engine.postMsg("isLevelThreePoint", {
+                        ftype: ONLY_VCF,
+                        maxVCF: 1,
+                        maxDepth: 180,
+                        maxNode: 500000
+                    })
+                },
+                3: async function() {
+                    return engine.createTreeLevelThree({
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: newarr,
-                        ftype: ONLY_SIMPLE_WIN
-                    });
-                    break;
-
-                case 4:
-                    engine.postMsg("isLevelThreePoint", {
+                        ftype: ONLY_SIMPLE_WIN,
+                        maxVCF: 1,
+                        maxDepth: 3,
+                        maxNode: 500000
+                    })
+                },
+                4: async function() {
+                    return engine.createTreeLevelThree({
                         color: getRenjuSelColor(),
                         arr: arr,
-                        newarr: newarr,
-                        ftype: undefined
-                    });
-                    break;
-
-                case 5:
-                    engine.postMsg("findThreePoint", {
+                        ftype: FIND_ALL,
+                        maxVCF: 1,
+                        maxDepth: 180,
+                        maxNode: 500000
+                    })
+                },
+                5: async function() {
+                    return engine.createTreeThree({
                         arr: arr,
                         color: getRenjuSelColor(),
-                        newarr: newarr,
                         ftype: ONLY_FREE
-                    });
-                    break;
-
-                case 6:
-                    engine.postMsg("findTTPoint", {
-                        arr: arr,
-                        color: 1,
-                        newarr: newarr
-                    });
-                    break;
-
-                case 7:
-                    engine.postMsg("findFFPoint", {
-                        arr: arr,
-                        color: 1,
-                        newarr: newarr
-                    });
-                    break;
-
-                case 8:
-                    engine.postMsg("findSixPoint", {
-                        arr: arr,
-                        color: 1,
-                        newarr: newarr
-                    });
-                    break;
-
-                case 9:
-                    engine.postMsg("findFivePoint", {
+                    })
+                },
+                9: async function() {
+                    return engine.createTreeThree({
                         arr: arr,
                         color: getRenjuSelColor(),
-                        newarr: newarr
-                    });
-                    break;
-                case 10:
-                    engine.postMsg("findFourPoint", {
+                        ftype: ONLY_NOFREE
+                    })
+                },
+                10: async function() {
+                    return engine.createTreeFour({
                         arr: arr,
                         color: getRenjuSelColor(),
-                        newarr: newarr,
                         ftype: ONLY_FREE
-                    });
-                    break;
-                case 11:
-                    engine.postMsg("findFourPoint", {
+                    })
+                },
+                11: async function() {
+                    return engine.createTreeFour({
                         arr: arr,
                         color: getRenjuSelColor(),
-                        newarr: newarr,
                         ftype: ONLY_NOFREE
-                    });
-                    break;
-                case 12:
-                    engine.postMsg("findThreePoint", {
+                    })
+                },
+                12: async function() {
+                    return engine.createTreeFive({
                         arr: arr,
-                        color: getRenjuSelColor(),
-                        newarr: newarr,
-                        ftype: ONLY_NOFREE
-                    });
-                    break;
+                        color: getRenjuSelColor()
+                    })
+                },
             }
-
+            execFunction(async function(){ mergeTree(await FUN[but.input.value]())});
             but.input.value = 0;
         });
         //cFindPoint.setontouchend(function() {});
@@ -1227,35 +1189,29 @@ window.control = (() => {
             }
             viewport1.resize();
             let arr = cBd.getArray(); // cBd.getArray2D();
-            switch (but.input.value * 1) {
-                case 1:
-                    engine.postMsg("findVCF", {
-                        arr: arr,
-                        color: getRenjuSelColor(),
-                        count: 1,
-                        depth: undefined,
-                        timeout: undefined,
-                        backstage: false
-                    });
-                    break;
-                case 2:
-                    engine.postMsg("findVCF", {
-                        arr: arr,
-                        color: getRenjuSelColor(),
-                        count: 225,
-                        depth: undefined,
-                        timeout: undefined,
-                        backstage: false
-                    });
-                    break;
-                case 3:
+            const FUN = {
+                1: async function () {
+                    return engine.createTreeVCF({ 
+                        arr: arr, 
+                        color: getRenjuSelColor(), 
+                        maxVCF: 1 
+                    })
+                },
+                2: async function () {
+                    return engine.createTreeVCF({ 
+                        arr: arr, 
+                        color: getRenjuSelColor(), 
+                        maxVCF: 255 
+                    })
+                },
+                3: async function () {
                     engine.postMsg("isTwoVCF", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
-                    break;
-                case 4:
+                },
+                4: async function () {
                     engine.postMsg("isSimpleWin", {
                         color: getRenjuSelColor(),
                         arr: arr,
@@ -1263,50 +1219,50 @@ window.control = (() => {
                         num: 4,
                         level: 3
                     });
-                    break;
-                case 5:
+                },
+                5: async function () {
                     engine.postMsg("isThreeWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
-                    break;
-                case 6:
+                },
+                6: async function () {
                     engine.postMsg("isFourWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
-                    break;
-                case 7:
+                },
+                7: async function () {
                     engine.postMsg("findFoulNode", {
                         arr: arr,
                     });
-                    break;
-                case 9:
+                },
+                9: async function () {
                     engine.postMsg("getBlockVCF", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
-                    break;
-                case 10:
+                },
+                10: async function () {
                     engine.postMsg("getBlockVCFb", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
-                    break;
-                case 11:
+                },
+                11: async function () {
                     engine.postMsg("getBlockVCFTree", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
-                    break;
-                case 8:
+                },
+                8: async function () {
                     engine.postMsg("blockCatchFoul", {
                         arr: arr
                     });
-                    break;
-                case 12:
+                },
+                12: async function () {
                     engine.postMsg("findVCT", {
                         arr: arr,
                         color: getRenjuSelColor(),
@@ -1315,8 +1271,8 @@ window.control = (() => {
                         depth: 2,
                         backstage: undefined
                     });
-                    break;
-                case 13:
+                },
+                13: async function () {
                     engine.postMsg("findVCT", {
                         arr: arr,
                         color: getRenjuSelColor(),
@@ -1325,17 +1281,10 @@ window.control = (() => {
                         depth: 5,
                         backstage: undefined
                     });
-                    break;
-                case 112:
-                    const DIRECTIONS = ["x", "y", "d", "u"];
-                    for (let i = 0; i < 4; i++) {
-                        let two = isLineTwo(7, 7, DIRECTIONS[i], getRenjuSelColor(), arr, false);
-                        alert(two);
-                    }
-                    break;
+                },
             }
+            execFunction(async function(){ mergeTree(await FUN[but.input.value]())});
             but.input.value = 0;
-
         });
         cFindVCF.setontouchend(function() {});
 
@@ -1355,7 +1304,16 @@ window.control = (() => {
             share();
         });
 
-        let coordinateMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+        let gameRulesMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+                [0, "无禁规则",
+                1, "禁手规则"],
+                function(but) {
+                    if (isBusy()) return;
+                    const rules = [GOMOKU_RULES, RENJU_RULES];
+                    engine.setGameRules(rules[but.input.value * 1]);
+                    setMenuRadio(gameRulesMenu, gameRulesMenu.input.selectedIndex);
+                }),
+            coordinateMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
                 [0, "棋盘坐标:无坐标",
                 1, "棋盘坐标:上下左右",
                 2, "棋盘坐标:上左",
@@ -1423,10 +1381,11 @@ window.control = (() => {
         cShownum.addOption(2, "显示路线");
         cShownum.addOption(3, "放大棋盘");
         //cShownum.addOption(4, "彩色对称打点");
-        cShownum.addOption(5, "设置棋盘大小");
-        cShownum.addOption(6, "设置棋盘坐标");
-        cShownum.addOption(7, "加载按键设置");
-        cShownum.addOption(8, "设置按键位置");
+        cShownum.addOption(5, "设置规则");
+        cShownum.addOption(6, "设置棋盘大小");
+        cShownum.addOption(7, "设置棋盘坐标");
+        cShownum.addOption(8, "加载按键设置");
+        cShownum.addOption(9, "设置按键位置");
         cShownum.setText(EMOJI_ROUND_ONE);
         cShownum.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cShownum.menu.lis[0].checked = true;
@@ -1436,9 +1395,8 @@ window.control = (() => {
         cShownum.setonchange(function(but) {
             but.setText(EMOJI_ROUND_ONE);
             if (isBusy()) return;
-            setMenuCheckBox(but, but.input.selectedIndex, [0, 1, 2, 3]);
-            switch (but.input.value * 1) {
-                case 0:
+            const FUN = {
+                0: () => {
                     if (but.menu.lis[0].checked) {
                         cBd.showNum();
                     }
@@ -1446,32 +1404,19 @@ window.control = (() => {
                         cBd.hideNum();
                     }
                     cBd.isShowNum = but.menu.lis[0].checked;
-                    break;
-                case 1:
-                    cBd.isShowFoul = but.menu.lis[1].checked;
-                    break;
-                case 2:
-                    cBd.isShowAutoLine = but.menu.lis[2].checked;
-                    break;
-                case 3:
-                    scaleCBoard(but.menu.lis[3].checked, 1);
-                    break;
-                case 4:
-                    cBd.isTransBranch = but.menu.lis[4].checked;
-                    break;
-                case 5:
-                    cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
-                    break;
-                case 6:
-                    coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
-                    break;
-                case 7:
-                    cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
-                    break;
-                case 8:
-                    cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop);
-                    break;
+                },
+                1: () => {cBd.isShowFoul = but.menu.lis[1].checked},
+                2: () => {cBd.isShowAutoLine = but.menu.lis[2].checked},
+                3: () => {scaleCBoard(but.menu.lis[3].checked, 1)},
+                4: () => {cBd.isTransBranch = but.menu.lis[4].checked},
+                5: () => {gameRulesMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
+                6: () => {cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
+                7: () => {coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
+                8: () => {cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
+                9: () => {cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
             }
+            setMenuCheckBox(but, but.input.selectedIndex, [0, 1, 2, 3]);
+            execFunction(FUN[but.input.value]);
             cBd.autoShow();
         });
         cBd.onScale = function() {
@@ -1894,7 +1839,6 @@ window.control = (() => {
         setTimeout(function() {
 
             engine.reset({
-                "maxThread": MAX_THREAD_NUM,
                 "cObjVCF": cObjVCF,
                 "cBoard": cBd,
                 "cFindVCF": cFindVCF,
@@ -1904,7 +1848,6 @@ window.control = (() => {
                 "msg": msg,
                 "closeMsg": closeMsg,
                 "closeNoSleep": closeNoSleep,
-                "saveContinueData": appData.saveContinueData,
                 "lbTime": lbTime,
                 "saveData": appData.saveData,
                 "setBusy": setBusy
@@ -1919,15 +1862,8 @@ window.control = (() => {
                 setPlayMode: setPlayMode
             });
 
-            let continueData = appData.loadContinueData(cBd);
-            if (continueData) {
-                showLabel("上次意外退出,继续计算...");
-                engine.postMsg(continueData.cmd, continueData);
-            }
         }, 1000 * 1);
     }
-
-
 
     function createImgCmdDiv(parentNode, left, top, width, height) {
 
@@ -2533,7 +2469,6 @@ window.control = (() => {
         };
     })();
 
-
     function createHelpWindow() {
 
         let busy = false;
@@ -2744,7 +2679,6 @@ window.control = (() => {
 
     }
 
-
     function setClick(elem, callback = () => {}, timeout = 300) {
         let startX = 0,
             startY = 0;
@@ -2774,8 +2708,6 @@ window.control = (() => {
         }, true);
     }
 
-
-
     function setButtonClick(elem, callback = () => {}) {
         setClick(elem, () => {
             let bkColor = elem.style.opacity;
@@ -2786,24 +2718,59 @@ window.control = (() => {
             }, 300);
         }, 0);
     }
-
-
-
+    
+    function mapLb(callback) {
+        cBd.map(p => {
+            switch (p.type) {
+                case TYPE_MARK:
+                case TYPE_BLACK:
+                case TYPE_WHITE:
+                    callback(p);
+            }
+        })
+    }
+    
+    function getMaxChar(startChar = "A") { // 搜索棋盘上最大的字母;
+        let code = startChar.charCodeAt();
+        mapLb(p => {
+            if(p.text.length == 1) {
+                let tcode = p.text.charCodeAt(0);
+                if (tcode >= code && tcode <= (code+25)) 
+                    code = tcode < (code+25) ? tcode + 1 : tcode;
+            }
+        })
+        return String.fromCharCode(code);
+    }
+    
+    function getMaxNum(minNum = 1, maxNum = 225) {
+        let code = minNum;
+        mapLb(p => {
+            let tcode = p.text * 1;
+            if (tcode >= code && tcode <= maxNum) {
+                code = tcode < maxNum ? tcode + 1 : tcode;
+            }
+        })
+        return code;
+    }
+    
+    function getContinuLb() {
+        let lbIdx = 0;
+        mapLb(p => {
+            let i = continueLabel.lastIndexOf(p.text);
+            if (i >= lbIdx) {
+                lbIdx = i < continueLabel.length - 1 ? i + 1 : i;
+            }
+        })
+        return continueLabel[lbIdx];
+    }
 
     //返回参数确认 添加棋子 还是标签
     //info = {type, boardTXT, isShowNum};
     function createCommandInfo() {
-
         let isShow = getShowNum() ? true : false,
-            color = getRenjuLbColor(),
-            idx,
-            lbIdx,
-            code,
-            tcode,
-            txt;
+            color = getRenjuLbColor();
 
         switch (true) {
-
             case cAutoadd.checked:
                 return { type: TYPE_NUMBER, color: "auto", isShowNum: isShow };
             case cAddblack.checked:
@@ -2819,67 +2786,19 @@ window.control = (() => {
             case cLbd.checked:
                 return { type: TYPE_MARK, color: color, boardTXT: EMOJI_FORK };
             case cLABC.checked:
-
                 switch (cLABC.input.value * 1) {
                     case 0:
                         return { type: TYPE_MARKARROW, color: color };
                     case 1:
                         return { type: TYPE_MARKLINE, color: color };
                     case 2:
-                        // 搜索棋盘上最大的字母;
-                        code = "A".charCodeAt(); // 65→90
-                        for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) && cBd.P[idx].text.length == 1) {
-                                let tcode = cBd.P[idx].text.charCodeAt(0);
-                                if (tcode >= code && tcode <= 90) {
-                                    code = tcode < 90 ? tcode + 1 : tcode;
-                                }
-                            }
-                        }
-                        txt = String.fromCharCode(code);
-                        return { type: TYPE_MARK, color: color, boardTXT: txt };
-
+                        return { type: TYPE_MARK, color: color, boardTXT: getMaxChar("A") };
                     case 3:
-
-                        // 搜索棋盘上最大的字母;
-                        code = "a".charCodeAt(); // 65→90
-                        for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if ((cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) && cBd.P[idx].text.length == 1) {
-                                tcode = cBd.P[idx].text.charCodeAt(0);
-                                if (tcode >= code && tcode <= 122) {
-                                    code = tcode < 122 ? tcode + 1 : tcode;
-                                }
-                            }
-                        }
-                        txt = String.fromCharCode(code);
-                        return { type: TYPE_MARK, color: color, boardTXT: txt };
-
+                        return { type: TYPE_MARK, color: color, boardTXT: getMaxChar("a") };
                     case 4:
-                        // 搜索棋盘上最大的数字
-                        code = 1 // 1-225;
-                        for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) {
-                                tcode = cBd.P[idx].text * 1;
-                                if (tcode >= code && tcode <= 225) {
-                                    code = tcode < 225 ? tcode + 1 : tcode;
-                                }
-                            }
-                        }
-                        txt = code;
-                        return { type: TYPE_MARK, color: color, boardTXT: txt };
+                        return { type: TYPE_MARK, color: color, boardTXT: getMaxNum(1, 225) };
                     case 5:
-                        lbIdx = 0;
-                        for (idx = 0; idx < cBd.SLTX * cBd.SLTY; idx++) {
-                            if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_BLACK || cBd.P[idx].type == TYPE_WHITE) {
-                                tcode = cBd.P[idx].text;
-                                let i = continueLabel.indexOf(tcode);
-                                if (i >= lbIdx) {
-                                    lbIdx = i < continueLabel.length - 1 ? i + 1 : i;
-                                }
-                            }
-                        }
-                        txt = continueLabel[lbIdx];
-                        return { type: TYPE_MARK, color: color, boardTXT: txt };
+                        return { type: TYPE_MARK, color: color, boardTXT: getContinuLb() };
                     case 6:
                         return { type: TYPE_MARK, color: color, boardTXT: EMOJI_STAR };
                     case 7:
@@ -2940,24 +2859,44 @@ window.control = (() => {
             }
         });
     }
+    
+    function toStart(isShowNum) {
+        cBoard.toStart(isShowNum);
+    }
+    
+    function toPrevious(isShowNum, delay = "now") {
+        cBoard.toPrevious(isShowNum, delay);
+        cBoard.MS[cBoard.MSindex] == 225 && cBoard.toPrevious(isShowNum, delay);
+    }
+    
+    function toNext(isShowNum, delay = "now") {
+        cBoard.toNext(isShowNum, delay);
+        cBoard.MS[cBoard.MSindex] == 225 && cBoard.toNext(isShowNum, delay);
+    }
+    
+    function toEnd(isShowNum) {
+        cBoard.toEnd(isShowNum);
+    }
 
     function renjuClick(x, y) {
 
-        if (isBusy()) return;
+        if (isBusy(cBd.isOut(x, y, cBd.viewBox) ? false : true)) return;
         let idx = cBd.getPIndex(x, y),
             arr = cBd.getArray(),
-            isF = isFoul(idx, arr),
+            isF = gameRules == RENJU_RULES && isFoul(idx, arr),
             pInfo = createCommandInfo();
 
         if (idx < 0) return;
         cancelKeepTouch();
         switch (playMode) {
             case MODE_RENJU:
+            case MODE_RENJU_FREE:
                 if (pInfo.type == TYPE_NUMBER) {
                     if (cBd.P[idx].type == TYPE_NUMBER)
                         cBd.cleNb(idx, pInfo.isShowNum); //点击棋子，触发悔棋
-                    else if (cBd.P[idx].type == TYPE_EMPTY)
+                    else if (cBd.P[idx].type == TYPE_EMPTY && playMode == MODE_RENJU) {
                         cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF); // 添加棋子  
+                    }
                 }
                 else if (pInfo.type == TYPE_BLACK) {
                     if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK)
@@ -3007,7 +2946,7 @@ window.control = (() => {
             case MODE_READ_FOULPOINT:
                 if (cBd.P[idx].type == TYPE_NUMBER) {
                     if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE)
-                        cBd.toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
+                        toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
                 }
                 else if (cBd.P[idx].type == TYPE_EMPTY) {
                     if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE) {
@@ -3022,15 +2961,6 @@ window.control = (() => {
                         .then(({ path, nMatch }) => {
                             if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE) {
                                 if (path && path.length) {
-                                    /*
-                                    cBd.tree.nMatch = nMatch;
-                                    while (cBd.MSindex > -1) {
-                                        cBd.toPrevious(pInfo.isShowNum, 100);
-                                    }
-                                    for (let i = 0; i < path.length; i++) {
-                                        cBd.wNb(path[i], "auto", pInfo.isShowNum, undefined, i==(path.length-1) && isF, 100);
-                                    }
-                                    */
                                     (path.indexOf(idx) & 1) == (cBd.MSindex & 1) &&
                                     cBd.wNb(225, "auto", pInfo.isShowNum, undefined, undefined, 100);
                                     cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF, 100);
@@ -3049,7 +2979,7 @@ window.control = (() => {
             case MODE_EDITLIB:
                 if (cBd.P[idx].type == TYPE_NUMBER) {
                     if (pInfo.type == TYPE_NUMBER || pInfo.type == TYPE_BLACK || pInfo.type == TYPE_WHITE)
-                        cBd.toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
+                        toPrevious(pInfo.isShowNum); //点击棋子，触发悔棋
                 }
                 else if (cBd.P[idx].type == TYPE_EMPTY) {
                     if (pInfo.type == TYPE_NUMBER) {
@@ -3103,9 +3033,7 @@ window.control = (() => {
         }
     }
 
-
     function renjuDblClick(x, y) {
-
         if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
         if (idx > -1) {
@@ -3126,9 +3054,7 @@ window.control = (() => {
         }
     }
 
-
     function renjuKeepTouch(x, y) {
-
         if (isBusy()) return;
         let idx = cBd.getPIndex(x, y);
         if (idx < 0) return;
@@ -3171,13 +3097,11 @@ window.control = (() => {
         }
     }
 
-
     function inputLabel(idx, boardTXT = "") {
         let w = cBd.width * 0.8;
         let h;
         let l = (dw - w) / 2;
         let t = dh / 7;
-
         // 设置弹窗，让用户手动输入标记
         return msg({
                 text: boardTXT,
@@ -3198,9 +3122,8 @@ window.control = (() => {
             })
     }
 
-
-
     function isBusy(loading = true) {
+        console.log(`isBusy loading = ${loading}`)
         let busy = cCancelFind.div.parentNode; //!cLoadImg.div.parentNode || !cCutImage.div.parentNode || !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
         if (busy && loading) window._loading.open("busy", 1600);
         return busy;
@@ -3231,38 +3154,61 @@ window.control = (() => {
         switch (playMode) {
             case MODE_RENLIB:
                 //remove Tree
-                if (mode == MODE_RENLIB || mode == MODE_EDITLIB || mode == MODE_READLIB) {
+                if (mode != MODE_RENLIB) {
                     RenjuLib.closeLib();
                 }
-                //brrak;
-                case MODE_RENJU:
-                    //create Tree
-                    if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
-                        let code = cBd.getCode(),
-                            centerPos = { x: cBd.size / 2 + 0.5, y: cBd.size / 2 + 0.5 },
-                            tree = new RenjuTree(1, 640, centerPos);
-                        playMode = MODE_EDITLIB;
-                        cBd.unpackCode(getShowNum(), code);
-                        cBd.addTree(tree);
-                        cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
-                    }
-                    break;
-                case MODE_READLIB:
-                case MODE_EDITLIB:
-                    //remove Tree
-                    if (mode == MODE_RENJU || mode == MODE_RENLIB) {
-                        let code = cBd.getCode();
-                        cBd.removeTree();
-                        playMode = MODE_RENJU;
-                        cBd.unpackCode(getShowNum(), code);
-                    }
-                    break;
+            case MODE_RENJU:
+                if (mode == MODE_RENJU_FREE) {
+                    let arr = cBd.getArray();
+                    cBd.cle();
+                    arr.map((color, idx) => {
+                        if (color == 1) cBd.wNb(idx, "black");
+                        else if (color == 2) cBd.wNb(idx, "white");
+                    })
+                }
+            case MODE_RENJU_FREE:
+                //create Tree
+                if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
+                    let code = cBd.getCode(),
+                        centerPos = { x: cBd.size / 2 + 0.5, y: cBd.size / 2 + 0.5 },
+                        tree = new RenjuTree(1, 640, centerPos);
+                    playMode = MODE_EDITLIB;
+                    cBd.unpackCode(getShowNum(), code);
+                    cBd.addTree(tree);
+                    cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+                }
+                break;
+            case MODE_READLIB:
+            case MODE_EDITLIB:
+                //remove Tree
+                if (mode == MODE_RENJU || mode == MODE_RENLIB) {
+                    let code = cBd.getCode();
+                    cBd.removeTree();
+                    playMode = MODE_RENJU;
+                    cBd.unpackCode(getShowNum(), code);
+                }
+                else if (mode == MODE_RENJU_FREE) {
+                    let arr = cBd.getArray();
+                    cBd.cle();
+                    cBd.removeTree();
+                    playMode = MODE_RENJU;
+                    arr.map((color, idx) => {
+                        if (color == 1) cBd.wNb(idx, "black");
+                        else if (color == 2) cBd.wNb(idx, "white");
+                    })
+                }
+                break;
         }
+        
         playMode = mode;
         cBd.isTransBranch = mode == MODE_EDITLIB;
+        
         switch (mode) {
             case MODE_RENJU:
                 cMode.setText("摆棋");
+                break;
+            case MODE_RENJU_FREE:
+                cMode.setText("无序");
                 break;
             case MODE_READLIB:
                 cMode.setText("阅读");
@@ -3279,8 +3225,6 @@ window.control = (() => {
         }
         setBlockUnload();
     }
-
-
 
     let share = (() => {
         // 创建一个window
@@ -3430,6 +3374,7 @@ window.control = (() => {
         "getPlayMode": getPlayMode,
         "setPlayMode": setPlayMode,
         "renjuMode": MODE_RENJU,
+        "renjuFreeMode": MODE_RENJU_FREE,
         "imgMode": MODE_LOADIMG,
         "lineMode": MODE_LINE_EDIT,
         "arrowMode": MODE_ARROW_EDIT,

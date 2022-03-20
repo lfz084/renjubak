@@ -370,7 +370,6 @@ window.CheckerBoard = (function() {
         this.oldFirstColor = "black";
         this.oldResetNum = 0;
         this.tree = new this.node();
-        this.unpacking = false;
 
         //页面显示的棋盘
         this.scale = 1;
@@ -494,9 +493,41 @@ window.CheckerBoard = (function() {
         this.oldResetNum = this.resetNum;
         this.resetNum = 0;
         log(tree);
-        this.tree = tree; //new RenjuTree(tree || new this.node());
+        this.tree = tree;
+        if (tree.init) {
+            this.cle();
+            this.MS = tree.init.MS;
+            this.resetNum = tree.init.resetNum;
+            while(this.MSindex < tree.init.MSindex) this.toNext(true, 100);
+        }
         this.autoShow();
     };
+    
+    
+    
+    CheckerBoard.prototype.mergeTree = function(tree) {
+        this.oldFirstColor = this.firstColor; // 在this.cle 前面
+        this.firstColor = "black";
+        
+        this.oldResetNum = this.resetNum;
+        this.resetNum = 0;
+        log(tree);
+        this.tree = this.tree || new RenjuTree();
+        this.tree.mergeTree(tree);
+        if (tree.init) {
+            this.cle();
+            this.MS = tree.init.MS;
+            this.resetNum = tree.init.resetNum;
+            while(this.MSindex < tree.init.MSindex) this.toNext(true, 100);
+        }
+        this.autoShow();
+    }
+    
+    
+    
+    CheckerBoard.prototype.map = function(callback) {
+        this.P.map(p => { callback(p) });
+    }
 
 
 
@@ -505,6 +536,7 @@ window.CheckerBoard = (function() {
         let playMode = control.getPlayMode();
         //log(`playmofel=${control.getPlayMode()}`)
         if (playMode != control.renjuMode &&
+            playMode != control.renjuFreeMode &&
             playMode != control.renlibMode &&
             playMode != control.readLibMode &&
             playMode != control.editLibMode &&
@@ -4162,57 +4194,33 @@ window.CheckerBoard = (function() {
         //this.showLastNb(true);
     };
 
-
-
-    //跳到最后一手
-    CheckerBoard.prototype.toEnd = function(isShowNum) {
-
-        if (this.MSindex < this.MS.length - 1) {
-            while (this.MSindex < this.MS.length - 1) {
-                this.toNext(isShowNum, 100);
-            }
+    // 跳到第 0 手。
+    CheckerBoard.prototype.toStart = function(isShowNum) {
+        while (this.MSindex > -1) {
+            this.toPrevious(isShowNum, 100);
         }
     };
 
-
-
-    // 跳到下一手
-    CheckerBoard.prototype.toNext = function(isShowNum, timer = "now") {
-
-            if (this.MS.length - 1 > this.MSindex) {
-                let msIndex = this.MSindex + 1;
-                while (this.MS[msIndex] < 0 || this.MS[msIndex] > 224) {
-                    this.wNb(this.MS[msIndex], "auto", isShowNum, undefined, undefined, timer);
-                    msIndex++;
-                    if (msIndex >= this.MS.length) return;
-                }
-                this.wNb(this.MS[msIndex], "auto", isShowNum, undefined, undefined, timer);
-            }
+    //跳到最后一手
+    CheckerBoard.prototype.toEnd = function(isShowNum) {
+        while (this.MSindex < this.MS.length - 1) {
+            this.toNext(isShowNum, 100);
+        }
     };
-
-
 
     // 返回上一手
     CheckerBoard.prototype.toPrevious = function(isShowNum, timer = "now") {
-            if (this.MSindex >= 0) {
-                this.cleNb(this.MS[this.MSindex], isShowNum, timer);
-                while (this.MS[this.MSindex] < 0 || this.MS[this.MSindex] > 224) {
-                    this.cleNb(this.MS[this.MSindex], isShowNum, timer);
-                }
-            }
+        if (this.MSindex >= 0) {
+            this.cleNb(this.MS[this.MSindex], isShowNum, timer);
+        }
     };
 
-
-
-    // 跳到第 0 手。
-    CheckerBoard.prototype.toStart = function(isShowNum) {
-
-            while (this.MSindex > 0) {
-                this.toPrevious(isShowNum, 100);
-            }
-            if (control.getPlayMode() == control.readLibMode || control.getPlayMode() == control.editLibMode) this.toPrevious(isShowNum, 100);
+    // 跳到下一手
+    CheckerBoard.prototype.toNext = function(isShowNum, timer = "now") {
+        if (this.MS.length - 1 > this.MSindex) {
+            this.wNb(this.MS[this.MSindex+1], "auto", isShowNum, undefined, undefined, timer);
+        }
     };
-
 
 
     CheckerBoard.prototype.unpackCode = function(showNum, codeStr, resetNum, firstColor) {
@@ -4342,12 +4350,14 @@ window.CheckerBoard = (function() {
         }
 
         //log(this.tree)
-        if (this.unpacking || this.oldCode == "") return;
         this.cleLb("all");
-        let nodes = this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1));
+        let nodes = this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1)),
+            nextMove = { idx: -1, level: -2, idxColor: undefined },
+            level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
+            
         nodes.map(cur => {
             if (cur) {
-                console.log(`cur.branchsInfo: ${cur.branchsInfo}`)
+                //console.log(`cur.branchsInfo: ${cur.branchsInfo}`)
                 let i = cur.branchsInfo + 1 & 1,
                     idx = cur.branchs[i].idx,
                     txt = cur.boardTXT || cur.branchs[i].boardTXT,
@@ -4355,10 +4365,21 @@ window.CheckerBoard = (function() {
                     cur.branchsInfo < 3 ? cur.branchs[i].color : 
                     cur.branchs[0] && cur.branchs[0].color == "black" ?
                     "black" : cur.branchs[1].color;
+                    
                 this.wLb(idx, txt, color);
                 this.P[idx].branchs = cur;
+                
+                if (nextMove.level < level.indexOf(txt)) {
+                    nextMove.level = level.indexOf(txt);
+                    nextMove.idx = idx;
+                    nextMove.idxColor = i+1;
+                }
             }
         });
+        if (this.MSindex + 1 === this.MS.length && nextMove.idx > -1 && nextMove.idx < 225) {
+            (this.MSindex & 1) + 1 == nextMove.idxColor && this.MS.push(225);
+            this.MS.push(nextMove.idx);
+        }
     }
 
 

@@ -845,6 +845,7 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["String2Buffer"]],
                 [SOURCE_FILES["EvaluatorWebassembly"]],
                 [SOURCE_FILES["EvaluatorJScript"]],
+                [SOURCE_FILES["Evaluator"]],
                 ], false)
         })
         .then(() => {
@@ -854,7 +855,6 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["control"]],
                 [SOURCE_FILES["msgbox"]],
                 [SOURCE_FILES["appData"]],
-                [SOURCE_FILES["Evaluator"]],
                 [SOURCE_FILES["TypeBuffer"]],
                 [SOURCE_FILES["engine"]],
                 [SOURCE_FILES["NoSleep"]],

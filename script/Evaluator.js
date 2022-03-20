@@ -84,13 +84,74 @@ let cBoardSize = 15;
 
 //---------------  ------------------ ------------------
 
-if ("WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
+if (0 && "WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
     loadEvaluatorWebassembly.call(this);
     console.warn("loadEvaluatorWebassembly");
 }
 else {
     loadEvaluatorJScript.call(this);
     console.warn("loadEvaluatorJScript");
+}
+
+//---------------------- IDX_LISTS ------------------------
+
+const IDX_LISTS = [[],[],[],[]];
+
+for (let direction = 0; direction < 4; direction++) {
+    switch (direction) { //生成阴线，阳线
+        case 0:
+            for (let y = 0; y < 15; y++) {
+                IDX_LISTS[direction][y] = [];
+                for (let x = 0; x < 15; x++) {
+                    IDX_LISTS[direction][y][x] = y * 15 + x;
+                }
+            }
+            break;
+        case 1:
+            for (let x = 0; x < 15; x++) {
+                IDX_LISTS[direction][x] = [];
+                for (let y = 0; y < 15; y++) {
+                    IDX_LISTS[direction][x][y] = y * 15 + x;
+                }
+            }
+            break;
+        case 2:
+            for (let i = 0; i < 15; i++) {
+                IDX_LISTS[direction][i] = [];
+                for (let j = 0; j <= i; j++) {
+                    let x = 0 + j,
+                        y = x + 14 - i;
+                    IDX_LISTS[direction][i][j] = y * 15 + x;
+                }
+            }
+            for (let i = 13; i >= 0; i--) {
+                IDX_LISTS[direction][28 - i] = [];
+                for (let j = 0; j <= i; j++) {
+                    let x = 14 - i + j,
+                        y = i - 14 + x;
+                    IDX_LISTS[direction][28 - i][j] = y * 15 + x;
+                }
+            }
+            break;
+        case 3:
+            for (let i = 0; i < 15; i++) {
+                IDX_LISTS[direction][i] = [];
+                for (let j = 0; j <= i; j++) {
+                    let x = i - j,
+                        y = i - x;
+                    IDX_LISTS[direction][i][j] = y * 15 + x;
+                }
+            }
+            for (let i = 13; i >= 0; i--) {
+                IDX_LISTS[direction][28 - i] = [];
+                for (let j = 0; j <= i; j++) {
+                    let x = 14 - j,
+                        y = 28 - i - x;
+                    IDX_LISTS[direction][28 - i][j] = y * 15 + x;
+                }
+            }
+            break;
+    }
 }
 
 //--------------------- line -------------------------
@@ -101,7 +162,7 @@ function getLines(arr, color) {
             lineINFO = new Uint32Array(226),
             lines = [];
         testThree(arr, color, infoArr); //取得活三以上的点
-
+        
         infoArr.map((info, idx) => { //分析每个点保存路线,3开始,1结束
             if (THREE_FREE <= (info & FOUL_MAX_FREE) && (info & FOUL_MAX_FREE) <= FIVE) {
                 for (let direction = 0; direction < 4; direction++) {
@@ -147,67 +208,13 @@ function getLines(arr, color) {
         });
 
         for (let direction = 0; direction < 4; direction++) {
-            let idxLists = [];
-            switch (direction) { //生成阴线，阳线
-                case 0:
-                    for (let y = 0; y < 15; y++) {
-                        idxLists[y] = [];
-                        for (let x = 0; x < 15; x++) {
-                            idxLists[y][x] = y * 15 + x;
-                        }
-                    }
-                    break;
-                case 1:
-                    for (let x = 0; x < 15; x++) {
-                        idxLists[x] = [];
-                        for (let y = 0; y < 15; y++) {
-                            idxLists[x][y] = y * 15 + x;
-                        }
-                    }
-                    break;
-                case 2:
-                    for (let i = 0; i < 15; i++) {
-                        idxLists[i] = [];
-                        for (let j = 0; j <= i; j++) {
-                            let x = 0 + j,
-                                y = x + 14 - i;
-                            idxLists[i][j] = y * 15 + x;
-                        }
-                    }
-                    for (let i = 13; i >= 0; i--) {
-                        idxLists[28 - i] = [];
-                        for (let j = 0; j <= i; j++) {
-                            let x = 14 - i + j,
-                                y = i - 14 + x;
-                            idxLists[28 - i][j] = y * 15 + x;
-                        }
-                    }
-                    break;
-                case 3:
-                    for (let i = 0; i < 15; i++) {
-                        idxLists[i] = [];
-                        for (let j = 0; j <= i; j++) {
-                            let x = i - j,
-                                y = i - x;
-                            idxLists[i][j] = y * 15 + x;
-                        }
-                    }
-                    for (let i = 13; i >= 0; i--) {
-                        idxLists[28 - i] = [];
-                        for (let j = 0; j <= i; j++) {
-                            let x = 14 - j,
-                                y = 28 - i - x;
-                            idxLists[28 - i][j] = y * 15 + x;
-                        }
-                    }
-                    break;
-            }
-        
+            
             //console.warn(`direction: ${direction}`)
-            idxLists.map(list => { //找出每一条线
+            IDX_LISTS[direction].map(list => { //找出每一条线
                 const LVL = ["THREE_FREE", "FOUR_NOFREE", "FOUR_FREE", "FIVE"];
                 let lineStart = [-1, -1, -1, -1],
                     lineEnd = [-1, -1, -1, -1];
+                //console.log(list);
                 list.map(idx => {
                     let v = [0, 0, 0, 0];
                     v[0] = (lineINFO[idx] & (3 << direction * 8)) >>> direction * 8;
@@ -230,6 +237,7 @@ function getLines(arr, color) {
                 });
             });
         }
+        
         return lines;
     }
     catch (err) {
@@ -414,18 +422,22 @@ let vcfHashTable = [],
     vcfWinMovesNext = 0;
 let vcfHashMaxMovesLen = 73;
 let vcfInfo = {
-    initArr: new Array(226),
-    color: 0,
-    maxVCF: 0,
-    maxDepth: 0,
-    maxNode: 0,
-    vcfCount: 0,
-    pushMoveCount: 0,
-    pushPositionCount: 0,
-    hasCount: 0,
-    nodeCount: 0,
-    winMoves: vcfWinMoves
-};
+        initArr: new Array(226),
+        color: 0,
+        maxVCF: 0,
+        maxDepth: 0,
+        maxNode: 0,
+        vcfCount: 0,
+        pushMoveCount: 0,
+        pushPositionCount: 0,
+        hasCount: 0,
+        nodeCount: 0,
+        winMoves: vcfWinMoves
+    },
+    levelBInfo = {
+        levelInfo: 0,
+        winMoves: undefined
+    };
 
 function resetVCF(arr, color, maxVCF, maxDepth, maxNode) {
     vcfInfo.initArr = arr.slice(0);
@@ -543,17 +555,33 @@ function vcfTransTableHas(keyLen, keySum, moves, position, centerIdx) {
 
 //---------------------- VCT ----------------------------
 
+function resetLevelBInfo() {
+    levelBInfo.levelInfo = LEVEL_NONE; //=0
+    levelBInfo.winMoves = undefined;
+}
+
 function getLevelB(arr, color, maxVCF, maxDepth, maxNode) {
-    let initArr = arr.slice(0);
     let levelInfo = getLevel(arr, color);
-    if (levelInfo) return levelInfo;
+    resetLevelBInfo();
+    if (levelInfo) {
+        levelBInfo.levelInfo = levelInfo;
+        levelBInfo.winMoves = undefined;
+        return levelInfo;
+    }
 
     findVCF(arr, color, maxVCF, maxDepth, maxNode);
     let value = vcfInfo.nodeCount > 255 ? 255 : vcfInfo.nodeCount;
-    if (vcfInfo.vcfCount)
-        return LEVEL_VCF | (value << 8);
-    else if (vcfInfo.nodeCount > 2)
-        return LEVEL_VCT | (value << 8);
-    else
-        return LEVEL_NONE;
+    if (vcfInfo.vcfCount) {
+        levelBInfo.levelInfo = LEVEL_VCF | (value << 8);
+        levelBInfo.winMoves = vcfInfo.winMoves[0].slice(0);
+    }
+    else if (vcfInfo.nodeCount > 2) {
+        levelBInfo.levelInfo = LEVEL_VCT | (value << 8);
+        levelBInfo.winMoves = undefined;
+    }
+    else {
+        levelBInfo.levelInfo = LEVEL_NONE;
+        levelBInfo.winMoves = undefined;
+    }
+    return levelBInfo.levelInfo;
 }

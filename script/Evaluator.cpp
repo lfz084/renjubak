@@ -1998,11 +1998,11 @@ bool isVCF(char color, char* arr, BYTE* moves, BYTE movesLen) {
 
 // 去掉VCF无谓冲四，不会改变arr数组
 void simpleVCF(char color, char* arr, BYTE* moves, BYTE& movesLen) {
-
+    
     BYTE svcfFourPointsLen = 0,
         svcfVCFLen = 0;
         
-    BYTE leng = movesLen - 6;
+    short leng = movesLen - 6;
     for (BYTE j = 1; j <= leng; j += 2) { // add fourPoint
         if (FOUR_NOFREE == (FOUL_MAX & testPointFour(moves[j], INVERT_COLOR[color], arr))) svcfFourPoints[svcfFourPointsLen++] = j;
     }
@@ -2039,7 +2039,7 @@ void simpleVCF(char color, char* arr, BYTE* moves, BYTE& movesLen) {
         arr[moves[j]] = (j & 1) ? INVERT_COLOR[color] : color;
     }
 
-    for (BYTE i = movesLen - 5; i >= 0; i -= 2) { // 从后向前逐个冲4尝试是否无谓冲4
+    for (short i = movesLen - 5; i >= 0; i -= 2) { // 从后向前逐个冲4尝试是否无谓冲4
         svcfVCFLen = 0; //slice
         for (BYTE j= i+2; j<movesLen; j++) svcfVCF[svcfVCFLen++] = moves[j];
         if (isVCF(color, arr, svcfVCF, svcfVCFLen)) { //splice

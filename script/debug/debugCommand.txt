@@ -34,6 +34,7 @@ let sTime = new Date().getTime();
 engine.findVCF({arr:cBoard.getArray(), color:1, maxVCF:1, maxDepth:180, maxNode: 1000000})
 .then(moves => console.warn(`VCF: ${movesToName(moves)}\n\ntime: ${new Date().getTime()-sTime}`))
 
+-------------------------------------------------------
 
 async function f(thread) {
     setTimeout(() => {
@@ -45,7 +46,7 @@ async function f(thread) {
 async function p() {
     try {
         for(let i=0; i<30; i++){
-            let thread = await engine.getThread();
+            let thread = await engine.getFreeThread();
             f(thread);
             console.log(i);
         }
@@ -55,3 +56,30 @@ async function p() {
     }
 }
 p()
+
+-------------------------------------------------------
+
+async function test() {
+    let vcfMoves = await engine._findVCF({arr: cBoard.getArray(), color:1, maxVCF:1, maxDepth:180, maxNode:1000000}),
+        points = await engine.getBlockVCF({arr: cBoard.getArray(), color:1, vcfMoves: vcfMoves, includeFour: true});
+    console.log(`[${movesToName(vcfMoves)}]`);
+    console.log(`[${movesToName(points)}]`);
+    cBoard.cleLb("all");
+    points.map(idx => cBoard.wLb(idx, EMOJI_ROUND, "blue"));
+}
+test();
+
+engine._findVCF({arr: cBoard.getArray(), color:1, maxVCF:1, maxDepth:180, maxNode:1000000})
+engine.getBlockVCF({arr: cBoard.getArray(), color:1, vcfMoves: [1,2,3], includeFour: true});
+
+
+engine.createTreeVCF({arr: cBoard.getArray(), color: 1, maxVCF: 1}).then(tree=>console.log(tree))
+
+
+let ps = [],
+    p = () => new Promise(resolve => {setTimeout(resolve,3000)})
+
+for(let i=0; i<5; i++) {
+    ps.push(p())
+}
+Promise.all(ps).then(()=>{console.log(5)})
