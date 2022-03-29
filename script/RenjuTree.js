@@ -220,7 +220,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
     }
 
     //------------------------ Node ---------------------
-    
+
     const DEFAULT_BOARD_TXT = ["", "●", "○", "◐"];
     //byte v = 1; 
     //byte idx;
@@ -307,10 +307,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
             }
         }
 
-        constructor(nodeBuffer, commentBuffer, pointer) {
+        constructor(nodeBuffer, commentBuffer, pointer, idx, boardTXT) {
             this.nodeBuf = nodeBuffer;
             this.commentBuf = commentBuffer;
             this.pointer = pointer;
+            idx != undefined && (this.idx = idx);
+            boardTXT && (this.boardTXT = boardTXT);
         }
     }
 
@@ -471,12 +473,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
         return transposePath(path, nMatch, this.size);
     }
 
-    Tree.prototype.newNode = function() {
+    Tree.prototype.newNode = function(idx, boardTXT) {
         let pointer = this.nodeBuf.alloc();
         if (pointer) {
             this.nodeBuf.resetObj(pointer); // set Obj buf = {0};
             this.nodeBuf.setUint16(pointer, 0xe101); // v = 1, idx = 225
-            return new Node(this.nodeBuf, this.commentBuf, pointer);
+            return new Node(this.nodeBuf, this.commentBuf, pointer, idx, boardTXT);
         }
         else
             return null;
@@ -549,8 +551,26 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
 
     Tree.prototype.addRight = function(leftNode, rightNode) {
         if (leftNode.nodeBuf != this.nodeBuf) throw new Error(`Tree.addRight Error: leftNode.nodeBuf != this.nodeBuf`);
+        let current = leftNode.right,
+            rIdx = rightNode.idx;
+    
+        while (current) {
+            let idx = current.idx;
+            if (rIdx < idx) {
+                let nNode = this.copyNode(rightNode);
+                leftNode.right = nNode;
+                nNode.right = current;
+                return nNode;
+            }
+            else if (rIdx == idx) {
+                this.copyNode(rightNode, current);
+                return current;
+            }
+            leftNode = current;
+            current = current.right;
+        }
+        
         let nNode = this.copyNode(rightNode);
-        nNode.right = leftNode.right;
         leftNode.right = nNode;
         return nNode;
     }
@@ -647,13 +667,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
 
     Tree.prototype.copyTree = function(node) {}
 
-    Tree.prototype.positionNodes = function(path) {
+    Tree.prototype.positionNodes = function(path, maxMatch = 0) {
         let nodes = [],
             movesLen = 0;
 
         path.map(idx => idx < 225 && movesLen++);
 
-        for (let nMatch = 0; nMatch < 8; nMatch++) {
+        for (let nMatch = 0; nMatch <= maxMatch; nMatch++) {
             let moveList = [],
                 stack = [],
                 downNode,
@@ -816,11 +836,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
                             let branch = createBranch({
                                 node: jointNode.node,
                                 indexOf: jointNode.len,
-                                boardTXT: DEFAULT_BOARD_TXT[(jointNode.len-1&1)+1],
+                                boardTXT: DEFAULT_BOARD_TXT[(jointNode.len - 1 & 1) + 1],
                                 idx: normalizeIdx(jointNode.node.idx, nMatch, this.size),
                                 path: currentPath,
                                 nMatch: nMatch,
-                                color: "#483D8B"
+                                color: "#685D8B"//"#483D8B"
                             });
                             addBranch(branch);
                             //console.log(`red: [${movesToName(branch.path)}]`);

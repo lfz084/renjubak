@@ -24,9 +24,9 @@ window.control = (() => {
         if (TEST_CONTROL && DEBUG)
             print(`[control.js]\n>> ` + param);
     }
-    
- //--------------------------------------------------------------
- 
+
+    //--------------------------------------------------------------
+
     const MODE_RENJU = 0,
         MODE_LOADIMG = 1,
         MODE_LINE_EDIT = 2,
@@ -434,9 +434,9 @@ window.control = (() => {
         }
         return true;
     }
-    
+
     function execFunction(callback) {
-        switch(callback.constructor.name) {
+        switch (callback.constructor.name) {
             case "Function":
                 setBusy(true);
                 callback();
@@ -445,8 +445,8 @@ window.control = (() => {
             case "AsyncFunction":
                 setBusy(true);
                 callback()
-                .then(() => {setBusy(false)})
-                .catch(() => {setBusy(false)})
+                    .then(() => { setBusy(false) })
+                    .catch(() => { setBusy(false) })
                 break;
         }
     }
@@ -502,49 +502,64 @@ window.control = (() => {
                     x = but.menu.offsetLeft,
                     y = but.menu.offsetTop;
                 const FUN = {
-                    0: () => {cShownum.showMenu(x, y)},
-                    1: () => {cLoadImg.showMenu(x, y)},
-                    2: () => {cCutImage.showMenu(x, y)},
-                    3: () => {cFindPoint.showMenu(x, y)},
-                    4: () => {cFindVCF.showMenu(x, y)},
-                    5: () => {cNewGame.touchend()},
+                    0: () => { cShownum.showMenu(x, y) },
+                    1: () => { cLoadImg.showMenu(x, y) },
+                    2: () => { cCutImage.showMenu(x, y) },
+                    3: () => { cFindPoint.showMenu(x, y) },
+                    4: () => { cFindVCF.showMenu(x, y) },
+                    5: () => { cNewGame.touchend() },
                     6: () => {
                         if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE || cBd.P[idx].type == TYPE_EMPTY)
                             inputLabel(idx);
                     },
-                    7: () => {cCleLb.touchend()},
-                    8: () => {cShareWhite.touchend()},
-                    9: () => {cShare.touchend()},
-                    10:() => {cNextone.touchend()},
-                    11:() => {cResetnum.touchend()},
-                    12:() => {
+                    7: () => { cCleLb.touchend() },
+                    8: () => { cShareWhite.touchend() },
+                    9: () => { cShare.touchend() },
+                    10: () => { cNextone.touchend() },
+                    11: () => { cResetnum.touchend() },
+                    12: () => {
                         cBd.showNum();
                         setShowNum(true);
                         cBd.isShowNum = getShowNum();
                     },
-                    13:() => {
+                    13: () => {
                         cBd.hideNum();
                         setShowNum(false);
                         cBd.isShowNum = getShowNum();
                     },
-                    14:() => {cInputcode.touchend()},
-                    15:() => {cOutputcode.touchend()},
-                    16:() => {typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload()},
+                    14: () => { cInputcode.touchend() },
+                    15: () => { cOutputcode.touchend() },
+                    16: () => { typeof window.reloadApp == "function" ? window.reloadApp() : window.location.reload() },
                 }
                 execFunction(FUN[but.input.value]);
             });
     }
-    
+
+    function setTreeInit(tree) {
+        if (tree && tree.constructor.name == "Tree") {
+            tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+            tree.init && (tree.init = {
+                MS: cBd.MS.slice(0, cBd.MSindex + 1).concat(tree.init.MS.slice(tree.init.MSindex + 1)),
+                MSindex: cBd.MSindex,
+                resetNum: (tree.init.resetNum & 1) == (cBd.MSindex + 1 & 1) ? cBd.MSindex + 1 : cBd.MSindex + 2
+            })
+        }
+    }
+
     async function addTree(tree) {
-        cBd.cle();
-        setPlayMode(MODE_READLIB);
-        cBd.addTree(tree);
+        if (tree && tree.constructor.name == "Tree") {
+            setPlayMode(MODE_READLIB);
+            setTreeInit(tree);
+            cBd.addTree(tree);
+        }
     }
 
     async function mergeTree(tree) {
-        cBd.cle();
-        setPlayMode(MODE_READLIB);
-        cBd.mergeTree(tree);
+        if (tree && tree.constructor.name == "Tree") {
+            setPlayMode(MODE_READLIB);
+            setTreeInit(tree);
+            cBd.mergeTree(tree);
+        }
     }
 
     function moveButtons(settings) {
@@ -782,7 +797,7 @@ window.control = (() => {
                     fileInput.click()
                     console.log(`setonchange3`)
                 },
-                3: () => {setMemoryMenu.showMenu()},
+                3: () => { setMemoryMenu.showMenu() },
             }
             execFunction(FUN[but.input.value]);
             but.input.value = 0;
@@ -872,12 +887,12 @@ window.control = (() => {
             but.setText(`保存`);
             if (isBusy()) return;
             const FUN = {
-                1: () => {share()},
-                2: () => {cBd.saveAsImage("jpeg")},
-                3: () => {cBd.saveAsImage("png")},
-                4: () => {cBd.saveAsSVG("svg")},
-                5: () => {cBd.saveAsSVG("html")},
-                6: () => {cBd.saveAsPDF()},
+                1: () => { share() },
+                2: () => { cBd.saveAsImage("jpeg") },
+                3: () => { cBd.saveAsImage("png") },
+                4: () => { cBd.saveAsSVG("svg") },
+                5: () => { cBd.saveAsSVG("html") },
+                6: () => { cBd.saveAsPDF() },
             }
             execFunction(FUN[but.input.value]);
             but.input.value = 0;
@@ -1017,17 +1032,17 @@ window.control = (() => {
         cMode = new Button(renjuCmddiv, "select", 0, 0, w, h);
         cMode.addOption(1, "经典摆棋模式");
         cMode.addOption(2, "无序摆棋模式");
-        cMode.addOption(3, "棋谱阅读模式");
+        cMode.addOption(3, "棋谱只读模式");
         cMode.addOption(4, "棋谱编辑模式");
         cMode.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cMode.setText("摆棋");
         cMode.setonchange(function(but) {
             if (isBusy()) return;
             const FUN = {
-                1: () => {setPlayMode(MODE_RENJU)},
-                2: () => {setPlayMode(MODE_RENJU_FREE)},
-                3: () => {setPlayMode(MODE_READLIB)},
-                4: () => {setPlayMode(MODE_EDITLIB)},
+                1: () => { setPlayMode(MODE_RENJU) },
+                2: () => { setPlayMode(MODE_RENJU_FREE) },
+                3: () => { setPlayMode(MODE_READLIB) },
+                4: () => { setPlayMode(MODE_EDITLIB) },
             }
             execFunction(FUN[but.input.value]);
         });
@@ -1056,7 +1071,7 @@ window.control = (() => {
             cFindPoint.addOption(10, "活四");
             cFindPoint.addOption(11, "冲四");
             cFindPoint.addOption(12, "五连");
-            
+
         }
         else {
             for (let i = 0; i < tMsg.length; i++) {
@@ -1077,13 +1092,15 @@ window.control = (() => {
             let arr = cBd.getArray();
             const FUN = {
                 1: async function() {
-                    return engine.createTreePointsVCT({
+                    return engine.createTreeVCT({
                         color: getRenjuSelColor(),
                         arr: arr,
+                        radius: 3,
                         ftype: FIND_ALL,
                         maxVCF: 1,
                         maxDepth: 180,
-                        maxNode: 500000
+                        maxNode: 1000,
+                        maxDepthVCT: 5,
                     })
                 },
                 2: async function() {
@@ -1151,7 +1168,7 @@ window.control = (() => {
                     })
                 },
             }
-            execFunction(async function(){ mergeTree(await FUN[but.input.value]())});
+            execFunction(async function() { mergeTree((await FUN[but.input.value]())) });
             but.input.value = 0;
         });
         //cFindPoint.setontouchend(function() {});
@@ -1190,28 +1207,32 @@ window.control = (() => {
             viewport1.resize();
             let arr = cBd.getArray(); // cBd.getArray2D();
             const FUN = {
-                1: async function () {
-                    return engine.createTreeVCF({ 
-                        arr: arr, 
-                        color: getRenjuSelColor(), 
-                        maxVCF: 1 
+                1: async function() {
+                    return engine.createTreeVCF({
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        maxVCF: 1,
+                        maxDepth: 180,
+                        maxNode: 1000000
                     })
                 },
-                2: async function () {
-                    return engine.createTreeVCF({ 
-                        arr: arr, 
-                        color: getRenjuSelColor(), 
-                        maxVCF: 255 
+                2: async function() {
+                    return engine.createTreeVCF({
+                        arr: arr,
+                        color: getRenjuSelColor(),
+                        maxVCF: 255,
+                        maxDepth: 180,
+                        maxNode: 1000000
                     })
                 },
-                3: async function () {
+                3: async function() {
                     engine.postMsg("isTwoVCF", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
                 },
-                4: async function () {
+                4: async function() {
                     engine.postMsg("isSimpleWin", {
                         color: getRenjuSelColor(),
                         arr: arr,
@@ -1220,49 +1241,49 @@ window.control = (() => {
                         level: 3
                     });
                 },
-                5: async function () {
+                5: async function() {
                     engine.postMsg("isThreeWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
                 },
-                6: async function () {
+                6: async function() {
                     engine.postMsg("isFourWinPoint", {
                         color: getRenjuSelColor(),
                         arr: arr,
                         newarr: getArr2D([])
                     });
                 },
-                7: async function () {
+                7: async function() {
                     engine.postMsg("findFoulNode", {
                         arr: arr,
                     });
                 },
-                9: async function () {
+                9: async function() {
                     engine.postMsg("getBlockVCF", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
                 },
-                10: async function () {
+                10: async function() {
                     engine.postMsg("getBlockVCFb", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
                 },
-                11: async function () {
+                11: async function() {
                     engine.postMsg("getBlockVCFTree", {
                         color: getRenjuSelColor(),
                         arr: arr
                     });
                 },
-                8: async function () {
+                8: async function() {
                     engine.postMsg("blockCatchFoul", {
                         arr: arr
                     });
                 },
-                12: async function () {
+                12: async function() {
                     engine.postMsg("findVCT", {
                         arr: arr,
                         color: getRenjuSelColor(),
@@ -1272,7 +1293,7 @@ window.control = (() => {
                         backstage: undefined
                     });
                 },
-                13: async function () {
+                13: async function() {
                     engine.postMsg("findVCT", {
                         arr: arr,
                         color: getRenjuSelColor(),
@@ -1283,7 +1304,7 @@ window.control = (() => {
                     });
                 },
             }
-            execFunction(async function(){ mergeTree(await FUN[but.input.value]())});
+            execFunction(async function() { mergeTree(await FUN[but.input.value]()) });
             but.input.value = 0;
         });
         cFindVCF.setontouchend(function() {});
@@ -1405,15 +1426,15 @@ window.control = (() => {
                     }
                     cBd.isShowNum = but.menu.lis[0].checked;
                 },
-                1: () => {cBd.isShowFoul = but.menu.lis[1].checked},
-                2: () => {cBd.isShowAutoLine = but.menu.lis[2].checked},
-                3: () => {scaleCBoard(but.menu.lis[3].checked, 1)},
-                4: () => {cBd.isTransBranch = but.menu.lis[4].checked},
-                5: () => {gameRulesMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
-                6: () => {cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
-                7: () => {coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
-                8: () => {cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
-                9: () => {cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop)},
+                1: () => { cBd.isShowFoul = but.menu.lis[1].checked },
+                2: () => { cBd.isShowAutoLine = but.menu.lis[2].checked },
+                3: () => { scaleCBoard(but.menu.lis[3].checked, 1) },
+                4: () => { cBd.isTransBranch = but.menu.lis[4].checked },
+                5: () => { gameRulesMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                6: () => { cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                7: () => { coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                8: () => { cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                9: () => { cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
             }
             setMenuCheckBox(but, but.input.selectedIndex, [0, 1, 2, 3]);
             execFunction(FUN[but.input.value]);
@@ -2718,7 +2739,7 @@ window.control = (() => {
             }, 300);
         }, 0);
     }
-    
+
     function mapLb(callback) {
         cBd.map(p => {
             switch (p.type) {
@@ -2729,19 +2750,19 @@ window.control = (() => {
             }
         })
     }
-    
+
     function getMaxChar(startChar = "A") { // 搜索棋盘上最大的字母;
         let code = startChar.charCodeAt();
         mapLb(p => {
-            if(p.text.length == 1) {
+            if (p.text.length == 1) {
                 let tcode = p.text.charCodeAt(0);
-                if (tcode >= code && tcode <= (code+25)) 
-                    code = tcode < (code+25) ? tcode + 1 : tcode;
+                if (tcode >= code && tcode <= (code + 25))
+                    code = tcode < (code + 25) ? tcode + 1 : tcode;
             }
         })
         return String.fromCharCode(code);
     }
-    
+
     function getMaxNum(minNum = 1, maxNum = 225) {
         let code = minNum;
         mapLb(p => {
@@ -2752,7 +2773,7 @@ window.control = (() => {
         })
         return code;
     }
-    
+
     function getContinuLb() {
         let lbIdx = 0;
         mapLb(p => {
@@ -2859,21 +2880,21 @@ window.control = (() => {
             }
         });
     }
-    
+
     function toStart(isShowNum) {
         cBoard.toStart(isShowNum);
     }
-    
+
     function toPrevious(isShowNum, delay = "now") {
         cBoard.toPrevious(isShowNum, delay);
         cBoard.MS[cBoard.MSindex] == 225 && cBoard.toPrevious(isShowNum, delay);
     }
-    
+
     function toNext(isShowNum, delay = "now") {
         cBoard.toNext(isShowNum, delay);
         cBoard.MS[cBoard.MSindex] == 225 && cBoard.toNext(isShowNum, delay);
     }
-    
+
     function toEnd(isShowNum) {
         cBoard.toEnd(isShowNum);
     }
@@ -2923,7 +2944,7 @@ window.control = (() => {
                         }
                         else {
                             cBd.P[idx].text = pInfo.boardTXT;
-                            cBd.printPointB(idx);
+                            cBd.printPointB(idx, true);
                             cBd.refreshMarkArrow(idx);
                         }
                     }
@@ -3157,52 +3178,52 @@ window.control = (() => {
                 if (mode != MODE_RENLIB) {
                     RenjuLib.closeLib();
                 }
-            case MODE_RENJU:
-                if (mode == MODE_RENJU_FREE) {
-                    let arr = cBd.getArray();
-                    cBd.cle();
-                    arr.map((color, idx) => {
-                        if (color == 1) cBd.wNb(idx, "black");
-                        else if (color == 2) cBd.wNb(idx, "white");
-                    })
-                }
-            case MODE_RENJU_FREE:
-                //create Tree
-                if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
-                    let code = cBd.getCode(),
-                        centerPos = { x: cBd.size / 2 + 0.5, y: cBd.size / 2 + 0.5 },
-                        tree = new RenjuTree(1, 640, centerPos);
-                    playMode = MODE_EDITLIB;
-                    cBd.unpackCode(getShowNum(), code);
-                    cBd.addTree(tree);
-                    cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
-                }
-                break;
-            case MODE_READLIB:
-            case MODE_EDITLIB:
-                //remove Tree
-                if (mode == MODE_RENJU || mode == MODE_RENLIB) {
-                    let code = cBd.getCode();
-                    cBd.removeTree();
-                    playMode = MODE_RENJU;
-                    cBd.unpackCode(getShowNum(), code);
-                }
-                else if (mode == MODE_RENJU_FREE) {
-                    let arr = cBd.getArray();
-                    cBd.cle();
-                    cBd.removeTree();
-                    playMode = MODE_RENJU;
-                    arr.map((color, idx) => {
-                        if (color == 1) cBd.wNb(idx, "black");
-                        else if (color == 2) cBd.wNb(idx, "white");
-                    })
-                }
-                break;
+                case MODE_RENJU:
+                    if (mode == MODE_RENJU_FREE) {
+                        let arr = cBd.getArray();
+                        cBd.cle();
+                        arr.map((color, idx) => {
+                            if (color == 1) cBd.wNb(idx, "black");
+                            else if (color == 2) cBd.wNb(idx, "white");
+                        })
+                    }
+                    case MODE_RENJU_FREE:
+                        //create Tree
+                        if (mode == MODE_READLIB || mode == MODE_EDITLIB) {
+                            let code = cBd.getCode(),
+                                centerPos = { x: cBd.size / 2 + 0.5, y: cBd.size / 2 + 0.5 },
+                                tree = new RenjuTree(1, 640, centerPos);
+                            playMode = MODE_EDITLIB;
+                            cBd.unpackCode(getShowNum(), code);
+                            cBd.addTree(tree);
+                            cBd.tree.createPath(cBd.MS.slice(0, cBd.MSindex + 1));
+                        }
+                        break;
+                    case MODE_READLIB:
+                    case MODE_EDITLIB:
+                        //remove Tree
+                        if (mode == MODE_RENJU || mode == MODE_RENLIB) {
+                            let code = cBd.getCode();
+                            cBd.removeTree();
+                            playMode = MODE_RENJU;
+                            cBd.unpackCode(getShowNum(), code);
+                        }
+                        else if (mode == MODE_RENJU_FREE) {
+                            let arr = cBd.getArray();
+                            cBd.cle();
+                            cBd.removeTree();
+                            playMode = MODE_RENJU;
+                            arr.map((color, idx) => {
+                                if (color == 1) cBd.wNb(idx, "black");
+                                else if (color == 2) cBd.wNb(idx, "white");
+                            })
+                        }
+                        break;
         }
-        
+
         playMode = mode;
         cBd.isTransBranch = mode == MODE_EDITLIB;
-        
+
         switch (mode) {
             case MODE_RENJU:
                 cMode.setText("摆棋");
@@ -3211,7 +3232,7 @@ window.control = (() => {
                 cMode.setText("无序");
                 break;
             case MODE_READLIB:
-                cMode.setText("阅读");
+                cMode.setText("只读");
                 cBd.autoShow();
                 break;
             case MODE_EDITLIB:

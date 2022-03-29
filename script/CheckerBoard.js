@@ -416,14 +416,14 @@ window.CheckerBoard = (function() {
         this.cutDiv = document.createElement("div");
         this.parentNode.appendChild(this.cutDiv);
         this.cutDiv.ontouchend = function() { if (event) event.preventDefault(); };
-        this.cutDiv.ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
+        this.cutDiv.ontouchmove = function() { if (event) event.preventDefault(); };
 
         for (var i = 0; i < 226; i++) {
             this.DIV[i] = document.createElement("div");
             this.DIV[i].style.borderRadius = "50%";
             this.parentNode.appendChild(this.DIV[i]);
             this.DIV[i].ontouchend = function() { if (event) event.preventDefault(); };
-            this.DIV[i].ontouchmove = function() { if (timerContinueSetCutDiv && event) event.preventDefault(); };
+            this.DIV[i].ontouchmove = function() { if (event) event.preventDefault(); };
             this.P[i] = new point(-500, -500, this.DIV[i]);
         }
 
@@ -1351,7 +1351,6 @@ window.CheckerBoard = (function() {
 
     //棋盘上清空一个棋子,标记的显示
     CheckerBoard.prototype.clePoint = function(idx, refresh, width, height) {
-
         if (!refresh) this.P[idx].cle(); // 清除点的数据
         // 棋盘上打印空点
         let p = tempp,
@@ -1377,7 +1376,7 @@ window.CheckerBoard = (function() {
         if (y + height > this.bakCanvas.height) {
             height = this.bakCanvas.height - y;
         }
-        ctx.drawImage(this.bakCanvas, x, y, width, height, x, y, width, height);
+        (0 <= idx && idx <= 224) && ctx.drawImage(this.bakCanvas, x, y, width, height, x, y, width, height);
         ctx = null;
         if (appData.renjuSave && !refresh) appData.renjuSave(this);
     };
@@ -3055,7 +3054,7 @@ window.CheckerBoard = (function() {
         ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.fillStyle = "black";
-        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
         ctx.fillStyle = color
         ctx.fill();
         ctx.stroke();
@@ -3065,11 +3064,11 @@ window.CheckerBoard = (function() {
         // 由棋子颜色决定字体颜色
         ctx.fillStyle = color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor;
         if (showNum && this.P[idx].text) { // 显示数字
-            let txt = parseInt(this.P[idx].text) - this.resetNum;
+            let txt = this.P[idx].type == TYPE_NUMBER ? parseInt(this.P[idx].text) - this.resetNum : this.P[idx].text;
             txt = parseInt(txt) < 1 ? "" : txt;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(txt, p.x, p.y);
+            (0 <= idx && idx <= 224) && ctx.fillText(txt, p.x, p.y);
         }
         ctx = null;
     }
@@ -3085,7 +3084,7 @@ window.CheckerBoard = (function() {
         ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.fillStyle = "black";
-        ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
         ctx.fillStyle = color
         ctx.fill();
         ctx.stroke();
@@ -3102,7 +3101,7 @@ window.CheckerBoard = (function() {
             txt = parseInt(txt) < 1 ? "" : txt;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(txt, p.x, p.y);
+            (0 <= idx && idx <= 224) && ctx.fillText(txt, p.x, p.y);
 
         }
         else { // 隐藏数字
@@ -3110,7 +3109,7 @@ window.CheckerBoard = (function() {
             if (!this.notShowLastNum) {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText("◤", p.x - w * 0.15, p.y - w * 0.15);
+                (0 <= idx && idx <= 224) && ctx.fillText("◤", p.x - w * 0.15, p.y - w * 0.15);
             }
         }
         ctx = null;
@@ -3128,11 +3127,11 @@ window.CheckerBoard = (function() {
         ctx.beginPath();
         ctx.fillStyle = this.P[idx].bkColor || this.LbBackgroundColor;
         if (this.P[idx].bkColor) {
-            ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
+            (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
             ctx.fill();
         }
 
-        ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARKFOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
+        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARKFOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillStyle = this.P[idx].color;
 
@@ -3161,7 +3160,7 @@ window.CheckerBoard = (function() {
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(text, p.x, p.y);
+        (0 <= idx && idx <= 224) && ctx.fillText(text, p.x, p.y);
         ctx = null;
     }
 
@@ -4155,7 +4154,7 @@ window.CheckerBoard = (function() {
 
     // 根据用户设置 决定是否高亮显示 最后一手棋
     CheckerBoard.prototype.showLastNb = function(showNum) {
-
+        
         let p = tempp;
         let idx;
         if (this.MSindex >= 0) { // 存在倒数第1手，特殊标记
@@ -4191,7 +4190,7 @@ window.CheckerBoard = (function() {
             this.printPoint(this.MS[i], true);
             this.refreshMarkArrow(this.MS[i]);
         }
-        //this.showLastNb(true);
+            //this.showLastNb(true);
     };
 
     // 跳到第 0 手。

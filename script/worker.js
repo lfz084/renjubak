@@ -5,14 +5,23 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.12";
     'use strict';
     //console.log(exports);
 
-    if ("importScripts" in self)
-        self.importScripts('emoji.js', `EvaluatorJScript.js`, `EvaluatorWebassembly.js`, `Evaluator.js`);
+    if ("importScripts" in self) 
+        self.importScripts('emoji.js', `EvaluatorWebassembly.js`, `EvaluatorJScript.js`, `Evaluator.js`);
 
+    let isWorkerBusy = false;
     const MSG_RESOLVE = { cmd: "resolve" };
     const COMMAND = {
         setGameRules: function ({rules}) {
-            setGameRules(rules);
-            post(MSG_RESOLVE);
+            isWorkerBusy = true;
+            let timer = setInterval(() => {
+                if ("setGameRules" in self) {
+                    clearInterval(timer);
+                    setGameRules(rules);
+                    post({ cmd: "info", param: `已经设置为${[undefined,"无禁","有禁"][rules]}规则`});
+                    post(MSG_RESOLVE);
+                    isWorkerBusy = false;
+                }
+            }, 10)
         },
         getLevelB: function({arr, color, maxVCF, maxDepth, maxNode}) {
             getLevelB(arr, color, maxVCF, maxDepth, maxNode);
@@ -28,6 +37,21 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.12";
             let points = getBlockVCF(arr, color, vcfMoves, includeFour);
             post({ cmd: "points", param: { points: points } });
             post(MSG_RESOLVE);
+        },
+        selectPoints: function({arr, color, radius, maxVCF, maxDepth, maxNode }) {
+            let selectArr = selectPoints(arr, color, radius, maxVCF, maxDepth, maxNode);
+            post({ cmd: "selectPoints", param: { selectArr: selectArr } });
+            post(MSG_RESOLVE);
+        },
+        excludeBlockVCF: function({points, arr, color, maxVCF, maxDepth, maxNode}) {
+            let ps = excludeBlockVCF(points, arr, color, maxVCF, maxDepth, maxNode);
+            post({ cmd: "points", param: { points: ps } });
+            post(MSG_RESOLVE);
+        },
+        getBlockPoints: function({arr, color, radius, maxVCF, maxDepth, maxNode}) {
+            let ps = getBlockPoints(arr, color, radius, maxVCF, maxDepth, maxNode);
+            post({ cmd: "points", param: { points: ps } });
+            post(MSG_RESOLVE);
         }
     };
 
@@ -38,11 +62,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.12";
                 else post(MSG_RESOLVE);
             }, 1000);*/
 
-        if (typeof COMMAND[e.data.cmd] == "function") {
+        if (isWorkerBusy) throw new Error("Worker onmessage Error: Worker is Busy");
+        else if (typeof COMMAND[e.data.cmd] == "function") {
             post({cmd: "info", param: e.data.param});
             COMMAND[e.data.cmd](e.data.param);
         }
-        else throw new Error("Worker onmessage Error");
+        else throw new Error(`Worker onmessage Error: not found cmd "${e.data.cmd}"`);
     }
 
     function post({ cmd, param }) {

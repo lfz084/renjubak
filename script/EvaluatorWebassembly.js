@@ -281,6 +281,10 @@ function loadEvaluatorWebassembly() {
                 }*/
 
                 function findVCF(arr, color, maxVCF, maxDepth, maxNode) {
+                    let int8Arr = new Int8Array(memory.buffer, ARR, 226);
+                    putArr(arr);
+                    putInitArr(arr);
+                    resetVCF(arr, color, maxVCF, maxDepth, maxNode);
                     let centerIdx = 112,
                         colorIdx,
                         nColorIdx,
@@ -292,12 +296,8 @@ function loadEvaluatorWebassembly() {
                         pushMoveCount = 0,
                         pushPositionCount = 0,
                         hasCount = 0,
-                        loopCount = 0;
-
-                    let int8Arr = new Int8Array(memory.buffer, ARR, 226);
-                    putArr(arr);
-                    putInitArr(arr);
-                    resetVCF(arr, color, maxVCF, maxDepth, maxNode);
+                        loopCount = 0,
+                        continueInfo = vcfInfo.continueInfo;
 
                     while (!done) {
                         if (!(loopCount & 0xffff) && typeof post == "function") post({ cmd: "moves", param: { moves: moves, firstColor: color } });
@@ -309,7 +309,9 @@ function loadEvaluatorWebassembly() {
                                 int8Arr[colorIdx] = color;
                                 int8Arr[nColorIdx] = INVERT_COLOR[color];
                                 moves.push(colorIdx);
+                                continueInfo[3][colorIdx] = continueInfo[color][colorIdx] = color;
                                 moves.push(nColorIdx);
+                                continueInfo[3][nColorIdx] = continueInfo[INVERT_COLOR[color]][nColorIdx] = INVERT_COLOR[color];
                                 centerIdx = colorIdx;
                                 sum += colorIdx;
                                 stackIdx.push(-1, -1);
@@ -451,6 +453,8 @@ function loadEvaluatorWebassembly() {
                     vcfInfo.pushPositionCount = pushPositionCount;
                     vcfInfo.hasCount = hasCount;
                     vcfInfo.nodeCount = loopCount;
+                    
+                    return vcfInfo.winMoves.length ? vcfInfo.winMoves[0] : [];
                 }
 
                 function getBlockVCF(arr, color, vcfMoves, includeFour) {

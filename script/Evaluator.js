@@ -17,7 +17,7 @@ const WHITE_COLOR = 2;
 const INVERT_COLOR = [0, 2, 1]; //利用数组反转棋子颜色
 
 //---------------- level --------------------
-
+const LEVEL = 0x0f;
 const LEVEL_WIN = 10;
 const LEVEL_FREEFOUR = 9;
 const LEVEL_NOFREEFOUR = 8;
@@ -84,7 +84,7 @@ let cBoardSize = 15;
 
 //---------------  ------------------ ------------------
 
-if (0 && "WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
+if ("WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
     loadEvaluatorWebassembly.call(this);
     console.warn("loadEvaluatorWebassembly");
 }
@@ -95,7 +95,7 @@ else {
 
 //---------------------- IDX_LISTS ------------------------
 
-const IDX_LISTS = [[],[],[],[]];
+const IDX_LISTS = [[], [], [], []];
 
 for (let direction = 0; direction < 4; direction++) {
     switch (direction) { //生成阴线，阳线
@@ -162,7 +162,7 @@ function getLines(arr, color) {
             lineINFO = new Uint32Array(226),
             lines = [];
         testThree(arr, color, infoArr); //取得活三以上的点
-        
+
         infoArr.map((info, idx) => { //分析每个点保存路线,3开始,1结束
             if (THREE_FREE <= (info & FOUL_MAX_FREE) && (info & FOUL_MAX_FREE) <= FIVE) {
                 for (let direction = 0; direction < 4; direction++) {
@@ -208,7 +208,7 @@ function getLines(arr, color) {
         });
 
         for (let direction = 0; direction < 4; direction++) {
-            
+
             //console.warn(`direction: ${direction}`)
             IDX_LISTS[direction].map(list => { //找出每一条线
                 const LVL = ["THREE_FREE", "FOUR_NOFREE", "FOUR_FREE", "FIVE"];
@@ -237,7 +237,7 @@ function getLines(arr, color) {
                 });
             });
         }
-        
+
         return lines;
     }
     catch (err) {
@@ -432,7 +432,8 @@ let vcfInfo = {
         pushPositionCount: 0,
         hasCount: 0,
         nodeCount: 0,
-        winMoves: vcfWinMoves
+        winMoves: vcfWinMoves,
+        continueInfo: [new Array(225),new Array(225),new Array(225),new Array(225)]
     },
     levelBInfo = {
         levelInfo: 0,
@@ -450,6 +451,7 @@ function resetVCF(arr, color, maxVCF, maxDepth, maxNode) {
     vcfInfo.pushPositionCount = 0;
     vcfInfo.hasCount = 0;
     vcfInfo.nodeCount = 0;
+    vcfInfo.continueInfo = [new Array(225),new Array(225),new Array(225),new Array(225)];
 
     vcfWinMoves.length = 0;
     vcfHashTable.length = 0;
@@ -489,6 +491,7 @@ function vcfPositionHas(keyLen, keySum, position) {
     }
     return false;
 }
+
 /*
 // 会改变moves
 // 添加失败分支
@@ -537,6 +540,7 @@ function vcfMovesHas(keyLen, keySum, move) {
     return false;
 }
 */
+
 function vcfTransTablePush(keyLen, keySum, moves, position) {
     if (keyLen < vcfHashMaxMovesLen)
         pushFailMoves(vcfHashTable, moves);
@@ -554,6 +558,53 @@ function vcfTransTableHas(keyLen, keySum, moves, position, centerIdx) {
 }
 
 //---------------------- VCT ----------------------------
+
+function continueFour(arr, color, maxVCF, maxDepth, maxNode) {
+    findVCF(arr, color, maxVCF, maxDepth, maxNode);
+    return vcfInfo.continueInfo;
+}
+
+function aroundPoint(arr, color, radius = 3, ctnInfo = [new Array(225),new Array(225),new Array(225),new Array(225)]) {
+    let rtArr = new Array(225);
+    
+    for (let i = 0; i < 225; i++) ctnInfo[0][i] = arr[i] | ctnInfo[3][i];
+    
+    for (let direction = 0; direction < 4; direction++) {
+        let listStart = 0,
+            listEnd = IDX_LISTS[direction].length;
+        for (let list = listStart; list < listEnd; list++) {
+            let moveStart = 0,
+                moveEnd = IDX_LISTS[direction][list].length,
+                move = moveStart;
+            while (move < moveEnd) {
+                let idx = IDX_LISTS[direction][list][move],
+                    left,
+                    right;
+                if (ctnInfo[0][idx] > 0) {
+                    left = Math.max(moveStart, move - radius);
+                    right = Math.min(moveEnd, move + radius + 1);
+    
+                    while (++move < moveEnd && move < (right + radius)) {
+                        idx = IDX_LISTS[direction][list][move];
+                        if (ctnInfo[0][idx] > 0) right = Math.min(moveEnd, move + radius + 1);
+                    }
+    
+                    for (let m = left; m < right; m++) {
+                        idx = IDX_LISTS[direction][list][m];
+                        arr[idx] == 0 && (rtArr[idx] = 1);
+                    }
+                }
+                else move++;
+            }
+        }
+    }
+    return rtArr;
+}
+
+function selectPoints(arr, color, radius = 3, maxVCF = 1, maxDepth = 10, maxNode = 100000) {
+    let ctnArr = continueFour(arr, color, maxVCF, maxDepth, maxNode);
+    return aroundPoint(arr, color, radius, ctnArr);
+}
 
 function resetLevelBInfo() {
     levelBInfo.levelInfo = LEVEL_NONE; //=0
@@ -584,4 +635,61 @@ function getLevelB(arr, color, maxVCF, maxDepth, maxNode) {
         levelBInfo.winMoves = undefined;
     }
     return levelBInfo.levelInfo;
+}
+
+function excludeBlockVCF(points, arr, color, maxVCF, maxDepth, maxNode) {
+    let clone = points.slice(0),
+        result = [];
+    while (clone.length) {
+        let i = clone.length - 1,
+            idx = clone.splice(i, 1)[0];
+        if (arr[idx] == 0) {
+            let winMoves;
+            arr[idx] = INVERT_COLOR[color];
+            winMoves = findVCF(arr, color, maxVCF, maxDepth, maxNode);
+            arr[idx] = 0;
+            if (winMoves.length) {
+                for (i = i - 1; i >= 0; i--) {
+                    arr[clone[i]] = INVERT_COLOR[color];
+                    isVCF(color, arr, winMoves) && clone.splice(i, 1);
+                    arr[clone[i]] = 0;
+                }
+            }
+            else {
+                result.unshift(idx);
+            }
+        }
+    }
+    return result;
+}
+
+// ❗color 是进攻方的颜色
+function getBlockPoints(arr, color, radius = 3, maxVCF = 1, maxDepth = 10, maxNode = 100000) {
+    let levelInfo = getLevelB(arr, color, maxVCF, maxDepth, maxNode),
+        level = levelInfo & 0xff,
+        result = [];
+    switch (level) {
+        case LEVEL_WIN:
+        case LEVEL_FREEFOUR:
+            break;
+        case LEVEL_NOFREEFOUR:
+            result.push(levelInfo >> 8 & 0xff);
+            break;
+        case LEVEL_DOUBLEFREETHREE:
+        case LEVEL_DOUBLEVCF:
+        case LEVEL_FREETHREE:
+        case LEVEL_VCF:
+            let winMoves = levelBInfo.winMoves;
+            if (winMoves.length) {
+                let points = getBlockVCF(arr, color, winMoves, true);
+                result = excludeBlockVCF(points, arr, color, maxVCF, maxDepth, maxNode);
+            }
+            break;
+        case LEVEL_VCT:
+        case LEVEL_NONE:
+            findVCF(arr, INVERT_COLOR[color], maxVCF, maxDepth, maxNode, vcfInfo.continueInfo);
+            result = aroundPoint(arr, color, radius, vcfInfo.continueInfo).map((v, idx) => v > 0 ? idx : -1).filter(idx => idx > -1);
+            break;
+    }
+    return result;
 }

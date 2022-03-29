@@ -83,3 +83,13 @@ for(let i=0; i<5; i++) {
     ps.push(p())
 }
 Promise.all(ps).then(()=>{console.log(5)})
+
+
+selectPoint(cBoard.getArray(), 1, 2, 1, 180, 100000).map((v, idx) => v > 0 && cBoard.wLb(idx, "a", "black"))
+
+{arr: cBoard.getArray(), color: 1, radius: 2, maxVCF: 1, maxDepth: 180, maxNode: 10000, ftype: 0}
+
+let ps = [new Promise((resolve,reject)=>{setTimeout(resolve, 1000)}),
+new Promise((resolve,reject)=>{setTimeout(resolve, 2000)}),
+new Promise((resolve,reject)=>{setTimeout(reject, 1500)}),
+];

@@ -1509,7 +1509,7 @@ function loadEvaluatorJScript() {
                 }
             }
         }
-
+        
 
         function getLevel(arr, color) {
             let infoArr = new Array(225),
@@ -1697,7 +1697,7 @@ function loadEvaluatorJScript() {
 
 
         function findVCF(arr, color, maxVCF, maxDepth, maxNode) {
-            //let sTime = new Date().getTime();
+            resetVCF(arr, color, maxVCF, maxDepth, maxNode);
             let centerIdx = 112,
                 colorIdx,
                 nColorIdx,
@@ -1709,9 +1709,8 @@ function loadEvaluatorJScript() {
                 pushMoveCount = 0,
                 pushPositionCount = 0,
                 hasCount = 0,
-                loopCount = 0;
-
-            resetVCF(arr, color, maxVCF, maxDepth, maxNode);
+                loopCount = 0,
+                continueInfo = vcfInfo.continueInfo;
 
             //console.warn(`color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
             //post("vConsole", `color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
@@ -1725,7 +1724,9 @@ function loadEvaluatorJScript() {
                         arr[colorIdx] = color;
                         arr[nColorIdx] = INVERT_COLOR[color];
                         moves.push(colorIdx);
+                        continueInfo[3][colorIdx] = continueInfo[color][colorIdx] = color;
                         moves.push(nColorIdx);
+                        continueInfo[3][nColorIdx] = continueInfo[INVERT_COLOR[color]][nColorIdx] = INVERT_COLOR[color];
                         centerIdx = colorIdx;
                         sum += colorIdx;
                         stackIdx.push(-1, -1);
@@ -1874,8 +1875,8 @@ function loadEvaluatorJScript() {
             vcfInfo.pushPositionCount = pushPositionCount;
             vcfInfo.hasCount = hasCount;
             vcfInfo.nodeCount = loopCount;
-
-            //console.info(`time: ${(new Date().getTime()-sTime)/1000}\nsum: ${sum}\nloopCount: ${loopCount}`);
+            
+            return vcfInfo.winMoves.length ? vcfInfo.winMoves[0] : [];
         }
 
 
@@ -2094,8 +2095,8 @@ function loadEvaluatorJScript() {
 
             return blockPoints;
         }
-
-
+        
+        
         //--------------------------------------------------
         
         exports.setGameRules = rules => gameRules = rules;
@@ -2124,6 +2125,7 @@ function loadEvaluatorJScript() {
         exports.findVCF = findVCF;
         exports.getLevelB = getLevelB;
         exports.getBlockVCF = getBlockVCF;
+        //test
 
     })))
 }

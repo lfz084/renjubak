@@ -322,8 +322,7 @@
                     return loadApp()
                 })
                 .then(() => {
-                    
-                    return _loadScript(SOURCE_FILES["debugModule"]);
+                    window.test = () => _loadScript(SOURCE_FILES["debugModule"]);
                     /*
                     var allsuspects = document.getElementsByTagName("script");
                     
