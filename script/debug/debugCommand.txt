@@ -93,3 +93,14 @@ let ps = [new Promise((resolve,reject)=>{setTimeout(resolve, 1000)}),
 new Promise((resolve,reject)=>{setTimeout(resolve, 2000)}),
 new Promise((resolve,reject)=>{setTimeout(reject, 1500)}),
 ];
+
+
+window.printChilds = function(node){
+    let cur = node.down;
+    while(cur){
+        console.log(`idx: ${cur.idx}, score: ${cur.score}`)
+        cur = cur.right;
+    }
+}
+
+printChilds(cBoard.tree.seek([144,225,114,225,112,225]))

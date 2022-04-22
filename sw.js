@@ -1,4 +1,4 @@
-var VERSION = "v1202.12";
+var VERSION = "v1202.28";
 var myInit = {
     cache: "reload"
 };
@@ -31,7 +31,7 @@ let load = (() => {
     }
 
     return {
-        loading: (msg) => {
+        loading: (msg, client) => {
             let url = msg;
             let filename = url.split("/").pop();
             if (["worker",
@@ -51,15 +51,15 @@ let load = (() => {
                 "MoveNode",
                 "Stack",
                 "RenLibDoc",
-                "work_ReadLib",
+                "work",
                 "RenjuLib",
                 "RenLib",
-                "RenLibDoc_wasm"
+                "RenLibDoc"
             ].indexOf(filename.split(/[\-\_\.]/)[0]) + 1) return;
             if (!timer) {
-                timer = setInterval(interval, 100);
+                timer = setInterval(interval, 300);
             }
-            postMsg(`loading......${url}`);
+            postMsg(`loading......${url}`, client);
             pushURL(url);
 
         },
@@ -127,14 +127,14 @@ self.addEventListener('fetch', function(event) {
 
     const URL_VERSION = "?v=" + VERSION;
     const _URL = event.request.url.split("?")[0] + URL_VERSION;
-    const filename = _URL.split("/").pop();
-    const type = _URL.split(".").pop();
+    const filename = _URL.split("?")[0].split("/").pop();
+    const type = _URL.split("?")[0].split(".").pop();
     const NEW_CACHE = ["html", "htm"].indexOf(type) + 1 > 0;
     if (filename.indexOf(type) + 1) {
-        load.loading(_URL);
+        load.loading(_URL, event.clientID);
     }
     else {
-        postMsg(`fetch [${_URL}]`);
+        postMsg(`fetch [${_URL}]`, event.clientID);
     }
     //postMsg(`请求资源 url=${_URL}`, event.clientID);
     /*
@@ -156,7 +156,7 @@ self.addEventListener('fetch', function(event) {
                 .then(response => {
                     load.finish(_URL);
                     if (!response.ok) throw new Error(`response = ${response}`);
-                    //postMsg(`下载资源完成 url=${_URL}`, event.clientID);
+                    postMsg(`下载资源完成 url=${_URL}`, event.clientID);
                     let cloneRes = response.clone();
                     if (_URL.indexOf("blob:http") == -1) {
                         caches.open(VERSION)
@@ -173,14 +173,14 @@ self.addEventListener('fetch', function(event) {
         })
     }
 
-    function loadCache(refresh) {
+    function loadCache() {
         return caches.open(VERSION)
             .then(cache => {
                 return cache.match(new Request(_URL, myInit))
                     .then(response => {
                         load.finish(_URL);
                         if (!response.ok) throw new Error("response is undefined");
-                        refresh && NEW_CACHE && myFetch();
+                        postMsg(`加载资源完成 url=${_URL}`, event.clientID);
                         return response;
                     })
             })
@@ -207,7 +207,7 @@ self.addEventListener('fetch', function(event) {
     }
 
     function cacheFirst() {
-        return loadCache(true)
+        return loadCache()
             .catch(() => {
                 //postMsg(`没有缓存，从网络下载资源 url=${_URL}`, event.clientID);
                 return myFetch();
@@ -230,7 +230,7 @@ self.addEventListener('fetch', function(event) {
 });
 
 self.addEventListener('message', function(event) {
-    if (event.data && event.data.type == "NEW_VERSION") {
+    if (event.data.type == "NEW_VERSION") {
         if (event.data.version != VERSION) {
             VERSION = event.data.version;
             myInit = {
@@ -239,7 +239,15 @@ self.addEventListener('message', function(event) {
         }
         postMsg(event.data, event.clientID)
     }
+    else if(event.data.cmd == "fetchTXT") {
+        fetch(new Request(event.data.url, myInit))
+        .then(response => response.text())
+        .then(text => {
+            postMsg({type: "text", text: text}, event.clientID)
+        })
+    }
     else {
         postMsg(`serverWorker post: ${event.data}`, event.clientID)
     }
 });
+

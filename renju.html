@@ -50,7 +50,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.APP_VERSION = "v1202.12";
+        window.APP_VERSION = "v1202.28";
         window.URL_VERSION = "?v=" + window.APP_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -79,30 +79,30 @@
             PFSCMedium: "script/jsPDF/PFSCMedium.js",
             PFSCHeavy: "script/jsPDF/PFSCHeavy.js",
             worker: "script/worker.js",
-            '404_html': "./404.html",
-            renju_html: "./renju.html",
-            renju_js: "./renju.js",
-            "close_svg": "./pic/close.svg",
-            "chevron-left_svg": "./pic/chevron-left.svg",
-            "close-white_svg": "./pic/close-white.svg",
-            "docusign-white_svg": "./pic/docusign-white.svg",
+            '404_html': "404.html",
+            renju_html: "renju.html",
+            renju_js: "renju.js",
+            "close_svg": "pic/close.svg",
+            "chevron-left_svg": "pic/chevron-left.svg",
+            "close-white_svg": "pic/close-white.svg",
+            "docusign-white_svg": "pic/docusign-white.svg",
             "icon_png": "https://lfz084.github.io/icon.png",
             "icon_ico": "https://lfz084.github.io/icon.ico",
 
             IntervalPost: "script/IntervalPost.js",
             RenjuTree: "script/RenjuTree.js",
-            UNICODE2GBK: "./ReadLib/script/UNICODE2GBK.js",
-            JFile: "./ReadLib/script/JFile.js",
-            JPoint: "./ReadLib/script/JPoint.js",
-            LibraryFile: "./ReadLib/script/LibraryFile.js",
-            MoveList: "./ReadLib/script/MoveList.js",
-            MoveNode: "./ReadLib/script/MoveNode.js",
-            Stack: "./ReadLib/script/Stack.js",
-            RenLibDoc: "./ReadLib/script/RenLibDoc.js",
-            work_ReadLib: "./ReadLib/script/work_ReadLib.js",
-            RenjuLib: "./ReadLib/script/RenjuLib.js",
-            RenLib_wasm: "./ReadLib/script/RenLib.wasm",
-            RenLibDoc_wasm: "./ReadLib/script/RenLibDoc_wasm.js",
+            UNICODE2GBK: "ReadLib/script/UNICODE2GBK.js",
+            JFile: "ReadLib/script/JFile.js",
+            JPoint: "ReadLib/script/JPoint.js",
+            LibraryFile: "ReadLib/script/LibraryFile.js",
+            MoveList: "ReadLib/script/MoveList.js",
+            MoveNode: "ReadLib/script/MoveNode.js",
+            Stack: "ReadLib/script/Stack.js",
+            RenLibDoc: "ReadLib/script/RenLibDoc.js",
+            work_ReadLib: "ReadLib/script/work_ReadLib.js",
+            RenjuLib: "ReadLib/script/RenjuLib.js",
+            RenLib_wasm: "ReadLib/script/RenLib.wasm",
+            RenLibDoc_wasm: "ReadLib/script/RenLibDoc_wasm.js",
 
             debugModule: "script/debug/debugModule.js"
         }
@@ -241,7 +241,7 @@
                     timer = setTimeout(() => {
                         mlog("postVersion Timeout");
                         rm();
-                    }, 30 * 1000);
+                    }, 3 * 1000);
                 }
                 else {
                     resolve();
@@ -323,29 +323,11 @@
                 })
                 .then(() => {
                     window.test = () => _loadScript(SOURCE_FILES["debugModule"]);
-                    /*
-                    var allsuspects = document.getElementsByTagName("script");
-                    
-                    for (var i = allsuspects.length - 1; i >= 0; i--)
-                    {
-                        alert(allsuspects[i].src)
-                        if (allsuspects[i]) {
-                            
-                            allsuspects[i].parentNode.removeChild(allsuspects[i]);
-                        }
-                    }
-                    */
                 })
                 .catch((err) => {
                     const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
                     alert(MSG)
-                    removeAppCache()
-                        .then(() => {
-                            window.reloadApp()
-                        })
-                        .catch(() => {
-                            window.reloadApp()
-                        })
+                    window.reloadApp()
                 })
         };
     </script>

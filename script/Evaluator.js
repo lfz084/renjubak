@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.12";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.28";
 const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
 const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
@@ -84,7 +84,7 @@ let cBoardSize = 15;
 
 //---------------  ------------------ ------------------
 
-if ("WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
+if (0 && "WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
     loadEvaluatorWebassembly.call(this);
     console.warn("loadEvaluatorWebassembly");
 }
@@ -433,7 +433,7 @@ let vcfInfo = {
         hasCount: 0,
         nodeCount: 0,
         winMoves: vcfWinMoves,
-        continueInfo: [new Array(225),new Array(225),new Array(225),new Array(225)]
+        continueInfo: [new Array(225), new Array(225), new Array(225), new Array(225)]
     },
     levelBInfo = {
         levelInfo: 0,
@@ -451,7 +451,7 @@ function resetVCF(arr, color, maxVCF, maxDepth, maxNode) {
     vcfInfo.pushPositionCount = 0;
     vcfInfo.hasCount = 0;
     vcfInfo.nodeCount = 0;
-    vcfInfo.continueInfo = [new Array(225),new Array(225),new Array(225),new Array(225)];
+    vcfInfo.continueInfo = [new Array(225), new Array(225), new Array(225), new Array(225)];
 
     vcfWinMoves.length = 0;
     vcfHashTable.length = 0;
@@ -564,11 +564,11 @@ function continueFour(arr, color, maxVCF, maxDepth, maxNode) {
     return vcfInfo.continueInfo;
 }
 
-function aroundPoint(arr, color, radius = 3, ctnInfo = [new Array(225),new Array(225),new Array(225),new Array(225)]) {
+function aroundPoint(arr, color, radius = 3, ctnInfo = [new Array(225), new Array(225), new Array(225), new Array(225)]) {
     let rtArr = new Array(225);
-    
+
     for (let i = 0; i < 225; i++) ctnInfo[0][i] = arr[i] | ctnInfo[3][i];
-    
+
     for (let direction = 0; direction < 4; direction++) {
         let listStart = 0,
             listEnd = IDX_LISTS[direction].length;
@@ -583,12 +583,12 @@ function aroundPoint(arr, color, radius = 3, ctnInfo = [new Array(225),new Array
                 if (ctnInfo[0][idx] > 0) {
                     left = Math.max(moveStart, move - radius);
                     right = Math.min(moveEnd, move + radius + 1);
-    
+
                     while (++move < moveEnd && move < (right + radius)) {
                         idx = IDX_LISTS[direction][list][move];
                         if (ctnInfo[0][idx] > 0) right = Math.min(moveEnd, move + radius + 1);
                     }
-    
+
                     for (let m = left; m < right; m++) {
                         idx = IDX_LISTS[direction][list][m];
                         arr[idx] == 0 && (rtArr[idx] = 1);
@@ -649,10 +649,12 @@ function excludeBlockVCF(points, arr, color, maxVCF, maxDepth, maxNode) {
             winMoves = findVCF(arr, color, maxVCF, maxDepth, maxNode);
             arr[idx] = 0;
             if (winMoves.length) {
-                for (i = i - 1; i >= 0; i--) {
-                    arr[clone[i]] = INVERT_COLOR[color];
-                    isVCF(color, arr, winMoves) && clone.splice(i, 1);
-                    arr[clone[i]] = 0;
+                if (winMoves.length < 8) {
+                    for (i = i - 1; i >= 0; i--) {
+                        arr[clone[i]] = INVERT_COLOR[color];
+                        isVCF(color, arr, winMoves) && clone.splice(i, 1);
+                        arr[clone[i]] = 0;
+                    }
                 }
             }
             else {
@@ -692,4 +694,42 @@ function getBlockPoints(arr, color, radius = 3, maxVCF = 1, maxDepth = 10, maxNo
             break;
     }
     return result;
+}
+
+function getScore(idx, color, arr) {
+    let infoArr = new Array(226),
+        info,
+        score = 2;
+    /*
+    testFour(arr, color, infoArr);
+    for (let i = 0; i < 255; i++) {
+        info = infoArr[i] & FOUL_MAX_FREE;
+        if (info == FOUR_FREE || info == FOUR_NOFREE) arr[i] = color;
+    }
+    */
+    testThree(arr, color, infoArr);
+    info = infoArr[idx] & FOUL_MAX_FREE;
+    if (info <= FIVE) {
+        for (let i = getAroundIdxCount(idx, 3); i > 0; i--) {
+            info = infoArr[aroundIdx(idx, i)] & FOUL_MAX_FREE;
+            switch (info) {
+                case FIVE:
+                    score += 50;
+                    break;
+                case FOUR_FREE:
+                    score += 30;
+                    break;
+                case FOUR_NOFREE:
+                    score += 20;
+                    break;
+                case THREE_FREE:
+                    score += 10;
+                    break;
+                case THREE_NOFREE:
+                    score += 5;
+                    break;
+            }
+        }
+    }
+    return score < 0xFD ? score : 0xFD;
 }

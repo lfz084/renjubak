@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.12";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.28";
 
 function loadEvaluatorJScript() {
     (function(global, factory) {
@@ -6,7 +6,7 @@ function loadEvaluatorJScript() {
     }(this, (function(exports) {
         'use strict';
         //console.log(exports);
-        
+
         //--------------------- idxLists ---------------------
 
         // 创建空白lists 用来保存阳线，阴线的idx
@@ -123,7 +123,7 @@ function loadEvaluatorJScript() {
         function moveIdx(idx, move, direction = 0) {
             return idxTable[(idx * 29 + move + 14) * 4 + direction]; // 7s
         }
-        
+
         // 取得一个点的值
         function getArrValue(idx, move, direction, arr) {
             return arr[moveIdx(idx, move, direction)];
@@ -201,7 +201,7 @@ function loadEvaluatorJScript() {
         let aroundIdxTable = createAroundIdxTable();
 
         //----------------------------------------------------
-        
+
         function testLine(idx, direction, color, arr) {
             let rt,
                 ov = arr[idx];
@@ -210,7 +210,7 @@ function loadEvaluatorJScript() {
             arr[idx] = ov;
             return rt;
         }
-        
+
         // (long*)lineInfo,  (lineInfo >>> 3) & 0b111
         function _testLine(idx, direction, color, arr) {
             let max = -1, // -1 | 0 | 1 | 2 | 3 | 4 | 5 | SIX
@@ -1509,7 +1509,7 @@ function loadEvaluatorJScript() {
                 }
             }
         }
-        
+
 
         function getLevel(arr, color) {
             let infoArr = new Array(225),
@@ -1670,7 +1670,7 @@ function loadEvaluatorJScript() {
                     st = fs[j] - 1;
                     l += 2;
                     if (j == 0 || fs[j] - fs[j - 1] > 2) {
-                        fs.length -= ((l -2) >>> 1);
+                        fs.length -= ((l - 2) >>> 1);
                         break;
                     }
                 }
@@ -1715,7 +1715,7 @@ function loadEvaluatorJScript() {
             //console.warn(`color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
             //post("vConsole", `color: ${color}, maxVCF: ${maxVCF}, maxDepth: ${maxDepth}\n maxNode: ${maxNode}`);
             while (!done) {
-                if (!(loopCount & 0xffff) && typeof post == "function") post({cmd: "moves", param: {moves: moves, firstColor: color}});
+                if (!(loopCount & 0xffff) && typeof post == "function") post({ cmd: "moves", param: { moves: moves, firstColor: color } });
                 nColorIdx = stackIdx.pop();
                 colorIdx = stackIdx.pop();
 
@@ -1784,7 +1784,7 @@ function loadEvaluatorJScript() {
                                             //console.warn(`[${movesToName(moves.concat(idx), 900)}]`);
                                             isConcat = false;
                                             vcfInfo.vcfCount++;
-                                            "post" in self && post({cmd: "vcfInfo", param: {vcfInfo: vcfInfo}});
+                                            "post" in self && post({ cmd: "vcfInfo", param: { vcfInfo: vcfInfo } });
                                             vcfTransTablePush(moves.length, sum, moves, arr);
                                             if (vcfInfo.vcfCount == maxVCF) {
                                                 for (let j = moves.length - 1; j >= 0; j--) {
@@ -1875,7 +1875,7 @@ function loadEvaluatorJScript() {
             vcfInfo.pushPositionCount = pushPositionCount;
             vcfInfo.hasCount = hasCount;
             vcfInfo.nodeCount = loopCount;
-            
+
             return vcfInfo.winMoves.length ? vcfInfo.winMoves[0] : [];
         }
 
@@ -1897,75 +1897,73 @@ function loadEvaluatorJScript() {
 
             testFour(arr, INVERT_COLOR[color], infoArr); // 搜索先手冲4
 
-            if (gameRules == RENJU_RULES) { //判断是否有复杂禁手防点
-                if (color == 1) { //黑棋VCF路线是否有复杂禁手防点
-                    for (let i = 0; i < len; i += 2) {
-                        arr[vcfMoves[end++]] = 1;
+            if (color == 1 && gameRules == RENJU_RULES) { //黑棋VCF路线是否有复杂禁手防点
+                for (let i = 0; i < len; i += 2) {
+                    arr[vcfMoves[end++]] = 1;
 
-                        let threeCount = 0;
-                        for (let direction = 0; direction < 4; direction++) {
-                            let lineInfo = _testLineThree(vcfMoves[i], direction, 1, arr);
-                            if (THREE_FREE == (MAX_FREE & lineInfo)) threeCount++;
-                            if (end == len && FOUR_FREE == (MAX_FREE & lineInfo)) {
-                                fourCount += 2;
-                                lineInfoList[infoIdx++] = lineInfo;
-                            }
+                    let threeCount = 0;
+                    for (let direction = 0; direction < 4; direction++) {
+                        let lineInfo = _testLineThree(vcfMoves[i], direction, 1, arr);
+                        if (THREE_FREE == (MAX_FREE & lineInfo)) threeCount++;
+                        if (end == len && FOUR_FREE == (MAX_FREE & lineInfo)) {
+                            fourCount += 2;
+                            lineInfoList[infoIdx++] = lineInfo;
                         }
-                        if (threeCount > 1) { // 有33型
-                            fast = false;
+                    }
+                    if (threeCount > 1) { // 有33型
+                        fast = false;
+                        break;
+                    }
+
+                    (end < len) && (arr[vcfMoves[end++]] = 2);
+                }
+            }
+            else { //白棋VCF路线是否有复杂禁手防点
+                for (let i = 0; i < len; i++) {
+                    arr[vcfMoves[end++]] = (i & 1) ? INVERT_COLOR[color] : color;
+                }
+
+                for (let direction = 0; direction < 4; direction++) {
+                    let lineInfo = _testLineFour(endIdx, direction, color, arr);
+                    switch (lineInfo & FOUL_MAX_FREE) {
+                        case FOUR_FREE:
+                        case LINE_DOUBLE_FOUR:
+                            fourCount += 2;
+                            lineInfoList[infoIdx++] = lineInfo;
                             break;
-                        }
-
-                        (end < len) && (arr[vcfMoves[end++]] = 2);
+                        case FOUR_NOFREE:
+                            fourCount += 1;
+                            lineInfoList[infoIdx++] = lineInfo;
+                            break;
                     }
                 }
-                else { //白棋VCF路线是否有复杂禁手防点
-                    for (let i = 0; i < len; i++) {
-                        arr[vcfMoves[end++]] = (i & 1) ? 1 : 2;
-                    }
 
+                if (fourCount == 1) {
+                    let foulIdx = getBlockFourPoint(endIdx, arr, lineInfoList[0]);
+                    blockArr[foulIdx] = 1; //保存抓禁的直接防点
+                    arr[foulIdx] = 1;
                     for (let direction = 0; direction < 4; direction++) {
-                        let lineInfo = _testLineFour(endIdx, direction, 2, arr);
+                        let lineInfo = _testLineFour(foulIdx, direction, 1, arr);
                         switch (lineInfo & FOUL_MAX_FREE) {
-                            case FOUR_FREE:
+                            case SIX:
+                                fFourCount += 3;
+                                break;
                             case LINE_DOUBLE_FOUR:
-                                fourCount += 2;
-                                lineInfoList[infoIdx++] = lineInfo;
+                                fFourCount += 2;
+                                fLineInfoList[fInfoIdx++] = lineInfo;
+                                break;
+                            case FOUR_FREE:
+                                fFourCount += 1;
                                 break;
                             case FOUR_NOFREE:
-                                fourCount += 1;
-                                lineInfoList[infoIdx++] = lineInfo;
+                                fFourCount += 1;
+                                fLineInfoList[fInfoIdx++] = lineInfo;
                                 break;
                         }
                     }
-
-                    if (fourCount == 1) {
-                        let foulIdx = getBlockFourPoint(endIdx, arr, lineInfoList[0]);
-                        blockArr[foulIdx] = 1; //保存抓禁的直接防点
-                        arr[foulIdx] = 1;
-                        for (let direction = 0; direction < 4; direction++) {
-                            let lineInfo = _testLineFour(foulIdx, direction, 1, arr);
-                            switch (lineInfo & FOUL_MAX_FREE) {
-                                case SIX:
-                                    fFourCount += 3;
-                                    break;
-                                case LINE_DOUBLE_FOUR:
-                                    fFourCount += 2;
-                                    fLineInfoList[fInfoIdx++] = lineInfo;
-                                    break;
-                                case FOUR_FREE:
-                                    fFourCount += 1;
-                                    break;
-                                case FOUR_NOFREE:
-                                    fFourCount += 1;
-                                    fLineInfoList[fInfoIdx++] = lineInfo;
-                                    break;
-                            }
-                        }
-                        arr[foulIdx] = 0;
-                        if (fFourCount < 2) { // 抓33
-                            fast = false;
-                        }
+                    arr[foulIdx] = 0;
+                    if (fFourCount < 2) { // 抓33
+                        fast = false;
                     }
                 }
             }
@@ -2095,10 +2093,10 @@ function loadEvaluatorJScript() {
 
             return blockPoints;
         }
-        
-        
+
+
         //--------------------------------------------------
-        
+
         exports.setGameRules = rules => gameRules = rules;
         exports.moveIdx = moveIdx;
         exports.getArrValue = getArrValue;

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.12";
+self.SCRIPT_VERSIONS["renju"] = "v1202.28";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -161,7 +161,7 @@ var loadApp = () => { // 按顺序加载应用
             },
         };
     })();
-
+    /*
     window.SaveResponse = function SaveResponse() {
         this.count = 0;
         this.response;
@@ -227,7 +227,7 @@ var loadApp = () => { // 按顺序加载应用
             }
         })
     }
-
+    */
     window.logCaches = function() {
         if ("caches" in window) {
             let cs = `_____________________\n`;
@@ -297,7 +297,7 @@ var loadApp = () => { // 按顺序加载应用
             isNoSleep = false;
         };
     }
-
+    /*
     function putCache(url) {
         return new Promise((resolve, reject) => {
             new SaveResponse().saveResponse(new Request(url))
@@ -318,16 +318,10 @@ var loadApp = () => { // 按顺序加载应用
             ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.APP_VERSION));
         }
         return Promise.all(ps.slice(0,29))
-            .then(()=>{
-                log("---更新离线缓存--->ok", "warn");
-                return Promise.resolve();
-            })
-            .catch(err => {
-                log(`---更新离线缓存失败---> ${err.message}`, "error");
-                return Promise.resolve();
-            })
+            .then(()=> log("---更新离线缓存--->ok", "warn"))
+            .catch(err =>log(`---更新离线缓存失败---> ${err.message}`, "error"))
     }
-
+    */
     function loadCss(url) { //加载css
         url = url.split("?")[0] + window.URL_VERSION;
         const filename = url.split("/").pop().split("?")[0];
@@ -599,6 +593,43 @@ var loadApp = () => { // 按顺序加载应用
             }
         });
     }
+    
+    function fetchTXT(url) {
+        if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
+            url = URL_HOME + url;
+        }
+        alert(url)
+        return new Promise((resolve, reject) => {
+            let text = "",
+                timer;
+            alert(`${navigator.serviceWorker}, ${navigator.serviceWorker.controller}`)
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.onmessage = function(event) {
+                    console.error(event.data)
+                    if (event.data.type == "text") {
+                        text = event.data.text;
+                        rm();
+                    }
+                }
+            
+                function rm() {
+                    navigator.serviceWorker.onmessage = undefined;
+                    clearTimeout(timer);
+                    resolve(text);
+                }
+                navigator.serviceWorker.controller.postMessage({ cmd: "fetchTXT", url: url });
+                timer = setTimeout(rm, 30 * 1000);
+            }
+            else {
+                resolve(text);
+            }
+        })
+    }
+    /*
+    setTimeout(()=>{
+    fetchTXT("renju.html").then(alert)
+    },5000)
+    */
 
     function upData() {  // find UpData open msg
         function getNewVersion() {
@@ -829,7 +860,7 @@ var loadApp = () => { // 按顺序加载应用
         })
         .then(() => {
             window._loading.text("20%");
-            return loadScriptAll([ //顺序 同步加载
+            return loadScriptAll([ //顺序加载
                 [SOURCE_FILES["Viewport"], () => {
                     window.viewport1 = new View(dw);
                 }],
@@ -840,13 +871,20 @@ var loadApp = () => { // 按顺序加载应用
                             log(`serviceWorker.state: ${serviceWorker_state_history.join(" --> ")}`, "warn")
                         })
                 }],
-                [SOURCE_FILES["Button"]],
                 [SOURCE_FILES["emoji"]], // first load emoji
-                [SOURCE_FILES["String2Buffer"]],
                 [SOURCE_FILES["EvaluatorWebassembly"]],
                 [SOURCE_FILES["EvaluatorJScript"]],
-                [SOURCE_FILES["Evaluator"]],
+                [SOURCE_FILES["TypeBuffer"]],
                 ], false)
+        })      
+        .then(() => {
+            window._loading.text("25%");
+            return loadScriptAll([
+                [SOURCE_FILES["Button"]],
+                [SOURCE_FILES["Evaluator"]],
+                [SOURCE_FILES["String2Buffer"]],
+                [SOURCE_FILES["RenjuTree"]],
+                ], true)
         })
         .then(() => {
             window._loading.text("35%");
@@ -855,7 +893,6 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["control"]],
                 [SOURCE_FILES["msgbox"]],
                 [SOURCE_FILES["appData"]],
-                [SOURCE_FILES["TypeBuffer"]],
                 [SOURCE_FILES["engine"]],
                 [SOURCE_FILES["NoSleep"]],
                 [SOURCE_FILES["jspdf"]],
@@ -873,7 +910,6 @@ var loadApp = () => { // 按顺序加载应用
             return loadScriptAll([
                 [SOURCE_FILES["worker"]],
                 [SOURCE_FILES["IntervalPost"]],
-                [SOURCE_FILES["RenjuTree"]],
                 [SOURCE_FILES["UNICODE2GBK"]],
                 [SOURCE_FILES["JFile"]],
                 [SOURCE_FILES["JPoint"]],
@@ -907,9 +943,7 @@ var loadApp = () => { // 按顺序加载应用
             log(window.TEST_INFORMATION, "info");
             logVersions();
             if (autoShowUpDataInformation())    //提示新版本 更新已经完成
-                return downloadSource()  //下载缓存文件
-            else
-                return Promise.resolve()
+                return //downloadSource()  //下载缓存文件
         })
         .then(()=>{
             return logCaches()  // print caches information
@@ -929,13 +963,7 @@ var loadApp = () => { // 按顺序加载应用
             else {
                 const MSG = "❌" + "打开网页出错, 准备刷新" + "\n\n" + err;
                 alert(MSG)
-                removeAppCache()
-                    .then(() => {
-                        window.reloadApp()
-                    })
-                    .catch(() => {
-                        window.reloadApp()
-                    })
+                window.reloadApp()
             }
         });
 };

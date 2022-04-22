@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1202.12";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1202.28";
 window.engine = (function() {
     "use strict";
     const TEST_ENGINE = false;
@@ -23,6 +23,23 @@ window.engine = (function() {
         let print = command[type] || console.log;
         if (TEST_ENGINE && DEBUG)
             print(`[engine.js]\n>> ` + param);
+    }
+
+    //------------------------  ListNode   ------------------------ 
+
+    class ListNode extends RenjuNode {
+        get bestValue() {
+            return this.score;
+        }
+        set bestValue(value) {
+            this.score = value;
+            this.boardTXT = value.toString(10) //(~~(value / 0xFE * 100)).toString(10);
+        }
+        constructor(node, alpha, beta) {
+            super(node.nodeBuf, node.commentBuf, node.pointer);
+            this.alpha = alpha;
+            this.beta = beta;
+        }
     }
 
     //-------------------------- COMMAND -------------------------------
@@ -394,7 +411,6 @@ window.engine = (function() {
 
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode}
     async function getLevelThreePoints(param, nextMoves) {
-        //try{
         let infoArr = getTestThreeInfo(param),
             ps = [];
         for (let i = nextMoves.length - 1; i >= 0; i--) {
@@ -404,15 +420,10 @@ window.engine = (function() {
             ps.push(getLevelThreeNode(idx, infoArr[idx], param, thread));
         }
         return (await Promise.all(ps) || []).filter(node => !!node).map(node => node.idx);
-        //}
-        //catch(err) {
-        //console.error(`getLevelThreePoints: ${err}`)
-        //}
     }
 
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode, ftype}
     async function getPointsVCT(param) {
-        //try{
         let nextMoves = [],
             sortArr = new Array(225).fill(0),
             fPoints = getPointsFour(param),
@@ -425,25 +436,18 @@ window.engine = (function() {
         nextMoves.map(idx => sortArr[idx] = 2)
         fPoints.map(idx => sortArr[idx]++);
         tPoints.map(idx => sortArr[idx]++);
-        //console.info(`${movesToName(fPoints)}`)
-        //console.warn(`${movesToName(tPoints)}`)
+
         return sortArr.map((v, idx) => v > 2 ? idx : undefined).filter(idx => idx != undefined);
-        //}
-        //catch(err) {
-        //console.error(`getPointsVCT: ${err}`)
-        //}
     }
 
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode}
     async function _nextMoves(param) {
-        //try{
         let thread,
             infoArr = [],
             blkPoints = [],
             ps = [];
 
-        thread = await getFreeThread();
-        ps.push(getBlockPoints(param, thread)
+        ps.push(getBlockPoints(param)
             .then(points => blkPoints = points))
         param.color = INVERT_COLOR[param.color];
         infoArr = getTestThreeInfo(param);
@@ -451,10 +455,6 @@ window.engine = (function() {
         await Promise.all(ps);
 
         return blkPoints.filter(idx => !(infoArr[idx] & FOUL));
-        //}
-        //catch(err) {
-        //console.error(`_nextMoves: ${err}`)
-        //}
     }
 
     //------------------------- exports --------------------
@@ -464,30 +464,30 @@ window.engine = (function() {
         reset();
     }
 
-    async function wait(timer) {
-        return new Promise(resolve => setTimeout(resolve, timer))
+    async function wait(time) {
+        return new Promise(resolve => setTimeout(resolve, time))
+    }
+    
+    async function putMove(idx, waitTime = 500) {
+        cBoard.wNb(idx, "auto", true);
+        await wait(waitTime);
+    }
+    
+    async function takeMove(idx, waitTime = 500) {
+        cBoard.cleNb(idx, true);
+        await wait(waitTime);
     }
 
     async function run(cmd, param, thread) {
-        //try{
         log(param, "log");
         thread = thread || await getFreeThread();
         return thread.run({ cmd: cmd, param: param });
-        //}
-        //catch(err) {
-        //console.error(`run: ${err}`)
-        //}
     }
 
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode}
     async function _selectPoints(param, thread) {
-        //try{
         thread = thread || await getFreeThread();
         return await run("selectPoints", param, thread) || new Array(225);
-        //}
-        //catch(err) {
-        //console.error(`_selectPoints: ${err}`)
-        //}
     }
 
     async function _findVCF({ arr, color, maxVCF, maxDepth, maxNode }, thread) {
@@ -507,34 +507,69 @@ window.engine = (function() {
         return await run("getLevelB", param, thread) || levelBInfo;
     }
 
-    //param: {points, arr, color, maxVCF, maxDepth, maxNode}
-    async function _excludeBlockVCF(param, thread) {
-        thread = thread || await getFreeThread();
-        return await run("excludeBlockVCF", param, thread) || [];
-    }
-
     //parm: {arr, color, maxVCF, maxDepth, maxNode}
     async function findVCF(param, thread) {
         thread = thread || await getFreeThread();
         return await run("findVCF", param, thread) || vcfInfo;
     }
 
+    //param: {points, arr, color, maxVCF, maxDepth, maxNode}
+    async function _excludeBlockVCF(param) {
+        let i = param.points.length - 1,
+            ps = [],
+            result = new Array(225);
+        while (i >= 0) {
+            let idx = param.points[i--];
+            if (param.arr[idx] == 0) {
+                let thread = await getFreeThread();
+                param.arr[idx] = INVERT_COLOR[param.color];
+                ps.push(_findVCF(param, thread).then(winMoves => 0 == winMoves.length && (result[idx] = idx)));
+                param.arr[idx] = 0;
+            }
+        }
+        await Promise.all(ps);
+        return result.filter(v => v != undefined);
+    }
+
+
     //param: {arr, color, vcfMoves, includeFour, maxVCF, maxDepth, maxNode}
-    async function excludeBlockVCF(param, thread) {
-        thread = thread || await getFreeThread();
-        param.points = await _getBlockVCF(param, thread);
-        return _excludeBlockVCF(param, thread);
+    async function excludeBlockVCF(param) {
+        param.points = await _getBlockVCF(param);
+        return _excludeBlockVCF(param);
     }
 
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode}
-    async function getBlockPoints(param, thread) {
-        //try{
-        thread = thread || await getFreeThread();
-        return await run("getBlockPoints", param, thread) || [];
-        //}
-        //catch(err) {
-        //console.error(`getBlockPoints: ${err}`)
-        //}
+    async function getBlockPoints(param) {
+        let levelBInfo = await _getLevelB(param),
+            levelInfo = levelBInfo.levelInfo,
+            level = levelInfo & 0xff,
+            result = [];
+        switch (level) {
+            case LEVEL_WIN:
+            case LEVEL_FREEFOUR:
+                break;
+            case LEVEL_NOFREEFOUR:
+                result.push(levelInfo >> 8 & 0xff);
+                break;
+            case LEVEL_DOUBLEFREETHREE:
+            case LEVEL_DOUBLEVCF:
+            case LEVEL_FREETHREE:
+            case LEVEL_VCF:
+                let winMoves = levelBInfo.winMoves;
+                if (winMoves.length) {
+                    param.vcfMoves = winMoves;
+                    param.includeFour = true;
+                    result = await excludeBlockVCF(param);
+                }
+                break;
+            case LEVEL_VCT:
+            case LEVEL_NONE:
+                param.color = INVERT_COLOR[param.color];
+                result = (await _selectPoints(param)).map((v, idx) => v > 0 ? idx : -1).filter(idx => idx > -1);
+                param.color = INVERT_COLOR[param.color];
+                break;
+        }
+        return result;
     }
 
     //parm: {arr, color, maxVCF, maxDepth, maxNode}
@@ -648,57 +683,158 @@ window.engine = (function() {
         let winTree = await createTreeWin(param);
         if (winTree) return winTree;
 
+        const MAX = 0xFF,
+            MIN = 0x00,
+            WIN = 0xFE,
+            LOST = 0x01;
         let { tree, positionMoves, isPushPass, current } = createTree(param),
             arr = param.arr,
-            stack = [],
+            moveList = new MoveList(),
+            bestValue = 0,
             moves = [],
-            count = 0;
+            count = 0,
+            curDepthVCT,
+            maxDepthVCT;
+
+            moveList.setRoot(new ListNode(current, MIN, MAX));
+            moveList.getRoot().score = MIN;
 
         while (current) {
-            //console.log(`--------`)
-            //console.log(movesToName(arr.map((v, idx) => v == 1 ? idx : -1).filter(v => v > -1)))
-            //console.info(movesToName(arr.map((v, idx) => v == 2 ? idx : -1).filter(v => v > -1)))
-            //console.log(`--------`)
-            console.log(count++);
-            if (0 == moves.length || 0 == tree.positionNodes(positionMoves.concat(moves), 7).length) {
-                let points = moves.length & 1 ? await _nextMoves(param) : await getPointsVCT(param),
-                    color = moves.length & 1 ? INVERT_COLOR[param.color] : param.color;
-                //console.info(movesToName(points))
-
-                for (let i = points.length - 1; i >= 0; i--) {
-                    tree.addChild(current, tree.newNode(points[i], DEFAULT_BOARD_TXT[color]));
+            console.log(`>> [${movesToName(moves)}]\n alpha: ${current.alpha}, beta: ${current.beta}, bestValue: ${current.bestValue}`)
+            while (true) { //选择当前最优分支
+                let nextChild = moves.length & 1 ? current.getMinChild() : current.getMaxChild();
+                if (nextChild) {
+                    current = nextChild;
+                    let cur = moveList.current();
+                    arr[current.idx] = moves.length & 1 ? INVERT_COLOR[param.color] : param.color;
+                    moves.push(current.idx);
+                    moveList.add(new ListNode(current, cur.alpha, cur.beta));
+                    //await putMove(current.idx);
                 }
+                else break;
             }
-            else {
-                console.warn(`${movesToName(moves)}, ${moves.length}, ${moves.length & 1}`)
+            let vList = [],
+                curIdx = -1,
+                endIdx = moveList.index();
+            while(curIdx++ <= endIdx) {
+                vList.push(moveList.get(curIdx).bestValue);
             }
+            
+            console.info(`>> [${movesToName(moves)}]\nvList: ${vList}`)
 
-            //console.info(`${movesToName(current.getChilds().map(nd=>nd.idx))}`)
-            current = current.down;
+            curDepthVCT = moves.length;
+            maxDepthVCT = curDepthVCT==0 ? 3 : curDepthVCT + 4;
+            while (current) { // alpha-beta 估值
+                //count++;
+                if (moves.length < maxDepthVCT) {
+                    let points = moves.length & 1 ? await _nextMoves(param) : await getPointsVCT(param),
+                        color = moves.length & 1 ? INVERT_COLOR[param.color] : param.color,
+                        score = moves.length & 1 ? MIN : MAX;
+                    for (let i = points.length - 1; i >= 0; i--) {
+                        let nNode = tree.newNode(points[i], DEFAULT_BOARD_TXT[color]);
+                        nNode.score = score;
+                        tree.addChild(current, nNode);
+                    }
+                    count++;
+                }
+                
+                current = current.down;
 
-            //console.log(`${!current  || moves.length >= param.maxDepthVCT}, ${moves.length}, ${param.maxDepthVCT}`)
-            if (!current || moves.length >= param.maxDepthVCT) {
-                current = undefined;
-                if (stack.length) {
-                    let elm = stack.pop();
-                    current = elm.node;
-                    for (let i = moves.length - 1; i >= elm.len; i--) {
-                        //cBoard.cleNb(moves[i], true);
+                if (current) {
+                    let cur = moveList.current();
+                    arr[current.idx] = moves.length & 1 ? INVERT_COLOR[param.color] : param.color;
+                    moves.push(current.idx);
+                    moveList.add(new ListNode(current, cur.alpha, cur.beta));
+                    //await putMove(current.idx);
+                }
+                else {
+                    //count++;
+                    bestValue = moves.length >= maxDepthVCT ? getScore(moves[moves.length - 1], param.color, arr) : moves.length & 1 ? WIN : LOST;
+                    moveList.current().bestValue = bestValue;
+                    //console.log(bestValue);
+
+                    current = undefined;
+                    while (moves.length > curDepthVCT) {
+                        let right = moveList.current().right;
                         arr[moves.pop()] = 0;
+                        moveList.decrement();
+                        //await takeMove(moveList.current().idx);
+                        
+                        let cur = moveList.current();
+                        if (moves.length & 1) {
+                            cur.bestValue = Math.min(cur.bestValue, bestValue);
+                            cur.beta = Math.min(cur.beta, cur.bestValue);
+                            if (cur.bestValue == LOST || cur.alpha >= cur.beta) right = undefined;
+                        }
+                        else {
+                            cur.bestValue = Math.max(cur.bestValue, bestValue);
+                            cur.alpha = Math.max(cur.alpha, cur.bestValue);
+                            if (cur.bestValue == WIN || cur.alpha >= cur.beta) right = undefined;
+                        }
+                        bestValue = cur.bestValue;
+
+                        if (right) {
+                            current = right;
+                            arr[current.idx] = moves.length & 1 ? INVERT_COLOR[param.color] : param.color;
+                            moves.push(current.idx);
+                            moveList.add(new ListNode(current, cur.alpha, cur.beta));
+                            //await putMove(current.idx);
+                            break;
+                        }
                     }
                 }
+                if (canceling) break;
             }
 
-            if (current) {
-                //console.info(`right: ${idxToName(current.right && current.right.idx)}`)
-                if (current.right) stack.push({ node: current.right, len: moves.length });
-                arr[current.idx] = moves.length & 1 ? INVERT_COLOR[param.color] : param.color;
-                moves.push(current.idx);
-                //cBoard.wNb(current.idx, "auto", true)
-                //await wait(1000)
-            }
             if (canceling) break;
+
+            while (true) {
+                if (moves.length) {
+                    arr[moves.pop()] = 0;
+                    moveList.decrement();
+                    current = moveList.current();
+                    //await takeMove(current.idx);
+    
+                    let { maxScore, minScore } = current.getMaxMinScore(),
+                        oldBestValue = current.bestValue;
+                    if (moves.length & 1) {
+                        current.bestValue = minScore;
+                        current.beta = Math.min(current.beta, current.bestValue);
+                        console.log(`min << alpha: ${current.alpha}, beta: ${current.beta}, bestValue: ${current.bestValue}, maxScore: ${maxScore}, minScore: ${minScore}`)
+                        if (current.bestValue < oldBestValue || current.bestValue == LOST || (current.bestValue == WIN && maxScore == minScore)) {
+
+                        }
+                        else break;
+                    }
+                    else {
+                        current.bestValue = maxScore;
+                        current.alpha = Math.max(current.alpha, current.bestValue);
+                        console.log(`max << alpha: ${current.alpha}, beta: ${current.beta}, bestValue: ${current.bestValue}, maxScore: ${maxScore}, minScore: ${minScore}`)
+                        if (current.bestValue < oldBestValue || current.bestValue == WIN || (current.bestValue == LOST && maxScore == minScore)) {
+
+                        }
+                        else break;
+                    }
+                }
+                else break;
+            }
+
+            console.info(`<< [${movesToName(moves)}]`)
+            if (moves.length) {
+                continue;
+                arr[moves.pop()] = 0;
+                moveList.decrement();
+                current = moveList.current();
+                //await takeMove(current.idx)
+            }
+            else {
+                current = moveList.current()
+                let bestValue = current.bestValue;
+                console.error(`[bestValue: ${bestValue}]`)
+                if (bestValue == WIN || bestValue == LOST) break;
+            }
         }
+
         console.warn(`count: ${count}`)
         return tree;
     }

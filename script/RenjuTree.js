@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.28";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -240,6 +240,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
         get level() {
             return this.nodeBuf.getUint16(this.pointer + 2);
         }
+        get depth() {
+            return this.nodeBuf.getUint8(this.pointer + 2);
+        }
+        get score() {
+            return this.nodeBuf.getUint8(this.pointer + 3);
+        }
         get down() {
             let pointer = this.nodeBuf.getUint32(this.pointer + 4);
             if (pointer) {
@@ -275,6 +281,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
         }
         set level(value) {
             this.nodeBuf.setUint16(this.pointer + 2, value);
+        }
+        set depth(value) {
+            this.nodeBuf.setUint8(this.pointer + 2, value);
+        }
+        set score(value) {
+            this.nodeBuf.setUint8(this.pointer + 3, value);
         }
         set down(node) {
             if (node && node.constructor.name == "Node")
@@ -362,6 +374,57 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
         return nodes;
     }
 
+    Node.prototype.getMaxChild = function() {
+        let cNode = this.down,
+            max = -0xFFFF,
+            maxNode = cNode;
+        while (cNode) {
+            let score = cNode.score;
+            if (score > max && score != 0xFF) {
+                max = score;
+                maxNode = cNode;
+            }
+            cNode = cNode.right;
+        }
+        return maxNode;
+    }
+
+    Node.prototype.getMinChild = function() {
+        let cNode = this.down,
+            min = 0xFFFF,
+            minNode = cNode;
+        while (cNode) {
+            let score = cNode.score;
+            if (score < min && score != 0x00) {
+                min = score;
+                minNode = cNode;
+            }
+            cNode = cNode.right;
+        }
+        return minNode;
+    }
+
+    Node.prototype.getMaxMinScore = function() {
+        let cNode = this.down,
+            max = -0xFFFF,
+            min = 0xFFFF;
+        while (cNode) {
+            let score = cNode.score;
+            //console.error(`${idxToName(cNode.idx)}, score: ${score}, max: ${max}, min: ${min}`)
+            if (score > max && score != 0xFF) {
+                max = score;
+            }
+            if (score < min && score != 0x00) {
+                min = score;
+            }
+            cNode = cNode.right;
+        }
+        max == 0x00 && (min == max);
+        min == 0xFF && (min == max);
+        return { maxScore: max, minScore: min };
+    }
+
+
     Node.prototype.addChild = function(childNode) {
         if (childNode.nodeBuf != this.nodeBuf) throw new Error(`Node.addChild Error: childNode.nodeBuf != this.nodeBuf`);
         let leftNode = this.down,
@@ -427,10 +490,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
             stack = [];
         typeof callback != "function" && (callback = () => {});
         while (current) {
+            
+            callback(current);
             right = current.right;
             down = current.down;
-
-            callback(current);
 
             if (right) stack.push(right);
 
@@ -442,6 +505,77 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
                 else current = undefined;
             }
         }
+    }
+
+    Node.prototype.sortIdx = function(order = 1) {
+        const LEN = 226;
+        let list = new Array(LEN),
+            current = this.down;
+
+        if (current == undefined) return;
+        while (current) {
+            let idx = order == -1 ? LEN -1 - current.idx : current.idx;
+            list[idx] = current;
+            current = current.right;
+        }   
+
+        let i = -1;
+        while (++i < LEN) {
+            if (list[i]) {
+                this.down = list[i];
+                current = list[i];
+                break;
+            }
+        }
+
+        while (++i < LEN) {
+            if (list[i]) {
+                current.right = list[i];
+                current = list[i];
+            }
+        }
+        current.right = undefined;
+    }
+
+    Node.prototype.sortScore = function(order = 1) {
+        const LEN = 256;
+        let list = new Array(LEN),
+            current = this.down;
+
+        if (current == undefined) return;
+        for (let i = 0; i < LEN; i++) {
+            list[i] = [];
+        }
+        while (current) {
+            let idx = order == -1 ? LEN - 1 - current.score : current.score;
+            list[idx].push(current);
+            current = current.right;
+        }
+
+        let i = -1;
+        while (++i < LEN) {
+            let end = list[i].length;
+            if (end) {
+                this.down = list[i][0];
+                current = list[i][0];
+                for (let j = 1; j < end; j++) {
+                    current.right = list[i][j];
+                    current = list[i][j];
+                }
+                break;
+            }
+        }
+
+        while (++i < LEN) {
+            let end = list[i].length;
+            if (end) {
+                for (let j = 0; j < end; j++) {
+                    current.right = list[i][j];
+                    current = list[i][j];
+                }
+            }
+        }
+        current.right = undefined;
     }
 
     //------------------------ Tree ---------------------
@@ -553,7 +687,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
         if (leftNode.nodeBuf != this.nodeBuf) throw new Error(`Tree.addRight Error: leftNode.nodeBuf != this.nodeBuf`);
         let current = leftNode.right,
             rIdx = rightNode.idx;
-    
+
         while (current) {
             let idx = current.idx;
             if (rIdx < idx) {
@@ -569,7 +703,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
             leftNode = current;
             current = current.right;
         }
-        
+
         let nNode = this.copyNode(rightNode);
         leftNode.right = nNode;
         return nNode;
@@ -840,7 +974,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
                                 idx: normalizeIdx(jointNode.node.idx, nMatch, this.size),
                                 path: currentPath,
                                 nMatch: nMatch,
-                                color: "#685D8B"//"#483D8B"
+                                color: "#685D8B" //"#483D8B"
                             });
                             addBranch(branch);
                             //console.log(`red: [${movesToName(branch.path)}]`);
@@ -950,6 +1084,14 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1202.12";
 
     Tree.prototype.map = function(callback) {
         this.root.map(callback);
+    }
+    
+    Tree.prototype.sortIdx = function(order = 1) {
+        this.map(node => node.sortIdx(order));
+    }
+    
+    Tree.prototype.sortScore = function(order = 1) {
+        this.map(node => node.sortScore(order));
     }
 
     //----------------------- exports -------------------------

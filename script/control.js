@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.12";
+self.SCRIPT_VERSIONS["control"] = "v1202.28";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -839,7 +839,6 @@ window.control = (() => {
         }
 
         function openImg() {
-            if (isBusy()) return;
             engine.cancel();
             cBd.drawLineEnd();
             let reader = new FileReader();
@@ -859,7 +858,6 @@ window.control = (() => {
         }
 
         function openLib() {
-            if (isBusy()) return;
             newGame();
             engine.cancel();
             cBd.drawLineEnd();
@@ -1055,7 +1053,7 @@ window.control = (() => {
         cSelWhite.setText("白先");
 
         const CALCULATE = 1;
-        let tMsg = [["3月21日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
+        let tMsg = [["4月23日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new Button(renjuCmddiv, "select", 0, 0, w, h);
         if (CALCULATE) {
