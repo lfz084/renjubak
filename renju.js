@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.28";
+self.SCRIPT_VERSIONS["renju"] = "v1202.29";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;

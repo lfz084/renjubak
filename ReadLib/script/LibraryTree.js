@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1202.28";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1202.29";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

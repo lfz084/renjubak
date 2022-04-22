@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.28";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1202.29";
 
 if ("importScripts" in self) {
     self.importScripts(
