@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.69";
+self.SCRIPT_VERSIONS["renju"] = "v1202.87";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -75,7 +75,8 @@ var loadApp = () => { // 按顺序加载应用
     
     window.absoluteURL = function(url) {
         if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
-            url = URL_HOME + url;
+            url = "https://lfz084.gitee.io/renju/" + url;
+            //url = URL_HOME + url;
         }
         return url;
     }
@@ -605,7 +606,7 @@ var loadApp = () => { // 按顺序加载应用
                 timer;
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.onmessage = function(event) {
-                    if (event.data.type == "text") {
+                    if (typeof event.data == "object" && event.data.type == "text") {
                         text = event.data.text;
                         rm();
                     }
@@ -617,7 +618,6 @@ var loadApp = () => { // 按顺序加载应用
                     resolve(text);
                 }
                 navigator.serviceWorker.controller.postMessage({ cmd: "fetchTXT", url: url });
-                timer = setTimeout(rm, 30 * 1000);
             }
             else {
                 resolve(text);
@@ -629,6 +629,7 @@ var loadApp = () => { // 按顺序加载应用
         return new Promise((resolve, reject) => {
             fetchTXT("renju.html")
                 .then(txt => {
+                    alert(`txt: ${txt}`)
                     const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
                     const version = versionCode ?
                         String(versionCode).split(/[\"\;]/)[1] :
@@ -650,11 +651,12 @@ var loadApp = () => { // 按顺序加载应用
             function upEnd(e) {
                 if (typeof e.data == "object" && e.data.cmd == "upData") {
                     if (e.data.ok) {
-                        log(`upData ${e.data.version} ok`, "warn")
+                        log(`更新完成 ${e.data.version}`, "warn")
+                        window.setUpdataVersion()
                         resolve()
                     }
                     else {
-                        log(`upData ${e.data.version} Error: ${e.data.error}`, "warn")
+                        log(`更新失败 ${e.data.version} : ${e.data.error}`, "error")
                         reject()
                     }
                     navigator.serviceWorker.removeEventListener("message", upEnd);
@@ -684,14 +686,11 @@ var loadApp = () => { // 按顺序加载应用
         const TIMER_NEXT = 30 * 1000;
         let count = 0;
         function search() {
-            count++ < 10 && upData()
-                .catch(err => {
-                    log(`[${err}]`, "error")
-                    setTimeout(search, TIMER_NEXT)
-                })
+            if (count++ < 15) upData().catch(err => setTimeout(search, TIMER_NEXT))
+            else window.setUpdataVersion()
         }
         if ("serviceWorker" in navigator) {
-            setTimeout(search, 15 * 1000);
+            setTimeout(search, 5 * 1000);
         }
         return Promise.resolve();
     }

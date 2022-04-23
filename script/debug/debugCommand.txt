@@ -104,3 +104,20 @@ window.printChilds = function(node){
 }
 
 printChilds(cBoard.tree.seek([144,225,114,225,112,225]))
+
+
+let url = "https://lfz084.gitee.io/renju/index.html";
+async function getText(url) {
+    let rsp = undefined,
+        count = 0;
+    while(!rsp) {
+        console.log(count++);
+        await fetch(url)
+        .then(response => {
+            if (response.ok) rsp = response
+        })
+    }
+    
+    rsp.text().then(console.info)
+}
+getText(url)

@@ -1,4 +1,4 @@
-    var VERSION = "v1202.69";
+    var VERSION = "v1202.87";
 var myInit = {
     cache: "reload"
 };
@@ -103,9 +103,9 @@ function myFetch(url, version, clientID) {
     let url_version = getUrlVersion(version);
     return new Promise((resolve, reject) => {
         let req = url == "https://lfz084.github.io/icon.ico" + url_version ?
-            new Request("https://lfz084.gitee.io/renju/icon.ico" + url_version, myInit) :
+            new Request("https://lfz084.gitee.io/renju/icon.ico" + "?v=" + new Date().getTime(), myInit) :
             url == "https://lfz084.github.io/icon.png" + url_version ?
-            new Request("https://lfz084.gitee.io/renju/icon.png" + url_version, myInit) :
+            new Request("https://lfz084.gitee.io/renju/icon.png" + "?v=" + new Date().getTime(), myInit) :
             new Request(url, myInit),
             nRequest = new Request(req.url.split("?")[0] + "?v=" + new Date().getTime(), myInit);
         fetch(nRequest)
@@ -272,13 +272,21 @@ self.addEventListener('message', function(event) {
                 })
         }
         else if (event.data.cmd == "fetchTXT") {
-            fetch(new Request(event.data.url, myInit))
-                .then(response => response.text())
+            let url = event.data.url.split("?")[0] + "?v=" + new Date().getTime();
+            postMsg(`fetchTXT: ${url}`)
+            fetch(new Request(url, myInit))
+                .then(response => {
+                    postMsg(`fetchTXT: ${response.ok}`)
+                    return response.ok ? response.text() : Promise.reject(`response.ok = ${response.ok}`)
+                })
                 .then(text => {
                     postMsg({ type: "text", text: text }, event.clientID)
                 })
-                .catch(() => {
-                    postMsg({ type: "text", text: "" }, event.clientID)
+                .catch(err => {
+                    postMsg({ type: "text", text: `${err}` }, event.clientID)
+                })
+                .then(() => {
+                    postMsg(`fetchTXT <<<`)
                 })
         }
     }

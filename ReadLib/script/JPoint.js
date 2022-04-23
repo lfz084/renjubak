@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JPoint"] = "v1202.69";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JPoint"] = "v1202.87";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

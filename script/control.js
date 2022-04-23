@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.69";
+self.SCRIPT_VERSIONS["control"] = "v1202.87";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;

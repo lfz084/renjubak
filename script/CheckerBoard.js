@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["CheckerBoard"] = "v1202.69";
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1202.87";
 window.CheckerBoard = (function() {
 
     "use strict";
