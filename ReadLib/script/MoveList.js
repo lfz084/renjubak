@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveList"] = "v1202.87";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["MoveList"] = "v1202.90";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.87";
+self.SCRIPT_VERSIONS["renju"] = "v1202.90";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -75,8 +75,8 @@ var loadApp = () => { // 按顺序加载应用
     
     window.absoluteURL = function(url) {
         if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
-            url = "https://lfz084.gitee.io/renju/" + url;
-            //url = URL_HOME + url;
+            //url = "https://lfz084.gitee.io/renju/" + url;
+            url = URL_HOME + url;
         }
         return url;
     }
@@ -629,7 +629,6 @@ var loadApp = () => { // 按顺序加载应用
         return new Promise((resolve, reject) => {
             fetchTXT("renju.html")
                 .then(txt => {
-                    alert(`txt: ${txt}`)
                     const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
                     const version = versionCode ?
                         String(versionCode).split(/[\"\;]/)[1] :
@@ -662,19 +661,25 @@ var loadApp = () => { // 按顺序加载应用
                     navigator.serviceWorker.removeEventListener("message", upEnd);
                 }
             }
+            
+            function postUpData(version) {
+                log(`upData ${version}`, "warn")
+                navigator.serviceWorker.addEventListener("message", upEnd);
+                navigator.serviceWorker.controller.postMessage({ cmd: "upData", version: version, files: Object.keys(SOURCE_FILES).map(key => absoluteURL(SOURCE_FILES[key])) });
+            }
+            
             if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-                getNewVersion()
-                .then(version => {
-                    if (version.isNewVersion) {
-                        log(`upData ${version.version}`, "warn")
-                        navigator.serviceWorker.addEventListener("message", upEnd);
-                        navigator.serviceWorker.controller.postMessage({ cmd: "upData", version: version.version, files: Object.keys(SOURCE_FILES).map(key=>absoluteURL(SOURCE_FILES[key])) });
-                    }
-                    else {
-                        resolve()
-                    }
-                })
-                .catch(reject)
+                if (window.NEW_VERSION != window.CURRENT_VERSION){
+                    postUpData(window.NEW_VERSION)
+                }
+                else {
+                    getNewVersion()
+                        .then(version => {
+                            if (version.isNewVersion) postUpData(version.version)
+                            else resolve()
+                        })
+                        .catch(reject)
+                }
             }
             else {
                 resolve()

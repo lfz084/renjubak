@@ -106,18 +106,16 @@ window.printChilds = function(node){
 printChilds(cBoard.tree.seek([144,225,114,225,112,225]))
 
 
-let url = "https://lfz084.gitee.io/renju/index.html";
+let url = "https://lfz084.gitee.io/renju/renju.html?v=1650708311969";
 async function getText(url) {
     let rsp = undefined,
         count = 0;
     while(!rsp) {
         console.log(count++);
-        await fetch(url)
-        .then(response => {
-            if (response.ok) rsp = response
-        })
+        let response = await fetch(url)
+        if (response.ok) rsp = response
     }
-    
+    console.log(`<<<`)
     rsp.text().then(console.info)
 }
 getText(url)

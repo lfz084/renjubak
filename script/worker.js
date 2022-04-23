@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.87";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.90";
 /Worker/.exec(`${self}`) && (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
