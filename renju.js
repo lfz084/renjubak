@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.29";
+self.SCRIPT_VERSIONS["renju"] = "v1202.68";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -72,6 +72,13 @@ var loadApp = () => { // 按顺序加载应用
         window.frames[0].window.alert(name);
         IFRAME.parentNode.removeChild(IFRAME);
     };
+    
+    window.absoluteURL = function(url) {
+        if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
+            url = URL_HOME + url;
+        }
+        return url;
+    }
     
     window.addEventListener("error", function(err){
         log(err.Stack || err.message || err, "error");
@@ -167,7 +174,7 @@ var loadApp = () => { // 按顺序加载应用
         this.response;
     }
 
-    SaveResponse.prototype.saveResponse = function(request, cacheName = window.APP_VERSION) {
+    SaveResponse.prototype.saveResponse = function(request, cacheName = window.NEW_VERSION) {
         let _self = this;
 
         function put() {
@@ -252,19 +259,16 @@ var loadApp = () => { // 按顺序加载应用
         if ("caches" in window) {
             let cs = `_____________________\n`;
             return caches.open(cacheName)
-                .then(function(cache) {
-                    return cache.keys()
-                        .then(function(keys) {
-                            keys.length==0 && typeof showLabel=="function" && showLabel(`️⚠ ️缓存异常 不能离线运行 刷新一下吧!`);
-                            cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
-                            keys.forEach(function(request, index, array) {
-                                cs += `.\t${request.url.split("/").pop()}\n`
-                            });
-                            cs += `_____________________\n`;
-                            log(cs);
-                            return Promise.resolve();
-                        });
-                })
+                .then(cache =>cache.keys())
+                .then(keys => {
+                    keys.length==0 && typeof showLabel=="function" && showLabel(`️⚠ ️缓存异常 不能离线运行 刷新一下吧!`);
+                    cs += `______ [${cacheName}]  ${keys.length} 个文件 ______\n\n`
+                    keys.forEach(function(request, index, array) {
+                        cs += `.\t${request.url.split("/").pop()}\n`
+                    });
+                    cs += `_____________________\n`;
+                    log(cs);
+                });
         }
         else {
             return Promise.resolve();
@@ -315,7 +319,7 @@ var loadApp = () => { // 按顺序加载应用
         let ps=[];
         let keys = Object.keys(window.SOURCE_FILES);
         for(let i=0; i<keys.length; i++){
-            ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.APP_VERSION));
+            ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.NEW_VERSION));
         }
         return Promise.all(ps.slice(0,29))
             .then(()=> log("---更新离线缓存--->ok", "warn"))
@@ -595,17 +599,12 @@ var loadApp = () => { // 按顺序加载应用
     }
     
     function fetchTXT(url) {
-        if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
-            url = URL_HOME + url;
-        }
-        alert(url)
+        url = absoluteURL(url);
         return new Promise((resolve, reject) => {
             let text = "",
                 timer;
-            alert(`${navigator.serviceWorker}, ${navigator.serviceWorker.controller}`)
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.onmessage = function(event) {
-                    console.error(event.data)
                     if (event.data.type == "text") {
                         text = event.data.text;
                         rm();
@@ -625,73 +624,74 @@ var loadApp = () => { // 按顺序加载应用
             }
         })
     }
-    /*
-    setTimeout(()=>{
-    fetchTXT("renju.html").then(alert)
-    },5000)
-    */
+    
+    function getNewVersion() {
+        return new Promise((resolve, reject) => {
+            fetchTXT("renju.html")
+                .then(txt => {
+                    const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
+                    const version = versionCode ?
+                        String(versionCode).split(/[\"\;]/)[1] :
+                        undefined;
+                    resolve({
+                        version: version,
+                        isNewVersion: version && version != window.CURRENT_VERSION
+                    })
+                })
+                .catch(err => {
+                    reject(err)
+                })
+        })
+    }
 
+    
     function upData() {  // find UpData open msg
-        function getNewVersion() {
-            return new Promise((resolve, reject) => {
-                loadTxT("./renju.html?v=" + window.APP_VERSION)
-                    .then(txt => {
-                        const versionCode = (/\"v\d+\.*\d*\"\;/).exec(txt);
-                        const version = versionCode ?
-                            String(versionCode).split(/[\"\;]/)[1] :
-                            undefined;
-                        resolve({
-                            version: version,
-                            isNewVersion: version && version != window.APP_VERSION
-                        })
-                    })
-                    .catch(err => {
-                        reject(err)
-                    })
-            })
-        }
-
-        if ("serviceWorker" in navigator) {
-            return getNewVersion()
+        return new Promise((resolve, reject) => {
+            function upEnd(e) {
+                if (typeof e.data == "object" && e.data.cmd == "upData") {
+                    if (e.data.ok) {
+                        log(`upData ${e.data.version} ok`, "warn")
+                        resolve()
+                    }
+                    else {
+                        log(`upData ${e.data.version} Error: ${e.data.error}`, "warn")
+                        reject()
+                    }
+                    navigator.serviceWorker.removeEventListener("message", upEnd);
+                }
+            }
+            if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+                getNewVersion()
                 .then(version => {
-                    if (version.isNewVersion)
-                        return msgbox("发现新版本 是否立即更新？", "立即更新", undefined, "下次更新")
-                            .then(({butCode}) => {
-                                butCode == MSG_ENTER && window.reloadApp();
-                                return Promise.resolve(version.version);
-                            })
-                            .catch(()=>{
-                                return Promise.resolve();
-                            })
-                    return Promise.resolve();
+                    if (version.isNewVersion) {
+                        log(`upData ${version.version}`, "warn")
+                        navigator.serviceWorker.addEventListener("message", upEnd);
+                        navigator.serviceWorker.controller.postMessage({ cmd: "upData", version: version.version, files: Object.keys(SOURCE_FILES).map(key=>absoluteURL(SOURCE_FILES[key])) });
+                    }
+                    else {
+                        resolve()
+                    }
                 })
-                .catch(()=>{
-                    return Promise.resolve();
-                })
-        }
-        else {
-            return Promise.resolve()
-        }
+                .catch(reject)
+            }
+            else {
+                resolve()
+            }
+        })
     }
     
     function searchUpData() {
         const TIMER_NEXT = 30 * 1000;
         let count = 0;
         function search() {
-            if (count++ > 5) return;
-            //log(`searchUpData ---> ${count}`, "warn");
-            upData()
-                .then(version => {
-                    //log(`[${version}]`)
-                    version || setTimeout(search, TIMER_NEXT)
-                })
+            count++ < 10 && upData()
                 .catch(err => {
                     log(`[${err}]`, "error")
                     setTimeout(search, TIMER_NEXT)
                 })
         }
         if ("serviceWorker" in navigator) {
-            setTimeout(search, 5 * 1000);
+            setTimeout(search, 15 * 1000);
         }
         return Promise.resolve();
     }
@@ -701,21 +701,20 @@ var loadApp = () => { // 按顺序加载应用
             return str.split(/\\n|<br>/).join("\n")
         }
         if ("localStorage" in window) {
-            const OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION");
-            if (OLD_VERDION != window.APP_VERSION &&
+            if (window.OLD_VERDION != window.CURRENT_VERSION &&
                 window.CHECK_VERSION &&
                 (serviceWorker_state == "activated" ||
                     serviceWorker_state == "redundant" ||
                     serviceWorker_state == undefined)
             )
             {
-                let infoArr = window.UPDATA_INFO[window.APP_VERSION];
+                let infoArr = window.UPDATA_INFO[window.CURRENT_VERSION];
                 let lineNum = infoArr ? infoArr.length + 7 : 1;
                 let Msg = lineNum > 1 ? "\n\t" : "";
                 Msg += `摆棋小工具 更新完毕`;
                 if (infoArr) {
                     Msg += `\n\t_____________________ `;
-                    Msg += `\n\t版本： ${window.APP_VERSION}\n`;
+                    Msg += `\n\t版本： ${window.CURRENT_VERSION}\n`;
                     for (let i = 0; i < infoArr.length; i++)
                         Msg += `\n\t${strLen(i+1, 2)}. ${lineWrap(infoArr[i])}`
                     Msg += `\n\t_____________________ `;
@@ -730,7 +729,7 @@ var loadApp = () => { // 按顺序加载应用
                         callEnter: () => {}, 
                         callCancel: () => {window.open("./help/renjuhelp/versionHistory.html","helpWindow")}
                     });
-                localStorage.setItem("RENJU_APP_VERSION", window.APP_VERSION);
+                localStorage.setItem("RENJU_APP_VERSION", window.CURRENT_VERSION);
                 return true;
             }
         }
@@ -739,7 +738,7 @@ var loadApp = () => { // 按顺序加载应用
     function logVersions() {
         let Msg = ` CHECK_VERSION = ${window.CHECK_VERSION}\n`;
         Msg += `_____________________\n\n `;
-        Msg += `${strLen("主页  ", 30)}  版本号: ${window.APP_VERSION}\n`;
+        Msg += `${strLen("主页  ", 30)}  版本号: ${window.CURRENT_VERSION}\n`;
         for (let key in window.SCRIPT_VERSIONS) {
             Msg += `${strLen(key + ".js  ", 20, "-")}  版本号: ${self.SCRIPT_VERSIONS[key]}\n`;
         }
@@ -838,6 +837,9 @@ var loadApp = () => { // 按顺序加载应用
     return registerserviceWorker()
         .then(() => {
             return window.checkScriptVersion("renju")
+        })
+        .then(() => {
+            return window.postVersion()
         })
         .then(() => {
             window._loading.open();
@@ -947,11 +949,11 @@ var loadApp = () => { // 按顺序加载应用
         })
         .then(()=>{
             return logCaches()  // print caches information
-                .then(() => {
-                    return logCache(window.APP_VERSION)
-                })
-                .then(searchUpData)
         })
+        .then(() => {
+            return logCache(window.CURRENT_VERSION)
+        })
+        .then(searchUpData)
         .catch((err) => {
             if (typeof err == "object" && err.type) {
                 err = err.message || err.type;

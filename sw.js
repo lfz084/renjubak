@@ -1,4 +1,4 @@
-var VERSION = "v1202.29";
+var VERSION = "v1202.68";
 var myInit = {
     cache: "reload"
 };
@@ -72,35 +72,130 @@ let load = (() => {
 
 function postMsg(msg, client) {
     if (client && typeof client.postMessage == "function") {
-        return client.postMessage(msg);
+        client.postMessage(msg);
     }
-    return self.clients.matchAll().then(function(clients) {
-        return Promise.all(clients.map(function(client) {
-            return client.postMessage(msg);
-        }));
-    });
+    else {
+        self.clients.matchAll().then(clients => clients.map(client => client.postMessage(msg)));
+    }
+}
+
+function getUrlVersion(version) {
+    return "?v=" + version;
 }
 
 function initCaches() {
     return caches.open(VERSION)
-        .then(function(cache) {
-            return cache.addAll([
-                        './404.html'
-                      ]);
-        })
+        .then(cache => cache.addAll(['./404.html']))
 }
 
 function deleteOldCaches() {
-    return caches.keys().then(function(cacheNames) {
-        return Promise.all(
-            cacheNames.map(function(cacheName) {
+    return caches.keys().then(cacheNames =>
+        Promise.all(
+            cacheNames.map(cacheName =>
                 // 如果当前版本和缓存版本不一致
-                if (cacheName !== VERSION) {
-                    return caches.delete(cacheName);
+                cacheName !== VERSION && caches.delete(cacheName)
+            )
+        )
+    )
+}
+
+function myFetch(url, version, clientID) {
+    let url_version = getUrlVersion(version);
+    return new Promise((resolve, reject) => {
+        let req = url == "https://lfz084.github.io/icon.ico" + url_version ?
+            new Request("https://lfz084.gitee.io/renju/icon.ico" + url_version, myInit) :
+            url == "https://lfz084.github.io/icon.png" + url_version ?
+            new Request("https://lfz084.gitee.io/renju/icon.png" + url_version, myInit) :
+            new Request(url, myInit),
+            nRequest = new Request(req.url.split("?")[0] + "?v=" + new Date().getTime(), myInit);
+        fetch(nRequest)
+            .then(response => {
+                load.finish(url);
+                if (!response.ok) { reject(`response.ok = ${response.ok}, ${nRequest.url}`); return }
+                clientID != undefined && postMsg(`下载资源完成 url=${url}`, clientID);
+                let cloneRes = response.clone();
+                if (url.indexOf("blob:http") == -1) {
+                    caches.open(version).then(cache => cache.put(new Request(url, myInit), response))
                 }
+                resolve(cloneRes);
             })
-        );
+            .catch(err => {
+                load.finish(url);
+                reject(err);
+            })
     })
+}
+
+function loadCache(url, version, clientID) {
+    return caches.open(version)
+        .then(cache => {
+            return cache.match(new Request(url, myInit))
+        })
+        .then(response => {
+            load.finish(url);
+            if (!response.ok) throw new Error("response is undefined");
+            postMsg(`加载资源完成 url=${url}`, clientID);
+            return response;
+        })
+}
+
+function fetchErr() {
+    const myHeaders = { "Content-Type": 'text/html; charset=utf-8' };
+    const init = {
+        status: 200,
+        statusText: "OK",
+        headers: myHeaders
+    }
+    let request = new Request("./404.html");
+    return caches.match(request)
+        .then(response => {
+            if (response.ok)
+                return response;
+            else
+                return new Response(response_err, init)
+        })
+        .catch(() => {
+            return new Response(response_err, init)
+        })
+}
+
+function cacheFirst(url, version, clientID) {
+    return loadCache(url, version, clientID)
+        .catch(() => {
+            //postMsg(`没有缓存，从网络下载资源 url=${_URL}`, clientID);
+            return myFetch(url, version, clientID);
+        })
+        .catch(err => {
+            //postMsg(`404.html ${err.message}`, clientID);
+            return fetchErr();
+        })
+}
+
+function netFirst(url, version, clientID) {
+    return myFetch(url, version, clientID)
+        .catch(() => {
+            return loadCache(url, version, clientID)
+        })
+        .catch(err => {
+            return fetchErr()
+        })
+}
+
+function upData(version, files) {
+    let ps = [];
+    return caches.open(version)
+        .then(cache => cache.keys())
+        .then(keys => {
+            for (let i = 0; i < keys.length; i++) {
+                let index = files.indexOf(keys[i].url)
+                if (index + 1) files.splice(index, 1)
+            }
+            for (let i = 0; i < files.length; i++) {
+                postMsg(`upData file: ${files[i]}`)
+                ps.push(myFetch(files[i], version))
+            }
+        })
+        .then(() => Promise.all(ps))
 }
 
 
@@ -125,7 +220,7 @@ self.addEventListener('activate', function(event) {
 // 捕获请求并返回缓存数据
 self.addEventListener('fetch', function(event) {
 
-    const URL_VERSION = "?v=" + VERSION;
+    const URL_VERSION = getUrlVersion(VERSION);
     const _URL = event.request.url.split("?")[0] + URL_VERSION;
     const filename = _URL.split("?")[0].split("/").pop();
     const type = _URL.split("?")[0].split(".").pop();
@@ -141,113 +236,45 @@ self.addEventListener('fetch', function(event) {
     if (NEW_CACHE)
         event.respondWith(netFirst())
     else*/
-    event.respondWith(cacheFirst())
-
-
-    function myFetch() {
-        return new Promise((resolve, reject) => {
-            let req = _URL == "https://lfz084.github.io/icon.ico" + URL_VERSION ?
-                new Request("https://lfz084.gitee.io/renju/icon.ico" + URL_VERSION, myInit) :
-                _URL == "https://lfz084.github.io/icon.png" + URL_VERSION ?
-                new Request("https://lfz084.gitee.io/renju/icon.png" + URL_VERSION, myInit) :
-                new Request(_URL, myInit),
-                nRequest = new Request(req.url.split("?")[0] + "?v=" + new Date().getTime(), myInit);
-        fetch(nRequest)
-                .then(response => {
-                    load.finish(_URL);
-                    if (!response.ok) throw new Error(`response = ${response}`);
-                    postMsg(`下载资源完成 url=${_URL}`, event.clientID);
-                    let cloneRes = response.clone();
-                    if (_URL.indexOf("blob:http") == -1) {
-                        caches.open(VERSION)
-                            .then(cache => {
-                                cache.put(new Request(_URL, myInit), response)
-                            })
-                    }
-                    resolve(cloneRes);
-                })
-                .catch(err => {
-                    load.finish(_URL);
-                    reject(err);
-                })
-        })
-    }
-
-    function loadCache() {
-        return caches.open(VERSION)
-            .then(cache => {
-                return cache.match(new Request(_URL, myInit))
-                    .then(response => {
-                        load.finish(_URL);
-                        if (!response.ok) throw new Error("response is undefined");
-                        postMsg(`加载资源完成 url=${_URL}`, event.clientID);
-                        return response;
-                    })
-            })
-    }
-
-    function fetchErr() {
-        const myHeaders = { "Content-Type": 'text/html; charset=utf-8' };
-        const init = {
-            status: 200,
-            statusText: "OK",
-            headers: myHeaders
-        }
-        let request = new Request("./404.html");
-        return caches.match(request)
-            .then(response => {
-                if (response.ok)
-                    return response;
-                else
-                    return new Response(response_err, init)
-            })
-            .catch(() => {
-                return new Response(response_err, init)
-            })
-    }
-
-    function cacheFirst() {
-        return loadCache()
-            .catch(() => {
-                //postMsg(`没有缓存，从网络下载资源 url=${_URL}`, event.clientID);
-                return myFetch();
-            })
-            .catch(err => {
-                //postMsg(`404.html ${err.message}`, event.clientID);
-                return fetchErr();
-            })
-    }
-
-    function netFirst() {
-        return myFetch()
-            .catch(() => {
-                return loadCache()
-            })
-            .catch(err => {
-                return fetchErr()
-            })
-    }
+    event.respondWith(cacheFirst(_URL, VERSION, event.clientID))
 });
 
 self.addEventListener('message', function(event) {
-    if (event.data.type == "NEW_VERSION") {
-        if (event.data.version != VERSION) {
-            VERSION = event.data.version;
-            myInit = {
-                cache: "reload"
-            };
+    if (typeof event.data == "object") {
+        if (event.data.type == "NEW_VERSION") {
+            if (event.data.version != VERSION) {
+                VERSION = event.data.version;
+                myInit = {
+                    cache: "reload"
+                };
+            }
+            postMsg(event.data, event.clientID)
         }
-        postMsg(event.data, event.clientID)
-    }
-    else if(event.data.cmd == "fetchTXT") {
-        fetch(new Request(event.data.url, myInit))
-        .then(response => response.text())
-        .then(text => {
-            postMsg({type: "text", text: text}, event.clientID)
-        })
+        else if (event.data.cmd == "upData") {
+            let version = event.data.version,
+                files = event.data.files.map(url => url.split("?")[0] + getUrlVersion(version));
+            postMsg(`>> ${files.length}`)
+            upData(version, files)
+                .then(() => {
+                    postMsg({ cmd: "upData", ok: true, version: version }, event.clientID)
+                })
+                .catch(err => {
+                    postMsg({ cmd: "upData", ok: false, version: version, error: err }, event.clientID)
+                    postMsg(`<< ${files.length}`)
+                })
+        }
+        else if (event.data.cmd == "fetchTXT") {
+            fetch(new Request(event.data.url, myInit))
+                .then(response => response.text())
+                .then(text => {
+                    postMsg({ type: "text", text: text }, event.clientID)
+                })
+                .catch(() => {
+                    postMsg({ type: "text", text: "" }, event.clientID)
+                })
+        }
     }
     else {
         postMsg(`serverWorker post: ${event.data}`, event.clientID)
     }
 });
-

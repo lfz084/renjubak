@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.29";
+self.SCRIPT_VERSIONS["control"] = "v1202.68";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -395,7 +395,7 @@ window.control = (() => {
         }
         else if (msgStr.indexOf("cache") > -1) {
 
-            logCache(window.APP_VERSION)
+            logCache(window.CURRENT_VERSION)
             return;
         }
         else if (msgStr.indexOf("offline") > -1 || msgStr.indexOf("icon") > -1) {
