@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.90";
+self.SCRIPT_VERSIONS["renju"] = "v1202.95";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -403,12 +403,7 @@ var loadApp = () => { // 按顺序加载应用
                 setTimeout(() => {
                     let key = filename.split(/[\-\_\.]/)[0];
                     window.checkScriptVersion(key)
-                        .then(() => {
-                            setTimeout(() => {
-                                resolve()
-                            }, 0)
-                        })
-                        .catch(reject)
+                    setTimeout(resolve, 0)
                 }, 0);
             }
             oScript.onerror = (err) => {
@@ -688,11 +683,10 @@ var loadApp = () => { // 按顺序加载应用
     }
     
     function searchUpData() {
-        const TIMER_NEXT = 30 * 1000;
+        const TIMER_NEXT = 5 * 1000;
         let count = 0;
         function search() {
             if (count++ < 15) upData().catch(err => setTimeout(search, TIMER_NEXT))
-            else window.setUpdataVersion()
         }
         if ("serviceWorker" in navigator) {
             setTimeout(search, 5 * 1000);
@@ -840,7 +834,7 @@ var loadApp = () => { // 按顺序加载应用
 
     return registerserviceWorker()
         .then(() => {
-            return window.checkScriptVersion("renju")
+            window.checkScriptVersion("renju")
         })
         .then(() => {
             return window.postVersion()

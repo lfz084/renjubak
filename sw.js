@@ -1,4 +1,4 @@
-    var VERSION = "v1202.90";
+    var VERSION = "v1202.95";
 var myInit = {
     cache: "reload"
 };
@@ -183,11 +183,21 @@ function netFirst(url, version, clientID) {
 
 function upData(version, files) {
     return new Promise((resolve, reject) => {
+        let count = 0,
+            maxCount = files.length;
         function nextFile() {
             if (files.length) {
                 let url = files.shift();
                 postMsg(`upData file: ${url}`)
-                myFetch(url, version).then(nextFile).catch(reject)
+                myFetch(url, version)
+                    .then(nextFile)
+                    .catch(() => {
+                        if (count++ < maxCount) {
+                            files.push(url); 
+                            nextFile()
+                        }
+                        else reject()
+                    })
             }
             else {
                 resolve()
