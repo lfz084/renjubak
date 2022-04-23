@@ -50,7 +50,7 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.NEW_VERSION = "v1202.68";
+        window.NEW_VERSION = "v1202.69";
         if (window.NEW_VERSION.indexOf("up") + 1) setUpdataVersion(); //强制更新
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         window.CURRENT_VERSION = window.OLD_VERDION || window.NEW_VERSION;
@@ -89,8 +89,8 @@
             "chevron-left_svg": "pic/chevron-left.svg",
             "close-white_svg": "pic/close-white.svg",
             "docusign-white_svg": "pic/docusign-white.svg",
-            "icon_png": "https://lfz084.github.io/icon.png",
-            "icon_ico": "https://lfz084.github.io/icon.ico",
+            //"icon_png": "https://lfz084.github.io/icon.png",
+            //"icon_ico": "https://lfz084.github.io/icon.ico",
 
             IntervalPost: "script/IntervalPost.js",
             RenjuTree: "script/RenjuTree.js",
@@ -159,7 +159,8 @@
                     const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 25)}版本号: ${window.CURRENT_VERSION} \n${strLen(filename + ".js", 25)}版本号: ${self.SCRIPT_VERSIONS[filename]} \n_____________________\n\n`;
                     const PS = `是否更新？\n\n${strLen("",15)}[取消] = 不更新${strLen("",10)}[确定] = 更新`;
                     if (window.CHECK_VERSION && confirm(ASK + PS)) {
-                        window.setUpdataVersion()
+                        window.setUpdataVersion();
+                        window.reloadApp()
                     }
                     else {
                         resolve();

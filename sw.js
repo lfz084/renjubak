@@ -1,4 +1,4 @@
-var VERSION = "v1202.68";
+    var VERSION = "v1202.69";
 var myInit = {
     cache: "reload"
 };
@@ -182,20 +182,28 @@ function netFirst(url, version, clientID) {
 }
 
 function upData(version, files) {
-    let ps = [];
-    return caches.open(version)
-        .then(cache => cache.keys())
-        .then(keys => {
-            for (let i = 0; i < keys.length; i++) {
-                let index = files.indexOf(keys[i].url)
-                if (index + 1) files.splice(index, 1)
+    return new Promise((resolve, reject) => {
+        function nextFile() {
+            if (files.length) {
+                let url = files.shift();
+                postMsg(`upData file: ${url}`)
+                myFetch(url, version).then(nextFile).catch(reject)
             }
-            for (let i = 0; i < files.length; i++) {
-                postMsg(`upData file: ${files[i]}`)
-                ps.push(myFetch(files[i], version))
+            else {
+                resolve()
             }
-        })
-        .then(() => Promise.all(ps))
+        }
+        
+        caches.open(version)
+            .then(cache => cache.keys())
+            .then(keys => {
+                for (let i = 0; i < keys.length; i++) {
+                    let index = files.indexOf(keys[i].url)
+                    if (index + 1) files.splice(index, 1)
+                }
+            })
+            .then(nextFile)
+    })
 }
 
 

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1202.68";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1202.69";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
