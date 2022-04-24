@@ -1,4 +1,4 @@
- self.SCRIPT_VERSIONS["msgbox"] = "v1202.95";
+ self.SCRIPT_VERSIONS["msgbox"] = "v1202.98";
  // 弹窗代码
  (function() {
      "use strict";

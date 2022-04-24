@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.95";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.98";
 const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
 const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
@@ -84,7 +84,7 @@ let cBoardSize = 15;
 
 //---------------  ------------------ ------------------
 
-if (0 && "WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
+if ("WebAssembly" in self && typeof WebAssembly.instantiate == "function") {
     loadEvaluatorWebassembly.call(this);
     console.warn("loadEvaluatorWebassembly");
 }
@@ -284,7 +284,7 @@ function getArr2D(arr, setnum = 0, x = 15, y = 15) {
 }
 
 //Int8Array, Uint8Array... To Array,
-function copyMoves(moves) {
+function TypedArray2Array(moves) {
     let m = [];
     let len = moves.length
     for (let i = 0; i < len; i++) {
@@ -335,12 +335,14 @@ function movesToName(moves, maxLength) {
     return name;
 }
 
-//--------------------- moves ------------------------
+//--------------------- moves HashTable ------------------------
+
+let HASHTABLE_MAX_MOVESLEN = 73;
 
 function isChildMove(parentMove, childMove) {
     let j;
     let k;
-    // 判断一个颜色,最后一手活四级忽略
+    // 判断一个颜色
     for (k = 0; k < parentMove.length; k += 2) {
         for (j = 0; j < childMove.length; j += 2) {
             if (childMove[j] == parentMove[k]) {
@@ -357,7 +359,7 @@ function isRepeatMove(newMove, oldMove) {
     return isChildMove(newMove, oldMove);
 }
 
-// 添加一个成立的VCF分支
+// 添加一个VCF
 function pushWinMoves(winMoves, move) {
     let i;
     const MOVE_LEN = move.length;
@@ -382,35 +384,70 @@ function pushWinMoves(winMoves, move) {
         }
     }
     const START = getSpliceStart(move, winMoves);
-    winMoves.splice(START, 0, copyMoves(move)); // 找到相同数据;
+    winMoves.splice(START, 0, move.slice(0));
     return true;
 }
 
-// 会改变moves,添加失败分支
-function pushFailMoves(FailMoves, move) {
-
-    let mv = move.slice(0);
-    const MOVE_LEN = move.length;
-    const MOVE_KEY = getMoveKey(mv); // 对单色棋子索引求和，保存到数组最后位置。
-    // hash 数组保存失败分支;
-    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) {
-        FailMoves[MOVE_LEN][MOVE_KEY] = [];
-    }
-    FailMoves[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
+function resetHashTable(hashTable) {
+    hashTable.length = 0;
+    for (let i = 0; i < 225; i++) { hashTable[i] = {}; }
 }
 
-// 对比VCF手顺是否相等
-function findMoves(FailMoves, move) {
-
-    let i;
-    const MOVE_LEN = move.length;
-    const MOVE_KEY = getMoveKey(move); // 对每一手棋索引求，保存到数组最后位置。
-    if (FailMoves[MOVE_LEN][MOVE_KEY] == null) return false;
-    const FAILMOVES_MOVES_LEN = FailMoves[MOVE_LEN][MOVE_KEY].length;
-    for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
-        if (isRepeatMove(move, FailMoves[MOVE_LEN][MOVE_KEY][i])) break;
+function movesPush(hashTable, keyLen, keySum, moves) {
+    let mv = moves.slice(0);
+    if (hashTable[keyLen][keySum] == null) {
+        hashTable[keyLen][keySum] = [];
     }
-    return (i >= 0) ? true : false;
+    hashTable[keyLen][keySum].push(mv); // 保存失败分支   
+}
+
+function movesHas(hashTable, keyLen, keySum, moves) {
+    let i;
+    if (hashTable[keyLen][keySum] == null) return false;
+    const FAILMOVES_MOVES_LEN = hashTable[keyLen][keySum].length;
+    for (i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
+        if (isRepeatMove(moves, hashTable[keyLen][keySum][i])) break;
+    }
+    return i >= 0;
+}
+
+function positionPush(hashTable, keyLen, keySum, position) {
+    let mv = position.slice(0);
+    if (hashTable[keyLen][keySum] == null) hashTable[keyLen][keySum] = [];
+    hashTable[keyLen][keySum].push(mv);
+}
+
+function positionHas(hashTable, keyLen, keySum, position) {
+    if (hashTable[keyLen][keySum] == null) return false;
+    const FAILMOVES_MOVES_LEN = hashTable[keyLen][keySum].length;
+    for (let i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
+        let isEqual = true,
+            psTion = hashTable[keyLen][keySum][i];
+        for (let i = 0; i < 225; i++) {
+            if (psTion[i] != position[i]) {
+                isEqual = false;
+                break;
+            }
+        }
+        if (isEqual) return true;
+    }
+    return false;
+}
+
+function transTablePush(hashTable, keyLen, keySum, moves, position) {
+    if (keyLen < HASHTABLE_MAX_MOVESLEN)
+        movesPush(hashTable, keyLen, keySum, moves);
+    //vcfMovesPush(keyLen, keySum, moves);
+    else
+        positionPush(hashTable, keyLen, keySum, position);
+}
+
+function transTableHas(hashTable, keyLen, keySum, moves, position) {
+    if (keyLen < HASHTABLE_MAX_MOVESLEN)
+        return movesHas(hashTable, keyLen, keySum, moves);
+    //return vcfMovesHas(keyLen, keySum, moves);
+    else
+        return positionHas(hashTable, keyLen, keySum, position);
 }
 
 //--------------------- VCF ------------------------
@@ -420,7 +457,6 @@ let vcfHashTable = [],
     vcfHashNextValue = 0,
     vcfWinMoves = [],
     vcfWinMovesNext = 0;
-let vcfHashMaxMovesLen = 73;
 let vcfInfo = {
         initArr: new Array(226),
         color: 0,
@@ -439,7 +475,7 @@ let vcfInfo = {
         levelInfo: 0,
         winMoves: undefined
     };
-
+    
 function resetVCF(arr, color, maxVCF, maxDepth, maxNode) {
     vcfInfo.initArr = arr.slice(0);
     vcfInfo.color = color;
@@ -454,42 +490,7 @@ function resetVCF(arr, color, maxVCF, maxDepth, maxNode) {
     vcfInfo.continueInfo = [new Array(225), new Array(225), new Array(225), new Array(225)];
 
     vcfWinMoves.length = 0;
-    vcfHashTable.length = 0;
-    for (let i = 0; i < 225; i++) { vcfHashTable[i] = {}; }
-}
-
-
-function vcfPositionPush(keyLen, keySum, position) {
-
-    let mv = position.slice(0);
-    const MOVE_LEN = keyLen;
-    const MOVE_KEY = keySum; // 对单色棋子索引求和，保存到数组最后位置。
-    // hash 数组保存失败分支;
-    if (vcfHashTable[MOVE_LEN][MOVE_KEY] == null) {
-        vcfHashTable[MOVE_LEN][MOVE_KEY] = [];
-    }
-    vcfHashTable[MOVE_LEN][MOVE_KEY].push(mv); // 保存失败分支   
-}
-
-
-function vcfPositionHas(keyLen, keySum, position) {
-
-    const MOVE_LEN = keyLen;
-    const MOVE_KEY = keySum; // 对每一手棋索引求，保存到数组最后位置。
-    if (vcfHashTable[MOVE_LEN][MOVE_KEY] == null) return false;
-    const FAILMOVES_MOVES_LEN = vcfHashTable[MOVE_LEN][MOVE_KEY].length;
-    for (let i = FAILMOVES_MOVES_LEN - 1; i >= 0; i--) {
-        let isEqual = true,
-            psTion = vcfHashTable[MOVE_LEN][MOVE_KEY][i];
-        for (let i = 0; i < 225; i++) {
-            if (psTion[i] != position[i]) {
-                isEqual = false;
-                break;
-            }
-        }
-        if (isEqual) return true;
-    }
-    return false;
+    resetHashTable(vcfHashTable);
 }
 
 /*
@@ -540,22 +541,6 @@ function vcfMovesHas(keyLen, keySum, move) {
     return false;
 }
 */
-
-function vcfTransTablePush(keyLen, keySum, moves, position) {
-    if (keyLen < vcfHashMaxMovesLen)
-        pushFailMoves(vcfHashTable, moves);
-    //vcfMovesPush(keyLen, keySum, moves);
-    else
-        vcfPositionPush(keyLen, keySum, position);
-}
-
-function vcfTransTableHas(keyLen, keySum, moves, position, centerIdx) {
-    if (keyLen < vcfHashMaxMovesLen)
-        return findMoves(vcfHashTable, moves);
-    //return vcfMovesHas(keyLen, keySum, moves);
-    else
-        return vcfPositionHas(keyLen, keySum, position);
-}
 
 //---------------------- VCT ----------------------------
 

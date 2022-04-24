@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["appData"] = "v1202.95";
+self.SCRIPT_VERSIONS["appData"] = "v1202.98";
 window.appData = (() => {
     "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋

@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1202.95";
+self.SCRIPT_VERSIONS["renju"] = "v1202.98";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -74,15 +74,11 @@ var loadApp = () => { // 按顺序加载应用
     };
     
     window.absoluteURL = function(url) {
-        if (url.indexOf("https://") == -1 && url.indexOf("http://") == -1) {
-            //url = "https://lfz084.gitee.io/renju/" + url;
-            url = URL_HOME + url;
-        }
-        return url;
+        return new Request(url).url;
     }
     
     window.addEventListener("error", function(err){
-        log(err.Stack || err.message || err, "error");
+        log(err.stack || err.message || err, "error");
         //alert(err.Stack || err.message || err);
     });
     
@@ -169,73 +165,7 @@ var loadApp = () => { // 按顺序加载应用
             },
         };
     })();
-    /*
-    window.SaveResponse = function SaveResponse() {
-        this.count = 0;
-        this.response;
-    }
-
-    SaveResponse.prototype.saveResponse = function(request, cacheName = window.NEW_VERSION) {
-        let _self = this;
-
-        function put() {
-            return new Promise((resolve, reject) => {
-                function newRequest(err) {
-                    let myInit = { cache: "reload" };
-                    fetch(request, myInit)
-                        .then(response => {
-                            if (_self.count++ >= 3) {
-                                const MSG = `${err ? err.message: ""}\n put cache Error: count > 3 (${request.url.split("/").pop()})`
-                                log(MSG, "error")
-                                reject(new Error(MSG))
-                                return;
-                            }
-                            //log(`putCache [${request.url.split("/").pop()}] \ncacheName = ${cacheName} --> ${_self.count}`)
-                            if (!response.ok) throw new Error("response not OK")
-                            _self.response = response;
-                            return caches.open(cacheName)
-                                .then(cache => {
-                                    let cloneRes = _self.response.clone();
-                                    cache.put(request, cloneRes)
-                                    setTimeout(() => {
-                                        cache.match(request)
-                                            .then(response => {
-                                                if (response && response.ok)
-                                                    resolve(response)
-                                                else
-                                                    newRequest()
-                                            })
-                                            .catch (err => {
-                                                    newRequest(err)
-                                            })
-                                    }, 200)
-                                })
-                                .catch(err => {
-                                    setTimeout(() => {
-                                        newRequest(err)
-                                    }, 200)
-                                })
-                        })
-                        .catch(err => {
-                            setTimeout(() => {
-                                newRequest(err)
-                            }, 200)
-                        })
-                }
-                newRequest();
-            })
-        }
-
-        return new Promise((resolve, reject) => {
-            if ("caches" in window) {
-                put().then(resolve).catch(reject)
-            }
-            else {
-                resolve()
-            }
-        })
-    }
-    */
+    
     window.logCaches = function() {
         if ("caches" in window) {
             let cs = `_____________________\n`;
@@ -248,7 +178,6 @@ var loadApp = () => { // 按顺序加载应用
                     });
                     cs += `_____________________\n`;
                     log(cs, "warn");
-                    return Promise.resolve();
                 });
         }
         else {
@@ -302,31 +231,7 @@ var loadApp = () => { // 按顺序加载应用
             isNoSleep = false;
         };
     }
-    /*
-    function putCache(url) {
-        return new Promise((resolve, reject) => {
-            new SaveResponse().saveResponse(new Request(url))
-                .then(response => {
-                    resolve()
-                })
-                .catch(err => {
-                    log(`putCache Error: ${err.message}`, "error")
-                    reject(err)
-                })
-        })
-    }
     
-    function downloadSource(){
-        let ps=[];
-        let keys = Object.keys(window.SOURCE_FILES);
-        for(let i=0; i<keys.length; i++){
-            ps.push(putCache(window.SOURCE_FILES[keys[i]] + "?v=" + window.NEW_VERSION));
-        }
-        return Promise.all(ps.slice(0,29))
-            .then(()=> log("---更新离线缓存--->ok", "warn"))
-            .catch(err =>log(`---更新离线缓存失败---> ${err.message}`, "error"))
-    }
-    */
     function loadCss(url) { //加载css
         url = url.split("?")[0] + window.URL_VERSION;
         const filename = url.split("/").pop().split("?")[0];
@@ -683,15 +588,14 @@ var loadApp = () => { // 按顺序加载应用
     }
     
     function searchUpData() {
-        const TIMER_NEXT = 5 * 1000;
+        const TIMER_NEXT = 30 * 1000;
         let count = 0;
         function search() {
-            if (count++ < 15) upData().catch(err => setTimeout(search, TIMER_NEXT))
+            if (count++ < 3) upData().catch(err => setTimeout(search, TIMER_NEXT))
         }
         if ("serviceWorker" in navigator) {
             setTimeout(search, 5 * 1000);
         }
-        return Promise.resolve();
     }
 
     function autoShowUpDataInformation() {
@@ -855,7 +759,6 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["PFSCMedium1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_woff"]],
-                [SOURCE_FILES["RenLib_wasm"]]  //WebAssembly
                 ], true)
         })
         .then(() => {
@@ -928,6 +831,8 @@ var loadApp = () => { // 按顺序加载应用
             return loadFileAll([
                 [SOURCE_FILES["404_html"]],
                 [SOURCE_FILES["renju_html"]],
+                [SOURCE_FILES["Evaluator_wasm"]],  //WebAssembly
+                [SOURCE_FILES["RenLib_wasm"]],
                 ], true)
         })
         .then(() => {

@@ -291,10 +291,10 @@
             for (let k = 0; k < 10; k++) {
                 for (let l = 0; l < 1000; l++) {
                     moves[0] = l & 255;
-                    pushFailMoves(vcfFailMoves, moves);
+                    movesPush(vcfFailMoves, moves);
                     for (let i = 0; i < 1; i++) {
-                        if (!findMoves(vcfFailMoves, moves)) {
-                            alert("findMoves not eq");
+                        if (!movesHas(vcfFailMoves, moves)) {
+                            alert("movesHas not eq");
                             break;
                         };
                     }

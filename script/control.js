@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.95";
+self.SCRIPT_VERSIONS["control"] = "v1202.98";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -1052,7 +1052,7 @@ window.control = (() => {
         cSelWhite = new Button(renjuCmddiv, "checkbox", 0, 0, w, h);
         cSelWhite.setText("白先");
 
-        const CALCULATE = 0;
+        const CALCULATE = 1;
         let tMsg = [["4月23日，五子茶馆解题大赛"], ["比赛结束前，暂时关闭计算功能"]];
 
         cFindPoint = new Button(renjuCmddiv, "select", 0, 0, w, h);

@@ -1809,10 +1809,10 @@ DWORD getLevel(char* arr, char color) {
 const UINT VCF_HASHTABLE_LEN = 5880420 + 6400000 + 116000000; //((135+224)*45)*91*4 + 80*80000 + 232*500000
 BYTE vcfHashTable[VCF_HASHTABLE_LEN + 256] = {0};
 UINT vcfHashNextValue = 0;
-BYTE vcfHashMaxMovesLen = 73;
+BYTE HASHTABLE_MAX_MOVESLEN = 73;
     
 void setVCFHashMaxMovesLen (BYTE maxLen) {
-    vcfHashMaxMovesLen = maxLen + 1;
+    HASHTABLE_MAX_MOVESLEN = maxLen + 1;
 }
 
 void resetVcfWinMoves() {
@@ -1931,15 +1931,15 @@ bool vcfMovesHas(BYTE keyLen, UINT keySum, BYTE* move) {
     return false;
 }
 
-void vcfTransTablePush(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
-    if (keyLen < vcfHashMaxMovesLen)
+void transTablePush(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
+    if (keyLen < HASHTABLE_MAX_MOVESLEN)
         vcfMovesPush(keyLen, keySum, moves);
     else
         vcfPositionPush(keyLen, keySum, position);
 }
 
-bool vcfTransTableHas(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
-    if (keyLen < vcfHashMaxMovesLen)
+bool transTableHas(BYTE keyLen, UINT keySum, BYTE* moves, char* position) {
+    if (keyLen < HASHTABLE_MAX_MOVESLEN)
         return vcfMovesHas(keyLen, keySum, moves);
     else
         return vcfPositionHas(keyLen, keySum, position);
@@ -2095,7 +2095,7 @@ void findVCF(char* arr, char color, BYTE maxVCF, BYTE maxDepth, UINT maxNode) {
                 //log((BYTE*)(vcfMoves),movesLen);
             }
 
-            if (vcfTransTableHas(movesLen, sum, vcfMoves, arr)) {
+            if (transTableHas(movesLen, sum, vcfMoves, arr)) {
                 hasCount++;
             }
             else {
@@ -2138,7 +2138,7 @@ void findVCF(char* arr, char color, BYTE maxVCF, BYTE maxDepth, UINT maxNode) {
 
                                 if ((level & 0xff) == LEVEL_FREEFOUR) { //
                                     //push VCF
-                                    vcfTransTablePush(movesLen, sum, vcfMoves, arr);
+                                    transTablePush(movesLen, sum, vcfMoves, arr);
                                     //log(vcfMoves, movesLen);
                                     struct Moves* winMoves = NewVcfMoves(vcfMoves, movesLen, idx);
                                     //log(winMoves->moves, winMoves->len);
@@ -2230,11 +2230,11 @@ void findVCF(char* arr, char color, BYTE maxVCF, BYTE maxDepth, UINT maxNode) {
         }
         else {
             
-            if (movesLen < vcfHashMaxMovesLen)
+            if (movesLen < HASHTABLE_MAX_MOVESLEN)
                 pushMoveCount++;
             else
                 pushPositionCount++;
-            vcfTransTablePush(movesLen, sum, vcfMoves, arr);
+            transTablePush(movesLen, sum, vcfMoves, arr);
             
             if (movesLen) {
                 BYTE idx = vcfMoves[--movesLen];

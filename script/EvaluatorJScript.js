@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.95";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorJScript"] = "v1202.98";
 
 function loadEvaluatorJScript() {
     (function(global, factory) {
@@ -1740,7 +1740,7 @@ function loadEvaluatorJScript() {
                     }*/
 
                     //console.info(`${idxToName(vcfNodes[vcfNodes[pCurrentNode + 2]])}`)
-                    if (vcfTransTableHas(moves.length, sum, moves, arr)) {
+                    if (transTableHas(vcfHashTable, moves.length, sum, moves, arr)) {
                         hasCount++;
                         //console.error(`[${movesToName(moves, 500)}]`);
                     }
@@ -1785,7 +1785,7 @@ function loadEvaluatorJScript() {
                                             isConcat = false;
                                             vcfInfo.vcfCount++;
                                             "post" in self && post({ cmd: "vcfInfo", param: { vcfInfo: vcfInfo } });
-                                            vcfTransTablePush(moves.length, sum, moves, arr);
+                                            transTablePush(vcfHashTable, moves.length, sum, moves, arr);
                                             if (vcfInfo.vcfCount == maxVCF) {
                                                 for (let j = moves.length - 1; j >= 0; j--) {
                                                     stackIdx.push(-1);
@@ -1847,11 +1847,11 @@ function loadEvaluatorJScript() {
                 }
                 else {
 
-                    if (moves.length < vcfHashMaxMovesLen)
+                    if (moves.length < HASHTABLE_MAX_MOVESLEN)
                         pushMoveCount++;
                     else
                         pushPositionCount++;
-                    vcfTransTablePush(moves.length, sum, moves, arr);
+                    transTablePush(vcfHashTable, moves.length, sum, moves, arr);
 
                     if (moves.length) {
                         let idx = moves.pop();
@@ -1875,6 +1875,7 @@ function loadEvaluatorJScript() {
             vcfInfo.pushPositionCount = pushPositionCount;
             vcfInfo.hasCount = hasCount;
             vcfInfo.nodeCount = loopCount;
+            resetHashTable(vcfHashTable);
 
             return vcfInfo.winMoves.length ? vcfInfo.winMoves[0] : [];
         }

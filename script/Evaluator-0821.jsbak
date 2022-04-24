@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.95";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.98";
 const DIRECTIONS = [0,1,2,3] //[→, ↓, ↘, ↗]; // 米字线
 const ONLY_FREE = 1; // 只找活3，活4
 const ONLY_NOFREE = 2; // 只找眠3，眠4
@@ -144,7 +144,7 @@ for (let i = 0; i < 225; i++) {
 
 
 // 复制一个维数组
-function copyMoves(moves) {
+function TypedArray2Array(moves) {
     let m = [];
     let len = moves.length
     for (let i = 0; i < len; i++) {
@@ -2196,7 +2196,7 @@ let  pushMoveCount = 0,
 
 // 会改变moves
 // 添加失败分支
-function pushFailMoves(FailMoves, move) {
+function movesPush(FailMoves, move) {
 
     let mv = move.slice(0);
     const MOVE_LEN = move.length;
@@ -2214,7 +2214,7 @@ function pushFailMoves(FailMoves, move) {
 
 
 // 对比VCF手顺是否相等
-function findMoves(FailMoves, move) {
+function movesHas(FailMoves, move) {
 
     let i;
     const MOVE_LEN = move.length;

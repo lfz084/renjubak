@@ -1,6 +1,6 @@
-    var VERSION = "v1202.95";
+    var VERSION = "v1202.98";
 var myInit = {
-    cache: "reload"
+    cache: "no-store"
 };
 var response_err = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404 err</title><style>body{width:800px}.main-view{word-wrap:break-word;position:absolute;top:0;left:0;right:0;bottom:0;margin:auto;width:500px;height:500px;border-radius:50px;background:#ddd;text-align:center}#info{position:absolute;top:10px;width:500px;height:250px;text-align:center}#link{position:absolute;top:260px;width:500px;height:250px;text-align:center}#refresh{font-size:70px;border-radius:50%;border:0}#refresh:hover{color:#858;opacity:.38}h1{font-size:25px;font-weight:blod;line-height:1.5}a{color:#636;font-size:26px;font-weight:blod;text-decoration:underline;line-height:1.8;cursor:pointer}a:link{color:#636;text-decoration:underline}a:visited{color:#525;text-decoration:underline}a:hover{color:#858;text-decoration:underline}a:active{color:blue;text-decoration:underline}</style></head><body><script>const HOMES = [ "https://lfz084.gitee.io/renju/", "https://lfz084.github.io/", "http://localhost:7700/" ]; const HOME = location.href.indexOf(HOMES[0]) + 1 ? HOMES[0] : location.href.indexOf(HOMES[1]) + 1 ? HOMES[1] : HOMES[2]; function clk(filename) { const URL = HOME + filename; window.open(URL, "_self"); } document.body.onload = () => { document.getElementById("refresh").onclick = () => { window.location.reload(); }; document.getElementById("home").onclick = () => { clk("index.html"); }; document.getElementById("renju").onclick = () => { clk("renju.html"); }; document.getElementById("tuya").onclick = () => { clk("tuya.html"); }; document.getElementById("url").innerHTML = window.location.href; if (window.top != window.self) document.getElementById("link").style.display = "none"; }</script><div class="main-view"><div id="info"><h1 id="url"></h1><h1>没有找到你要打开的页面</h1></br><button id="refresh">🔄</button></div><div id="link"><br><a id="home">返回主页</a></br><a id="renju">摆棋小工具</a></br><a id="tuya">五子棋涂鸦</a></br></div></div></body></html>`
 // 加载进度功能。
@@ -111,7 +111,7 @@ function myFetch(url, version, clientID) {
         fetch(nRequest)
             .then(response => {
                 load.finish(url);
-                if (!response.ok) { reject(`response.ok = ${response.ok}, ${nRequest.url}`); return }
+                if (!response.ok) throw new Error(`response.ok = ${response.ok}, ${nRequest.url}`);
                 clientID != undefined && postMsg(`下载资源完成 url=${url}`, clientID);
                 let cloneRes = response.clone();
                 if (url.indexOf("blob:http") == -1) {
@@ -133,30 +133,34 @@ function loadCache(url, version, clientID) {
         })
         .then(response => {
             load.finish(url);
-            if (!response.ok) throw new Error("response is undefined");
+            if (!response.ok) throw new Error(`response.ok = ${response.ok}, ${nRequest.url}`);
             postMsg(`加载资源完成 url=${url}`, clientID);
             return response;
         })
 }
 
-function fetchErr() {
+function fetchErr(err, url) {
+    const type = url.split("?")[0].split(".").pop();
     const myHeaders = { "Content-Type": 'text/html; charset=utf-8' };
     const init = {
         status: 200,
         statusText: "OK",
         headers: myHeaders
     }
-    let request = new Request("./404.html");
-    return caches.match(request)
-        .then(response => {
-            if (response.ok)
+    if (["htm", "html"].indexOf(type) + 1) {
+        let request = new Request("./404.html");
+        return caches.match(request)
+            .then(response => {
+                if (response.ok) throw new Error("");
                 return response;
-            else
+            })
+            .catch(() => {
                 return new Response(response_err, init)
-        })
-        .catch(() => {
-            return new Response(response_err, init)
-        })
+            })
+    }
+    else {
+        return Promise.resolve(err);
+    }
 }
 
 function cacheFirst(url, version, clientID) {
@@ -167,7 +171,7 @@ function cacheFirst(url, version, clientID) {
         })
         .catch(err => {
             //postMsg(`404.html ${err.message}`, clientID);
-            return fetchErr();
+            return fetchErr(err, url);
         })
 }
 
@@ -177,11 +181,11 @@ function netFirst(url, version, clientID) {
             return loadCache(url, version, clientID)
         })
         .catch(err => {
-            return fetchErr()
+            return fetchErr(err, url)
         })
 }
 
-function upData(version, files) {
+function upData(files, version, clientID) {
     return new Promise((resolve, reject) => {
         let count = 0,
             maxCount = files.length;
@@ -189,12 +193,12 @@ function upData(version, files) {
             if (files.length) {
                 let url = files.shift();
                 postMsg(`upData file: ${url}`)
-                myFetch(url, version)
-                    .then(nextFile)
+                cacheFirst(url, version, clientID)
+                    .then(() => setTimeout(nextFile, 100))
                     .catch(() => {
                         if (count++ < maxCount) {
                             files.push(url); 
-                            nextFile()
+                            setTimeout(nextFile, 100)
                         }
                         else reject()
                     })
@@ -263,7 +267,7 @@ self.addEventListener('message', function(event) {
             if (event.data.version != VERSION) {
                 VERSION = event.data.version;
                 myInit = {
-                    cache: "reload"
+                    cache: "no-store"
                 };
             }
             postMsg(event.data, event.clientID)
@@ -271,22 +275,19 @@ self.addEventListener('message', function(event) {
         else if (event.data.cmd == "upData") {
             let version = event.data.version,
                 files = event.data.files.map(url => url.split("?")[0] + getUrlVersion(version));
-            postMsg(`>> ${files.length}`)
-            upData(version, files)
+            upData(files, version, event.clientID)
                 .then(() => {
                     postMsg({ cmd: "upData", ok: true, version: version }, event.clientID)
                 })
                 .catch(err => {
                     postMsg({ cmd: "upData", ok: false, version: version, error: err }, event.clientID)
-                    postMsg(`<< ${files.length}`)
                 })
         }
         else if (event.data.cmd == "fetchTXT") {
-            let url = event.data.url.split("?")[0] + "?v=" + new Date().getTime();
-            postMsg(`fetchTXT: ${url}`)
+            let url = event.data.url.split("?")[0];
+            //postMsg(`fetchTXT: ${url}`)
             fetch(new Request(url, myInit))
                 .then(response => {
-                    postMsg(`fetchTXT: ${response.ok}`)
                     return response.ok ? response.text() : Promise.reject(`response.ok = ${response.ok}`)
                 })
                 .then(text => {
@@ -294,9 +295,6 @@ self.addEventListener('message', function(event) {
                 })
                 .catch(err => {
                     postMsg({ type: "text", text: `${err}` }, event.clientID)
-                })
-                .then(() => {
-                    postMsg(`fetchTXT <<<`)
                 })
         }
     }

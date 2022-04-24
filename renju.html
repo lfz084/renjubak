@@ -50,8 +50,11 @@
     <script language="javascript">
         // updata 
         "use strict";
-        window.NEW_VERSION = "v1202.95";
-        if (window.NEW_VERSION.indexOf("up") + 1) setUpdataVersion(); //强制更新
+        window.setUpdataVersion = function setUpdataVersion() {
+            localStorage.removeItem("RENJU_APP_VERSION")
+        }
+        window.NEW_VERSION = "v1202.98";
+        if (window.NEW_VERSION.indexOf("up") + 1) window.setUpdataVersion(); //强制更新
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         window.CURRENT_VERSION = window.OLD_VERDION || window.NEW_VERSION;
         window.URL_VERSION = "?v=" + window.CURRENT_VERSION;
@@ -59,10 +62,12 @@
         window.SOURCE_FILES = {
             loaders: "style/loaders.css",
             main: "style/main.css",
+            
             PFSCMedium1_woff: "style/font/PFSCMedium1.woff",
             PFSCMedium1_ttf: "style/font/PFSCMedium1.ttf",
             PFSCHeavy1_ttf: "style/font/PFSCHeavy1.ttf",
             PFSCHeavy1_woff: "style/font/PFSCHeavy1.woff",
+            
             Viewport: "script/View.js",
             vconsole: "script/debug/vconsole.min.js",
             Button: "script/Button.js",
@@ -82,9 +87,8 @@
             PFSCMedium: "script/jsPDF/PFSCMedium.js",
             PFSCHeavy: "script/jsPDF/PFSCHeavy.js",
             worker: "script/worker.js",
-            '404_html': "404.html",
-            renju_html: "renju.html",
             renju_js: "renju.js",
+            
             "close_svg": "pic/close.svg",
             "chevron-left_svg": "pic/chevron-left.svg",
             "close-white_svg": "pic/close-white.svg",
@@ -104,10 +108,15 @@
             RenLibDoc: "ReadLib/script/RenLibDoc.js",
             work_ReadLib: "ReadLib/script/work_ReadLib.js",
             RenjuLib: "ReadLib/script/RenjuLib.js",
-            RenLib_wasm: "ReadLib/script/RenLib.wasm",
             RenLibDoc_wasm: "ReadLib/script/RenLibDoc_wasm.js",
 
-            debugModule: "script/debug/debugModule.js"
+            debugModule: "script/debug/debugModule.js",
+            
+            Evaluator_wasm: "script/Evaluator.wasm",
+            RenLib_wasm: "ReadLib/script/RenLib.wasm",
+            
+            '404_html': "404.html",
+            renju_html: "renju.html",
         }
         window.SCRIPT_VERSIONS = {
             viewport: "???",
@@ -146,10 +155,6 @@
             "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"]
         };
         
-        window.setUpdataVersion = function() {
-            localStorage.removeItem("RENJU_APP_VERSION")
-        }
-        
         window.checkScriptVersion = function(filename) {
             return new Promise((resolve, reject) => {
                 let ver = self.SCRIPT_VERSIONS[filename];
@@ -159,11 +164,17 @@
                     const ASK = `版本号不一致，可能影响正常运行\n_____________________\n\n${strLen("主页", 25)}版本号: ${window.CURRENT_VERSION} \n${strLen(filename + ".js", 25)}版本号: ${self.SCRIPT_VERSIONS[filename]} \n_____________________\n\n`;
                     const PS = `是否更新？\n\n${strLen("",15)}[取消] = 不更新${strLen("",10)}[确定] = 更新`;
                     if (window.CHECK_VERSION && confirm(ASK + PS)) {
-                        window.setUpdataVersion();
-                        window.reloadApp()
+                        window.removeAppCache()
+                        .then(() => {
+                            window.setUpdataVersion();
+                            window.reloadApp()
+                        })
+                        .then(resolve)
                     }
-                    resolve();
-                    window.CHECK_VERSION = false;
+                    else {
+                        resolve();
+                        window.CHECK_VERSION = false;
+                    }
                 }
                 else {
                     resolve();
@@ -176,11 +187,29 @@
             if ("localStorage" in window) {
                 const ASK = `有新的更新\n\n 当前版本号: ${window.CURRENT_VERSION} \n 新的版本号: ${window.NEW_VERSION}\n\n`;
                 const PS = `是否更新？\n\n${strLen("",15)}[取消] = 不更新${strLen("",10)}[确定] = 更新`;
-                if (window.CURRENT_VERSION != window.NEW_VERSION && confirm(ASK + PS)) {
-                    window.setUpdataVersion();
-                    window.reloadApp()
+                if (window.CURRENT_VERSION != window.NEW_VERSION) {
+                    if (confirm(ASK + PS)) {
+                        window.setUpdataVersion();
+                        window.reloadApp()
+                    }
+                    else window.CHECK_VERSION = false;
                 }
             }
+        };
+        
+        window.removeAppCache = function() {
+            return new Promise((resolve, reject) => {
+                if ("caches" in window) {
+                    caches.keys().then(function(cacheNames) {
+                        cacheNames.map(function(cacheName) {
+                            caches.delete(cacheName);
+                        })
+                    })
+                    .then(()=>resolve())
+                    .catch(()=>resolve())
+                }
+                else resolve()
+            })
         };
         
         window.removeOldAppCache = function() {

@@ -106,7 +106,7 @@ window.printChilds = function(node){
 printChilds(cBoard.tree.seek([144,225,114,225,112,225]))
 
 
-let url = "https://lfz084.gitee.io/renju/renju.html?v=1650708311969";
+let url = "https://lfz084.gitee.io/renju/renju.html";
 async function getText(url) {
     let rsp = undefined,
         count = 0;

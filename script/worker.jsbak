@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.95";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.98";
 if ("importScripts" in self)
     self.importScripts('emoji.js',`Evaluator.js`);
 
@@ -1168,7 +1168,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                             if (pushWinMoves(WinMoves, wMoves) && !backstage) {
                                 if (!backstage) post("findVCF_addVCF", { winMoves: vcfWinMoves, color: vcfColor, seconds: 0, initialArr: vcfInitial });
                             };
-                            pushFailMoves(FailMoves, moves);
+                            movesPush(FailMoves, moves);
                             backFindVCF();
                             return 1;
                         }
@@ -1209,7 +1209,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 if(!(++loopCount & 0xffff)) post("vConsole", loopCount);
 
                 // 重复了错误分支，再退一手，递归退到合适位置
-                let fm = findMoves(FailMoves, moves);
+                let fm = movesHas(FailMoves, moves);
                 if (fm) backFindVCF();
             }
             else {
@@ -1228,7 +1228,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                     if (pushWinMoves(WinMoves, wMoves) && !backstage) {
                         if (!backstage) post("findVCF_addVCF", { winMoves: vcfWinMoves, color: vcfColor, seconds: 0, initialArr: vcfInitial });
                     };
-                    pushFailMoves(FailMoves, moves);
+                    movesPush(FailMoves, moves);
                     backFindVCF();
                     return 1;
                 }
@@ -1246,7 +1246,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 if(!(++loopCount & 0xffff)) post("vConsole", loopCount);
 
                 // 重复了错误分支，再退一手，递归退到合适位置
-                let fm = findMoves(FailMoves, moves);
+                let fm = movesHas(FailMoves, moves);
                 if (fm) backFindVCF();
             }
             else { // 没有反4，计算后续分支
@@ -1281,8 +1281,8 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 fs.length--;
                 if (fs.length < 1) continue;
                 // 保存失败分支;
-                pushFailMoves(FailMoves, moves);
-                //FailMoves.push(copyMoves(moves));
+                movesPush(FailMoves, moves);
+                //FailMoves.push(moves.slice(0);
                 let l = moves.length;
                 x = getX(moves[l - 1]);
                 y = getY(moves[l - 1]);
@@ -1311,7 +1311,7 @@ function findVCFB(arr, color, count, depth, timeOut, backstage) {
                 // 为下次调用保存进攻级别
                 vcfSaveLevel(x, y, nColor, arr);
                 // 重复了错误分支，再退一手
-                let fm = findMoves(FailMoves, moves);
+                let fm = movesHas(FailMoves, moves);
                 if (fm) backFindVCF();
             }
 
@@ -2649,7 +2649,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
                             fMovesKey.push(y * 15 + x);
                             fMovesKey.push(ty * 15 + tx);
                         }
-                        if (findMoves(FailMoves, moves)) {
+                        if (movesHas(FailMoves, moves)) {
                             moves.length -= 2;
                             if (pushKey) fMovesKey.length -= 2;
                             arr[ty][tx] = 0;
@@ -2658,7 +2658,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
                         }
                         else {
                             let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey, winMoves);
-                            pushFailMoves(FailMoves, moves);
+                            movesPush(FailMoves, moves);
                             if (ctn) {
                                 if ((selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) || !selectArr) fMoves.push(moves.slice(0));
                                 if (selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) selectArr.movesKey.push(fMovesKey.slice(0));
@@ -2698,7 +2698,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
                 fMovesKey.push(y * 15 + x);
                 fMovesKey.push(ty * 15 + tx);
             }
-            if (findMoves(FailMoves, moves)) {
+            if (movesHas(FailMoves, moves)) {
                 moves.length -= 2;
                 if (pushKey) fMovesKey.length -= 2;
                 arr[ty][tx] = 0;
@@ -2706,7 +2706,7 @@ function continueFour(arr, color, depth, fMoves, newarr, FailMoves, moves, selec
             }
             else {
                 let ctn = continueFour(arr, color, depth - 1, fMoves, newarr, FailMoves, moves, selectArr, fMovesKey, winMoves);
-                pushFailMoves(FailMoves, moves);
+                movesPush(FailMoves, moves);
                 if (ctn) { //后续没有分支保存当前分支
                     if ((selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) || !selectArr) fMoves.push(moves.slice(0));
                     if (selectArr && fMovesKey.length && isBlock(color, arr, winMoves)) selectArr.movesKey.push(fMovesKey.slice(0));
@@ -3016,12 +3016,12 @@ function isTwoVCF(idx, color, arr) {
         for (let i = 0; i < 225; i++) { FailMoves[i] = []; }
         for (let j = fMoves.length - 1; j >= 0; j--) {
             let Moves = [];
-            pushFailMoves(FailMoves, fMovesKey[j]);
+            movesPush(FailMoves, fMovesKey[j]);
             pushWinMoves(Moves, fMoves[j]);
             fMoves.length--;
             fMovesKey.length--;
             for (let k = j - 1; k >= 0; k--) {
-                if (findMoves(FailMoves, fMovesKey[k])) {
+                if (movesHas(FailMoves, fMovesKey[k])) {
                     pushWinMoves(Moves, fMoves[k]);
                     fMoves.splice(k, 1);
                     fMovesKey.splice(k, 1);
@@ -3193,12 +3193,12 @@ function getContinueBlockVCF(arr, color, winMoves, cbps, blockPoints, idx) {
     for (j = fMoves.length - 1; j >= 0; j--) {
         //if (test) mConsole(`__>>${fMoves[j]}\nkey=${cbps.movesKey[j]}`)
         let Moves = [];
-        pushFailMoves(FailMoves, cbps.movesKey[j]);
+        movesPush(FailMoves, cbps.movesKey[j]);
         pushWinMoves(Moves, fMoves[j]);
         fMoves.length--;
         cbps.movesKey.length--;
         for (let k = j - 1; k >= 0; k--) {
-            if (findMoves(FailMoves, cbps.movesKey[k])) {
+            if (movesHas(FailMoves, cbps.movesKey[k])) {
                 //if (test) mConsole(`_`)
                 pushWinMoves(Moves, fMoves[k]);
                 fMoves.splice(k, 1);

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.95";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["EvaluatorWebassembly"] = "v1202.98";
 
 function loadEvaluatorWebassembly() {
 
@@ -152,7 +152,7 @@ function loadEvaluatorWebassembly() {
                         winMoves = new Uint8Array(memory.buffer, winMovesList[1], 268),
                         winMovesLen = winMoves[4];
                     vcfWinMoves.length = 0;
-                    vcfWinMoves[0] = copyMoves(winMoves.slice(12, 12 + winMovesLen));
+                    vcfWinMoves[0] = TypedArray2Array(winMoves.slice(12, 12 + winMovesLen));
                     vcfInfo.initArr = initArr.slice(0, 226);
                     vcfInfo.color = buf[1] & 0xff;
                     vcfInfo.maxVCF = (buf[1] >> 8) & 0xff;
@@ -317,7 +317,7 @@ function loadEvaluatorWebassembly() {
                                 stackIdx.push(-1, -1);
                             }
                             
-                            if (vcfTransTableHas(moves.length, sum, moves, int8Arr)) {
+                            if (transTableHas(vcfHashTable, moves.length, sum, moves, int8Arr)) {
                                 hasCount++;
                             }
                             else {
@@ -365,7 +365,7 @@ function loadEvaluatorWebassembly() {
                                                     isConcat = false;
                                                     vcfInfo.vcfCount++;
                                                     "post" in self && post({ cmd: "vcfInfo", param: { vcfInfo: vcfInfo } });
-                                                    vcfTransTablePush(moves.length, sum, moves, int8Arr);
+                                                    transTablePush(vcfHashTable, moves.length, sum, moves, int8Arr);
                                                     
                                                     if (vcfInfo.vcfCount == maxVCF) {
                                                         for (let j = moves.length - 1; j >= 0; j--) {
@@ -426,11 +426,11 @@ function loadEvaluatorWebassembly() {
                         }
                         else {
 
-                            if (moves.length < vcfHashMaxMovesLen)
+                            if (moves.length < HASHTABLE_MAX_MOVESLEN)
                                 pushMoveCount++;
                             else
                                 pushPositionCount++;
-                            vcfTransTablePush(moves.length, sum, moves, int8Arr);
+                            transTablePush(vcfHashTable, moves.length, sum, moves, int8Arr);
 
                             if (moves.length) {
                                 let idx = moves.pop();
@@ -453,6 +453,7 @@ function loadEvaluatorWebassembly() {
                     vcfInfo.pushPositionCount = pushPositionCount;
                     vcfInfo.hasCount = hasCount;
                     vcfInfo.nodeCount = loopCount;
+                    resetHashTable(vcfHashTable);
                     
                     return vcfInfo.winMoves.length ? vcfInfo.winMoves[0] : [];
                 }
@@ -460,7 +461,7 @@ function loadEvaluatorWebassembly() {
                 function getBlockVCF(arr, color, vcfMoves, includeFour) {
                     let pMoves = wGlobal._Z11getBlockVCFPccPhhb(putArr(arr), color, putMoves(vcfMoves), vcfMoves.length, includeFour),
                         movesLen = new Uint8Array(memory.buffer, pMoves, 1)[0];
-                    return copyMoves(new Uint8Array(memory.buffer, pMoves + 1, movesLen));
+                    return TypedArray2Array(new Uint8Array(memory.buffer, pMoves + 1, movesLen));
                 }
 
 
