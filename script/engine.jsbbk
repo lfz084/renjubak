@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["engine"] = "v1202.98";
+self.SCRIPT_VERSIONS["engine"] = "v1623.01";
 window.engine = (() => {
     "use strict";
     const TEST_ENGINE = true;
@@ -120,15 +120,15 @@ window.engine = (() => {
         closeMsg();
         saveContinueData();
         closeNoSleep();
-        if (isShowLabel) showLabel("点击标记 展开分支 点击 [<<] 可以退出");
+        if (isShowLabel) warn("点击标记 展开分支 点击 [<<] 可以退出");
     }
 
     function printMsg() {
         if (cObjVCF.winMoves.length) {
-            showLabel("✔ " + COLOR_TXT[cObjVCF.color] + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
+            warn("✔ " + COLOR_TXT[cObjVCF.color] + " 找到 " + cObjVCF.winMoves.length + "套 VCF,用时 " + cObjVCF.time + "秒");
         }
         else {
-            showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[cObjVCF.color]} 查找VCF失败了 ${EMOJI_FOUL_THREE}`);
+            warn(`${EMOJI_FOUL_THREE} ${COLOR_TXT[cObjVCF.color]} 查找VCF失败了 ${EMOJI_FOUL_THREE}`);
         }
     }
 
@@ -146,8 +146,8 @@ window.engine = (() => {
             "addTree": (p) => {
                 tree = p.node;
             },
-            "showLabel": (p) => {
-                showLabel(p.text, p.timeout);
+            "warn": (p) => {
+                warn(p.text, p.timeout);
             },
             "vConsole": (p) => { log(p) },
             "cleLb": (p) => { cleLb(p.idx); },
@@ -284,12 +284,12 @@ window.engine = (() => {
                             findFivePoint(param.arr, param.color, newarr, param.setnum);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            showLabel(`${param.color==1?"黑棋" : "白棋"} 有五连点`);
+                            warn(`${param.color==1?"黑棋" : "白棋"} 有五连点`);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, param.color);
                             callback();
-                            showLabel(`${param.color==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param.color==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param.color==1?"活四":"活四(44,冲4抓)"}`}`);
+                            warn(`${param.color==1?"黑棋" : "白棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${param.color==1?"43杀":"43杀(冲4再44,冲4冲4抓)"}`:`${param.color==1?"活四":"活四(44,冲4抓)"}`}`);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
@@ -317,10 +317,10 @@ window.engine = (() => {
                         "blockCatchFoul_End": (p) => {
                             callback();
                             if (p.value == -1) {
-                                showLabel(`${EMOJI_FOUL_THREE} 没有找到冲四抓禁 ${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE} 没有找到冲四抓禁 ${EMOJI_FOUL_THREE}`);
                             }
                             else if (p.value == 0) {
-                                showLabel(`${EMOJI_FOUL_THREE} 没有成立的解禁点 ${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE} 没有成立的解禁点 ${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -331,12 +331,12 @@ window.engine = (() => {
                             findFivePoint(param.arr, 1, newarr);
                             cBd.printArray(newarr, "⑤", "red");
                             callback();
-                            showLabel(`${"黑棋"} 有五连点`);
+                            warn(`${"黑棋"} 有五连点`);
                         }
                         else if (lvl.level >= 3) {
                             cBd.printMoves(lvl.moves, 1);
                             callback();
-                            showLabel(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`);
+                            warn(`${"黑棋"} 有 ${lvl.moves.length>3?"VCF":lvl.moves.length>1?`${"43杀"}`:`${"活四"}`}`);
                         }
                         else {
                             work.postMessage({ "cmd": cmd, parameter: param });
@@ -513,12 +513,12 @@ window.engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                warn(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 //work.terminate();
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCF_End": (p) => {
@@ -533,7 +533,7 @@ window.engine = (() => {
                             }
                             else {
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -546,12 +546,12 @@ window.engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                warn(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 //work.terminate();
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE} ${OR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE} ${OR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCFb_End": (p) => {
@@ -561,12 +561,12 @@ window.engine = (() => {
                                 for (let i = 0; i < sPoint.length; i++) {
                                     wLb(sPoint[i], EMOJI_ROUND_BLACK, "#888888");
                                 }
-                                showLabel(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
+                                warn(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
                                 excludeBP("isBlockVCF");
                             }
                             else {
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE}没有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });
@@ -612,11 +612,11 @@ window.engine = (() => {
                         "findVCF_End": (p) => {
                             cleLb("all");
                             if (p.winMoves.length) {
-                                showLabel(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
+                                warn(COLOR_TXT[p.color] + "找到VCF，开始分析防点...... ");
                             }
                             else {
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE} ${COLOR_TXT[p.color]} 没有VCF ${EMOJI_FOUL_THREE}`);
                             }
                         },
                         "getBlockVCFTree_End": (p) => {
@@ -626,12 +626,12 @@ window.engine = (() => {
                                 for (let i = 0; i < paths.length; i++) {
                                     wLb(paths[i][0], EMOJI_ROUND_BLACK, "#888888");
                                 }
-                                showLabel(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
+                                warn(COLOR_TXT[p.color - 1] + "开始验证防点...... ");
                                 excludePath("isBlockVCFPath");
                             }
                             else {
                                 callback();
-                                showLabel(`${EMOJI_FOUL_THREE}有成立的防点${EMOJI_FOUL_THREE}`);
+                                warn(`${EMOJI_FOUL_THREE}有成立的防点${EMOJI_FOUL_THREE}`);
                             }
                         },
                     });

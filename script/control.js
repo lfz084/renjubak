@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1202.98";
+self.SCRIPT_VERSIONS["control"] = "v1623.01";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -835,7 +835,7 @@ window.control = (() => {
             cSLTY.setText(cSLTY.input.value + " 行");
             ctx = null;
             viewport1.userScalable();
-            showLabel(`长按棋盘，拖动虚线对齐棋子`);
+            warn(`长按棋盘，拖动虚线对齐棋子`);
         }
 
         function openImg() {
@@ -871,7 +871,6 @@ window.control = (() => {
 
         cCutImage = new Button(renjuCmddiv, "select", 0, 0, w, h);
         //cCutImage.addOption(0, "________图片________");
-        //cCutImage.addOption(1, "分享图片");
         cCutImage.addOption(2, "JPEG/(*.jpg) ____ 压缩图片");
         cCutImage.addOption(3, "PNG /(*.png) ____ 清晰图片");
         cCutImage.addOption(4, "SVG /(*.svg) ____ 无损图片");
@@ -885,7 +884,6 @@ window.control = (() => {
             but.setText(`保存`);
             if (isBusy()) return;
             const FUN = {
-                1: () => { share() },
                 2: () => { cBd.saveAsImage("jpeg") },
                 3: () => { cBd.saveAsImage("png") },
                 4: () => { cBd.saveAsSVG("svg") },
@@ -1317,10 +1315,26 @@ window.control = (() => {
 
         cShare = new Button(renjuCmddiv, "button", 0, 0, w, h);
         cShare.setColor("black");
-        cShare.setText(" 分享原图");
+        cShare.setText(" 分享棋局");
         cShare.setontouchend(function() {
             if (isBusy()) return;
-            share();
+            let hash = `${cBd.getCodeURL()}`,
+                url = window.location.href.split("?")[0] + `#${hash}`;
+            window.location.hash = hash;
+            if (navigator.canShare) {
+                navigator.share({
+                    title: "摆棋小工具",
+                    text: "摆棋小工具，棋局分享",
+                    url: url
+                })
+            }
+            else {
+                msg({
+                    title: url,
+                    type: "input",
+                    butNum: 1
+                })
+            }
         });
 
         let gameRulesMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
@@ -1472,7 +1486,7 @@ window.control = (() => {
                 if (cBd.startIdx < 0)
                     cBd.setScale(1.5, timer);
                 else
-                    showLabel(`${EMOJI_STOP} 画线模式,不能放大棋盘`);
+                    warn(`${EMOJI_STOP} 画线模式,不能放大棋盘`);
             }
             else {
                 cBd.setScale(1, timer);
@@ -1856,22 +1870,6 @@ window.control = (() => {
         })();
 
         setTimeout(function() {
-
-            engine.reset({
-                "cObjVCF": cObjVCF,
-                "cBoard": cBd,
-                "cFindVCF": cFindVCF,
-                "cFindPoint": cFindPoint,
-                "cCancelFind": cCancelFind,
-                "lbTime": lbTime,
-                "msg": msg,
-                "closeMsg": closeMsg,
-                "closeNoSleep": closeNoSleep,
-                "lbTime": lbTime,
-                "saveData": appData.saveData,
-                "setBusy": setBusy
-            });
-
             RenjuLib.reset({
                 isBusy: isBusy,
                 setBusy: setBusy,
@@ -2030,7 +2028,7 @@ window.control = (() => {
                 putBoard();
             }
             else {
-                showLabel("小棋盘,长按屏幕(鼠标右键点击)定位H8");
+                warn("小棋盘,长按屏幕(鼠标右键点击)定位H8");
             }
         });
 
@@ -3144,7 +3142,7 @@ window.control = (() => {
     function isBusy(loading = true) {
         console.log(`isBusy loading = ${loading}`)
         let busy = cCancelFind.div.parentNode; //!cLoadImg.div.parentNode || !cCutImage.div.parentNode || !cFindVCF.div.parentNode || !cFindPoint.div.parentNode;
-        if (busy && loading) window._loading.open("busy", 1600);
+        if (busy && loading) loadAnimarion.open("busy", 1600);
         return busy;
     }
 
@@ -3258,14 +3256,20 @@ window.control = (() => {
 
         let shareLabel = document.createElement("div");
         imgWindow.appendChild(shareLabel);
+        
+        let checkDiv = document.createElement("div");
+        imgWindow.appendChild(checkDiv);
+        
+        let checkbox = document.createElement("input");
+        checkbox.setAttribute("type", "checkbox")
+        checkDiv.appendChild(checkbox);
+        
+        let shareLabel2 = document.createElement("div");
+        checkDiv.appendChild(shareLabel2);
 
         let shareImg = document.createElement("img");
         imgWindow.appendChild(shareImg);
 
-        let bkShareImg = document.createElement("img");
-        //imgWindow.appendChild(bkShareImg);
-        let bkCanvas = document.createElement("canvas");
-        //imgWindow.appendChild(bkCanvas);
         //取消按钮
         const ICO_DOWNLOAD = document.createElement("img");
         imgWindow.appendChild(ICO_DOWNLOAD);
@@ -3280,6 +3284,13 @@ window.control = (() => {
         ICO_CLOSE.oncontextmenu = (event) => {
             event.preventDefault();
         };
+        
+        function refreshImg(backgroundColor, LbBackgroundColor) {
+            cBd.backgroundColor = backgroundColor;
+            cBd.LbBackgroundColor = LbBackgroundColor;
+            cBd.refreshCheckerBoard();
+            shareImg.src = cBd.canvas.toDataURL();
+        }
 
         function shareClose() {
             shareWindow.setAttribute("class", "hide");
@@ -3289,10 +3300,13 @@ window.control = (() => {
             }, ANIMATION_TIMEOUT);
         }
 
-        return (cBoardColor) => {
+        return () => {
 
             if (sharing) return;
             sharing = true;
+            let oldBackgroundColor = cBd.backgroundColor;
+            let oldLbBackgroundColor = cBd.LbBackgroundColor;
+            
             let s = shareWindow.style;
             s.position = "fixed";
             s.zIndex = 9998;
@@ -3322,21 +3336,6 @@ window.control = (() => {
             s.left = ~~((imgWidth - iWidth) / 2) + "px";
             s.border = `0px solid black`;
 
-            let oldBackgroundColor = cBd.backgroundColor;
-            let oldLbBackgroundColor = cBd.LbBackgroundColor;
-            if (cBoardColor == "white") {
-
-                cBd.backgroundColor = "white";
-                cBd.LbBackgroundColor = "white";
-                cBd.refreshCheckerBoard();
-                shareImg.src = cBd.canvas.toDataURL();
-                shareImg.onload = function() {};
-            }
-            else {
-                shareImg.src = cBd.canvas.toDataURL();
-                //if (navigator.userAgent.indexOf("iPhone") +1) window.location.href = "data:application/png" + cBd.canvas.toDataURL().substr(14);
-            }
-
             let h = ~~((imgWidth - iWidth) / 2 / 2);
             let w = h * 4;
             let l = (imgWidth - w) / 2;
@@ -3350,7 +3349,35 @@ window.control = (() => {
             s.top = (imgWidth - iWidth) / 8 + "px";
             s.left = l + "px";
             s.backgroundColor = imgWindow.style.backgroundColor || "#666666";
-
+            
+            s = checkDiv.style;
+            s.position = "absolute";
+            s.width = w/2 + "px";
+            s.height = h + "px";
+            s.top = ~~((imgWidth - iWidth) / 2 - h) + "px";
+            s.left = ~~((imgWidth - iWidth) / 2) + "px";
+            
+            s = checkbox.style;
+            s.position = "absolute";
+            s.width = h/3 + "px";
+            s.height = h/3 + "px";
+            s.top = h/3 + "px";
+            s.left = 0 + "px";
+            checkbox.onclick = () => {
+                if(checkbox.checked) refreshImg(oldBackgroundColor, oldLbBackgroundColor)
+                else refreshImg("white", "white")
+            };
+            
+            s = shareLabel2.style;
+            s.position = "absolute";
+            s.width = h + "px";
+            s.height = h + "px";
+            s.top = h/3 + "px";
+            s.left = h/2 + "px";
+            s.fontSize = h/3 + "px";
+            shareLabel2.innerHTML = `原图`;
+            shareLabel2.onclick = () => checkbox.click()
+            
             s = ICO_DOWNLOAD.style;
             s.position = "absolute";
             s.width = (imgWidth - parseInt(shareImg.style.top) - parseInt(shareImg.style.height)) / 2 + "px";
@@ -3374,12 +3401,11 @@ window.control = (() => {
             setButtonClick(ICO_CLOSE, () => {
                 shareClose();
                 if (cBd.backgroundColor != oldBackgroundColor || cBd.LbBackgroundColor != oldLbBackgroundColor) {
-                    cBd.backgroundColor = oldBackgroundColor;
-                    cBd.LbBackgroundColor = oldLbBackgroundColor;
-                    cBd.refreshCheckerBoard();
+                    refreshImg(oldBackgroundColor, oldLbBackgroundColor);
                 }
             });
-
+            
+            checkbox.onclick();
             shareWindow.setAttribute("class", "show");
             setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
 

@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1202.98";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1623.01";
 if ("importScripts" in self)
     self.importScripts('emoji.js',`Evaluator.js`);
 
@@ -2025,7 +2025,7 @@ function blockCatchFoul(arr) {
     }
 
 
-    post("showLabel", { text: `开始计算 先手防 ......`, timeout: 2000 });
+    post("warn", { text: `开始计算 先手防 ......`, timeout: 2000 });
     let fMoves = []; //  保存先手连续冲四分支
     continueFour(arr, 1, 6, fMoves, getArr2D([]));
     movesSort(fMoves, (a, b) => { return a >= b; })
@@ -2047,7 +2047,7 @@ function blockCatchFoul(arr) {
 
         // 打印正在计算的点
         post("printSearchPoint", { workerIdx: workerIdx, idx: fMoves[k][0], text: "⊙", color: "green" });
-        post("showLabel", { text: `${LEN-k}/${LEN} [${movesToName(fMoves[k],20)}]`, timeout: 500000 });
+        post("warn", { text: `${LEN-k}/${LEN} [${movesToName(fMoves[k],20)}]`, timeout: 500000 });
         // 扫描防点
         let lvl = getLevel(arr, 2)
         let blk = [];
@@ -2852,7 +2852,7 @@ function isTwoVCF(idx, color, arr) {
             movesSort(fMoves, (a, b) => { return a <= b; });
             for (let j = fMoves.length - 1; j >= 0; j--) {
                 testCount++;
-                post("showLabel", { text: `${fMoves.length-j}/${fMoves.length} [${idxToName(idx)}] [${movesToName(fMoves[j],20)}]`, timeout: 10000 });
+                post("warn", { text: `${fMoves.length-j}/${fMoves.length} [${idxToName(idx)}] [${movesToName(fMoves[j],20)}]`, timeout: 10000 });
                 // 摆棋
                 for (let k = fMoves[j].length - 1; k >= 0; k--) {
                     let x = getX(fMoves[j][k]);
@@ -3127,7 +3127,7 @@ function isTwoVCF(idx, color, arr) {
                 //continueFour(arr, color == 1 ? 2 : 1, 3, fMoves, getArr2D([]));
                 maxCount += fMoves.length;
                 for (let j = fMoves.length - 1; j >= 0; j--) {
-                    //post("showLabel", {text:`[${movesToName(moves,20)}]`, timeout:5000});
+                    //post("warn", {text:`[${movesToName(moves,20)}]`, timeout:5000});
                     // 摆棋
                     for (let k = fMoves[j].length - 1; k >= 0; k--) {
                         let x = getX(fMoves[j][k]);
@@ -3136,7 +3136,7 @@ function isTwoVCF(idx, color, arr) {
                     }
                     moves = moves.concat(fMoves[j]);
 
-                    post("showLabel", {text:`${count++}/${maxCount} [${movesToName(moves,20)}]`, timeout:500000});
+                    post("warn", {text:`${count++}/${maxCount} [${movesToName(moves,20)}]`, timeout:500000});
                     //if (test) mConsole(`__\n\n${movesToName(moves)}`)
                     let nd = node;
                     nd = movesToNode(fMoves[j], nd);
@@ -3639,7 +3639,7 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
     let nColor = color == 1 ? 2 : 1;
     let timeOut = 300 * 1000;
     let depth = 1000;
-    post("showLabel", { text: `${speed} [${movesToName(path,20)}]`, timeout: 500000 });
+    post("warn", { text: `${speed} [${movesToName(path,20)}]`, timeout: 500000 });
     if (len == 1) {
         if (isBlockVCF(path[0], color, arr, true, timeOut)) {
             paths.push(path.slice(0));
@@ -3682,7 +3682,7 @@ function isBlockVCFPath(path, color, arr, backstage, speed) {
     }
     if (paths.length && !backstage) {
         post("wLb", { idx: paths[0][0], text: EMOJI_ROUND, color: "black" });
-        post("showLabel", { text: `找到分支  [${movesToName(path,20)}]`, timeout: 500000 });
+        post("warn", { text: `找到分支  [${movesToName(path,20)}]`, timeout: 500000 });
     }
     return paths;
 }

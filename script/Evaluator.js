@@ -1,5 +1,5 @@
 "use strict";
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1202.98";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["Evaluator"] = "v1623.01";
 const DIRECTIONS = [0, 1, 2, 3] //[→, ↓, ↘, ↗]; // 米字线
 const FIND_ALL = 0;
 const ONLY_FREE = 1; // 只找活3，活4
@@ -337,22 +337,15 @@ function movesToName(moves, maxLength) {
 
 //--------------------- moves HashTable ------------------------
 
-let HASHTABLE_MAX_MOVESLEN = 73;
+let HASHTABLE_MAX_MOVESLEN = 225;
 
 function isChildMove(parentMove, childMove) {
-    let j;
-    let k;
-    // 判断一个颜色
-    for (k = 0; k < parentMove.length; k += 2) {
-        for (j = 0; j < childMove.length; j += 2) {
-            if (childMove[j] == parentMove[k]) {
-                break; //找到相同数据
-            }
-        }
-        if (j >= childMove.length) break; // 没有找到相同数据;
+    let position = new Array(225);
+    for (let j = childMove.length - 1; j >= 0; j--) position[childMove[j]] = (j & 1) + 1;
+    for (let k = parentMove.length - 1; k >= 0; k--) {
+        if (position[parentMove[k]] != (k & 1) + 1) return false;
     }
-    return k >= parentMove.length;
-
+    return true;
 }
 
 function isRepeatMove(newMove, oldMove) {

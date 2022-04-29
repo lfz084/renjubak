@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1202.98";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1623.01";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -96,7 +96,7 @@ window.RenjuLib = (() => {
     
     function setBufferScale(scl = 5) {
         buffer_scale = scl;
-        showLabel(`设置${scl}倍内存,1M的lib文件会占用${scl}M内存`);
+        warn(`设置${scl}倍内存,1M的lib文件会占用${scl}M内存`);
     }
     
     function setPostStart(start = 0){
@@ -106,7 +106,7 @@ window.RenjuLib = (() => {
     
     function setCenterPos(point = {x:8, y:8}) {
         centerPos = point;
-        enable && showLabel(`中心点: (${centerPos.x}, ${centerPos.y})`);
+        enable && warn(`中心点: (${centerPos.x}, ${centerPos.y})`);
     }
 
     function createWorker() {
@@ -149,8 +149,8 @@ window.RenjuLib = (() => {
     }
 
     function setLoading(message) {
-        window._loading.open();
-        window._loading.text(message);
+        loadAnimarion.open();
+        loadAnimarion.text(message);
     }
 
     function loading(data) {
@@ -185,7 +185,7 @@ window.RenjuLib = (() => {
     */
     function finish() {
         setBusy();
-        window._loading.close();
+        loadAnimarion.close();
         clearInterval(timer);
         timer = null;
         isLoading = false;

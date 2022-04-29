@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["String2Buffer"] = "v1202.98";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["String2Buffer"] = "v1623.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

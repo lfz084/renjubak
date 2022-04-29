@@ -1,4 +1,4 @@
-    var VERSION = "v1202.98";
+    var VERSION = "v1623.01";
 var myInit = {
     cache: "no-store"
 };
@@ -159,7 +159,7 @@ function fetchErr(err, url) {
             })
     }
     else {
-        return Promise.resolve(err);
+        return Promise.reject(err);
     }
 }
 

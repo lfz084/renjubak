@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1202.98";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.01";
 window.engine = (function() {
     "use strict";
     const TEST_ENGINE = false;
@@ -118,12 +118,6 @@ window.engine = (function() {
         });
     }
 
-    Thread.prototype.push = function(param) {
-        return new Promise((resolve, reject) => {
-
-        });
-    }
-
     Thread.prototype.cancel = function(param) {
         return new Promise((resolve) => {
             this.reject(this.result);
@@ -181,24 +175,33 @@ window.engine = (function() {
             }, 0);
         });
     }
+    
+    async function run(cmd, param, thread) {
+        log(param, "log");
+        thread = thread || await getFreeThread();
+        return thread.run({ cmd: cmd, param: param });
+    }
 
     function reset() {
-        THREADS.map(thread => thread.cancel());
+        return Promise.all(THREADS.map(thread => thread.cancel()));
     }
 
     function cancel() {
-        if (canceling) return;
-        canceling = true;
-        let count = 0,
-            timer = setInterval(() => {
-                count = THREADS.find(thread => thread.isBusy) ? 0 : count + 1;
-                console.log(count)
-                if (count > 10) {
-                    clearInterval(timer);
-                    canceling = false;
-                    console.log("engine.cancel", "warn")
-                }
-            }, 100)
+        return new Promise((resolve, reject) => {
+            if (canceling) resolve();
+            canceling = true;
+            let count = 0,
+                timer = setInterval(() => {
+                    count = THREADS.find(thread => thread.isBusy) ? 0 : count + 1;
+                    console.log(count)
+                    if (count > 10) {
+                        clearInterval(timer);
+                        canceling = false;
+                        console.log("engine.cancel", "warn")
+                    }
+                    else resolve()
+                }, 100)
+        })
     }
 
     //------------------------ Evaluator -------------------
@@ -241,8 +244,9 @@ window.engine = (function() {
         else if (i < 100) LEVEL_THREE_POINTS_TXT[i] = `V${i}`;
         else LEVEL_THREE_POINTS_TXT[i] = `V++`;
     })
-
-    function positionToMoves(position) {
+    
+    //把棋局转成手顺，包含pass
+    function positionToMoves(position) { 
         let blackMoves = [],
             whiteMoves = [],
             moves = [];
@@ -360,7 +364,7 @@ window.engine = (function() {
             nNode.boardTXT = node.boardTXT;
             current.addChild(nNode);
         })
-        return Promise.resolve(tree);
+        return tree;
     }
 
     //param: {arr, color, ftype}
@@ -478,12 +482,6 @@ window.engine = (function() {
         await wait(waitTime);
     }
 
-    async function run(cmd, param, thread) {
-        log(param, "log");
-        thread = thread || await getFreeThread();
-        return thread.run({ cmd: cmd, param: param });
-    }
-
     //param: {arr, color, radius, maxVCF, maxDepth, maxNode}
     async function _selectPoints(param, thread) {
         thread = thread || await getFreeThread();
@@ -582,24 +580,24 @@ window.engine = (function() {
             vcfInfo.winMoves.map(vcfMoves => tree.createPathVCF(current, vcfMoves));
             tree.init.MS = getInitMoves(tree);
 
-            0 == vcfInfo.winMoves.length && showLabel(`${EMOJI_FOUL_THREE} ${COLOR_NAME[param.color]} 查找VCF失败了 ${EMOJI_FOUL_THREE}`);
+            0 == vcfInfo.winMoves.length && warn(`${EMOJI_FOUL_THREE} ${COLOR_NAME[param.color]} 查找VCF失败了 ${EMOJI_FOUL_THREE}`);
             return tree;
         }
         return tree;
     }
 
     //parm: {arr, color}
-    async function createTreeFive(param) {
+    function createTreeFive(param) {
         return createTreeNodes(param, node => FIVE == (node.info & FOUL_MAX_FREE))
     }
 
     //parm: {arr, color, ftype}
-    async function createTreeFour(param) {
+    function createTreeFour(param) {
         return createTreeNodes(param, FILTER_FOUR_NODE[param.ftype])
     }
 
     //parm: {arr, color, ftype}
-    async function createTreeThree(param) {
+    function createTreeThree(param) {
         return createTreeNodes(param, FILTER_THREE_NODE[param.ftype])
     }
 
@@ -622,7 +620,7 @@ window.engine = (function() {
         }
 
         if (LEVEL_WIN == (getLevel(param.arr, 1) & 0xff) || LEVEL_WIN == (getLevel(param.arr, 2) & 0xff)) {
-            showLabel(`棋局已结束`);
+            warn(`棋局已结束`);
             return tree;
         }
         else if (level >= LEVEL_NOFREEFOUR) {
@@ -630,13 +628,13 @@ window.engine = (function() {
             node.idx = fiveIdx;
             node.boardTXT = "W";
             current.addChild(node);
-            showLabel(`${COLOR_NAME[param.color]} 可以五连`);
+            warn(`${COLOR_NAME[param.color]} 可以五连`);
             return tree;
         }
         else if (level == LEVEL_VCF) {
             tree.createPathVCF(current, levelBInfo.winMoves);
             tree.init.MS = getInitMoves(tree);
-            showLabel(`${COLOR_NAME[param.color]} 有杀`);
+            warn(`${COLOR_NAME[param.color]} 有杀`);
             return tree;
         }
         return undefined;
@@ -673,7 +671,7 @@ window.engine = (function() {
         let tree = await createTreeWin(param);
         if (!tree) {
             tree = await _createTreeLevelThree(param);
-            tree.mergeTree(await createTreeFour(param));
+            tree.mergeTree(createTreeFour(param));
         }
         return tree;
     }

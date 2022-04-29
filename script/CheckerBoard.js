@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["CheckerBoard"] = "v1202.98";
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1623.01";
 window.CheckerBoard = (function() {
 
     "use strict";
@@ -1601,7 +1601,31 @@ window.CheckerBoard = (function() {
         code += "{" + this.getMoves(TYPE_WHITE) + "}";
         return code;
     };
+    
+    CheckerBoard.prototype.getCodeURL = function() {
+        let codeURL = this.getMoves();
+        codeURL += "%" + this.getMoves(TYPE_BLACK);
+        codeURL += "%" + this.getMoves(TYPE_WHITE);
+        codeURL += "%" + this.size;
+        codeURL += "%" + this.resetNum;
+        return codeURL;
+    };
 
+    CheckerBoard.prototype.loadCodeURL = function(codeURL) {
+        let code = codeURL.split("%"),
+            moves = this.setMoves(code[0]) || "",
+            blackMoves = this.setMoves(code[1]) || "",
+            whiteMoves = this.setMoves(code[2]) || "",
+            cBoardSize = parseInt(code[3]) < 6 ? 6 : parseInt(code[3]) > 15 ? 15 : parseInt(code[3]),
+            resetNum = parseInt(code[4]);
+        return {
+            moves: moves,
+            blackMoves: blackMoves,
+            whiteMoves: whiteMoves,
+            cBoardSize: cBoardSize,
+            resetNum: resetNum
+        }
+    }
 
 
     // 当前棋盘显示的棋子， 转成棋谱 返回
@@ -3699,7 +3723,7 @@ window.CheckerBoard = (function() {
     CheckerBoard.prototype.saveAsPDF = function(fontName) {
 
         if (typeof jsPDF != "function") {
-            showLabel(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
+            warn(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
             return;
         }
         //新建文档
@@ -4468,7 +4492,7 @@ window.CheckerBoard = (function() {
         let colorName = this.firstColor == "black" ? ["white", "black"] : ["black", "white"],
             c = color == "auto" ? colorName[this.MSindex & 1] : color;
         if (isFoulPoint && c == "black") {
-            showLabel(EMOJI_FOUL_THREE + idxToName(idx) + " 是禁手" + EMOJI_FOUL_THREE, 100)
+            warn(EMOJI_FOUL_THREE + idxToName(idx) + " 是禁手" + EMOJI_FOUL_THREE, 100)
         }
         this.cletLbMoves();
         if (color == "auto" || type == TYPE_NUMBER) { // 顺序添加棋子
