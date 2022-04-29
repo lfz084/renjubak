@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.01";
+self.SCRIPT_VERSIONS["renju"] = "v1623.02";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -202,6 +202,7 @@ var loadApp = () => { // 按顺序加载应用
                         statechange(serviceWorker.state)
                         serviceWorker.addEventListener('statechange', function(e) {
                             statechange(e.target.state)
+                            alert(e.target.state)
                         });
                         setTimeout(registerError, 15 * 1000);
                     }
