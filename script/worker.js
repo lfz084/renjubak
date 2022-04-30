@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1623.03";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["worker"] = "v1623.05";
 /Worker/.exec(`${self}`) && (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {

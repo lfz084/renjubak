@@ -52,8 +52,8 @@
                     resolve()
                 }, 0)
             }
-            link.onerror = (err) => {
-                let message = `${filename}: ${err.message}`;
+            link.onerror = (event) => {
+                let message = `${filename}: ${event}`;
                 reject(message);
                 //log(message);
             }
@@ -73,8 +73,8 @@
                 }, 0)
             }
 
-            function err(err) {
-                let message = `${filename}: ${err.message}`;
+            function err(event) {
+                let message = `${filename}: ${event}`;
                 reject(message);
                 //log(message);
             }
@@ -112,8 +112,8 @@
                     setTimeout(resolve, 0)
                 }, 0);
             }
-            oScript.onerror = (err) => {
-                let message = `${filename}: ${err.message}`;
+            oScript.onerror = (event) => {
+                let message = `${filename}: ${event}`;
                 reject(message);
                 //log(message,"error");
             }

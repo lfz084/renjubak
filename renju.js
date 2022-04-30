@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.03";
+self.SCRIPT_VERSIONS["renju"] = "v1623.05";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -492,6 +492,7 @@ var loadApp = () => { // 按顺序加载应用
             return window.postVersion()
         })
         .then(() => {
+            window.alertCache()
             return loadScriptAll([  
                 [SOURCE_FILES["loadAnimarion"]]
                 ], true)

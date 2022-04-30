@@ -37,7 +37,7 @@
         window.setUpdataVersion = function () {
             localStorage.removeItem("RENJU_APP_VERSION")
         }
-        window.NEW_VERSION = "v1623.03";
+        window.NEW_VERSION = "v1623.05";
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         if (window.OLD_VERDION != window.NEW_VERSION && window.NEW_VERSION.indexOf("up") + 1) window.OLD_VERDION = null; //强制更新
         
@@ -140,8 +140,22 @@
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
             "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"],
-            "v1623.03": ["增加无禁模式",
+            "v1623.05": ["增加无禁模式",
                          "增加3种摆棋模式"]
+        };
+        
+        window.alertCache = function() {
+            try{
+                alert(`localStorage\n${Object.keys(localStorage).join("\n")}`);
+                caches.keys().then(ks => alert(`${ks.join("\n")}`))
+                caches.open(window.CURRENT_VERSION)
+                .then(cache => cache.keys())
+                .then(rps => rps.map(rp => rp.url))
+                .then(s => alert(`${s.join("\n")}`))
+            }
+            catch(err) {
+                alert(err.stack)
+            }
         };
         
         window.removeServiceWorker = function() {
@@ -370,6 +384,7 @@
                 })
                 .then(() => {
                     mlog("load App ......");
+                    window.alertCache()
                     return _loadScript(SOURCE_FILES["loadFile"])
                 })
                 .then(() => {
