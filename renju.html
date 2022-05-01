@@ -37,12 +37,12 @@
         window.setUpdataVersion = function () {
             localStorage.removeItem("RENJU_APP_VERSION")
         }
-        window.NEW_VERSION = "v1623.06";
+        window.NEW_VERSION = "v1623.08";
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         if (window.OLD_VERDION != window.NEW_VERSION && window.NEW_VERSION.indexOf("up") + 1) window.OLD_VERDION = null; //强制更新
         
         window.CURRENT_VERSION = window.OLD_VERDION || window.NEW_VERSION;
-        alert(`o:${window.OLD_VERDION}\nc:${window.CURRENT_VERSION}\nn:${window.NEW_VERSION}`)
+        //alert(`o:${window.OLD_VERDION}\nc:${window.CURRENT_VERSION}\nn:${window.NEW_VERSION}`)
         window.URL_VERSION = "?v=" + window.CURRENT_VERSION;
         window.CHECK_VERSION = true;
         window.SOURCE_FILES = {
@@ -140,22 +140,22 @@
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
             "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"],
-            "v1623.06": ["增加无禁模式",
+            "v1623.08": ["增加无禁模式",
                          "增加3种摆棋模式"]
         };
         
         window.alertCache = function() {
-            try{
-                alert(`localStorage\n${Object.keys(localStorage).join("\n")}`);
-                caches.keys().then(ks => alert(`${ks.join("\n")}`))
-                caches.open(window.CURRENT_VERSION)
-                .then(cache => cache.keys())
-                .then(rps => rps.map(rp => rp.url))
-                .then(s => alert(`${s.join("\n")}`))
-            }
-            catch(err) {
-                alert(err.stack)
-            }
+            return new Promise((resolve, reject) => {
+                alert(`localStorage:\n${Object.keys(localStorage).join("\n")}`);
+                caches.keys()
+                    .then(ks => alert(`${ks.join("\n")}`))
+                    .then(() => caches.open(window.CURRENT_VERSION))
+                    .then(cache => cache.keys())
+                    .then(rps => rps.map(rp => rp.url))
+                    .then(s => alert(`${s.join("\n")}`))
+                    .then(resolve)
+                    .catch(reject)
+            })
         };
         
         window.removeServiceWorker = function() {
@@ -384,7 +384,6 @@
                 })
                 .then(() => {
                     mlog("load App ......");
-                    window.alertCache()
                     return _loadScript(SOURCE_FILES["loadFile"])
                 })
                 .then(() => {
@@ -399,7 +398,7 @@
                     window.test = () => _loadScript(SOURCE_FILES["debugModule"]);
                 })
                 .catch((err) => {
-                    const MSG = "❌" + "加载过程出现了错误，准备刷新" + "\n" + err.stack;
+                    const MSG = "❌" + "加载过程出现了错误，准备刷新" + "\n" + (err.stack || err)
                     alert(MSG)
                     window.reloadApp()
                 })

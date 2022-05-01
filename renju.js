@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.06";
+self.SCRIPT_VERSIONS["renju"] = "v1623.08";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -174,9 +174,9 @@ var loadApp = () => { // 按顺序加载应用
                         TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`, "warn")
                     }
                 });
-                if (!window.OLD_VERDION) {
+                
                 // 开始注册service workers
-                    navigator.serviceWorker.register('./sw.js', {scope: './'})
+                navigator.serviceWorker.register('./sw.js', {scope: './'})
                     .then(function(registration) {
                         var serviceWorker;
                         function statechange(state){
@@ -202,7 +202,6 @@ var loadApp = () => { // 按顺序加载应用
                             statechange(serviceWorker.state)
                             serviceWorker.addEventListener('statechange', function(e) {
                                 statechange(e.target.state)
-                                alert(e.target.state)
                             });
                             setTimeout(registerError, 15 * 1000);
                         }
@@ -213,10 +212,6 @@ var loadApp = () => { // 按顺序加载应用
                     }).catch(function(error) {
                         reject(new Error(error));
                     });
-                }
-                else {
-                    resolve()
-                }
             } else {
                 resolve();
             }
@@ -496,7 +491,6 @@ var loadApp = () => { // 按顺序加载应用
             return window.postVersion()
         })
         .then(() => {
-            window.alertCache()
             return loadScriptAll([  
                 [SOURCE_FILES["loadAnimarion"]]
                 ], true)
@@ -571,11 +565,11 @@ var loadApp = () => { // 按顺序加载应用
         .then(() => {
             loadAnimarion.text("75%");
             return loadScriptAll([
+                [SOURCE_FILES["JPoint"]],
                 [SOURCE_FILES["worker"]],
                 [SOURCE_FILES["IntervalPost"]],
                 [SOURCE_FILES["UNICODE2GBK"]],
                 [SOURCE_FILES["JFile"]],
-                [SOURCE_FILES["JPoint"]],
                 [SOURCE_FILES["LibraryFile"]],
                 [SOURCE_FILES["MoveList"]],
                 [SOURCE_FILES["MoveNode"]],
