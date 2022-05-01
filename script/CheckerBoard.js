@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["CheckerBoard"] = "v1623.05";
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1623.06";
 window.CheckerBoard = (function() {
 
     "use strict";

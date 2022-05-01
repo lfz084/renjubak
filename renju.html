@@ -37,7 +37,7 @@
         window.setUpdataVersion = function () {
             localStorage.removeItem("RENJU_APP_VERSION")
         }
-        window.NEW_VERSION = "v1623.05";
+        window.NEW_VERSION = "v1623.06";
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         if (window.OLD_VERDION != window.NEW_VERSION && window.NEW_VERSION.indexOf("up") + 1) window.OLD_VERDION = null; //强制更新
         
@@ -140,7 +140,7 @@
             "v1116.05": ["增加设置按钮位置功能",
                          "你可以保存5个按钮布局"],
             "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"],
-            "v1623.05": ["增加无禁模式",
+            "v1623.06": ["增加无禁模式",
                          "增加3种摆棋模式"]
         };
         

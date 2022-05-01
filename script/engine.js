@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.05";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.06";
 window.engine = (function() {
     "use strict";
     const TEST_ENGINE = false;

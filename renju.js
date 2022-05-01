@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.05";
+self.SCRIPT_VERSIONS["renju"] = "v1623.06";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -174,45 +174,49 @@ var loadApp = () => { // 按顺序加载应用
                         TEST_SERVER_WORKER && log(`[serviceWorker onmessage: ${event.data}]`, "warn")
                     }
                 });
+                if (!window.OLD_VERDION) {
                 // 开始注册service workers
-                navigator.serviceWorker.register('./sw.js', {
-                    scope: './'
-                }).then(function(registration) {
-                    var serviceWorker;
-                    function statechange(state){
-                        serviceWorker_state = state;
-                        serviceWorker_state_history.push(serviceWorker_state)
-                        //log(`serviceWorker.state=${serviceWorker_state}`, "warn");
-                        if (serviceWorker_state == "activated" ||
-                            serviceWorker_state == "waiting" ||
-                            serviceWorker_state == "redundant")
-                            resolve()
-                    }
-                    function registerError(){
-                        reject(new Error("注册 serviceWorker 失败"))
-                    }
-                    if (registration.installing) {
-                        serviceWorker = registration.installing;
-                    } else if (registration.waiting) {
-                        serviceWorker = registration.waiting;
-                    } else if (registration.active) {
-                        serviceWorker = registration.active;
-                    }
-                    if (serviceWorker) {
-                        statechange(serviceWorker.state)
-                        serviceWorker.addEventListener('statechange', function(e) {
-                            statechange(e.target.state)
-                            alert(e.target.state)
-                        });
-                        setTimeout(registerError, 15 * 1000);
-                    }
-                    else{
-                        registerError();
-                    }
+                    navigator.serviceWorker.register('./sw.js', {scope: './'})
+                    .then(function(registration) {
+                        var serviceWorker;
+                        function statechange(state){
+                            serviceWorker_state = state;
+                            serviceWorker_state_history.push(serviceWorker_state)
+                            //log(`serviceWorker.state=${serviceWorker_state}`, "warn");
+                            if (serviceWorker_state == "activated" ||
+                                serviceWorker_state == "waiting" ||
+                                serviceWorker_state == "redundant")
+                                resolve()
+                        }
+                        function registerError(){
+                            reject(new Error("注册 serviceWorker 失败"))
+                        }
+                        if (registration.installing) {
+                            serviceWorker = registration.installing;
+                        } else if (registration.waiting) {
+                            serviceWorker = registration.waiting;
+                        } else if (registration.active) {
+                            serviceWorker = registration.active;
+                        }
+                        if (serviceWorker) {
+                            statechange(serviceWorker.state)
+                            serviceWorker.addEventListener('statechange', function(e) {
+                                statechange(e.target.state)
+                                alert(e.target.state)
+                            });
+                            setTimeout(registerError, 15 * 1000);
+                        }
+                        else{
+                            registerError();
+                        }
                     
-                }).catch(function(error) {
-                    reject(new Error(error));
-                });
+                    }).catch(function(error) {
+                        reject(new Error(error));
+                    });
+                }
+                else {
+                    resolve()
+                }
             } else {
                 resolve();
             }
