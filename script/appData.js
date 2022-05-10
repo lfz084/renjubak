@@ -1,5 +1,5 @@
 self.SCRIPT_VERSIONS["appData"] = "v1623.08";
-window.appData = (() => {
+ window.appData = (() => {
     "use strict";
     const TYPE_BLACK = 3; // 无序号 添加的黑棋
     const TYPE_WHITE = 4; // 无序号 添加的黑棋

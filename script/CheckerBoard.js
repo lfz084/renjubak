@@ -20,6 +20,19 @@ window.CheckerBoard = (function() {
     const COORDINATE_RIGHT_DOWN = 4;
     const COORDINATE_LEFT_DOWN = 5;
 
+    const ALL_STAR_POINTS = {
+        15: [112, 48, 56, 168, 176],
+        14: [96, 97, 111, 112, 32, 41, 167, 176],
+        13: [96, 32, 40, 152, 160],
+        12: [80, 81, 95, 96, 16, 25, 151, 160],
+        11: [80, 16, 24, 136, 144],
+        10: [64, 65, 79, 80],
+        9: [64],
+        8: [48, 49, 63, 64],
+        7: [48],
+        6: []
+    };
+
     function log(param, type = "log") {
         const command = {
             log: () => { console.log(param) },
@@ -39,7 +52,7 @@ window.CheckerBoard = (function() {
         }
         let print = command[type] || console.log;
         if (TEST_CHECKER_BOARD && DEBUG)
-            print(`[CheckerBoard.js]\n>> ` + param);
+            print(`[CheckerBoard.js]\n>>  ${ param}`);
     }
 
     function bind(callback, _this) {
@@ -346,7 +359,7 @@ window.CheckerBoard = (function() {
 
         for (let i = 0; i < 30; i++) { this.searchIdx[i] = -1; };
         this.backgroundColor = "#f0f0f0"; //888888
-        this.wNumColor = "white"; //do not change (printPDF && getSVG)
+        this.wNumColor = "white"; 
         this.bNumColor = "#000000"; //333333
         this.wNumFontColor = "#000000"; //333333
         this.bNumFontColor = "#ffffff"; //333333
@@ -361,6 +374,7 @@ window.CheckerBoard = (function() {
         this.moveBlackFontColor = "#000000"; //000000
         this.moveLastFontColor = "red"; //ff0000
         this.firstColor = "black";
+        this.lineStyle = "normal";
 
         this.node = function(value) {
             this.parentNode;
@@ -486,45 +500,43 @@ window.CheckerBoard = (function() {
 
 
     CheckerBoard.prototype.addTree = function(tree) {
-
         this.oldFirstColor = this.firstColor; // 在this.cle 前面
         this.firstColor = "black";
-
         this.oldResetNum = this.resetNum;
         this.resetNum = 0;
-        log(tree);
+        //log(tree);
         this.tree = tree;
         if (tree.init) {
             this.cle();
             this.MS = tree.init.MS;
             this.resetNum = tree.init.resetNum;
-            while(this.MSindex < tree.init.MSindex) this.toNext(true, 100);
+            while (this.MSindex < tree.init.MSindex) this.toNext(true, 100);
         }
         this.autoShow();
     };
-    
-    
-    
+
+
+
     CheckerBoard.prototype.mergeTree = function(tree) {
         this.oldFirstColor = this.firstColor; // 在this.cle 前面
         this.firstColor = "black";
-        
+
         this.oldResetNum = this.resetNum;
         this.resetNum = 0;
-        log(tree);
+        //log(tree);
         this.tree = this.tree || new RenjuTree();
         this.tree.mergeTree(tree);
         if (tree.init) {
             this.cle();
             this.MS = tree.init.MS;
             this.resetNum = tree.init.resetNum;
-            while(this.MSindex < tree.init.MSindex) this.toNext(true, 100);
+            while (this.MSindex < tree.init.MSindex) this.toNext(true, 100);
         }
         this.autoShow();
     }
-    
-    
-    
+
+
+
     CheckerBoard.prototype.map = function(callback) {
         this.P.map(p => { callback(p) });
     }
@@ -1076,7 +1088,7 @@ window.CheckerBoard = (function() {
             this.clePoint(idx);
             refreshLine.call(this, idx);
         }
-        
+
         this.autoDelay(bind(function() {
             this.onMove(idx);
             this.autoShow();
@@ -1110,7 +1122,6 @@ window.CheckerBoard = (function() {
 
     // 清空棋盘对象记录的棋谱
     CheckerBoard.prototype.cleMoves = function() {
-
         this.Moves = "";
     };
 
@@ -1121,7 +1132,7 @@ window.CheckerBoard = (function() {
         let oldIdx = -1;
         let color = markLine.color;
         markLine.color = this.backgroundColor;
-        this.printMarkLine(markLine, undefined, true);
+        this._printMarkLine(markLine, undefined, true);
         markLine.color = color;
         for (let i = markLine.P.length - 1; i >= 0; i--) {
             let idx = markLine.P[i];
@@ -1132,7 +1143,7 @@ window.CheckerBoard = (function() {
             if (oldIdx + 1) {
                 this.refreshMarkLine(oldIdx, this.autoLines);
                 this.refreshMarkLine(oldIdx);
-                this.printPointB(oldIdx, this.isShowNum);
+                this._printPoint(oldIdx, this.isShowNum);
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
@@ -1142,13 +1153,13 @@ window.CheckerBoard = (function() {
                 if (nIdx >= 0 && nIdx < this.P.length) {
                     this.refreshMarkLine(nIdx, this.autoLines);
                     this.refreshMarkLine(nIdx);
-                    this.printPointB(nIdx, this.isShowNum);
+                    this._printPoint(nIdx, this.isShowNum);
                     this.refreshMarkArrow(nIdx);
                 }
                 if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                     this.refreshMarkLine(nIdx1, this.autoLines);
                     this.refreshMarkLine(nIdx1);
-                    this.printPointB(nIdx1, this.isShowNum);
+                    this._printPoint(nIdx1, this.isShowNum);
                     this.refreshMarkArrow(nIdx1);
                 }
             }
@@ -1156,7 +1167,7 @@ window.CheckerBoard = (function() {
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx, this.autoLines);
             this.refreshMarkLine(oldIdx);
-            this.printPointB(oldIdx, this.isShowNum);
+            this._printPoint(oldIdx, this.isShowNum);
             this.refreshMarkArrow(oldIdx);
         }
         if ((markLine.direction + 1) & 1) {
@@ -1182,7 +1193,6 @@ window.CheckerBoard = (function() {
             this.refreshMarkArrow(idx1);
             this.refreshMarkArrow(idx2);
         }
-
     }
 
 
@@ -1192,7 +1202,7 @@ window.CheckerBoard = (function() {
         let oldIdx = -1;
         let color = markArrow.color;
         markArrow.color = this.backgroundColor;
-        this.printMarkArrow(markArrow, undefined, true);
+        this._printMarkArrow(markArrow, undefined, true);
         markArrow.color = color;
         for (let i = markArrow.P.length - 1; i >= 0; i--) {
             let idx = markArrow.P[i];
@@ -1203,7 +1213,7 @@ window.CheckerBoard = (function() {
             if (oldIdx + 1) {
                 this.refreshMarkLine(oldIdx, this.autoLines);
                 this.refreshMarkLine(oldIdx);
-                this.printPointB(oldIdx, this.isShowNum);
+                this._printPoint(oldIdx, this.isShowNum);
                 this.refreshMarkArrow(oldIdx);
             }
             oldIdx = idx;
@@ -1213,13 +1223,13 @@ window.CheckerBoard = (function() {
                 if (nIdx >= 0 && nIdx < this.P.length) {
                     this.refreshMarkLine(nIdx, this.autoLines);
                     this.refreshMarkLine(nIdx);
-                    this.printPointB(nIdx, this.isShowNum);
+                    this._printPoint(nIdx, this.isShowNum);
                     this.refreshMarkArrow(nIdx);
                 }
                 if (nIdx1 >= 0 && nIdx1 < this.P.length) {
                     this.refreshMarkLine(nIdx1, this.autoLines);
                     this.refreshMarkLine(nIdx1);
-                    this.printPointB(nIdx1, this.isShowNum);
+                    this._printPoint(nIdx1, this.isShowNum);
                     this.refreshMarkArrow(nIdx1);
                 }
             }
@@ -1228,7 +1238,7 @@ window.CheckerBoard = (function() {
         if (oldIdx + 1) {
             this.refreshMarkLine(oldIdx, this.autoLines);
             this.refreshMarkLine(oldIdx);
-            this.printPointB(oldIdx, this.isShowNum);
+            this._printPoint(oldIdx, this.isShowNum);
             this.refreshMarkArrow(oldIdx);
         }
         if ((markArrow.direction + 1) & 1) {
@@ -1389,24 +1399,32 @@ window.CheckerBoard = (function() {
 
 
 
-    //把后台空棋盘的一个点的图像剪下来备用;
-    CheckerBoard.prototype.cutBkPoint = function(idx, width, height) {
-
-        let p = tempp;
-        p.setxy(this.P[idx].x, this.P[idx].y);
-        let c = this.cutCanvas;
-        width = width || this.gW;
-        height = height || this.gH;
+    //裁剪指定canvas一块区域的图像，返回包含新图像的canvas;
+    CheckerBoard.prototype.cutToCanvas = function(originCanvas, x, y, width, height) {
+        let c = this.cutCanvas,
+            ctx = c.getContext("2d");
         c.width = width;
         c.height = height;
-        let ctx = c.getContext("2d");
-
-        ctx.drawImage(this.bakCanvas, p.x - (width / 2), p.y - (height / 2), width, height, 0, 0, width, height);
+        ctx.drawImage(originCanvas, x, y, width, height, 0, 0, width, height);
         ctx = null;
-        return true;
-
+        return c;
     };
-
+    
+    
+    CheckerBoard.prototype.getViewBoxRect = function(scale = 1) {
+        return {
+            x: ~~(this.viewBox.scrollLeft / this.scale * scale),
+            y: ~~(this.viewBox.scrollTop / this.scale * scale),
+            width: ~~(this.width / this.scale * scale),
+            height: ~~(this.height / this.scale * scale)
+        }
+    }
+    
+    
+    CheckerBoard.prototype.cutViewBox = function() {
+        let rect = this.getViewBoxRect();
+        return this.cutToCanvas(this.canvas, rect.x, rect.y, rect.width, rect.height)
+    }
 
 
     CheckerBoard.prototype.drawLineStart = function(idx, color, cmd) {
@@ -1498,7 +1516,7 @@ window.CheckerBoard = (function() {
                 }
                 this.parentNode.appendChild(this.drawLine.selectDiv);
                 s = this.drawLine.selectDiv.style;
-                s.borderWidth = this.gW / 8 + "px";
+                s.borderWidth = this.getMarkLineWidth() + "px";
                 s.borderColor = mk.color;
                 s.width = mk.direction & 1 ? this.gW * (mk.P.length - 1) / SIN45 + "px" : this.gW * (mk.P.length - 1) + "px";
                 s.height = this.gH / 2 + "px";
@@ -1601,7 +1619,7 @@ window.CheckerBoard = (function() {
         code += "{" + this.getMoves(TYPE_WHITE) + "}";
         return code;
     };
-    
+
     CheckerBoard.prototype.getCodeURL = function() {
         let codeURL = this.getMoves();
         codeURL += "%" + this.getMoves(TYPE_BLACK);
@@ -2005,184 +2023,353 @@ window.CheckerBoard = (function() {
 
     };
 
-
-
-    // 把棋盘图片转成SVG,返回SVG代码
-    CheckerBoard.prototype.getSVG = function() {
-
-        let showNum = this.isShowNum;
-        let size = 2000 / this.canvas.width;
-        let svgText = ` <svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100％;height:100％;background-color:#ffffff" version="1.1" viewBox="0 0  ${this.canvas.width*size}  ${this.canvas.height*size}" > `;
-        // 划竖线
-        let x1;
-        let x2;
-        let y1;
-        let y2;
-        let lineWidth;
-        let canvas = this.canvas;
-        //log("CheckerBoard.getSVG");
-        for (let i = 0; i < this.SLTX; i++) {
-            lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = this.P[i].x * size;
-            y1 = this.P[i].y * size;
-            x2 = this.P[i + (this.SLTY - 1) * 15].x * size;
-            y2 = this.P[i + (this.SLTY - 1) * 15].y * size;
-            svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />`;
-        }
-        // 划横线
-        for (let j = 0; j < this.SLTY; j++) {
-            lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = this.P[j * 15].x * size;
-            y1 = this.P[j * 15].y * size;
-            x2 = this.P[j * 15 + this.SLTX - 1].x * size;
-            y2 = this.P[j * 15 + this.SLTX - 1].y * size;
-            svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />`;
-        }
-        //画星位
-        if (this.SLTX == 15 && this.SLTY == 15) {
-            let r = parseInt(canvas.width) / 1000 * 6 * size;
-            for (let i = 48; i < 225; i += 120) {
-                for (let j = 0; j < 9; j += 8) {
-                    x1 = this.P[i + j].x * size;
-                    y1 = this.P[i + j].y * size;
-                    svgText += `<circle cx="${x1}" cy="${y1}" r="${r}" stroke="black" stroke-width="0" fill="black"/> `;
+    CheckerBoard.prototype.getBoardPointInfo = function(idx, showNum) {
+        let txt = "",
+            x = this.P[idx].x,
+            y = this.P[idx].y,
+            w = Math.min(this.gW, this.gH) / 2 * 0.85,
+            fontSize = ~~(w * 1.08),
+            radius = w,
+            pointInfo;
+                    
+        let type = this.P[idx].type;
+        if (type == TYPE_NUMBER || type == TYPE_WHITE || type == TYPE_BLACK) {
+            if (showNum && this.P[idx].text) { // 显示数字
+                txt = this.P[idx].type == TYPE_NUMBER ? String(parseInt(this.P[idx].text) - this.resetNum) : this.P[idx].text;
+                txt = parseInt(txt) < 1 ? "" : txt;
+            }
+            pointInfo = {
+                circle: {
+                    x: x,
+                    y: y,
+                    radius: radius,
+                    color: "black",
+                    lineWidth: this.lineStyle == "bolder" ? w/9 : this.lineStyle == "bold" ? w/15 : 1,
+                    fill: this.P[idx].color
+                },
+                text: {
+                    txt: txt,
+                    x: x,
+                    y: y,
+                    color: this.P[idx].color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor,
+                    weight: "bolder",
+                    family: "mHeiTi",
+                    size: fontSize
                 }
             }
-            x1 = this.P[112].x * size;
-            y1 = this.P[112].y * size;
-            svgText += `<circle cx="${x1}" cy="${y1}" r="${r}" stroke="black" stroke-width="0" fill="black"/> `;
         }
+        else {
+            txt = this.P[idx].text || "";
+            radius = this.P[idx].bkColor || this.P[idx].type == TYPE_MARKFOUL ? w : txt.length > 1 ? w * 0.8 : w / 2;
+            if (txt.length == 1) { // 两位数数数字不需要放大字体
+                let code = txt.charCodeAt();// 再把一位数字排除
+                if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
+                    switch (txt) {
+                        case EMOJI_TRIANGLE_BLACK:
+                        case EMOJI_SQUARE_BLACK:
+                        case EMOJI_STAR:
+                        case EMOJI_ROUND_DOUBLE:
+                        case EMOJI_FORK:
+                            fontSize = ~~(w * 1.1);
+                            break;
+                        default: // 把数字和特殊标记排除，其它一位字符统一放大字体
+                            fontSize = ~~(w * 1.5);
+                            break;
+                    }
+                }
+            }
+            else if (txt.length == 3) {
+                fontSize = ~~(w * 0.9);
+            }
+            pointInfo = {
+                circle: {
+                    x: x,
+                    y: y,
+                    radius: radius,
+                    color: this.P[idx].bkColor || this.LbBackgroundColor,
+                    lineWidth: 0,
+                    fill: this.P[idx].bkColor || this.LbBackgroundColor
+                },
+                text: {
+                    txt: txt,
+                    x: x,
+                    y: y,
+                    color: this.P[idx].color,
+                    weight: "bolder",
+                    family: "mHeiTi",
+                    size: fontSize
+                }
+            }
+        }
+        
+        if (idx == this.MS[this.MSindex] && !this.notShowLastNum) {
+            pointInfo.text.color = this.P[idx].color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
+            if (!showNum) {
+                let w = Math.min(this.gW, this.gH) / 2 * 0.85;
+                pointInfo.text.txt = "◤";
+                pointInfo.text.x -= w * 0.15;
+                pointInfo.text.y -= w * 0.15;
+            }
+        }
+        return pointInfo;
+    }
 
-        //打印棋盘坐标
-        let m;
+    CheckerBoard.prototype.getBoardLinesInfo = function() {
+        let boardLines = [],
+            normalLineWidth = this.lineStyle == "bolder" ? Math.min(this.gW, this.gH) / 18 : this.lineStyle == "bold" ? Math.min(this.gW, this.gH) / 23 : this.width / 500,
+            boldLineWidth = normalLineWidth * 2;
+        for (let i = 0; i < this.SLTX; i++) {
+            let lineWidth = i == 0 || i == (this.SLTX - 1) ? boldLineWidth : normalLineWidth,
+                x1 = this.P[i].x,
+                y1 = this.P[i].y,
+                x2 = this.P[i + (this.SLTY - 1) * 15].x,
+                y2 = this.P[i + (this.SLTY - 1) * 15].y;
+            boardLines.push({ x1: x1, y1: y1, x2: x2, y2: y2, color: this.lineColor, lineWidth: lineWidth })
+        }
+        // 划横线
+        for (let j = 0; j < this.SLTY*15; j+=15) {
+            let lineWidth = j == 0 || j == (this.SLTY - 1)*15 ? boldLineWidth : normalLineWidth,
+                x1 = this.P[j].x,
+                y1 = this.P[j].y,
+                x2 = this.P[j + (this.SLTX - 1)].x,
+                y2 = this.P[j + (this.SLTX - 1)].y;
+            boardLines.push({ x1: x1, y1: y1, x2: x2, y2: y2, color: this.lineColor, lineWidth: lineWidth })
+        }
+        return boardLines;
+    }
+
+    CheckerBoard.prototype.getStarPointsInfo = function() {
+        let points = ALL_STAR_POINTS[this.size],
+            circles = [];
+        for (let i = points.length - 1; i >= 0; i--) {
+            circles.push({
+                x: this.P[points[i]].x,
+                y: this.P[points[i]].y,
+                radius: this.getBoardLinesInfo()[1].lineWidth*3,
+                color: this.lineColor,
+                lineWidth: 0,
+                fill: this.lineColor
+            });
+        }
+        return circles;
+    }
+
+    CheckerBoard.prototype.getCoordinateInfo = function() {
+        let textArr = [],
+            m;
         for (let i = 0; i < this.SLTX; i++) {
             for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
-
                 m = j == 0 ? -this.gH : this.gH;
-                x1 = this.P[i + j].x * size;
-                y1 = (this.P[i + j].y + m) * size;
-                svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.alpha.charAt(i)}</text>`;
-
+                textArr.push({
+                    txt: this.alpha.charAt(i),
+                    x: this.P[i + j].x,
+                    y: this.P[i + j].y + m,
+                    color: this.coordinateColor,
+                    weight: "normal",
+                    family: "mHeiTi",
+                    size: ~~(this.gW * 0.5)
+                })
             }
         }
         for (let i = 0; i < this.SLTY; i++) {
             for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
-
                 m = j == 0 ? -this.gW : this.gW;
-                x1 = (this.P[i * 15 + j].x + m) * size;
-                y1 = this.P[i * 15 + j].y * size;
-                svgText += ` <text x="${x1}" y="${y1}" font-weight="bold" font-family="黑体"  font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${String(this.SLTY-i)}</text>`;
-
+                textArr.push({
+                    txt: String(this.SLTY - i),
+                    x: this.P[i * 15 + j].x + m,
+                    y: this.P[i * 15 + j].y,
+                    color: this.coordinateColor,
+                    weight: "normal",
+                    family: "mHeiTi",
+                    size: ~~(this.gW * 0.5)
+                })
             }
         }
+        return textArr;
+    }
+    
 
-        svgText += getDrawLines.call(this, this.LINES);
-        svgText += getDrawLines.call(this, this.autoLines);
+    CheckerBoard.prototype.printLine = function({x1, y1, x2, y2, color, lineWidth}, ctx) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
 
-        // 打印棋子，和标记
-        for (let x = 0; x < this.SLTX; x++) {
-            for (let y = 0; y < this.SLTY; y++) {
-                let i = x + y * 15,
-                    w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-                if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
-                    lineWidth = w / 25;
-                    svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
-                    /*
-                    if (this.P[i].type==TYPE_NUMBER) {
-                        let color = this.P[i].color=="white" ? "black" : "white";
-                        svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${color}" fill="${color}" font-weight="bold" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
-                    }
-                    */
-                }
-                else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
-                    svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].bkColor?w*size:this.P[i].text.length>1 ? w*size : w/2*size}" stroke="${this.P[i].bkColor?this.P[i].bkColor:"White"}" stroke-width="${3*size}" fill="${this.P[i].bkColor?this.P[i].bkColor:"White"}"/> `;
-                    //svgText += ` <text x="${this.P[i].x*size}" y="${this.P[i].y*size}" stroke="${this.P[i].color}" fill="${this.P[i].color}" font-weight="bolder" font-family="黑体" font-size="${this.gW*0.5*size}" text-anchor="middle" dominant-baseline="central">${this.P[i].text}</text>`;
-                }
+    CheckerBoard.prototype.printLinePDF = function({x1, y1, x2, y2, color, lineWidth}, doc, scale) {
+        /*const middleX = (x, l, r) => (x < l ? l : x > r ? r : x) - l,
+            middleY = (y, t, b) => (y < t ? t : y > b ? b : y) - t;
+        let rect = this.getViewBoxRect(),
+            l = rect.x,
+            r = rect.x + rect.width,
+            t = rect.y,
+            b = rect.y + rect.height;
+        x1 = middleX(x1, l, r) * this.scale;
+        x2 = middleX(x2, l, r) * this.scale;
+        y1 = middleY(y1, t, b) * this.scale;
+        y2 = middleY(y2, t, b) * this.scale;*/
+        
+        doc.setLineWidth(~~(lineWidth * scale + 1));
+        doc.setDrawColor(color);
+        doc.line(~~(x1 * scale + this.pdfOriginPoint.x), ~~(y1 * scale + this.pdfOriginPoint.y), ~~(x2 * scale + this.pdfOriginPoint.x), ~~(y2 * scale + this.pdfOriginPoint.y));
+    }
 
-                let txt = this.P[i].text;
-                let color = this.P[i].color;
-                color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-                if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
-                    txt = parseInt(this.P[i].text) - this.resetNum;
-                    txt = parseInt(txt) < 1 ? "" : txt;
-                    txt = showNum ? txt : "";
-                    //color = this.P[i].color == this.wNumColor ? "black" : "white";
-                    if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
-                        color = this.notShowLastNum ? color : "#ff6666";
-                        txt = !showNum && !this.notShowLastNum ? "◤" : txt;
-                    }
-                }
+    CheckerBoard.prototype.printLineSVG = function({x1, y1, x2, y2, color, lineWidth}, scale) {
+        return `<line x1="${~~(x1*scale)}" y1="${~~(y1*scale)}" x2="${~~(x2*scale)}" y2="${~~(y2*scale)}" stroke="${color}" stroke-width="${~~(lineWidth*scale + 1)}"/>`;
+    }
 
-                let fontsize = ~~(w * 1.08);
-                x1 = this.P[i].x;
-                y1 = this.P[i].y;
-                if (txt.length == 1) { // 两位数数数字不需要放大字体
-                    let code = txt.charCodeAt();
-                    // 再把一位数字排除
-                    if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                        if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
-                            fontsize = ~~(w * 1.1);
-                        }
-                        else if (txt == "◤") {
-                            x1 -= w * 0.15;
-                            y1 -= w * 0.15;
-                        }
-                        else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-                            fontsize = ~~(w * 1.5);
-                        }
-                    }
-                }
-                else if (txt.length == 3) {
-                    fontsize = ~~(w * 0.9);
-                }
-                svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+    CheckerBoard.prototype.printCircle = function({x, y, radius, color, lineWidth, fill}, ctx) {
+        ctx.beginPath();
+        ctx.lineWidth = lineWidth;
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.strokeStyle = color;
+        lineWidth && ctx.stroke();
+    }
+
+    CheckerBoard.prototype.printCirclePDF = function({x, y, radius, color, lineWidth, fill}, doc, scale) {
+        doc.setLineWidth(~~(lineWidth * scale + 1));
+        doc.setDrawColor(color);
+        doc.setFillColor(fill);
+        doc.circle(~~(x * scale + this.pdfOriginPoint.x), ~~(y * scale + this.pdfOriginPoint.y), ~~(radius * scale), lineWidth?"DF":"F");
+    }
+
+    CheckerBoard.prototype.printCircleSVG = function({x, y, radius, color, lineWidth, fill}, scale) {
+        return `<circle cx="${~~(x*scale)}" cy="${~~(y*scale)}" r="${~~(radius*scale)}" ${lineWidth ? `stroke="${color}" stroke-width="${~~(lineWidth*scale + 1)}"` : ""} fill="${fill}"/>`;
+    }
+
+    CheckerBoard.prototype.printText = function({txt, x, y, color, weight, family, size}, ctx) {
+        ctx.font = `${weight} ${size}px ${family}`;
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(txt, x, y);
+    }
+
+    CheckerBoard.prototype.printTextPDF = function({txt, x, y, color, weight, family, size}, doc, scale) {
+        let fontName_normal = "PFSCMedium", //"arial";
+            fontName_bold = "PFSCHeavy";    //"arial";
+        txt = txt.split("").map(char => char==EMOJI_FOUL?"×":char).join("")
+        doc.setTextColor(color);
+        doc.setFont(weight == "bolder" ? fontName_bold : fontName_normal, "normal", "normal");
+        doc.setFontSize(~~(size * scale));
+        doc.text(txt, ~~(x * scale + this.pdfOriginPoint.x), ~~(y * scale + this.pdfOriginPoint.y), {baseline: "middle", align: "center"});
+    }
+
+    CheckerBoard.prototype.printTextSVG = function({txt, x, y, color, weight, family, size}, scale) {
+        family = "黑体"
+        return !txt ? "" : `<text x="${~~(x*scale)}" y="${~~(y*scale)}" stroke="${color}" fill="${color}" font-weight="${weight}" font-family="${family}" font-size="${~~(size*scale)}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
+    }
+
+    CheckerBoard.prototype.printTriangle = function({points, color}, ctx) {
+        ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+        points.map(point => ctx.lineTo(point.x, point.y));
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    CheckerBoard.prototype.printTrianglePDF = function({points, color}, doc, scale) {
+        let x1 = ~~(points[0].x * scale + this.pdfOriginPoint.x),
+            y1 = ~~(points[0].y * scale + this.pdfOriginPoint.y),
+            x2 = ~~(points[1].x * scale + this.pdfOriginPoint.x),
+            y2 = ~~(points[1].y * scale + this.pdfOriginPoint.y),
+            x3 = ~~(points[2].x * scale + this.pdfOriginPoint.x),
+            y3 = ~~(points[2].y * scale + this.pdfOriginPoint.y);
+        doc.setFillColor(color);
+        doc.triangle(x1, y1, x2, y2, x3, y3, 'F');
+    }
+
+    CheckerBoard.prototype.printTriangleSVG = function({points, color}, scale) {
+        let pointStr = points.reduce((pre, cur) => `${pre}${~~(cur.x*scale)}, ${~~(cur.y*scale)} `, "")
+        return `<polygon points="${pointStr}" style="fill:${color}"/>`;
+    }
+    
+    CheckerBoard.prototype.printBoardPointsPDF = function(doc, scale) {
+        for (let i = 0; i < 225; i++) {
+            if (this.P[i].type != TYPE_EMPTY) {
+                let pointInfo = this.getBoardPointInfo(i, this.isShowNum);
+                this.printCirclePDF(pointInfo.circle, doc, scale);
+                this.printTextPDF(pointInfo.text, doc, scale);
             }
         }
+    }
 
-        svgText += getDrawArrow.call(this, this.ARROWS);
-
-        svgText += "</svg>";
+    CheckerBoard.prototype.printBoardPointsSVG = function(scale) {
+        let svgText = "";
+        for (let i = 0; i < 225; i++) {
+            if (this.P[i].type != TYPE_EMPTY) {
+                let pointInfo = this.getBoardPointInfo(i, this.isShowNum);
+                svgText += this.printCircleSVG(pointInfo.circle, scale);
+                svgText += this.printTextSVG(pointInfo.text, scale);
+            }
+        }
         return svgText;
-
-        function getDrawLines(lines) {
-            if (!lines) return;
-            let x1, x2, y1, y2;
-            let rtTxt = "";
-            let lineWidth = this.gW / 8 * size;
-            for (let i = 0; i < lines.length; i++) {
-                let points = this.getMarkLinePoints(lines[i]);
-                x1 = points.line[0].x * size;
-                x2 = points.line[1].x * size;
-                y1 = points.line[0].y * size;
-                y2 = points.line[1].y * size;
-                rtTxt += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lines[i].color}" stroke-width="${lineWidth}" />`;
-                //` <polygon points="${points.line[0].x},${points.line[0].y} ${points.line[1].x},${points.line[1].y}" style="fill:${lines[i].color}"/>`;
-            }
-            return rtTxt;
+    }
+    
+    CheckerBoard.prototype.printMarkLinesPDF = function(doc, scale, lines = this.LINES) {
+        let x1, x2, y1, y2;
+        for (let i = 0; i < lines.length; i++) {
+            let points = this.getMarkLinePoints(lines[i]);
+            x1 = points.line[0].x;
+            x2 = points.line[1].x;
+            y1 = points.line[0].y;
+            y2 = points.line[1].y;
+            this.printLinePDF({x1: x1, y1: y1, x2: x2, y2: y2, color: lines[i].color, lineWidth: ~~this.getMarkLineWidth()}, doc, scale);
         }
-
-        function getDrawArrow(arrows) {
-            if (!arrows) return;
-            let x1, x2, x3, y1, y2, y3;
-            let rtTxt = "";
-            let lineWidth = this.gW / 8 * size;
-            for (let i = 0; i < arrows.length; i++) {
-                let points = this.getMarkArrowPoints(arrows[i]);
-                x1 = points.line[0].x * size;
-                x2 = points.line[1].x * size;
-                y1 = points.line[0].y * size;
-                y2 = points.line[1].y * size;
-                rtTxt += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${arrows[i].color}" stroke-width="${lineWidth}" />`;
-                x1 = points.arrow[0].x * size;
-                x2 = points.arrow[1].x * size;
-                x3 = points.arrow[2].x * size;
-                y1 = points.arrow[0].y * size;
-                y2 = points.arrow[1].y * size;
-                y3 = points.arrow[2].y * size;
-                rtTxt += ` <polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3}" style="fill:${arrows[i].color}"/>`;
-            }
-            return rtTxt;
+    }
+    
+    CheckerBoard.prototype.printMarkLinesSVG = function(scale, lines = this.LINES) {
+        let x1, x2, y1, y2, svgText = "";
+        for (let i = 0; i < lines.length; i++) {
+            let points = this.getMarkLinePoints(lines[i]);
+            x1 = points.line[0].x;
+            x2 = points.line[1].x;
+            y1 = points.line[0].y;
+            y2 = points.line[1].y;
+            svgText += this.printLineSVG({x1: x1, y1: y1, x2: x2, y2: y2, color: lines[i].color, lineWidth: ~~this.getMarkLineWidth()}, scale);
         }
+        return svgText;
+    }
+    
+    CheckerBoard.prototype.printMarkArrowsPDF = function(doc, scale, arrows = this.ARROWS) {
+        let x1, x2, y1, y2;
+        for (let i = 0; i < arrows.length; i++) {
+            let points = this.getMarkArrowPoints(arrows[i]);
+            x1 = points.line[0].x;
+            x2 = points.line[1].x;
+            y1 = points.line[0].y;
+            y2 = points.line[1].y;
+            this.printLinePDF({x1: x1, y1: y1, x2: x2, y2: y2, color: arrows[i].color, lineWidth:~~this.getMarkLineWidth()}, doc, scale);
+            this.printTrianglePDF({points: points.arrow, color: arrows[i].color}, doc, scale);
+        }
+    }
+
+    CheckerBoard.prototype.printMarkArrowsSVG = function(scale, arrows = this.ARROWS) {
+        let x1, x2, y1, y2, svgText = "";
+        for (let i = 0; i < arrows.length; i++) {
+            let points = this.getMarkArrowPoints(arrows[i]);
+            x1 = points.line[0].x;
+            x2 = points.line[1].x;
+            y1 = points.line[0].y;
+            y2 = points.line[1].y;
+            svgText += this.printLineSVG({x1: x1, y1: y1, x2: x2, y2: y2, color: arrows[i].color, lineWidth:~~this.getMarkLineWidth()}, scale);
+            svgText += this.printTriangleSVG({points: points.arrow, color: arrows[i].color}, scale);
+        }
+        return svgText;
+    }
+
+    // 把棋盘图片转成SVG,返回SVG代码
+    CheckerBoard.prototype.getSVG = function() {
+        let svgSize = 800,
+            scale = svgSize / this.canvas.width,
+            viewBox = this.getViewBoxRect(scale),
+            svgText = `<svg role="img" xmlns="http://www.w3.org/2000/svg" style ="width:100%;height:100%;background-color:#ffffff" viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}" version="1.1"><clipPath id="clip"><rect x="${viewBox.x}" y="${viewBox.y}" width="${viewBox.width}" height="${viewBox.height}" /></clipPath><g style="clip-path: url(#clip);">`;
+        svgText += this.refreshCheckerBoardSVG(scale);
+        svgText += "</g></svg>";
+        return svgText;
     };
 
 
@@ -2390,7 +2577,6 @@ window.CheckerBoard = (function() {
 
 
     CheckerBoard.prototype.getMarkArrowPoints = function(markArrow, idx, cleArrow) {
-
         const SIN45 = 0.707105;
         let x = this.P[markArrow.P[0]].x;
         let y = this.P[markArrow.P[0]].y;
@@ -2638,33 +2824,38 @@ window.CheckerBoard = (function() {
     }
 
 
+    CheckerBoard.prototype.getMarkLineWidth = function() {
+        return Math.min(this.gW, this.gH) / 8;
+    }
 
-    CheckerBoard.prototype.printMarkArrow = function(markArrow, idx, cleArrow) {
-
+    //print and clear
+    CheckerBoard.prototype._printMarkArrow = function(markArrow, idx, cleArrow) {
         let arrowDrawPoints = this.getMarkArrowPoints(markArrow, idx, cleArrow);
         let ctx = this.canvas.getContext("2d");
-        ctx.strokeStyle = markArrow.color;
-        ctx.lineWidth = this.gW / 8;
-        ctx.lineWidth *= cleArrow ? 1.6 : 1;
-        ctx.beginPath();
-        ctx.moveTo(arrowDrawPoints.line[0].x, arrowDrawPoints.line[0].y);
-        ctx.lineTo(arrowDrawPoints.line[1].x, arrowDrawPoints.line[1].y);
-        ctx.stroke();
+        this.printLine({
+            x1: arrowDrawPoints.line[0].x,
+            y1: arrowDrawPoints.line[0].y,
+            x2: arrowDrawPoints.line[1].x,
+            y2: arrowDrawPoints.line[1].y,
+            color: markArrow.color,
+            lineWidth: this.getMarkLineWidth()*(cleArrow ? 1.6 : 1)
+        }, ctx);
         if (arrowDrawPoints.arrow.length) {
-            ctx.moveTo(arrowDrawPoints.arrow[0].x, arrowDrawPoints.arrow[0].y);
-            ctx.lineTo(arrowDrawPoints.arrow[1].x, arrowDrawPoints.arrow[1].y);
-            ctx.lineTo(arrowDrawPoints.arrow[2].x, arrowDrawPoints.arrow[2].y);
-            ctx.lineTo(arrowDrawPoints.arrow[0].x, arrowDrawPoints.arrow[0].y);
-            ctx.fillStyle = ctx.strokeStyle;
-            ctx.fill();
+            this.printTriangle({
+                points: arrowDrawPoints.arrow,
+                color: markArrow.color
+            }, ctx)
         }
-        ctx.strokeStyle = "black";
+        ctx = null;
+    }
+
+    //print
+    CheckerBoard.prototype.printMarkArrow = function(markArrow, idx) {
+        this._printMarkArrow(markArrow, idx);
     }
 
 
-
-    CheckerBoard.prototype.getMarkLinePoints = function(markLine, idx, cleLine) {
-
+    CheckerBoard.prototype.getMarkLinePoints = function(markLine, idx) {
         let points = {
             line: [],
         }
@@ -2792,103 +2983,55 @@ window.CheckerBoard = (function() {
 
     }
 
-
-
-    CheckerBoard.prototype.printMarkLine = function(markLine, idx, cleLine) {
-
-        let lineDrawPoints = this.getMarkLinePoints(markLine, idx, cleLine);
+    //print and clear
+    CheckerBoard.prototype._printMarkLine = function(markLine, idx, cleLine) {
+        let lineDrawPoints = this.getMarkLinePoints(markLine, idx);
         let ctx = this.canvas.getContext("2d");
-        ctx.strokeStyle = markLine.color;
-        ctx.lineWidth = this.gW / 8;
-        ctx.lineWidth *= cleLine ? 1.6 : 1;
-        ctx.beginPath();
-
-        ctx.moveTo(lineDrawPoints.line[0].x, lineDrawPoints.line[0].y);
-        ctx.lineTo(lineDrawPoints.line[1].x, lineDrawPoints.line[1].y);
-        ctx.stroke();
-
-        ctx.strokeStyle = "black";
+        this.printLine({
+            x1: lineDrawPoints.line[0].x,
+            y1: lineDrawPoints.line[0].y,
+            x2: lineDrawPoints.line[1].x,
+            y2: lineDrawPoints.line[1].y,
+            color: markLine.color,
+            lineWidth: this.getMarkLineWidth()*(cleLine ? 1.6 : 1)
+        }, ctx);
+        ctx = null;
+    }
+    
+    //print
+    CheckerBoard.prototype.printMarkLine = function(markLine, idx) {
+        function refreshIdx(idx) {
+            let txt = "";
+            if (this.P[idx].text) txt = this.P[idx].text;
+            this._printPoint(idx, this.isShowNum);
+            this.refreshMarkArrow(idx);
+        }
+        
+        this._printMarkLine(markLine, idx);
         if (idx == undefined || idx == null) {
-            if (cleLine) return;
             for (let i = markLine.P.length - 1; i >= 0; i--) {
                 idx = markLine.P[i];
                 refreshIdx.call(this, idx);
             }
         }
         else {
-            if (cleLine) return;
             refreshIdx.call(this, idx);
         }
-
-        function refreshIdx(idx) {
-            let txt = "";
-            if (this.P[idx].text) txt = this.P[idx].text;
-            this.printPointB(idx, this.isShowNum);
-            this.refreshMarkArrow(idx);
-        }
-
     }
-
 
 
     //  用虚线表示棋子的位置
     CheckerBoard.prototype.printBorder = function() {
-
         for (let y = 0; y < this.SLTY; y++) {
             for (let x = 0; x < this.SLTX; x++) {
                 let i = x + y * 15;
                 if (this.P[i] != null) this.P[i].printBorder(this.gW, this.gH);
             }
         }
-
     };
-
-
-
-    // 打印棋盘坐标
-    CheckerBoard.prototype.printCoordinate = function(t, r, d, l) {
-
-        t = t == null ? true : Boolean(t);
-        r = r == null ? true : Boolean(r);
-        d = d == null ? true : Boolean(d);
-        l = l == null ? true : Boolean(l);
-        let p = tempp;
-        let m;
-        let ctx = this.bakCanvas.getContext("2d");
-        ctx.fillStyle = this.coordinateColor;
-        ctx.font = "normal  " + ~~(this.gW * 0.5) + "px mHeiTi";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        for (let i = 0; i < this.SLTX; i++) {
-            for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
-
-                m = j == 0 ? -this.gH : this.gH;
-                p.setxy(this.P[i + j].x, this.P[i + j].y + m);
-
-                ctx.fillText(this.alpha.charAt(i), p.x, p.y);
-
-
-            }
-        }
-        for (let i = 0; i < this.SLTY; i++) {
-            for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
-
-                m = j == 0 ? -this.gW : this.gW;
-                p.setxy(this.P[i * 15 + j].x + m, this.P[i * 15 + j].y);
-
-                ctx.fillText(String(this.SLTY - i), p.x, p.y);
-
-
-            }
-        }
-        ctx = null;
-    };
-
-
+    
 
     CheckerBoard.prototype.printEmptyCBoard = function() {
-        this.viewBox.style.width = this.width + "px";
-        this.viewBox.style.height = this.height + "px";
         let canvas = this.bakCanvas; // 准备在后台画棋盘
         // 画图之前，设置画布大小
         canvas.width = this.width;
@@ -2896,88 +3039,53 @@ window.CheckerBoard = (function() {
         let ctx = canvas.getContext("2d");
         ctx.fillStyle = this.backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = this.lineColor;
-        let p = tempp;
-        // 划竖线
-        for (let i = 0; i < this.SLTX; i++) {
-            ctx.lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
-            p.setxy(this.P[i].x, this.P[i].y);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[i + (this.SLTY - 1) * 15].x, this.P[i + (this.SLTY - 1) * 15].y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-        // 划横线
-        for (let j = 0; j < this.SLTY; j++) {
-            ctx.lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 : parseInt(canvas.width) / 1000 * 2;
-            p.setxy(this.P[j * 15].x, this.P[j * 15].y);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            p.setxy(this.P[j * 15 + this.SLTX - 1].x, this.P[j * 15 + this.SLTX - 1].y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-        ctx.stroke();
-        //画星位
-        let points = [];
-        switch (this.size) {
-            case 15:
-                points = [112, 48, 56, 168, 176];
-                break;
-            case 14:
-                points = [96, 97, 111, 112, 32, 41, 167, 176];
-                break;
-            case 13:
-                points = [96, 32, 40, 152, 160];
-                break;
-            case 12:
-                points = [80, 81, 95, 96, 16, 25, 151, 160];
-                break;
-            case 11:
-                points = [80, 16, 24, 136, 144];
-                break;
-            case 10:
-                points = [64, 65, 79, 80];
-                break;
-            case 9:
-                points = [64];
-                break;
-            case 8:
-                points = [48, 49, 63, 64];
-                break;
-            case 7:
-                points = [48];
-                break;
-        }
-        for (let i = points.length - 1; i >= 0; i--) {
-            p.setxy(this.P[points[i]].x, this.P[points[i]].y);
-            ctx.beginPath();
-            ctx.fillStyle = this.lineColor;
-            ctx.arc(p.x, p.y, parseInt(canvas.width) / 1000 * 6, 0, 2 * Math.PI);
-            ctx.fill();
-        }
+        
+        let boardLinesInfo = this.getBoardLinesInfo();
+        boardLinesInfo.map(lineInfo => this.printLine(lineInfo, ctx))
+        
+        let starPointsInfo = this.getStarPointsInfo();
+        starPointsInfo.map(starPointInfo => this.printCircle(starPointInfo, ctx))
 
-        this.printCoordinate(); // 打印棋盘坐标=
-
-        //把后台的图片显示出来
-
+        let coordinateTypeInfo = this.getCoordinateInfo();
+        coordinateTypeInfo.map(textInfo => this.printText(textInfo, ctx))
+        
         let canvas2 = this.canvas;
-        ctx = null;
         ctx = canvas2.getContext("2d");
         canvas2.width = canvas.width;
         canvas2.height = canvas.height;
-        //canvas2.style.width = canvas.width*this.scale + "px";
-        //canvas2.style.height = canvas.height*this.scal1 + "px";
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-
+        ctx = null;
     };
 
 
+    CheckerBoard.prototype.printEmptyCBoardPDF = function(doc, scale) {
+        let boardLinesInfo = this.getBoardLinesInfo();
+        boardLinesInfo.map(lineInfo => this.printLinePDF(lineInfo, doc, scale))
+        
+        let starPointsInfo = this.getStarPointsInfo();
+        starPointsInfo.map(starPointInfo => this.printCirclePDF(starPointInfo, doc, scale))
 
+        let coordinateTypeInfo = this.getCoordinateInfo();
+        coordinateTypeInfo.map(textInfo => this.printTextPDF(textInfo, doc, scale))
+    };
+    
+    
+    CheckerBoard.prototype.printEmptyCBoardSVG = function(scale) {
+        let svgText = "";
+        let boardLinesInfo = this.getBoardLinesInfo();
+        svgText += boardLinesInfo.map(lineInfo => this.printLineSVG(lineInfo, scale)).join("")
+        
+        let starPointsInfo = this.getStarPointsInfo();
+        svgText += starPointsInfo.map(starPointInfo => this.printCircleSVG(starPointInfo, scale)).join("")
+
+        let coordinateTypeInfo = this.getCoordinateInfo();
+        svgText += coordinateTypeInfo.map(textInfo => this.printTextSVG(textInfo, scale)).join("")
+        return svgText;
+    };
+    
+    
     // 画空棋盘
-    CheckerBoard.prototype.printCheckerBoard = function() {
-
+    CheckerBoard.prototype.resetCBoardCoordinate = function() {
         this.SLTX = this.size;
         this.SLTY = this.SLTX;
         let padding = this.coordinateType == 0 ? ~~(this.width / this.SLTX / 2) :
@@ -3019,7 +3127,6 @@ window.CheckerBoard = (function() {
         }
 
         this.resetP(this.XL, this.XR, this.YT, this.YB);
-        this.printEmptyCBoard();
     };
 
 
@@ -3068,347 +3175,22 @@ window.CheckerBoard = (function() {
     };
 
 
-
     CheckerBoard.prototype.printNb = function(idx, showNum) {
-        let color = this.P[idx].color;
-        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        let ctx = this.canvas.getContext("2d");
-        let p = { x: this.P[idx].x, y: this.P[idx].y };
-        // 画棋子
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "black";
-        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-        ctx.fillStyle = color
-        ctx.fill();
-        ctx.stroke();
-
-        // 设置字体
-        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-        // 由棋子颜色决定字体颜色
-        ctx.fillStyle = color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor;
-        if (showNum && this.P[idx].text) { // 显示数字
-            let txt = this.P[idx].type == TYPE_NUMBER ? parseInt(this.P[idx].text) - this.resetNum : this.P[idx].text;
-            txt = parseInt(txt) < 1 ? "" : txt;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            (0 <= idx && idx <= 224) && ctx.fillText(txt, p.x, p.y);
-        }
+        let ctx = this.canvas.getContext("2d"),
+            pointInfo = this.getBoardPointInfo(idx, showNum);
+        this.printCircle(pointInfo.circle, ctx);
+        this.printText(pointInfo.text, ctx);
         ctx = null;
     }
-
-
-
-    CheckerBoard.prototype.printLastNb = function(idx, showNum) {
-        let color = this.P[idx].color;
-        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        let ctx = this.canvas.getContext("2d");
-        let p = { x: this.P[idx].x, y: this.P[idx].y };
-        // 画棋子
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "black";
-        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-        ctx.fillStyle = color
-        ctx.fill();
-        ctx.stroke();
-
-        // 设置字体
-        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-        // 由棋子颜色决定字体颜色
-        ctx.fillStyle = this.notShowLastNum ?
-            color == this.wNumColor ? this.wNumFontColor : this.bNumFontColor :
-            color == this.wNumColor ? this.wLastNumColor : this.bLastNumColor;
-        if (showNum && this.P[idx].text) { // 显示数字
-            // 判断最后一手是否高亮显示
-            let txt = parseInt(this.P[idx].text) - this.resetNum;
-            txt = parseInt(txt) < 1 ? "" : txt;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            (0 <= idx && idx <= 224) && ctx.fillText(txt, p.x, p.y);
-
-        }
-        else { // 隐藏数字
-            // 判断最后一手是否高亮显示
-            if (!this.notShowLastNum) {
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                (0 <= idx && idx <= 224) && ctx.fillText("◤", p.x - w * 0.15, p.y - w * 0.15);
-            }
-        }
-        ctx = null;
-    }
-
 
 
     CheckerBoard.prototype.printLb = function(idx) {
-
-        let w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-        let ctx = this.canvas.getContext("2d");
-        let p = { x: this.P[idx].x, y: this.P[idx].y };
-        let text = this.P[idx].text || "";
-        //打印标签
-        ctx.beginPath();
-        ctx.fillStyle = this.P[idx].bkColor || this.LbBackgroundColor;
-        if (this.P[idx].bkColor) {
-            (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, w, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-
-        (0 <= idx && idx <= 224) && ctx.arc(p.x, p.y, this.P[idx].type == TYPE_MARKFOUL ? w : text.length > 1 ? w * 0.8 : w / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = this.P[idx].color;
-
-        ctx.font = "bolder " + ~~(w * 1.08) + "px  mHeiTi";
-        if (text.length == 1) { // 两位数数数字不需要放大字体
-            let code = text.charCodeAt();
-            // 再把一位数字排除
-            if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                switch (text) {
-                    case EMOJI_TRIANGLE_BLACK:
-                    case EMOJI_SQUARE_BLACK:
-                    case EMOJI_STAR:
-                    case EMOJI_ROUND_DOUBLE:
-                    case EMOJI_FORK:
-                        ctx.font = "bolder " + ~~(w * 1.1) + "px  mHeiTi";
-                        break;
-                    default: // 把数字和特殊标记排除，其它一位字符统一放大字体
-                        ctx.font = "bolder " + ~~(w * 1.5) + "px  mHeiTi";
-                        break;
-                }
-            }
-        }
-        else if (text.length == 3) {
-            ctx.font = "bolder " + ~~(w * 0.9) + "px  mHeiTi";
-        }
-
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        (0 <= idx && idx <= 224) && ctx.fillText(text, p.x, p.y);
-        ctx = null;
+        this.printNb(idx);
     }
 
 
-    // 在PDF文档画棋盘
-    CheckerBoard.prototype.printPDF = function(doc, fontName_normal, fontName_bold) {
-
-        fontName_normal = fontName_normal || "arial";
-        fontName_bold = fontName_bold || "arial";
-        let showNum = this.isShowNum;
-        let left = 594 * 0.0252525;
-        let top = (840 - (594 - left * 2)) / 2;
-        let size = (594 - left * 2) / this.canvas.width;
-
-        // 划竖线
-        let x1;
-        let x2;
-        let y1;
-        let y2;
-        let lineWidth;
-        let canvas = this.canvas;
-        for (let i = 0; i < this.SLTX; i++) {
-            lineWidth = (i == 0 || i == (this.SLTX - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = left + this.P[i].x * size;
-            y1 = top + this.P[i].y * size;
-            x2 = left + this.P[i + (this.SLTY - 1) * 15].x * size;
-            y2 = top + this.P[i + (this.SLTY - 1) * 15].y * size;
-
-            doc.setLineWidth(lineWidth);
-            doc.setDrawColor(0, 0, 0);
-            doc.line(x1, y1, x2, y2);
-            //svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />` ;
-        }
-        // 划横线
-        for (let j = 0; j < this.SLTY; j++) {
-            lineWidth = (j == 0 || j == (this.SLTY - 1)) ? parseInt(canvas.width) * 4 / 1000 * size : parseInt(canvas.width) / 1000 * 2 * size;
-            x1 = left + this.P[j * 15].x * size;
-            y1 = top + this.P[j * 15].y * size;
-            x2 = left + this.P[j * 15 + this.SLTX - 1].x * size;
-            y2 = top + this.P[j * 15 + this.SLTX - 1].y * size;
-
-            doc.setLineWidth(lineWidth);
-            doc.setDrawColor(0, 0, 0);
-            doc.line(x1, y1, x2, y2);
-            //svgText += ` <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="${lineWidth}" />` ;
-        }
-        //画星位
-        if (this.SLTX == 15 && this.SLTY == 15) {
-            let r = parseInt(canvas.width) / 1000 * 6 * size;
-            for (let i = 48; i < 225; i += 120) {
-                for (let j = 0; j < 9; j += 8) {
-                    x1 = left + this.P[i + j].x * size;
-                    y1 = top + this.P[i + j].y * size;
-                    doc.setFillColor(0, 0, 0);
-                    doc.circle(x1, y1, r, "F");
-                    //svgText += `<circle cx="${x1}" cy="${y1}" r="${r}" stroke="black" stroke-width="0" fill="black"/> `;
-                }
-            }
-            x1 = left + this.P[112].x * size;
-            y1 = top + this.P[112].y * size;
-            doc.setFillColor(0, 0, 0);
-            doc.circle(x1, y1, r, "F");
-            //	svgText += `<circle cx="${x1}" cy="${y1}" r="${r}" stroke="black" stroke-width="0" fill="black"/> `;
-        }
-
-        //打印棋盘坐标
-        let m;
-        for (let i = 0; i < this.SLTX; i++) {
-            for (let j = 0; j <= 15 * (this.SLTY - 1); j += 15 * (this.SLTY - 1)) {
-
-                m = j == 0 ? -this.gH : this.gH;
-                x1 = left + this.P[i + j].x * size;
-                y1 = top + (this.P[i + j].y + m) * size;
-                y1 += (this.gW * 0.5 * 0.35) * size;
-                doc.setFont(fontName_normal, "normal", "normal");
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(~~(this.gW * 0.5 * size));
-                doc.text(this.alpha.charAt(i), x1, y1, "center");
-
-            }
-        }
-        for (let i = 0; i < this.SLTY; i++) {
-            for (let j = 0; j <= this.SLTX - 1; j += this.SLTX - 1) {
-
-                m = j == 0 ? -this.gW : this.gW;
-                x1 = left + (this.P[i * 15 + j].x + m) * size;
-                y1 = top + this.P[i * 15 + j].y * size;
-                y1 += (this.gW * 0.5 * 0.35) * size;
-                doc.setFont(fontName_normal, "normal", "normal");
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(~~(this.gW * 0.5 * size));
-                doc.text(String(this.SLTY - i), x1, y1, "center");
-
-            }
-        }
-
-        // 打印棋子，和标记
-        for (let y = 0; y < this.SLTY; y++) {
-            for (let x = 0; x < this.SLTX; x++) {
-                let i = x + y * 15,
-                    w = this.gW < this.gH ? this.gW / 2 * 0.85 : this.gH / 2 * 0.85;
-                if (this.P[i].type == TYPE_NUMBER || this.P[i].type == TYPE_WHITE || this.P[i].type == TYPE_BLACK) {
-                    lineWidth = w / 25;
-                    doc.setLineWidth(lineWidth * size);
-                    doc.setDrawColor(0, 0, 0);
-                    if (this.P[i].color == this.wNumColor) {
-                        doc.setFillColor(255, 255, 255);
-                    }
-                    else {
-                        doc.setFillColor(0, 0, 0);
-                    }
-                    x1 = left + this.P[i].x * size;
-                    y1 = top + this.P[i].y * size;
-                    doc.circle(x1, y1, w * size, "DF");
-                    //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${w*size}" stroke="black" stroke-width="${lineWidth*size}" fill="${this.P[i].color}"/> `;
-                }
-                else if (this.P[i].type == TYPE_MARK || this.P[i].type == TYPE_MOVE) {
-                    doc.setLineWidth(3 * size);
-                    if (this.P[i].bkColor) {
-                        doc.setDrawColor(187, 187, 187);
-                        doc.setFillColor(187, 187, 187);
-                    }
-                    else {
-                        doc.setDrawColor(255, 255, 255);
-                        doc.setFillColor(255, 255, 255);
-                    }
-                    x1 = left + this.P[i].x * size;
-                    y1 = top + this.P[i].y * size;
-                    doc.circle(x1, y1, this.P[i].bkColor ? w * size : this.P[i].text.length > 1 ? w * size : w / 2 * size, "FD");
-                    //svgText += ` <circle cx="${this.P[i].x*size}" cy="${this.P[i].y*size}" r="${this.P[i].text.length>1 ? w*size : w/2*size}" stroke="White" stroke-width="${3*size}" fill="White"/> `;
-                }
-
-                let txt = this.P[i].text;
-                let color = this.P[i].color;
-                color = color == this.wNumColor ? "black" : color == this.bNumColor ? "white" : color;
-                if (this.P[i].type == TYPE_NUMBER) { //控制从第几手显示❶
-                    txt = parseInt(this.P[i].text) - this.resetNum;
-                    txt = parseInt(txt) < 1 ? "" : txt;
-                    txt = showNum ? txt : "";
-                    //color = this.P[i].color == this.wNumColor ? "black" : "white";
-                    if (this.MSindex >= 0 && this.MS[this.MSindex] == i) {
-                        color = this.notShowLastNum ? color : "#ff6666";
-                        txt = !showNum && !this.notShowLastNum ? "◤" : txt;
-                    }
-                }
-
-                let fontsize = w * 1.08;
-                x1 = this.P[i].x;
-                y1 = this.P[i].y;
-                if (txt.length == 1) { // 两位数数数字不需要放大字体
-                    let code = txt.charCodeAt();
-                    // 再把一位数字排除
-                    if (code < "0".charCodeAt() || code > "9".charCodeAt()) {
-                        if (txt == EMOJI_TRIANGLE_BLACK || txt == EMOJI_SQUARE_BLACK || txt == EMOJI_STAR || txt == EMOJI_ROUND_DOUBLE || txt == EMOJI_FORK) {
-                            fontsize = w * 1.1;
-                        }
-                        else if (txt == "◤") {
-                            x1 -= w * 0.15;
-                            y1 -= w * 0.15;
-                        }
-                        else { // 把数字和特殊标记排除，其它一位字符统一放大字体
-                            fontsize = w * 1.5;
-                        }
-                    }
-                }
-                else if (txt.length == 3) {
-                    fontsize = ~~(w * 0.9);
-                }
-
-                switch (String(color)) {
-                    case "white":
-                        doc.setTextColor(255, 255, 255);
-                        break;
-                    case "black":
-                        doc.setTextColor(0, 0, 0);
-                        break;
-                    case "red":
-                        doc.setTextColor(255, 0, 0);
-                        break;
-                    case "green":
-                        doc.setTextColor(0, 180, 0);
-                        break;
-                    case "#ff6666":
-                        doc.setTextColor(255, 0, 0);
-                        break;
-                    case "#9e9999":
-                        doc.setTextColor(157, 153, 153);
-                        break;
-                    case "#3333ff":
-                        doc.setTextColor(0, 0, 255);
-                        break;
-                    case "blue":
-                        doc.setTextColor(0, 0, 255);
-                        break;
-                    case "#000000":
-                        doc.setTextColor(0, 0, 0);
-                        break;
-                    case "#ffffff":
-                        doc.setTextColor(255, 255, 255);
-                        break;
-                    case "#bbbbbb":
-                        doc.setTextColor(187, 187, 187);
-                        break;
-                }
-                if (txt == EMOJI_FOUL) { // 不支持的字符
-                    txt = "×";
-                    doc.setTextColor(255, 0, 0);
-                }
-                doc.setFont(fontName_bold, "normal", "normal");
-                doc.setFontSize(~~(fontsize * size));
-                x1 = left + x1 * size;
-                y1 = top + y1 * size;
-                y1 += (fontsize / 2 - fontsize * 0.15) * size; // 垂直居中
-                doc.text(String(txt), x1, y1, "center");
-                //svgText += ` <text x="${x1*size}" y="${y1*size}" stroke="${color}" fill="${color}" font-weight="bolder" font-family="黑体" font-size="${fontsize*size}" text-anchor="middle" dominant-baseline="central">${txt}</text>`;
-            }
-        }
-
-    };
-
-
-
-    // 在棋盘上打印一个点
-    CheckerBoard.prototype.printPoint = function(idx, showNum, refresh) {
+    CheckerBoard.prototype._printPoint = function(idx, showNum) {
+        if (idx < 0 || idx > 224 || this.P[idx].type == TYPE_EMPTY) return;
         let type = this.P[idx].type;
         if (type == TYPE_NUMBER || type == TYPE_WHITE || type == TYPE_BLACK) {
             this.printNb(idx, showNum);
@@ -3416,44 +3198,29 @@ window.CheckerBoard = (function() {
         else { //  打印标签
             this.printLb(idx);
         }
-
-        //log(`text=${text}, notShowLastNum=${notShowLastNum}`)
-        if (type == TYPE_NUMBER && !(idx != this.MS[this.MSindex] || this.notShowLastNum)) {
-            this.showLastNb(showNum);
-        }
-        if (appData.renjuSave && !refresh) appData.renjuSave(this);
-        return true;
-    };
-
-
-
-    CheckerBoard.prototype.printPointB = function(idx, showNum) {
-
-        if (idx < 0 || (idx > this.P.length - 1) || this.P[idx].type == TYPE_EMPTY) return;
-        if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) { //控制从第几手显示❶
-            this.printPoint(idx, showNum);
-        }
-        else { //this.P[idx].type == TYPE_MARK;
-            this.printPoint(idx);
-        }
-
     }
 
+
+    // 在棋盘上打印一个点
+    CheckerBoard.prototype.printPoint = function(idx, showNum) {
+        if (idx < 0 || idx > 224 || this.P[idx].type == TYPE_EMPTY) return;
+        let type = this.P[idx].type;
+        this._printPoint(idx, showNum);
+        //log(`text=${text}, notShowLastNum=${notShowLastNum}`)
+        if (type == TYPE_NUMBER && idx == this.MS[this.MSindex] && !this.notShowLastNum) {
+            this.showLastNb(showNum);
+        }
+        if (appData.renjuSave) appData.renjuSave(this);
+    };
 
 
     // 在棋盘上打印当前正在计算的点
     CheckerBoard.prototype.printSearchPoint = function(num, idx, text, color) {
-
         let size;
         let temp;
         num = num ? parseInt(num) : 0;
         //清除旧标记
         if (this.searchIdx[num] > -1 && this.searchIdx[num] != idx) {
-            //this.P[this.searchIdx[num]].cle();
-            //this.clePointB(this.searchIdx[num]);
-            //this.refreshMarkLine(this.searchIdx[num]);
-            //this.refreshMarkArrow(this.searchIdx[num]);
-            //this.searchPoints[num].innerHTML = "";
             this.searchPoints[num].setAttribute("class", "");
             if (this.searchPoints[num] && this.searchPoints[num].parentNode) this.searchPoints[num].parentNode.removeChild(this.searchPoints[num])
         }
@@ -3481,44 +3248,27 @@ window.CheckerBoard = (function() {
             this.parentNode.appendChild(this.searchPoints[num]);
             this.searchPoints[num].setAttribute("class", "startPoint");
             this.cleLb(idx);
-            //this.P[idx].color = color;
-            //this.P[idx].bkColor = null;
-            //this.P[idx].type = TYPE_MARK;
-            //this.P[idx].text = text;
-            //this.refreshMarkLine(idx);
-            //this.printPointB(idx);
-            //this.refreshMarkArrow(idx);
         }
-
     };
 
 
-
-    CheckerBoard.prototype.refreshCheckerBoard = function() {
-
-        this.printEmptyCBoard();
-
-        for (let idx = this.P.length - 1; idx >= 0; idx--) {
-            if (this.P[idx].type == TYPE_NUMBER || this.P[idx].type == TYPE_WHITE || this.P[idx].type == TYPE_BLACK) {
-                this.printPoint(idx, this.isShowNum);
-                //log(this.P[idx].type)
-            }
-            else if (this.P[idx].type == TYPE_MARK || this.P[idx].type == TYPE_MOVE) {
-                this.printPoint(idx);
-                //log(this.P[idx].type)
+    CheckerBoard.prototype.refreshBoardPoint = function(idx) {
+        let ctx = this.canvas.getContext("2d"),
+            st = 0,
+            end = 225;
+        typeof idx == "number" && 0 <= idx && idx <= 224 && (st = idx, end = idx + 1)
+        for (let i = st; i < end; i++) {
+            if (this.P[i].type != TYPE_EMPTY) {
+                let pointInfo = this.getBoardPointInfo(i, this.isShowNum);
+                this.printCircle(pointInfo.circle, ctx);
+                this.printText(pointInfo.text, ctx);
             }
         }
-        if (this.MS.length) this.showLastNb(this.isShowNum);
-        this.refreshMarkLine("all");
-        this.refreshMarkArrow("all");
-        this.autoShow();
+        ctx = null;
     }
-
-
-
-    CheckerBoard.prototype.refreshMarkLine = function(idx, lines) {
-
-        lines = lines || this.LINES;
+    
+    
+    CheckerBoard.prototype.refreshMarkLine = function(idx, lines = this.LINES) {
         lines = idx === this.autoLines ? this.autoLines : lines;
         if (idx == "all" || idx == "All") {
             for (let i = 0; i < lines.length; i++) {
@@ -3535,27 +3285,51 @@ window.CheckerBoard = (function() {
     }
 
 
-
-    CheckerBoard.prototype.refreshMarkArrow = function(idx) {
+    CheckerBoard.prototype.refreshMarkArrow = function(idx, arrows = this.ARROWS) {
         if (idx == "all" || idx == "All") {
-            for (let i = 0; i < this.ARROWS.length; i++) {
-                this.printMarkArrow(this.ARROWS[i]);
+            for (let i = 0; i < arrows.length; i++) {
+                this.printMarkArrow(arrows[i]);
             }
         }
         else {
-            for (let i = 0; i < this.ARROWS.length; i++) {
-                if (this.ARROWS[i].P.indexOf(idx) + 1) {
-                    this.printMarkArrow(this.ARROWS[i]);
+            for (let i = 0; i < arrows.length; i++) {
+                if (arrows[i].P.indexOf(idx) + 1) {
+                    this.printMarkArrow(arrows[i]);
                 }
             }
         }
     }
 
 
+    CheckerBoard.prototype.refreshCheckerBoard = function() {
+        this.printEmptyCBoard();
+        this.refreshMarkLine("all");
+        this.refreshBoardPoint("all");
+        this.refreshMarkArrow("all");
+        this.autoShow();
+    }
+    
+    
+    CheckerBoard.prototype.refreshCheckerBoardPDF = function(doc, scale) {
+        this.printEmptyCBoardPDF(doc, scale);
+        this.printMarkLinesPDF(doc, scale);
+        this.printBoardPointsPDF(doc, scale);
+        this.printMarkArrowsPDF(doc, scale);
+    }
+    
+    
+    CheckerBoard.prototype.refreshCheckerBoardSVG = function(scale) {
+        let svgText = "";
+        svgText += this.printEmptyCBoardSVG(scale);
+        svgText += this.printMarkLinesSVG(scale);
+        svgText += this.printBoardPointsSVG(scale);
+        svgText += this.printMarkArrowsSVG(scale);
+        return svgText;
+    }
 
-    // 涂鸦模式，边框初始化
+
+    // 边框初始化
     CheckerBoard.prototype.resetCutDiv = function() {
-
         let canvas = this.canvas;
         let w = ~~(canvas.width);
         let h = ~~(canvas.height);
@@ -3637,42 +3411,35 @@ window.CheckerBoard = (function() {
 
 
 
-    CheckerBoard.prototype.removeMarkArrow = function(idx) {
+    CheckerBoard.prototype.removeMarkArrow = function(idx, arrows = this.ARROWS) {
         if (idx == "all" || idx == "All") {
-            for (let i = this.ARROWS.length - 1; i >= 0; i--) {
-                let mkArrow = this.ARROWS[i]
-                this.ARROWS.length--;
+            while (arrows.length) {
+                let mkArrow = arrows.pop();
                 this.cleMarkArrow(mkArrow);
             }
-
         }
         else {
-            if (idx < 0 || idx >= this.ARROWS.length) return;
-            let mkArrow = this.ARROWS.splice(idx, 1);
+            if (idx < 0 || idx >= arrows.length) return;
+            let mkArrow = arrows.splice(idx, 1);
             this.cleMarkArrow(mkArrow[0]);
-            mkArrow = null;
         }
         return true;
     }
 
 
 
-    CheckerBoard.prototype.removeMarkLine = function(idx, lines) {
-        lines = lines || this.LINES;
+    CheckerBoard.prototype.removeMarkLine = function(idx, lines = this.LINES) {
         lines = idx === this.autoLines ? this.autoLines : lines;
         if (idx == "all" || idx == "All" || idx === this.autoLines) {
-            for (let i = lines.length - 1; i >= 0; i--) {
-                let mkLine = lines[i];
-                lines.length--;
+            while (lines.length) {
+                let mkLine = lines.pop();
                 this.cleMarkLine(mkLine);
             }
-
         }
         else {
             if (idx < 0 || idx >= lines.length) return;
             let mkLine = lines.splice(idx, 1);
             this.cleMarkLine(mkLine[0]);
-            mkLine = null;
         }
         return true;
     }
@@ -3697,14 +3464,14 @@ window.CheckerBoard = (function() {
         function setToBlob(canvas) {
             return new Promise((resolve, reject) => {
                 if (canvas.toBlob == undefined) {
-                    canvas.toBlob = toBlob;
+                    canvas.toBlob = toBlob.bind(canvas);
                     log("canvas.toBlob == undefined, set canvas.toBlob = toBlob")
                 }
                 resolve();
             });
         }
 
-        let canvas = this.canvas;
+        let canvas = this.cutViewBox();
         let filename = this.autoFileName();
         filename += "." + type;
         let but = this;
@@ -3721,14 +3488,25 @@ window.CheckerBoard = (function() {
 
     // 棋盘保存PDF文件
     CheckerBoard.prototype.saveAsPDF = function(fontName) {
-
         if (typeof jsPDF != "function") {
             warn(`${EMOJI_FOUL_THREE}缺少 jsPDF 插件`);
             return;
         }
         //新建文档
         let doc = new jsPDF("p", "pt", "a4"); // 594.3pt*840.51pt
-        this.printPDF(doc, "PFSCMedium", "PFSCHeavy"); // 写入文档
+        this.pdfOriginPoint = {
+            x: 594 * 0.0252525,
+            y: (840 - (594 - 594 * 0.0252525 * 2)) / 2
+        };
+        let scale = (594 - 594 * 0.0252525 * 2) / this.canvas.width;
+        
+        this.refreshCheckerBoardPDF(doc, scale);
+        
+        //var doc = new jsPDF();
+        //doc.lines([[50, 0], [0, 50], [-50, 0], [0, -50]], 20, 20, [1.0, 1.0], null, true); // horizontal line
+        //doc.clip();
+        //doc.rect(50, 50, 100, 100, `F`)
+        //doc.lines([[100,100],[-100,100],[50,50,80,100,150,150],[20,10]], 212,110, [1,1], 'F', false)
         let filename = this.autoFileName();
         doc.save(filename + ".pdf"); //保存文档
     };
@@ -3879,7 +3657,7 @@ window.CheckerBoard = (function() {
     CheckerBoard.prototype.setCoordinate = function(coordinateType) {
         if (coordinateType < 0 || coordinateType > 5) return;
         this.coordinateType = coordinateType;
-        this.printCheckerBoard();
+        this.resetCBoardCoordinate();
         this.refreshCheckerBoard();
         this.onSetCoordinate.call(this);
     }
@@ -3973,11 +3751,17 @@ window.CheckerBoard = (function() {
         size = ~~(size);
         size = size < 6 ? 6 : size > 15 ? 15 : size;
         this.size = size;
-        this.printCheckerBoard();
+        this.resetCBoardCoordinate();
         this.refreshCheckerBoard();
         this.onSetSize.call(this);
     }
-
+    
+    
+    CheckerBoard.prototype.setLineStyle = function(keyNum) {
+        const WEIGHT = ["normal","bold","bolder"];
+        WEIGHT[keyNum] && (this.lineStyle = WEIGHT[keyNum]);
+        this.refreshCheckerBoard();
+    }
 
 
     CheckerBoard.prototype.setScale = function(scl, timer = "now") {
@@ -4133,8 +3917,8 @@ window.CheckerBoard = (function() {
             this.removeMarkLine(i, this.autoLines);
         }
         if (display) {
-            const OBJ_LINES = {THREE_FREE: [], FOUR_NOFREE: [], FOUR_FREE: [], FIVE: []},
-                COLOR = {THREE_FREE: "#556B2F", FOUR_NOFREE: "#483D8B", FOUR_FREE: "#86008f", FIVE: "red"};
+            const OBJ_LINES = { THREE_FREE: [], FOUR_NOFREE: [], FOUR_FREE: [], FIVE: [] },
+                COLOR = { THREE_FREE: "#556B2F", FOUR_NOFREE: "#483D8B", FOUR_FREE: "#86008f", FIVE: "red" };
             let arr = this.getArray();
             getLines(arr, 1).map(line => OBJ_LINES[line.level].push(line));
             getLines(arr, 2).map(line => OBJ_LINES[line.level].push(line));
@@ -4149,7 +3933,7 @@ window.CheckerBoard = (function() {
 
 
     CheckerBoard.prototype.showFoul = function(display, notChange) {
-        
+
         this.P.map((P, i) => {
             if (P.type == TYPE_MARKFOUL) {
                 P.cle();
@@ -4160,13 +3944,13 @@ window.CheckerBoard = (function() {
         });
         if (display) {
             this.getArray().map((color, idx, arr) => {
-                color==0 && isFoul(idx, arr) && (
+                color == 0 && isFoul(idx, arr) && (
                     this.P[idx].color = "red",
                     this.P[idx].bkColor = null,
                     this.P[idx].type = TYPE_MARKFOUL,
                     this.P[idx].text = EMOJI_FOUL,
                     this.refreshMarkLine(idx),
-                    this.printPointB(idx),
+                    this._printPoint(idx),
                     this.refreshMarkArrow(idx)
                 );
             });
@@ -4178,7 +3962,7 @@ window.CheckerBoard = (function() {
 
     // 根据用户设置 决定是否高亮显示 最后一手棋
     CheckerBoard.prototype.showLastNb = function(showNum) {
-        
+
         let p = tempp;
         let idx;
         if (this.MSindex >= 0) { // 存在倒数第1手，特殊标记
@@ -4187,20 +3971,18 @@ window.CheckerBoard = (function() {
         else { // 不存在倒数第1手，退出
             return;
         }
-        this.printLastNb(idx, showNum);
-        this.refreshMarkArrow(idx);
-
-
-        if (this.MSindex > 0) { // 存在倒数第二手，恢复正常标记
-            idx = this.MS[this.MSindex - 1];
-        }
-        else { // 不存在倒数第二手，退出
-            return;
-        }
         this.printNb(idx, showNum);
         this.refreshMarkArrow(idx);
-        return true;
 
+        let preIndex = this.MSindex;
+        while (--preIndex >= 0) { // 存在倒数第二手，恢复正常标记
+            idx = this.MS[preIndex];
+            if (idx != 225) {
+                this.printNb(idx, showNum);
+                this.refreshMarkArrow(idx);
+                return;
+            }
+        }
     };
 
 
@@ -4214,7 +3996,6 @@ window.CheckerBoard = (function() {
             this.printPoint(this.MS[i], true);
             this.refreshMarkArrow(this.MS[i]);
         }
-            //this.showLastNb(true);
     };
 
     // 跳到第 0 手。
@@ -4241,7 +4022,7 @@ window.CheckerBoard = (function() {
     // 跳到下一手
     CheckerBoard.prototype.toNext = function(isShowNum, timer = "now") {
         if (this.MS.length - 1 > this.MSindex) {
-            this.wNb(this.MS[this.MSindex+1], "auto", isShowNum, undefined, undefined, timer);
+            this.wNb(this.MS[this.MSindex + 1], "auto", isShowNum, undefined, undefined, timer);
         }
     };
 
@@ -4377,25 +4158,25 @@ window.CheckerBoard = (function() {
         let nodes = this.tree.getBranchNodes(this.MS.slice(0, this.MSindex + 1)),
             nextMove = { idx: -1, level: -2, idxColor: undefined },
             level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
-            
+
         nodes.map(cur => {
             if (cur) {
                 //console.log(`cur.branchsInfo: ${cur.branchsInfo}`)
                 let i = cur.branchsInfo + 1 & 1,
                     idx = cur.branchs[i].idx,
                     txt = cur.boardTXT || cur.branchs[i].boardTXT,
-                    color = !this.isTransBranch ? "black" : 
-                    cur.branchsInfo < 3 ? cur.branchs[i].color : 
+                    color = !this.isTransBranch ? "black" :
+                    cur.branchsInfo < 3 ? cur.branchs[i].color :
                     cur.branchs[0] && cur.branchs[0].color == "black" ?
                     "black" : cur.branchs[1].color;
-                    
+
                 this.wLb(idx, txt, color);
                 this.P[idx].branchs = cur;
-                
+
                 if (nextMove.level < level.indexOf(txt)) {
                     nextMove.level = level.indexOf(txt);
                     nextMove.idx = idx;
-                    nextMove.idxColor = i+1;
+                    nextMove.idxColor = i + 1;
                 }
             }
         });
@@ -4467,7 +4248,7 @@ window.CheckerBoard = (function() {
         this.P[idx].bkColor = backgroundColor || null;
         //log(backgroundColor)
         this.P[idx].type = backgroundColor ? TYPE_MOVE : TYPE_MARK;
-        this.P[idx].text = text;
+        this.P[idx].text = String(text);
         //this.refreshMarkLine(idx);
         this.printPoint(idx);
         this.refreshMarkArrow(idx);

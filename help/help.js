@@ -21,7 +21,7 @@
         }
         let print = command[type] || console.log;
         if (TEST_HELP && window.top.DEBUG)
-            print(`[help.js]\n>> ` + param);
+            print(`[help.js]\n>>  ${ param}`);
     }
     
     const topImage = (() => {

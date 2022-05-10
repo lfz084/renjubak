@@ -22,7 +22,7 @@ window.engine = (() => {
         }
         let print = command[type] || console.log;
         if (TEST_ENGINE && DEBUG)
-            print(`[engine.js]\n>> ` + param);
+            print(`[engine.js]\n>>  ${ param}`);
     }
     
     const COLOR_TXT = ["白棋", "黑棋", "白棋"];

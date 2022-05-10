@@ -40,7 +40,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1623.08";
         if (point % 3 || point < 0 || point > (PAGESIZE * this.bufferPages.length - 3)) {
             throw new Error("LibraryTree.getNode() point error ")
         }
-        let page = this.bufferPages[~~(point/PAGESIZE)],
+        let page = this.bufferPages[parseInt(point/PAGESIZE)],
             current = point % PAGESIZE;
         bufferNode[0] = page[current];
         bufferNode[1] = page[current+1];
@@ -52,7 +52,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["LibraryTree"] = "v1623.08";
         if (point % 3 || point < 0 || point > (PAGESIZE * this.bufferPages.length - 3)) {
             throw new Error("LibraryTree.getNode() point error ")
         }
-        let page = this.bufferPages[~~(point / PAGESIZE)],
+        let page = this.bufferPages[parseInt(point / PAGESIZE)],
             current = point % PAGESIZE;
         page[current] = bufferNode[0];
         page[current + 1] = bufferNode[1];

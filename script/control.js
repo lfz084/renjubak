@@ -22,7 +22,7 @@ window.control = (() => {
         }
         let print = command[type] || console.log;
         if (TEST_CONTROL && DEBUG)
-            print(`[control.js]\n>> ` + param);
+            print(`[control.js]\n>>  ${ param}`);
     }
 
     //--------------------------------------------------------------
@@ -259,7 +259,7 @@ window.control = (() => {
         let h2 = ~~(cBd.canvas.height);
         scaleCBoard(false);
         cBd.cle();
-        cBd.printCheckerBoard();
+        cBd.printEmptyCBoard();
         cBd.resetNum = 0;
         cBd.firstColor = "black";
         cBd.hideCutDiv();
@@ -1310,7 +1310,7 @@ window.control = (() => {
         cShareWhite.setText(" 分享图片");
         cShareWhite.setontouchend(function() {
             if (isBusy()) return;
-            share("white");
+            share();
         });
 
         cShare = new Button(renjuCmddiv, "button", 0, 0, w, h);
@@ -1376,7 +1376,15 @@ window.control = (() => {
                     RenjuLib.setCenterPos({ x: cBd.size / 2 + 0.5, y: cBd.size / 2 + 0.5 });
                     RenjuLib.getAutoMove();
                 }),
-            cLoadRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+            setCBoardLineStyleMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+                [0, "正常",
+                1, "加粗",
+                2, "特粗"],
+                function(but) {
+                    if (isBusy()) return;
+                    cBd.setLineStyle(but.input.value * 1);
+                }),
+            loadRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
                 [0, "默认",
                 1, "设置1",
                 2, "设置2",
@@ -1389,7 +1397,7 @@ window.control = (() => {
                     saveCmdSettings("renjuCmdSettings", renjuCmdSettings);
                     loadCmdSettings("renjuCmdSettings", renjuCmdSettings);
                 }),
-            cSaveRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
+            saveRenjuSettingsMenu = createMenu(menuLeft, t, menuWidth, h, menuFontSize,
                 [1, "设置1",
                 2, "设置2",
                 3, "设置3",
@@ -1417,8 +1425,10 @@ window.control = (() => {
         cShownum.addOption(5, "设置规则");
         cShownum.addOption(6, "设置棋盘大小");
         cShownum.addOption(7, "设置棋盘坐标");
-        cShownum.addOption(8, "加载按键设置");
-        cShownum.addOption(9, "设置按键位置");
+        cShownum.addOption(8, "设置颜色风格");
+        cShownum.addOption(9, "设置线条风格");
+        cShownum.addOption(10, "设置按键位置");
+        cShownum.addOption(11, "加载按键设置");
         cShownum.setText(EMOJI_ROUND_ONE);
         cShownum.createMenu(menuLeft, undefined, menuWidth, undefined, menuFontSize);
         cShownum.menu.lis[0].checked = true;
@@ -1445,8 +1455,9 @@ window.control = (() => {
                 5: () => { gameRulesMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
                 6: () => { cBoardSizeMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
                 7: () => { coordinateMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
-                8: () => { cLoadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
-                9: () => { cSaveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                9: () => { setCBoardLineStyleMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                10: () => { saveRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
+                11: () => { loadRenjuSettingsMenu.showMenu(but.menu.offsetLeft, but.menu.offsetTop) },
             }
             setMenuCheckBox(but, but.input.selectedIndex, [0, 1, 2, 3]);
             execFunction(FUN[but.input.value]);
@@ -1478,7 +1489,7 @@ window.control = (() => {
             viewport1.scrollTop();
         };
         onLoadCmdSettings = function() {
-            setMenuRadio(cLoadRenjuSettingsMenu, renjuCmdSettings.idx);
+            setMenuRadio(loadRenjuSettingsMenu, renjuCmdSettings.idx);
             viewport1.scrollTop();
         };
         scaleCBoard = function(isScale, timer = "now") {
@@ -2935,12 +2946,12 @@ window.control = (() => {
                     else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
                         if (cBd.P[idx].text) {
                             cBd.P[idx].text = "";
-                            cBd.printPointB(idx);
+                            cBd._printPoint(idx);
                             cBd.refreshMarkArrow(idx);
                         }
                         else {
                             cBd.P[idx].text = pInfo.boardTXT;
-                            cBd.printPointB(idx, true);
+                            cBd._printPoint(idx, true);
                             cBd.refreshMarkArrow(idx);
                         }
                     }
@@ -3167,7 +3178,6 @@ window.control = (() => {
     }
 
     function setPlayMode(mode) {
-
         switch (playMode) {
             case MODE_RENLIB:
                 //remove Tree
@@ -3289,7 +3299,7 @@ window.control = (() => {
             cBd.backgroundColor = backgroundColor;
             cBd.LbBackgroundColor = LbBackgroundColor;
             cBd.refreshCheckerBoard();
-            shareImg.src = cBd.canvas.toDataURL();
+            shareImg.src = cBd.cutViewBox().toDataURL();
         }
 
         function shareClose() {
@@ -3327,7 +3337,6 @@ window.control = (() => {
             s.border = `0px solid `;
 
             let iWidth = ~~(imgWidth * 3 / 5);
-            shareImg.src = cBd.canvas.toDataURL();
             s = shareImg.style;
             s.position = "absolute";
             s.width = iWidth + "px";

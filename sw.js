@@ -133,7 +133,7 @@ function loadCache(url, version, clientID) {
         })
         .then(response => {
             load.finish(url);
-            if (!response.ok) throw new Error(`response.ok = ${response.ok}, ${nRequest.url}`);
+            if (response.constructor.name != "Response") throw new Error(`response.ok = ${response.ok}, ${nRequest.url}`);
             postMsg(`加载资源完成 url=${url}`, clientID);
             return response;
         })
@@ -149,9 +149,12 @@ function fetchErr(err, url) {
     }
     if (["htm", "html"].indexOf(type) + 1) {
         let request = new Request("./404.html");
-        return caches.match(request)
+        return caches.open(version)
+            .then(cache => {
+                return cache.match(request);
+            })
             .then(response => {
-                if (response.ok) throw new Error("");
+                if (response.constructor.name != "Response") throw new Error("");
                 return response;
             })
             .catch(() => {

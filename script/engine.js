@@ -22,7 +22,7 @@ window.engine = (function() {
         }
         let print = command[type] || console.log;
         if (TEST_ENGINE && DEBUG)
-            print(`[engine.js]\n>> ` + param);
+            print(`[engine.js]\n>>  ${ param}`);
     }
 
     //------------------------  ListNode   ------------------------ 

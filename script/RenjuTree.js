@@ -801,11 +801,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
 
     Tree.prototype.copyTree = function(node) {}
 
-    Tree.prototype.positionNodes = function(path, maxMatch = 0) {
+    Tree.prototype.getPositionNodes = function(path, maxMatch = 0, maxCount = 900) {
         let nodes = [],
             movesLen = 0;
 
         path.map(idx => idx < 225 && movesLen++);
+        
+        if (movesLen==0) {
+            nodes.push(this.root);
+            return nodes;
+        }
 
         for (let nMatch = 0; nMatch <= maxMatch; nMatch++) {
             let moveList = [],
@@ -831,6 +836,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
                 if (rt || idx == 225) {
                     if (rt == movesLen) {
                         nodes.push(current);
+                        if (maxCount ==1) return nodes;
                         isBack = true;
                     }
                     else {
@@ -862,6 +868,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             }
         }
         return nodes;
+    }
+    
+    
+    Tree.prototype.hasPosition = function(path, maxMatch = 0) {
+        return  !!this.getPositionNodes(path, maxMatch).length;
     }
 
 

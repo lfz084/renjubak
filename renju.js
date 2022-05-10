@@ -23,7 +23,7 @@ var loadApp = () => { // 按顺序加载应用
         }
         let print = command[type] || console.log;
         if (TEST_LOADAPP && DEBUG) {
-            print(`[renju.js]\n>> ` + param);
+            print(`[renju.js]\n>>  ${ param}`);
         }
     }
     
@@ -448,7 +448,8 @@ var loadApp = () => { // 按顺序加载应用
             //downDiv.style.backgroundColor = "blue";
 
             cBoard = new CheckerBoard(upDiv, 0, 0, cWidth, cWidth);
-            cBoard.printCheckerBoard();
+            cBoard.resetCBoardCoordinate();
+            cBoard.printEmptyCBoard();
 
             control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
             

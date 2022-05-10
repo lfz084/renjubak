@@ -23,7 +23,7 @@ window.RenjuLib = (() => {
         }
         let print = command[type] || console.log;
         if (TEST_RENLIB && DEBUG)
-            print(`[RenjuLib.js]\n>> ` + param);
+            print(`[RenjuLib.js]\n>>  ${ param}`);
     }
 
     let url = "./ReadLib/script/work_ReadLib.js",

@@ -25,7 +25,7 @@ window.Button = (() => {
         }
         let print = command[type] || console.log;
         if (TEST_BUTTON && DEBUG)
-            print(`[Button.js]\n>> ` + param);
+            print(`[Button.js]\n>>  ${ param}`);
     }
 
     // 定制按钮，button，file，Radio，select。
@@ -655,7 +655,7 @@ window.Button = (() => {
 
 
     button.prototype.setNotChangeColor = function(nc) {
-        this.notChangeColor = nc;
+        this.notChangeColor = !!nc;
     };
 
 

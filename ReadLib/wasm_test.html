@@ -221,9 +221,9 @@
             return new Promise((resolve, reject) => {
                 function max(bufSize, scl) {
                     let pages = resetBuffer(bufSize,scl);
-                    scl -= 0.1;
+                    scl -= 1;
                     if(pages) resolve(pages);
-                    else if(scl>3)setTimeout(()=>max(bufSize, scl),0);
+                    else if(scl>=1)setTimeout(()=>max(bufSize, scl),0);
                     else reject(`手机空闲内存太小了,请关闭后台应用释放内存`);
                 }
                 max(bufSize, scl);
@@ -232,9 +232,10 @@
         
         function resetBuffer(libSize, scl){
             let data_buf = exports._Z13getDataBufferv(),
-                data_buf_size = ~~(libSize * scl) + 1,
+                data_buf_size = parseInt(libSize * scl) + 1,
                 bufSize = data_buf + data_buf_size,
-                pages = ~~((bufSize - memory.buffer.byteLength)/1024/64) + 1;
+                pages = parseInt((bufSize - memory.buffer.byteLength)/1024/64) + 1;
+            log(`libSize: ${libSize}, scl: ${scl}\n data_buf: ${data_buf}, bufSize: ${bufSize}, byteLength: ${memory.buffer.byteLength},pages: ${pages}`)
             return grow(pages);
         }
 
@@ -260,9 +261,9 @@
                 //log(`getVariant = ${exports._Z15test_getVariantv()}`);
                 maxMemory(LIB_SIZE, 8)
                 .then(function(pages){
-                    log(`申请 ${~~(pages/16)+1}M 内存 OK`);
+                    log(`申请 ${parseInt(pages/16)+1}M 内存 OK`);
                 
-                (/*grow(~~(LIB_SIZE/1024/64*5)+1),*/
+                (/*grow(parseInt(LIB_SIZE/1024/64*5)+1),*/
                 /*resetBuffer(LIB_SIZE, 5),*/
                     log(`checkVersion = ${exports._Z12checkVersionv()}`),
                     log(`loadAllMoveNode() = ${exports._Z15loadAllMoveNodev()}`),

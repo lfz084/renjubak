@@ -61,7 +61,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["JFile"] = "v1623.08";
             uint8_len = rt % 4,
             uint32,
             uint32Src,
-            uint32_len = ~~(rt/4);
+            uint32_len = parseInt(rt/4);
         
         uint32_len && (uint32 = new Uint32Array(buffer, start, uint32_len),
             uint8Src = new Uint32Array());

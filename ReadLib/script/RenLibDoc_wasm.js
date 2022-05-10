@@ -265,16 +265,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.08";
             return pages;
         }
         catch (err) {
-            post(`error`, `申请 ${~~(pages/16)+1}M 内存失败，请确保你的手机有足够的空闲内存`);
+            post(`error`, `申请 ${parseInt(pages/16)+1}M 内存失败，请确保你的手机有足够的空闲内存`);
             return 0;
         }
     }
 
     function resetBuffer(libSize, scl) {
         let data_buf = wasm_exports._Z13getDataBufferv(),
-            data_buf_size = ~~(libSize * scl) + 1,
+            data_buf_size = parseInt(libSize * scl) + 1,
             bufSize = data_buf + data_buf_size,
-            pages = ~~((bufSize - memory.buffer.byteLength) / 1024 / 64) + 1;
+            pages = parseInt((bufSize - memory.buffer.byteLength) / 1024 / 64) + 1;
         return grow(pages);
     }
 
@@ -407,7 +407,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.08";
                     */
             })
             .then(function(pages) {
-                post(`warn`, `申请 ${~~(pages/16)+1}M 内存 OK`);
+                post(`warn`, `申请 ${parseInt(pages/16)+1}M 内存 OK`);
                 if (jFile.open(buf)) {
                     return Promise.resolve();
                 }
@@ -439,7 +439,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.08";
                 let number = wasm_exports._Z15loadAllMoveNodev(),
                     dataSize = 1804 + 908 + 16 + 24 + number * 24; // Stack + MoveList + LibraryFile + RootMoveNode + libNode;
                 if (memory.buffer.byteLength < data_buffer + dataSize)
-                    return Promise.reject(`默认内存不足 请先设置 ${~~(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
+                    return Promise.reject(`默认内存不足 请先设置 ${parseInt(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
                 if (number)
                     return Promise.resolve();
                 else
