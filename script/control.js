@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1623.08";
+self.SCRIPT_VERSIONS["control"] = "v1623.09";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -2793,7 +2793,7 @@ window.control = (() => {
     }
 
     //返回参数确认 添加棋子 还是标签
-    //info = {type, boardTXT, isShowNum};
+    //info = {type, boardText, isShowNum};
     function createCommandInfo() {
         let isShow = getShowNum() ? true : false,
             color = getRenjuLbColor();
@@ -2806,13 +2806,13 @@ window.control = (() => {
             case cAddwhite.checked:
                 return { type: TYPE_WHITE, color: "white", isShowNum: isShow };
             case cLba.checked:
-                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_SQUARE_BLACK };
+                return { type: TYPE_MARK, color: color, boardText: EMOJI_SQUARE_BLACK };
             case cLbb.checked:
-                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_ROUND_DOUBLE };
+                return { type: TYPE_MARK, color: color, boardText: EMOJI_ROUND_DOUBLE };
             case cLbc.checked:
-                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_TRIANGLE_BLACK };
+                return { type: TYPE_MARK, color: color, boardText: EMOJI_TRIANGLE_BLACK };
             case cLbd.checked:
-                return { type: TYPE_MARK, color: color, boardTXT: EMOJI_FORK };
+                return { type: TYPE_MARK, color: color, boardText: EMOJI_FORK };
             case cLABC.checked:
                 switch (cLABC.input.value * 1) {
                     case 0:
@@ -2820,17 +2820,17 @@ window.control = (() => {
                     case 1:
                         return { type: TYPE_MARKLINE, color: color };
                     case 2:
-                        return { type: TYPE_MARK, color: color, boardTXT: getMaxChar("A") };
+                        return { type: TYPE_MARK, color: color, boardText: getMaxChar("A") };
                     case 3:
-                        return { type: TYPE_MARK, color: color, boardTXT: getMaxChar("a") };
+                        return { type: TYPE_MARK, color: color, boardText: getMaxChar("a") };
                     case 4:
-                        return { type: TYPE_MARK, color: color, boardTXT: getMaxNum(1, 225) };
+                        return { type: TYPE_MARK, color: color, boardText: getMaxNum(1, 225) };
                     case 5:
-                        return { type: TYPE_MARK, color: color, boardTXT: getContinuLb() };
+                        return { type: TYPE_MARK, color: color, boardText: getContinuLb() };
                     case 6:
-                        return { type: TYPE_MARK, color: color, boardTXT: EMOJI_STAR };
+                        return { type: TYPE_MARK, color: color, boardText: EMOJI_STAR };
                     case 7:
-                        return { type: TYPE_MARK, color: color, boardTXT: EMOJI_FOUL };
+                        return { type: TYPE_MARK, color: color, boardText: EMOJI_FOUL };
                 }
         }
     }
@@ -2942,7 +2942,7 @@ window.control = (() => {
                     if (cBd.P[idx].type == TYPE_MARK || cBd.P[idx].type == TYPE_MOVE)
                         cBd.cleLb(idx); // 点击标记，删除标记
                     else if (cBd.P[idx].type == TYPE_EMPTY)
-                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                        cBd.wLb(idx, pInfo.boardText, pInfo.color); // 添加标记
                     else if (cBd.P[idx].type == TYPE_WHITE || cBd.P[idx].type == TYPE_BLACK) {
                         if (cBd.P[idx].text) {
                             cBd.P[idx].text = "";
@@ -2950,7 +2950,7 @@ window.control = (() => {
                             cBd.refreshMarkArrow(idx);
                         }
                         else {
-                            cBd.P[idx].text = pInfo.boardTXT;
+                            cBd.P[idx].text = pInfo.boardText;
                             cBd._printPoint(idx, true);
                             cBd.refreshMarkArrow(idx);
                         }
@@ -2981,7 +2981,7 @@ window.control = (() => {
                         cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF); // 添加棋子
                     }
                     else if (pInfo.type == TYPE_MARK) {
-                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                        cBd.wLb(idx, pInfo.boardText, pInfo.color); // 添加标记
                     }
                 }
                 else if (cBd.P[idx].type == TYPE_MARK) {
@@ -2998,7 +2998,7 @@ window.control = (() => {
                                 }
                             }
                             else if (pInfo.type == TYPE_MARK) {
-                                inputLabel(idx, pInfo.boardTXT);
+                                inputLabel(idx, pInfo.boardText);
                             }
                         })
                         .catch(err => console.error(err));
@@ -3022,7 +3022,7 @@ window.control = (() => {
                         cBd.wNb(idx, "auto", pInfo.isShowNum, undefined, isF);
                     }
                     else if (pInfo.type == TYPE_MARK) {
-                        cBd.wLb(idx, pInfo.boardTXT, pInfo.color); // 添加标记
+                        cBd.wLb(idx, pInfo.boardText, pInfo.color); // 添加标记
                     }
                     cBd.tree.createPath(cBd.tree.transposePath(cBd.MS.slice(0, cBd.MSindex + 1)));
                 }
@@ -3047,10 +3047,10 @@ window.control = (() => {
                             else if (pInfo.type == TYPE_MARK) {
                                 //first save oldPath
                                 path = cBd.tree.transposePath(path || cBd.MS.slice(0, cBd.MSindex + 1).concat([idx]), nMatch);
-                                inputLabel(idx, pInfo.boardTXT)
-                                    .then(function(boardTXT) {
+                                inputLabel(idx, pInfo.boardText)
+                                    .then(function(boardText) {
                                         let node = cBd.tree.seek(path);
-                                        node && (node.boardTXT = boardTXT);
+                                        node && (node.boardText = boardText);
                                         cBd.autoShow();
                                     })
                             }
@@ -3125,14 +3125,14 @@ window.control = (() => {
         }
     }
 
-    function inputLabel(idx, boardTXT = "") {
+    function inputLabel(idx, boardText = "") {
         let w = cBd.width * 0.8;
         let h;
         let l = (dw - w) / 2;
         let t = dh / 7;
         // 设置弹窗，让用户手动输入标记
         return msg({
-                text: boardTXT,
+                text: boardText,
                 type: "input",
                 enterTXT: "输入标记",
                 butNum: 2,
@@ -3140,7 +3140,7 @@ window.control = (() => {
                     if (checkCommand(msgStr)) return;
                     let str = msgStr.substr(0, 3),
                         color = getRenjuLbColor();
-                    boardTXT = str;
+                    boardText = str;
                     cBd.cleLb(idx); // 清除原来标记，打印用户选定的标记
                     if (str) cBd.wLb(idx, str, color);
                 }
@@ -3417,8 +3417,6 @@ window.control = (() => {
             checkbox.onclick();
             shareWindow.setAttribute("class", "show");
             setTimeout(() => { document.body.appendChild(shareWindow); }, 1);
-
-
         };
     })();
 

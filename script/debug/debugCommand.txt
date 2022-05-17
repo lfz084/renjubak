@@ -138,3 +138,63 @@ ${(65536*65536/2).toString(2)}\n
 ${(~(65536*65536/2)).toString(2)}\n
 ${(~~(65536*65536/2)).toString(2)}\n
 `)
+
+try{
+let count = 0,
+    t = new Date().getTime(),
+    tree = new RenjuTree(1, 3600),
+    cur = tree.root;
+while(count++ < 10000) {
+    let n = tree.newNode();
+    n.level = 666;
+    n.boardText = "a";
+    cur.down = n;
+    cur.right = n;
+    cur = n;
+}
+new Date().getTime() - t;
+}
+catch(err){
+console.error("err")
+}
+
+
+let count = 0;
+try{
+    let t = new RenjuTree(1,500);
+    while(count++ < 80000000) {
+        t.newNode()
+    }
+}
+catch(err){
+    console.error(`count: ${count}\n${err.message}`)
+}
+
+let st = new Date().getTime(),
+    tree = new RenjuTree(1,500),
+    count = 0
+    while(count++<10000000) {
+        let n = tree.newNode();
+        n.idx = 0;
+        n.level = 1;
+        n.boardText = "a";
+    }
+console.log(new Date().getTime()-st)
+
+try{
+let st = new Date().getTime(),
+    tree = new RenjuTree(1,501),
+    count = 0,
+    point = 0;
+    tree.nodeBuf.addPages(500);
+    while(count++<10000000) {
+        point += 20;
+        tree.nodeBuf.setUint8(point,0)
+        tree.nodeBuf.setUint16(point+2,1)
+        tree.nodeBuf.setUint8(point+8,65)
+    }
+console.log(new Date().getTime()-st)
+}
+catch(err){
+console.error(err.stack)
+}

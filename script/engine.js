@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.08";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.09";
 window.engine = (function() {
     "use strict";
     const TEST_ENGINE = false;
@@ -33,7 +33,7 @@ window.engine = (function() {
         }
         set bestValue(value) {
             this.score = value;
-            this.boardTXT = value.toString(10) //(~~(value / 0xFE * 100)).toString(10);
+            this.boardText = value.toString(10) //(~~(value / 0xFE * 100)).toString(10);
         }
         constructor(node, alpha, beta) {
             super(node.nodeBuf, node.commentBuf, node.pointer);
@@ -322,20 +322,20 @@ window.engine = (function() {
                 isFree = info & FREE,
                 foul_max_free = info & FOUL_MAX_FREE;
             if (isFoul) {
-                return { idx: idx, boardTXT: EMOJI_FOUL, info: info }
+                return { idx: idx, boardText: EMOJI_FOUL, info: info }
             }
             else {
                 switch (foul_max_free) {
                     case FIVE:
-                        return { idx: idx, boardTXT: EMOJI_ROUND_FIVE, info: info }
+                        return { idx: idx, boardText: EMOJI_ROUND_FIVE, info: info }
                         case FOUR_FREE:
-                            return { idx: idx, boardTXT: EMOJI_ROUND_FOUR, info: info }
+                            return { idx: idx, boardText: EMOJI_ROUND_FOUR, info: info }
                             case FOUR_NOFREE:
-                                return { idx: idx, boardTXT: "4", info: info }
+                                return { idx: idx, boardText: "4", info: info }
                                 case THREE_FREE:
-                                    return { idx: idx, boardTXT: EMOJI_ROUND_THREE, info: info }
+                                    return { idx: idx, boardText: EMOJI_ROUND_THREE, info: info }
                                     case THREE_NOFREE:
-                                        return { idx: idx, boardTXT: "3", info: info }
+                                        return { idx: idx, boardText: "3", info: info }
                 }
             }
         }).filter(node => !!node)
@@ -361,7 +361,7 @@ window.engine = (function() {
         nodes.map(node => {
             let nNode = tree.newNode();
             nNode.idx = node.idx;
-            nNode.boardTXT = node.boardTXT;
+            nNode.boardText = node.boardText;
             current.addChild(nNode);
         })
         return tree;
@@ -626,7 +626,7 @@ window.engine = (function() {
         else if (level >= LEVEL_NOFREEFOUR) {
             let node = tree.newNode();
             node.idx = fiveIdx;
-            node.boardTXT = "W";
+            node.boardText = "W";
             current.addChild(node);
             warn(`${COLOR_NAME[param.color]} 可以五连`);
             return tree;
@@ -649,7 +649,7 @@ window.engine = (function() {
             let nNode = tree.newNode(),
                 nodePass = tree.newNode();
             nNode.idx = node.idx;
-            nNode.boardTXT = LEVEL_THREE_POINTS_TXT[node.winMoves.length];
+            nNode.boardText = LEVEL_THREE_POINTS_TXT[node.winMoves.length];
             current.addChild(nNode);
             nNode.addChild(nodePass);
             tree.createPathVCF(nodePass, node.winMoves);

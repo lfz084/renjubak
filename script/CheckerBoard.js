@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["CheckerBoard"] = "v1623.08";
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1623.09";
 window.CheckerBoard = (function() {
 
     "use strict";
@@ -3447,7 +3447,6 @@ window.CheckerBoard = (function() {
 
 
     CheckerBoard.prototype.saveAsImage = function(type) {
-
         function toBlob(callback, type, quality) {
             function reqListener() {
                 let blob = new Blob([oReq.response]);
@@ -3461,27 +3460,13 @@ window.CheckerBoard = (function() {
             oReq.send();
         }
 
-        function setToBlob(canvas) {
-            return new Promise((resolve, reject) => {
-                if (canvas.toBlob == undefined) {
-                    canvas.toBlob = toBlob.bind(canvas);
-                    log("canvas.toBlob == undefined, set canvas.toBlob = toBlob")
-                }
-                resolve();
-            });
-        }
-
-        let canvas = this.cutViewBox();
-        let filename = this.autoFileName();
-        filename += "." + type;
-        let but = this;
+        let canvas = this.cutViewBox(),
+            filename = `${this.autoFileName()}.${type}`;
         //保存
-        setToBlob(canvas)
-            .then(() => {
-                canvas.toBlob(function(blob) {
-                    but.saveAs(blob, filename);
-                }, "image/" + type, 0.1);
-            })
+        canvas.toBlob = canvas.toBlob || toBlob.bind(canvas);
+        canvas.toBlob(blob => {
+            this.saveFile(blob, filename);
+        }, "image/" + type, 0.1);
     };
 
 
@@ -3519,12 +3504,12 @@ window.CheckerBoard = (function() {
         filename += type == "html" ? ".html" : ".svg";
         let mimetype = type == "html" ? "text/html" : "image/svg+xml";
         let blob = new Blob([this.getSVG()], { type: mimetype });
-        this.saveAs(blob, filename);
+        this.saveFile(blob, filename);
     };
 
 
 
-    CheckerBoard.prototype.saveAs = function(blob, filename) {
+    CheckerBoard.prototype.saveFile = function(blob, filename) {
 
         if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 
@@ -4164,7 +4149,7 @@ window.CheckerBoard = (function() {
                 //console.log(`cur.branchsInfo: ${cur.branchsInfo}`)
                 let i = cur.branchsInfo + 1 & 1,
                     idx = cur.branchs[i].idx,
-                    txt = cur.boardTXT || cur.branchs[i].boardTXT,
+                    txt = cur.boardText || cur.branchs[i].boardText,
                     color = !this.isTransBranch ? "black" :
                     cur.branchsInfo < 3 ? cur.branchs[i].color :
                     cur.branchs[0] && cur.branchs[0].color == "black" ?

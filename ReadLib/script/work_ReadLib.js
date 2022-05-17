@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1623.08";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1623.09";
 
 if ("importScripts" in self) {
     self.importScripts(
@@ -43,11 +43,14 @@ function getArrBuf(file) {
     return new Promise(function(resolve, reject) {
         let fr = new FileReader();
         fr.onload = function() {
+            post("log","getArrBuf end")
             resolve(fr.result)
         };
         fr.onerror = function(err) {
+            post("log",Object.keys(err))
             reject(err)
         };
+        post("log","getArrBuf")
         fr.readAsArrayBuffer(file)
     });
 }

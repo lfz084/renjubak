@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.09";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -161,10 +161,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
 
     //--------------------- NodeBuffer ---------------------
 
-    const NODE_SIZE = 24;
+    const NODE_SIZE = 20;
 
     class NodeBuffer extends TypeBuffer {
-        constructor(initPages = 1, maxPages = 64) {
+        constructor(initPages = 1, maxPages = 1024) {
             super(NODE_SIZE, initPages, maxPages);
         }
     }
@@ -204,30 +204,33 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
         constructor() {
             this.branchs = [];
             this.branchsInfo = 0;
-            this.boardTXT = "";
+            this.boardText = "";
         }
     }
 
     class Branch {
-        constructor(node) {
-            this.idx = node.idx;
-            this.boardTXT = node.boardTXT;
-            this.comment = node.comment;
-            this.color = node.color || "black";
-            this.path = [];
-            this.nMatch = 0;
+        constructor ({ idx, nMatch = 0, color = "black", boardText, comment, path = [], indexOf, isJoinNode }) {
+            this.idx = idx;
+            this.nMatch = nMatch;
+            this.color = color;
+            this.boardText = boardText;
+            this.comment = comment;
+            this.path = path;
+            this.indexOf = indexOf || path.length;
+            this.isJoinNode = isJoinNode;
         }
     }
 
     //------------------------ Node ---------------------
 
     const DEFAULT_BOARD_TXT = ["", "●", "○", "◐"];
-    //byte v = 1; 
-    //byte idx;
-    //DWORD level;
+    //byte idx; // 1 - 226, 226 is passMove
+    //byte v;  || info
+    //DWORD level; || //DWORD exInfo;   //RenLib.cpp -> class MoveNode
+    
     //UINT down;
     //UINT right;
-    //UINT boardTXT;
+    //UINT boardText;
     //UINT pointer comment;
     class Node {
         static isEqual(node1, node2) {
@@ -235,7 +238,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
         }
 
         get idx() {
-            return this.nodeBuf.getUint8(this.pointer + 1);
+            return this.nodeBuf.getUint8(this.pointer) - 1;
         }
         get level() {
             return this.nodeBuf.getUint16(this.pointer + 2);
@@ -247,25 +250,25 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             return this.nodeBuf.getUint8(this.pointer + 3);
         }
         get down() {
-            let pointer = this.nodeBuf.getUint32(this.pointer + 4);
-            if (pointer) {
-                return new Node(this.nodeBuf, this.commentBuf, pointer);
-            }
-        }
-        get right() {
             let pointer = this.nodeBuf.getUint32(this.pointer + 8);
             if (pointer) {
                 return new Node(this.nodeBuf, this.commentBuf, pointer);
             }
         }
-        get boardTXT() {
+        get right() {
+            let pointer = this.nodeBuf.getUint32(this.pointer + 12);
+            if (pointer) {
+                return new Node(this.nodeBuf, this.commentBuf, pointer);
+            }
+        }
+        get boardText() {
             let buf = [];
-            this.nodeBuf.readMemory(buf, this.pointer + 12, 4);
+            this.nodeBuf.readMemory(buf, this.pointer + 16, 4);
             buf.push(0, 0);
             return Buffer2String(buf);
         }
         get comment() {
-            let pointer = this.nodeBuf.getUint32(this.pointer + 16),
+            let pointer = this.nodeBuf.getUint32(this.pointer + 20),
                 buf = [];
             if (pointer) {
                 this.commentBuf.readMemory(buf, pointer + 4, COMMENT_SIZE - 4);
@@ -277,7 +280,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
         }
 
         set idx(value) {
-            this.nodeBuf.setUint8(this.pointer + 1, value);
+            this.nodeBuf.setUint8(this.pointer, value + 1);
         }
         set level(value) {
             this.nodeBuf.setUint16(this.pointer + 2, value);
@@ -290,41 +293,42 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
         }
         set down(node) {
             if (node && node.constructor.name == "Node")
-                this.nodeBuf.setUint32(this.pointer + 4, node.pointer);
-            else
-                this.nodeBuf.setUint32(this.pointer + 4, 0);
-        }
-        set right(node) {
-            if (node && node.constructor.name == "Node")
                 this.nodeBuf.setUint32(this.pointer + 8, node.pointer);
             else
                 this.nodeBuf.setUint32(this.pointer + 8, 0);
         }
-        set boardTXT(str) {
+        set right(node) {
+            if (node && node.constructor.name == "Node")
+                this.nodeBuf.setUint32(this.pointer + 12, node.pointer);
+            else
+                this.nodeBuf.setUint32(this.pointer + 12, 0);
+        }
+        set boardText(str) {
             if (str) {
                 let buf = String2Buffer(str).slice(0, 4);
-                this.nodeBuf.writeMemory(buf, this.pointer + 12, buf.length);
+                this.nodeBuf.writeMemory(buf, this.pointer + 16, buf.length);
             }
         }
         set comment(str) {
             if (str) {
-                let pointer = this.nodeBuf.getUint32(this.pointer + 16),
+                let pointer = this.nodeBuf.getUint32(this.pointer + 20),
                     buf = String2Buffer(str).slice(0, COMMENT_SIZE - 4);
                 if (0 == pointer) {
                     pointer = this.commentBuf.alloc();
+                    pointer==0 && alert(pointer)
                     this.commentBuf.setUint8(pointer, 1);
-                    this.nodeBuf.setUint32(this.pointer + 16, pointer);
+                    this.nodeBuf.setUint32(this.pointer + 20, pointer);
                 }
                 pointer && this.commentBuf.writeMemory(buf, pointer + 4, buf.length);
             }
         }
 
-        constructor(nodeBuffer, commentBuffer, pointer, idx, boardTXT) {
+        constructor(nodeBuffer, commentBuffer, pointer, idx, boardText) {
             this.nodeBuf = nodeBuffer;
             this.commentBuf = commentBuffer;
             this.pointer = pointer;
             idx != undefined && (this.idx = idx);
-            boardTXT && (this.boardTXT = boardTXT);
+            boardText && (this.boardText = boardText);
         }
     }
 
@@ -581,7 +585,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
     //------------------------ Tree ---------------------
 
     class Tree {
-        constructor(initPages = 1, maxPages = 64, centerPos = { x: 8, y: 8 }) {
+        constructor(initPages = 1, maxPages = 1024, centerPos = { x: 8, y: 8 }) {
             this.nodeBuf = new NodeBuffer(initPages, maxPages);
             this.commentBuf = new CommentBuffer(initPages, maxPages);
             this.root = this.newNode();
@@ -607,12 +611,12 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
         return transposePath(path, nMatch, this.size);
     }
 
-    Tree.prototype.newNode = function(idx, boardTXT) {
+    Tree.prototype.newNode = function(idx = 225, boardText) {
         let pointer = this.nodeBuf.alloc();
         if (pointer) {
             this.nodeBuf.resetObj(pointer); // set Obj buf = {0};
-            this.nodeBuf.setUint16(pointer, 0xe101); // v = 1, idx = 225
-            return new Node(this.nodeBuf, this.commentBuf, pointer, idx, boardTXT);
+            //this.nodeBuf.setUint8(pointer, 225 + 1); // idx = 225
+            return new Node(this.nodeBuf, this.commentBuf, pointer, idx, boardText);
         }
         else
             return null;
@@ -621,7 +625,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
     Tree.prototype.copyNode = function(sourceNode, targetNode = this.newNode()) {
         targetNode.idx = sourceNode.idx;
         targetNode.level = sourceNode.level;
-        targetNode.boardTXT = sourceNode.boardTXT;
+        targetNode.boardText = sourceNode.boardText;
         targetNode.comment = sourceNode.comment;
         return targetNode;
     }
@@ -881,17 +885,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             return !shortPath.find((idx, i) => idx != longPath[i]);
         }
 
-        function createBranch({ node, idx, path, nMatch, color, indexOf, boardTXT }) {
-            let branch = new Branch(node);
-            branch.idx = idx;
-            branch.path = path;
-            branch.nMatch = nMatch;
-            branch.color = color;
-            branch.indexOf = indexOf || path.length;
-            branch.boardTXT = boardTXT || branch.boardTXT;
-            return branch;
-        }
-
         function addBranch(branch) {
             let current = nodes[branch.idx],
                 branchsInfo = (branch.indexOf + 1 & 1) + 1; //last move color
@@ -900,10 +893,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
                 current = nodes[branch.idx] = new Branchs();
             }
 
-            if (0 == (current.branchsInfo & branchsInfo) || branch.color == "black") {
+            if (0 == (current.branchsInfo & branchsInfo) || branch.color == "black" || current.branchs[branchsInfo - 1]?.isJoinNode) {
                 current.branchsInfo |= branchsInfo;
                 current.branchs[branchsInfo - 1] = branch;
-                3 == current.branchsInfo && (current.boardTXT = DEFAULT_BOARD_TXT[3]);
+                3 == current.branchsInfo && (current.boardText = DEFAULT_BOARD_TXT[3]);
             }
         }
 
@@ -916,12 +909,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             childNodes.map(cur => {
                 let idx = normalizeIdx(cur.idx, nMatch, this.size),
                     path = currentPath.concat([idx]),
-                    branch = createBranch({
-                        node: cur,
+                    branch = new Branch({
                         idx: idx,
-                        path: path,
                         nMatch: nMatch,
-                        color: color
+                        color: color,
+                        boardText: cur.boardText,
+                        comment: cur.comment,
+                        path: path,
                     });
                 addBranch(branch);
                 //console.log(`this.nMatch: ${this.nMatch}\nnMatch: ${nMatch}\n`);
@@ -929,12 +923,13 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             passNode && passNode.getChilds().map(cur => {
                 let idx = normalizeIdx(cur.idx, nMatch, this.size),
                     path = currentPath.concat([225, idx]),
-                    branch = createBranch({
-                        node: cur,
+                    branch = new Branch({
                         idx: idx,
-                        path: path,
                         nMatch: nMatch,
-                        color: color
+                        color: color,
+                        boardText: cur.boardText,
+                        comment: cur.comment,
+                        path: path,
                     });
                 addBranch(branch);
             });
@@ -978,14 +973,14 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
                     if (rt == movesLen) {
                         let currentPath = normalizePath(moveList.slice(0), nMatch, this.size);
                         if (jointNode) {
-                            let branch = createBranch({
-                                node: jointNode.node,
-                                indexOf: jointNode.len,
-                                boardTXT: DEFAULT_BOARD_TXT[(jointNode.len - 1 & 1) + 1],
+                            let branch = new Branch({
                                 idx: normalizeIdx(jointNode.node.idx, nMatch, this.size),
-                                path: currentPath,
                                 nMatch: nMatch,
-                                color: "#685D8B" //"#483D8B"
+                                color: "#685D8B", //"#483D8B"
+                                boardText: DEFAULT_BOARD_TXT[(jointNode.len - 1 & 1) + 1],
+                                path: currentPath,
+                                indexOf: jointNode.len,
+                                isJoinNode: true
                             });
                             addBranch(branch);
                             //console.log(`red: [${movesToName(branch.path)}]`);
@@ -1047,11 +1042,11 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
                 downNode.idx = path[i];
                 if (typeof nodeInfo === "object") {
                     downNode.level = nodeInfo.level;
-                    downNode.boardTXT = nodeInfo.boardTXT;
+                    downNode.boardText = nodeInfo.boardText;
                     downNode.comment = nodeInfo.comment;
                 }
                 else
-                    downNode.boardTXT = DEFAULT_BOARD_TXT[(i & 1) + 1];
+                    downNode.boardText = DEFAULT_BOARD_TXT[(i & 1) + 1];
                 preNode.addChild(downNode);
             }
             preNode = downNode;
@@ -1068,7 +1063,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
             if (!downNode) {
                 downNode = this.newNode();
                 downNode.idx = path[i];
-                downNode.boardTXT = i & 1 ? "L" : "W";
+                downNode.boardText = i & 1 ? "L" : "W";
                 preNode.addChild(downNode);
             }
             preNode = downNode;
@@ -1085,7 +1080,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1623.08";
                 nodes[i].idx = idx;
                 if (typeof nodeInfo === "object") {
                     nodes[i].level = nodeInfo.level;
-                    nodes[i].boardTXT = nodeInfo.boardTXT;
+                    nodes[i].boardText = nodeInfo.boardText;
                     nodes[i].comment = nodeInfo.comment;
                 }
             }

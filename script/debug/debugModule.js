@@ -235,10 +235,10 @@
                 let node = tree.newNode();
                 node.idx = i;
                 node.level = i << 1;
-                node.boardTXT = "这个字符";
+                node.boardText = "这个字符";
                 node.comment = "这个字符串中需要转码的元素的位置。返回返回值是在字符串中的给定索引的编码单元体现的数字， 如果在索引处没找到元素则返回 undefined。描述如果在指定的位置没有元素则返回 undefined。 如果在索引处开始没有UTF - 16 代理对， 将直接返回在那个索引处的编码单元。Surrogate Pair是UTF - 16 中用于扩展字符而使用的编码方式， 是一种采用四个字节(两个UTF - 16 编码) 来表示一个字符， 称作代理对";
                 console.log(node);
-                console.info(`idx: ${node.idx}\nlevel: ${node.level}\nboardTxT: ${node.boardTXT}\ncomment: ${node.comment}\n`);
+                console.info(`idx: ${node.idx}\nlevel: ${node.level}\nboardTxT: ${node.boardText}\ncomment: ${node.comment}\n`);
                 preNode.right = node;
                 preNode = node;
                 //node.free();
@@ -250,7 +250,7 @@
                 if (node) {
                     node.idx = i;
                     node.level = i << 1;
-                    node.boardTXT = "a";
+                    node.boardText = "a";
                     //node.comment = "这个字符串中需要转码的元素的位置。返回返回值是在字符串中的对";
                     preNode.right = node;
                     preNode = node;
@@ -266,7 +266,7 @@
             let maxLoop = 5;
             preNode = tree.root;
             while (preNode && maxLoop--) {
-                console.warn(`idx: ${preNode.idx}\nlevel: ${preNode.level}\nboardTxT: ${preNode.boardTXT}\ncomment: ${preNode.comment}\n`);
+                console.warn(`idx: ${preNode.idx}\nlevel: ${preNode.level}\nboardTxT: ${preNode.boardText}\ncomment: ${preNode.comment}\n`);
                 preNode = preNode.right;
             }
 

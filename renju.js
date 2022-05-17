@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.08";
+self.SCRIPT_VERSIONS["renju"] = "v1623.09";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -509,8 +509,6 @@ var loadApp = () => { // 按顺序加载应用
             loadAnimarion.text("5%");
             return loadFontAll([
                 [SOURCE_FILES["PFSCMedium1_woff"]],
-                [SOURCE_FILES["PFSCMedium1_ttf"]],
-                [SOURCE_FILES["PFSCHeavy1_ttf"]],
                 [SOURCE_FILES["PFSCHeavy1_woff"]],
                 [SOURCE_FILES["Evaluator_wasm"]],  //WebAssembly
                 [SOURCE_FILES["RenLib_wasm"]],

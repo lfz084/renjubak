@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1623.08";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1623.09";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -109,7 +109,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["TypeBuffer"] = "v1623.08";
                     this.current = 4; // 循环
             }
         } while (this.current != startPointer) // 循环一圈后退出
-        //console.error(new Error(`TypeBuffer alloc Error: buffer is full`));
+        throw new Error(`TypeBuffer alloc Error: buffer is full`);
         this.isFull = true;
         return 0;
     };
