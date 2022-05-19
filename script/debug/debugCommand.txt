@@ -198,3 +198,8 @@ console.log(new Date().getTime()-st)
 catch(err){
 console.error(err.stack)
 }
+
+JFile.js
+JPoint.js
+LibraryFile.js
+LibraryTree.js

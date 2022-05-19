@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1623.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["engine"] = "v1718.00";
 window.engine = (function() {
     "use strict";
     const TEST_ENGINE = false;
@@ -175,7 +175,7 @@ window.engine = (function() {
             }, 0);
         });
     }
-    
+
     async function run(cmd, param, thread) {
         log(param, "log");
         thread = thread || await getFreeThread();
@@ -244,9 +244,9 @@ window.engine = (function() {
         else if (i < 100) LEVEL_THREE_POINTS_TXT[i] = `V${i}`;
         else LEVEL_THREE_POINTS_TXT[i] = `V++`;
     })
-    
+
     //把棋局转成手顺，包含pass
-    function positionToMoves(position) { 
+    function positionToMoves(position) {
         let blackMoves = [],
             whiteMoves = [],
             moves = [];
@@ -471,12 +471,12 @@ window.engine = (function() {
     async function wait(time) {
         return new Promise(resolve => setTimeout(resolve, time))
     }
-    
+
     async function putMove(idx, waitTime = 500) {
         cBoard.wNb(idx, "auto", true);
         await wait(waitTime);
     }
-    
+
     async function takeMove(idx, waitTime = 500) {
         cBoard.cleNb(idx, true);
         await wait(waitTime);
@@ -694,8 +694,8 @@ window.engine = (function() {
             curDepthVCT,
             maxDepthVCT;
 
-            moveList.setRoot(new ListNode(current, MIN, MAX));
-            moveList.getRoot().score = MIN;
+        moveList.setRoot(new ListNode(current, MIN, MAX));
+        moveList.getRoot().score = MIN;
 
         while (current) {
             console.log(`>> [${movesToName(moves)}]\n alpha: ${current.alpha}, beta: ${current.beta}, bestValue: ${current.bestValue}`)
@@ -714,14 +714,14 @@ window.engine = (function() {
             let vList = [],
                 curIdx = -1,
                 endIdx = moveList.index();
-            while(curIdx++ <= endIdx) {
+            while (curIdx++ <= endIdx) {
                 vList.push(moveList.get(curIdx).bestValue);
             }
-            
+
             console.info(`>> [${movesToName(moves)}]\nvList: ${vList}`)
 
             curDepthVCT = moves.length;
-            maxDepthVCT = curDepthVCT==0 ? 3 : curDepthVCT + 4;
+            maxDepthVCT = curDepthVCT == 0 ? 3 : curDepthVCT + 4;
             while (current) { // alpha-beta 估值
                 //count++;
                 if (moves.length < maxDepthVCT) {
@@ -735,7 +735,7 @@ window.engine = (function() {
                     }
                     count++;
                 }
-                
+
                 current = current.down;
 
                 if (current) {
@@ -757,7 +757,7 @@ window.engine = (function() {
                         arr[moves.pop()] = 0;
                         moveList.decrement();
                         //await takeMove(moveList.current().idx);
-                        
+
                         let cur = moveList.current();
                         if (moves.length & 1) {
                             cur.bestValue = Math.min(cur.bestValue, bestValue);
@@ -792,7 +792,7 @@ window.engine = (function() {
                     moveList.decrement();
                     current = moveList.current();
                     //await takeMove(current.idx);
-    
+
                     let { maxScore, minScore } = current.getMaxMinScore(),
                         oldBestValue = current.bestValue;
                     if (moves.length & 1) {

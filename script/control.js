@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["control"] = "v1623.09";
+self.SCRIPT_VERSIONS["control"] = "v1718.00";
 window.control = (() => {
     "use strict";
     const TEST_CONTROL = true;
@@ -136,6 +136,7 @@ window.control = (() => {
         let topMark = document.createElement("div");
         document.body.appendChild(topMark);
         topMark.setAttribute("id", "top");
+        
         return (top) => {
             let s = topMark.style;
             s.position = "absolute";

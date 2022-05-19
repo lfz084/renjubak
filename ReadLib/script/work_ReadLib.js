@@ -1,5 +1,5 @@
 "use strict"
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1623.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["work_ReadLib"] = "v1718.00";
 
 if ("importScripts" in self) {
     self.importScripts(
@@ -28,7 +28,6 @@ else
 /*
 cmd = [alert | log | warn | info | error | addBranch | addBranchArray | createTree | addTree | loading | finish ...]
 */
-
 function post(cmd, param) {
     if (typeof cmd == "object" && cmd.constructor.name == "Error")
         postMessage(cmd)  //部分浏览器 不支持复制 Error
@@ -43,14 +42,11 @@ function getArrBuf(file) {
     return new Promise(function(resolve, reject) {
         let fr = new FileReader();
         fr.onload = function() {
-            post("log","getArrBuf end")
             resolve(fr.result)
         };
-        fr.onerror = function(err) {
-            post("log",Object.keys(err))
-            reject(err)
+        fr.onerror = function() {
+            reject(fr.error)
         };
-        post("log","getArrBuf")
         fr.readAsArrayBuffer(file)
     });
 }
@@ -71,10 +67,15 @@ function openLib(file) {
         })
         .then(function() {
             post("finish");
-            return Promise.resolve();
+        })
+        .then(function() {
+            post("resolve");
         })
         .catch(function(err) {
-            post("onerror", err.message || err);
+            post("onerror", err.stack || err);
+        })
+        .then(function() {
+            post("resolve");
         })
 }
 
@@ -93,36 +94,41 @@ function getAutoMove(){
         }
         showBranchs({ path: [], position: position })
     }
+    post("resolve");
 }
 
 function showBranchs(param) {
     let rt = renLibDoc.getBranchNodes(param.path);
     rt.position = param.position;
     post("showBranchs", rt);
+    post("resolve");
 }
 
 function setCenterPos(point) {  
     renLibDoc.setCenterPos(point);
+    post("resolve");
 }
 
 function setBufferScale(scl){ // WebAssembly only
     typeof renLibDoc.setBufferScale == "function" &&
         renLibDoc.setBufferScale(scl);
+    post("resolve");
 }
 
 function setPostStart(start = 0){  // test Lib File
     typeof renLibDoc.setPostStart == "function" &&
         renLibDoc.setPostStart(start);
+    post("resolve");
 }
 
 let bf = [];
 const CMD = {
     openLib: openLib,
+    getAutoMove: getAutoMove,
     showBranchs: showBranchs,
     setCenterPos: setCenterPos,
     setBufferScale: setBufferScale,
     setPostStart: setPostStart,
-    getAutoMove: getAutoMove
 }
 onmessage = function(e) {
     if (e.data) {

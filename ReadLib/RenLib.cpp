@@ -9,15 +9,15 @@ typedef char* CString;
 extern UINT getBuffer(BYTE* pBuf, UINT size);
 extern UINT grow(UINT pages);
 extern void loading(UINT current, UINT end);
+extern void memoryBound();
 
 const UINT _ONE_KB = 1024; //1KB
 const UINT _PAGE_SIZE = _ONE_KB*64; //64K
 const UINT _ONE_MB = _ONE_KB*1024; //1MB
 const UINT _IO_BUFFER_SIZE = _PAGE_SIZE;
 const UINT _ERR_BUFFER_SIZE = _ONE_MB;
-const UINT _LOG_BUFFER_SIZE = _ONE_MB*2;
+const UINT _LOG_BUFFER_SIZE = _ONE_MB;
 const UINT _COMMENT_BUFFER_SIZE = _ONE_MB*2;
-const UINT _BOARDTEXT_BUFFER_SIZE = _ONE_MB*64;
 const UINT _LIBFILE_BUFFER_SIZE = _ONE_MB;
 
 char _empty0[_ONE_KB] = {0};
@@ -161,10 +161,9 @@ BYTE* getDataBuffer(){
 
 BYTE* newBuffer(UINT size){
     current_data_buffer += size;
-    /*if(current_data_buffer > end_data_buffer){
-        grow(128);
-        end_data_buffer += _PAGE_SIZE * 128;
-    }*/
+    if(current_data_buffer > end_data_buffer){
+        return 0;
+    }
     return &data_buffer[current_data_buffer-size];
 }
 
@@ -505,7 +504,7 @@ void test_newCPoint(UINT count){
             setIsBoardText(!isEmpty(mBoardText));
         }
         CString getBoardText() {
-            return mBoardText;
+            return (CString)&mBoardText;
         }
     
     private:
@@ -915,12 +914,71 @@ private:
     BYTE    m_MinorFileVersion;
 };
 
+//----------------- TextPages  ---------------------------
+
+const UINT TEXTPAGE_SIZE = 1024;
+
+struct TextPage
+{
+    MoveNode* pMoveNode;
+    char text[1020];
+};
+
+class TextPages
+{
+    public:
+        TextPages(BYTE* buffer, UINT buffer_size) 
+        {
+            page_start = (TextPage*)buffer;
+            page_end = (TextPage*)(buffer+buffer_size);
+            m_index = 0;
+        }
+        
+        TextPage* getTextPage()
+        {
+            TextPage* page = page_start + m_index;
+            if (page < page_end) 
+            {
+                m_index++;
+                return page;
+            }
+            return 0;
+        }
+        
+        TextPage* findTextPage(MoveNode* pNode)
+        {
+            int i = 0;
+            TextPage* st_page = page_start;
+            TextPage* ed_page = page_start + (m_index-1);
+            TextPage* c_page = st_page + (ed_page - st_page)/2;
+            while(st_page <= ed_page && i++ < 32) {
+                if (c_page->pMoveNode == pNode) {
+                    return c_page;
+                }
+                else if (c_page->pMoveNode > pNode) {
+                    ed_page = c_page - 1;
+                    c_page = st_page + (ed_page - st_page)/2;
+                }
+                else {
+                    st_page = c_page + 1;
+                    c_page = st_page + (ed_page - st_page)/2;
+                }
+            }
+            return 0;
+        }
+    public:
+        TextPage* page_start;
+        TextPage* page_end;
+        UINT m_index;
+};
+
 //--------------------- Doc -------------------------
     
     MoveNode* rootMoveNode = 0;
     Stack* m_Stack = 0;
     MoveList* m_MoveList = 0;
     LibraryFile* m_file = 0;
+    TextPages* commentPages = 0;
 
     int msb(BYTE ch){
         return (ch & 0x80);
@@ -947,12 +1005,13 @@ private:
         
         do {
             m_file->Get(data1, data2);
-
+            if(len < 1018) {
             pStrOneLine[len++] = data1;
             pStrOneLine[len++] = data2;
-        
+            }
         }while(data1 && data2);
-        
+        pStrOneLine[len + 1] = 0;
+        pStrOneLine[len + 2] = 0;
         return len;
     }
     
@@ -963,9 +1022,10 @@ private:
 
         do {
             m_file->Get(data1, data2);
-
+            if(len < 4) {
             pStrBoardText[len++] = data1;
             pStrBoardText[len++] = data2;
+            }
             
         }while(data1 && data2);
         
@@ -1097,12 +1157,13 @@ void searchInnerHTMLInfo(CPoint* posArr, UINT len) {
             pMove = pMove->mDown;
             findNode(pMove, pPos[i]);
             if (pMove){
-                /*
-                if(pMove->mOneLineComment && i == len - 1) {
-                    innerHTMLInfo->innerHTML = pMove->mOneLineComment;
-                    innerHTMLInfo->depth = i;
+                if(pMove->isNewComment() && i == len - 1) {
+                    TextPage* page = commentPages->findTextPage(pMove);
+                    if (page) {
+                        innerHTMLInfo->innerHTML = page->text;
+                        innerHTMLInfo->depth = i;
+                    }
                 }
-                */
             }
             else {
                 break;
@@ -1170,13 +1231,13 @@ void getBranchNodes(CPoint* posArr, int len){
                         int idxNode = indexOfNode(jointNode.pMove->mPos, Nodes, *count);
                         if(idxNode>-1){
                             if(Nodes[idxNode].txt==0){
-                                Nodes[idxNode].txt = pMove->mBoardText;
+                                Nodes[idxNode].txt = pMove->getBoardText();
                                 Nodes[idxNode].color = 0;
                             }
                         }
                         else{
                             pNode->mPos = jointNode.pMove->mPos;
-                            pNode->txt = pMove->mBoardText;
+                            pNode->txt = pMove->getBoardText();
                             pNode->color = 0;
                             pNode++;
                             (*count)++;
@@ -1186,13 +1247,13 @@ void getBranchNodes(CPoint* posArr, int len){
                         int idxNode = indexOfNode(pMove->mPos, Nodes, *count);
                         if(idxNode>-1){
                             if(Nodes[idxNode].txt==0){
-                                Nodes[idxNode].txt = pMove->mBoardText;
+                                Nodes[idxNode].txt = pMove->getBoardText();
                                 Nodes[idxNode].color = 0;
                             }
                         }
                         else{
                             pNode->mPos = pMove->mPos;
-                            pNode->txt = pMove->mBoardText;
+                            pNode->txt = pMove->getBoardText();
                             pNode->color = 0;
                             pNode++;
                             (*count)++;
@@ -1232,6 +1293,10 @@ bool checkVersion(){
     if(m_file->CheckVersion()){
         m_MoveList->ClearAll();
         m_Stack->ClearAll();
+        commentPages->page_start = (TextPage*)comment_buffer;
+        commentPages->page_end = (TextPage*)(comment_buffer+_COMMENT_BUFFER_SIZE);
+        commentPages->m_index = 0;
+            
         MoveNode* pCurrentMove = 0;
         
         if (m_MoveList->IsEmpty()) {
@@ -1254,45 +1319,47 @@ bool checkVersion(){
 UINT loadAllMoveNode(){
     m_MoveNode_count = 0;
     MoveNode* next = (MoveNode*)newBuffer(sizeof(MoveNode));
+    
     //log("next = newMoveNode()");
     int len = 0;
     char* str;
     while(m_file->Get(*next)){
+        m_MoveNode_count++;
         //log(next->getName());
         if (next->isOldComment()){
             //log("readOldComment");
             str = (char*)in_buffer;
             readOldComment(str);
+            next->mInfo &= ~(OLD_COMMENT | COMMENT);
         }
             
         if(next->isNewComment()) {
             //log("readNewComment");
-            str = (char*)&comment_buffer[current_comment_buffer];
+            TextPage* page = commentPages->getTextPage();
+            if (page) {
+                page->pMoveNode = next;
+                str = page->text;
+            }
+            else {
+                str =  (char*)in_buffer;
+                next->mInfo &= ~(OLD_COMMENT | COMMENT);
+            }
             len = readNewComment(str);
-            /*if(len && (_COMMENT_BUFFER_SIZE >= current_comment_buffer+len)){
-                next->setOneLineComment(str);
-                current_comment_buffer+=len;
-            }*/
         }
             
         if (next->isBoardText()) {
             //log("readBoardText");
             str = (char*)in_buffer; // (char*)&boardText_buffer[current_boardText_buffer];
-            len = readBoardText(str);
-            /*if(len && (_BOARDTEXT_BUFFER_SIZE > current_boardText_buffer+len)){
-                if(len>6){
-                    str[4] = 0;
-                    str[5] = 0;
-                    len = 6;
-                }
-                next->setBoardText(str);
-                current_boardText_buffer+=len;
-            }*/
+            len = readBoardText((CString)&(next->mBoardText));
         }
-        m_MoveNode_count++;
+        
         next = (MoveNode*)newBuffer(sizeof(MoveNode));
+        if (next == 0) {
+            memoryBound();
+            break;
+        }
     }
-    //log("loadAllMoveNode end");
+
     return m_MoveNode_count;
 }
 
@@ -1358,7 +1425,7 @@ bool createRenjuTree(){
     return true;
 }
 
-int init(UINT bytesLength){
+int init(){
     log("wasm >> init");
     UINT comment_buffer_size = _ONE_MB*2;
     UINT boardText_buffer_size = _ONE_KB;
@@ -1369,20 +1436,27 @@ int init(UINT bytesLength){
     current_comment_buffer = 0;
     current_boardText_buffer = 0;
     current_data_buffer = 0;
-    end_data_buffer = 0;
+    end_data_buffer = _ONE_MB;
     
     comment_buffer = skip_data_pages*_PAGE_SIZE + libFile_buffer + _LIBFILE_BUFFER_SIZE + _ONE_KB;
     boardText_buffer = comment_buffer + comment_buffer_size + _ONE_KB;
     data_buffer = boardText_buffer + boardText_buffer_size + _ONE_KB;
         
     log("reset m_Stack");
+    /*--------------------------------------
+        grow() 前不要初始化这几个全局变量，指针会溢出,
+        后续在 checkVersion() 里面初始化
+    ----------------------------------------*/
     m_Stack = (Stack*)newBuffer(sizeof(Stack));
-    //m_Stack->ClearAll();
-    log("reset m_MoveList");
     m_MoveList = (MoveList*)newBuffer(sizeof(MoveList));
-    //m_MoveList->ClearAll();
-    log("reset m_file");
     m_file = (LibraryFile*)newBuffer(sizeof(LibraryFile));
-        
+    commentPages = (TextPages*)newBuffer(sizeof(TextPages));
+    /*--------------------------------------*/
+    
     return int(skip_data_pages);
+}
+
+
+void setMemoryEnd(UINT size) {
+    end_data_buffer = size;
 }

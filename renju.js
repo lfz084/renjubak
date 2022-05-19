@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1623.09";
+self.SCRIPT_VERSIONS["renju"] = "v1718.00";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -452,7 +452,7 @@ var loadApp = () => { // 按顺序加载应用
             cBoard.printEmptyCBoard();
 
             control.reset(cBoard, engine, msg, closeMsg, appData, dw, dh, [downDiv, 0, 0, cWidth, cWidth], bodyDiv);
-            
+    
             let {firstColor, resetNum, moves, whiteMoves, blackMoves, cBoardSize, coordinateType, renjuCmdSettings} = appData.loadData();
             if(window.codeURL) {
                 let obj = cBoard.loadCodeURL(window.codeURL);
@@ -477,7 +477,7 @@ var loadApp = () => { // 按顺序加载应用
             return bodyDiv;
         }
         catch (err) {
-            document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err}</p></h3><h2><a onclick="window.reloadApp()">点击刷新</a></h2></div>`;
+            document.body.innerHTML = `<div><h1>出错啦</h1><h3><p>${err.stack || err.message}</p></h3><h2><a onclick="window.reloadApp()">点击刷新</a></h2></div>`;
         }
     }
 
@@ -511,7 +511,6 @@ var loadApp = () => { // 按顺序加载应用
                 [SOURCE_FILES["PFSCMedium1_woff"]],
                 [SOURCE_FILES["PFSCHeavy1_woff"]],
                 [SOURCE_FILES["Evaluator_wasm"]],  //WebAssembly
-                [SOURCE_FILES["RenLib_wasm"]],
                 ], true)
         })
         .then(() => {
@@ -534,7 +533,7 @@ var loadApp = () => { // 按顺序加载应用
                 ], false)
         })      
         .then(() => {
-            loadAnimarion.text("25%");
+            loadAnimarion.text("30%");
             return loadScriptAll([
                 [SOURCE_FILES["Button"]],
                 [SOURCE_FILES["Evaluator"]],
@@ -555,28 +554,34 @@ var loadApp = () => { // 按顺序加载应用
                 ], true)
         })
         .then(() => {
-            loadAnimarion.text("60%");
+            loadAnimarion.text("50%");
             return loadScriptAll([
                 [SOURCE_FILES["PFSCMedium"]],
                 [SOURCE_FILES["PFSCHeavy"]],
                 ], true)
         })
         .then(() => {
-            loadAnimarion.text("75%");
+            loadAnimarion.text("63%");
             return loadScriptAll([
-                [SOURCE_FILES["JPoint"]],
-                [SOURCE_FILES["worker"]],
-                [SOURCE_FILES["IntervalPost"]],
                 [SOURCE_FILES["UNICODE2GBK"]],
-                [SOURCE_FILES["JFile"]],
-                [SOURCE_FILES["LibraryFile"]],
                 [SOURCE_FILES["MoveList"]],
                 [SOURCE_FILES["MoveNode"]],
                 [SOURCE_FILES["Stack"]],
-                [SOURCE_FILES["RenLibDoc"]],
-                [SOURCE_FILES["work_ReadLib"]],
                 [SOURCE_FILES["RenjuLib"]],
-                [SOURCE_FILES["RenLibDoc_wasm"]]
+                ], true)
+        })
+        .then(() => {
+            loadAnimarion.text("78%");
+            return loadFileAll([
+                [SOURCE_FILES["JFile"]],
+                [SOURCE_FILES["JPoint"]],
+                [SOURCE_FILES["LibraryFile"]],
+                [SOURCE_FILES["worker"]],
+                [SOURCE_FILES["work_ReadLib"]],
+                [SOURCE_FILES["IntervalPost"]],
+                [SOURCE_FILES["RenLibDoc"]],
+                [SOURCE_FILES["RenLibDoc_wasm"]],
+                [SOURCE_FILES["RenLib_wasm"]],
                 ], true)
         })
         .then(() => {

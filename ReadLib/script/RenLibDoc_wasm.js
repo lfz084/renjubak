@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -284,8 +284,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
                 let pages = resetBuffer(bufSize,scl);
                 scl -= 0.1;
                 if(pages) resolve(pages);
-                else if(scl>3)setTimeout(()=>max(bufSize, scl),0);
-                else reject(`手机空闲内存太小了,请关闭后台应用释放内存`);
+                else if(scl>1)setTimeout(()=>max(bufSize, scl),0);
+                else reject(`浏览器申请内存失败,请关闭后台应用、刷新网页，再试一下`);
             }
             max(bufSize, scl);
         });
@@ -293,7 +293,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
 
 
     let jFile = new JFile(),
-        buffer_scale = 28 / 6,
+        buffer_scale = 16 / 4,
         wasm_exports,
         memory,
         out_buffer,
@@ -328,6 +328,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
                 },
                 _Z7loadingjj: function(current, end) {
                     post("loading", { current: current, end: end });
+                },
+                _Z11memoryBoundv: ()=>{
+                    post("alert", `浏览器可用内存不足，只能打开 ${parseInt((jFile.m_current / jFile.m_end)*10000)/100}% 棋谱`);
                 },
                 _Z4growj: () => 0,
             }
@@ -386,7 +389,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
         post("warn", `棋谱大小改为: ${centerPos.x*2-1} × ${centerPos.y*2-1} \n中心点已改为: x = ${centerPos.x}, y = ${centerPos.y}`)
     }
 
-    CRenLibDoc.prototype.setBufferScale = function(scl = 28 / 6) {
+    CRenLibDoc.prototype.setBufferScale = function(scl = 16 / 4) {
         buffer_scale = scl;
         post("warn", `已设置${scl}倍内存，打开1M的lib文件会占用${scl}M内存`);
     }
@@ -395,7 +398,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
 
         return loadWASM("./RenLib.wasm")
             .then(function() {
-                wasm_exports._Z4initj(buf.byteLength);
+                wasm_exports._Z4initv(buf.byteLength);
             })
             .then(function(){
                 post(`log`, `maxMemory`);
@@ -408,6 +411,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
             })
             .then(function(pages) {
                 post(`warn`, `申请 ${parseInt(pages/16)+1}M 内存 OK`);
+                wasm_exports._Z12setMemoryEndj(memory.buffer.byteLength - wasm_exports._Z13getDataBufferv());
                 if (jFile.open(buf)) {
                     return Promise.resolve();
                 }
@@ -415,20 +419,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
                     return Promise.reject("libFile Open Error");
                 }
             })
-            /*
-            .then(function(){
-                let rt = wasm_exports._Z10addLibraryv();
-                if(rt>-1){
-                    return Promise.resolve();
-                }
-                else if(rt==-1){
-                    return Promise.reject(`不是五子棋棋谱`);
-                }
-                else{
-                    return Promise.reject(`Point err: ${rt}`);
-                }
-            })
-            */
+
             .then(function() {
                 if (wasm_exports._Z12checkVersionv())
                     return Promise.resolve();
@@ -437,13 +428,16 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
             })
             .then(function() {
                 let number = wasm_exports._Z15loadAllMoveNodev(),
-                    dataSize = 1804 + 908 + 16 + 24 + number * 24; // Stack + MoveList + LibraryFile + RootMoveNode + libNode;
+                    dataSize = 1804 + 908 + 16 + 16 + number * 16; // Stack + MoveList + LibraryFile + RootMoveNode + libNode;
                 if (memory.buffer.byteLength < data_buffer + dataSize)
                     return Promise.reject(`默认内存不足 请先设置 ${parseInt(dataSize/buf.byteLength*100+1)/100} 倍以上内存`);
                 if (number)
                     return Promise.resolve();
                 else
                     return Promise.reject(`loadAllMoveNode Error`);
+            })
+            .then(function() {
+                jFile.close();
             })
             .then(function() {
                 if (wasm_exports._Z15createRenjuTreev())
@@ -462,7 +456,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
 
     //-----------------------------------------------------------
     CRenLibDoc.prototype.getBranchNodes = function(path) {
-    post("info", path);
+    
         function normalizeNodes(nodes, nMatch) {
             let idx,
                 txt,
@@ -517,7 +511,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
             normalizeNS;
         post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
         for (let i = 0; i < 8; i++) {
-            //if (i==1) break;
             PH = transposePath(path, i);
             putPath(PH);
             //post("log",`${new Uint8Array(memory.buffer, in_buffer, path.length*POINT_SIZE)}`);
@@ -527,7 +520,9 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1623.09";
             normalizeNS = normalizeNodes(NS, i);
             //post("log",normalizeNS)
             nodes = pushNodes(nodes, normalizeNS);
+            post("log",`>>> ${i}`)
             wasm_exports._Z19searchInnerHTMLInfoP6CPointj(in_buffer, path.length);
+            post("log",`<<< ${i}`)
             let info = getInnerHTMLInfo(out_buffer);
             if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
         }

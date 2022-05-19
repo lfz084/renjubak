@@ -249,7 +249,8 @@
             }, 1000);
             try {
                 startTime = new Date().getTime();
-                document.querySelector('.sequence-message').innerText = exports._Z4initj(LIB_SIZE);
+                
+                document.querySelector('.sequence-message').innerText = exports._Z4initv(LIB_SIZE);
                 
                 log(`comment_buffer address : ${exports._Z16getCommentBufferv()}`);
                 log(`boardText_buffer address : ${exports._Z18getBoardTextBufferv()}`);
@@ -259,9 +260,10 @@
                 //exports._Z16test_newMoveNodej(1024*1024);
                 //log(exports._Z10test_Stacki(1024*1024));
                 //log(`getVariant = ${exports._Z15test_getVariantv()}`);
-                maxMemory(LIB_SIZE, 8)
+                maxMemory(LIB_SIZE, 5)
                 .then(function(pages){
                     log(`申请 ${parseInt(pages/16)+1}M 内存 OK`);
+                    exports._Z12setMemoryEndj(memory.buffer.byteLength - exports._Z13getDataBufferv());
                 
                 (/*grow(parseInt(LIB_SIZE/1024/64*5)+1),*/
                 /*resetBuffer(LIB_SIZE, 5),*/
@@ -328,6 +330,7 @@
                         alert(`reset_heap ${arg}`);
                     },
                     _Z4growj: ()=>0,
+                    _Z11memoryBoundv: ()=>{alert(`memory bounds: ${parseInt((current_Data / LIB_SIZE)*1000)/10}%`)},
                 }
             };
         //从远程加载一个WASM的模块，并将该模块中的内容转换成二进制数据

@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1623.09";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuLib"] = "v1718.00";
 window.RenjuLib = (() => {
     "use strict";
     //console.log(exports);
@@ -48,19 +48,6 @@ window.RenjuLib = (() => {
     const MODE_RENLIB = 7;
 
     const CMD = {
-        /*
-        addBranchArray: function(branchArray) {
-            pathStrack = pathStrack.concat(branchArray);
-            log(branchArray);
-        },
-        addTree: function(tree) {
-            //new RenjuTree(tree).addBranchArray(pathStrack)
-            addTree(tree);
-        },
-        createTree: function(data) {
-            createTree(data);
-        },
-        */
         loading: function(data) {
             loading(data);
         },
@@ -112,6 +99,8 @@ window.RenjuLib = (() => {
     function createWorker() {
         if (errCount > 5) return;
         wk = new Worker(url);
+        wk.isBusy = false;
+        wk.PARAMETER = {};
         wk.onmessage = function(e) {
             if (typeof e.data == "object") {
                 sTime = new Date().getTime();
@@ -126,6 +115,29 @@ window.RenjuLib = (() => {
         wk.onerror = function(e) {
             onError(e);
         };
+        wk.promiseMessage = (function(param) {
+            let wk = this;
+            return new Promise((resolve, reject) => {
+                function r(e) {
+                    if (typeof e.data == "object" && e.data.cmd == "resolve") {
+                        wk.removeEventListener("message", r);
+                        wk.removeEventListener("error", err);
+                        wk.isBusy = false;
+                        resolve();
+                    }
+                }
+                function err(e) {
+                    wk.removeEventListener("message", r);
+                    wk.removeEventListener("error", err);
+                    wk.isBusy = false;
+                    reject(e);
+                }
+                wk.isBusy = true;
+                wk.addEventListener("message", r);
+                wk.addEventListener("error", err);
+                wk.postMessage(param);
+            })
+        }).bind(wk);
         //log(`createWorker, wk = ${wk}, \nurl = "${url}"`, "info");
         return wk;
     }
@@ -141,9 +153,9 @@ window.RenjuLib = (() => {
         enable = false;
         isLoading = true;
         wk = createWorker();
-        wk.postMessage({ cmd: "setBufferScale", parameter: buffer_scale });
-        wk.postMessage({ cmd: "setPostStart", parameter: post_number_start });
-        wk.postMessage({ cmd: "openLib", parameter: file });
+        wk.promiseMessage({ cmd: "setBufferScale", parameter: buffer_scale })
+        .then(() => wk.promiseMessage({ cmd: "setPostStart", parameter: post_number_start }))
+        .then(() => wk.promiseMessage({ cmd: "openLib", parameter: file }))
         timer = setInterval(catchErr, 1000);
         sTime = new Date().getTime();
     }
@@ -162,27 +174,7 @@ window.RenjuLib = (() => {
         setLoading(message);
         sTime = new Date().getTime();
     }
-    /*
-    function createTree(data) {
-        let current = data.current,
-            end = data.end;
-        setLoading(`${current} / ${end}`);
-    }
-
-    function addTree(tree) {
-        function next(nd) {
-            if (nd.childNode.length == 1) {
-                nd = nd.childNode[0];
-                cBoard.toNext(getShowNum());
-                setTimeout(() => { next(nd) }, 0);
-            }
-        }
-        let nd = tree;
-        newGame();
-        cBoard.addTree(nd);
-        setTimeout(()=>next(nd),1000);
-    }
-    */
+    
     function finish() {
         setBusy();
         loadAnimarion.close();
@@ -198,7 +190,6 @@ window.RenjuLib = (() => {
         finish();
         wk && removeWorker();
         enable = false;
-        //wk = createWorker();
     }
 
     function catchErr() {
@@ -216,7 +207,7 @@ window.RenjuLib = (() => {
             level = ["l", "L", "c", "c5", "c4", "c3", "c2", "c1", "w", "W", "a", "a5", "a4", "a3", "a2", "a1"];
         //log(data)
         if (!isEqual(data.position, cBoard.getArray2D())) return;
-        console.info(data.nodes)
+        //console.info(data.nodes)
         cBoard.cleLb("all");
         for (let i = 0; i < nodes.length; i++) {
             if (cBoard.nextColor()===2 || !isFoul(nodes[i].idx, data.position)) {
@@ -277,17 +268,30 @@ window.RenjuLib = (() => {
         closeLib: function() {
             wk && removeWorker();
             enable = false;
-            //wk = createWorker();
         },
         cancal: function() {
             finish();
             wk && removeWorker();
             enable = false;
-            //wk = createWorker();
         },
         showBranchs: function(param) {
-            enable && (wk.postMessage({ cmd: "setCenterPos", parameter: centerPos }),
-                wk.postMessage({ cmd: "showBranchs", parameter: param }))
+            if (enable) {
+                if (wk.isBusy) {
+                    wk.PARAMETER["showBranchs"] = param;
+                }
+                else {
+                    wk.promiseMessage({ cmd: "setCenterPos", parameter: centerPos })
+                    .then(() => wk.promiseMessage({ cmd: "showBranchs", parameter: param }))
+                    .then(() => {}).catch(() => {})
+                    .then(() => {
+                        let par = wk.PARAMETER["showBranchs"];
+                        if (par) {
+                            wk.PARAMETER["showBranchs"] = undefined;
+                            this.showBranchs(par);
+                        }
+                    })
+                }
+            }
         },
         isLoading: function() {
             return isLoading;
@@ -296,8 +300,11 @@ window.RenjuLib = (() => {
             colour = !colour;
         },
         getAutoMove: function(){
-            enable && (cBoard.toStart(),cBoard.toPrevious(),
-                wk.postMessage({ cmd: "getAutoMove", parameter: undefined }));
+            if (enable) {
+                cBoard.toStart();
+                cBoard.toPrevious();
+                wk.promiseMessage({ cmd: "getAutoMove", parameter: undefined });
+            }
         },
         setCenterPos: setCenterPos,
         setBufferScale: setBufferScale,

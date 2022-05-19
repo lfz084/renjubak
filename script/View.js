@@ -1,6 +1,8 @@
 
-window.View = (function() {
-    "use strict";
+(function(global, factory) {
+    (global = global || self, factory(global));
+}(this, (function(exports) {
+    'use strict';
     const SCALABLE = !(window.navigator.userAgent.indexOf("Lumia") + 1);  //windows Phone 
     function view(width) {
         let dw = document.documentElement.clientWidth;
@@ -39,10 +41,10 @@ window.View = (function() {
 
     view.prototype.scrollTop = function() {
         const TOP_ELEM = document.getElementById("top");
-        scrollToAnimation(getAbsolutePos(TOP_ELEM).y);
+        TOP_ELEM && scrollToAnimation(getAbsolutePos(TOP_ELEM).y);
     }
 
-    window.scrollToAnimation = (() => {
+    let scrollToAnimation = (() => {
         let moves = [];
         let animationFrameScroll = null;
         let targetScrollTop = 0
@@ -75,11 +77,11 @@ window.View = (function() {
         }
     })();
 
-    window.getScrollY = () => {
+    function getScrollY() {
         return document.documentElement.scrollTop || document.body.scrollTop || 0;
     }
 
-    window.setScrollY = (top) => {
+    function setScrollY(top) {
         let t = document.documentElement.scrollTop;
         if (t !== undefined && t != top) {
             document.documentElement.scrollTop = top;
@@ -90,7 +92,7 @@ window.View = (function() {
         }
     }
 
-    window.getScrollPoints = (move) => {
+    function getScrollPoints(move) {
         const PAR = 1.25;
         const PAR2 = move < 0 ? 1 : 1;
         const MAX_MOVE = 5000;
@@ -119,7 +121,7 @@ window.View = (function() {
         return rtHs;
     }
 
-    window.getAbsolutePos = (el) => {
+    function getAbsolutePos(el) {
         var r = { x: el.offsetLeft, y: el.offsetTop };
         if (el.offsetParent) {
             var tmp = getAbsolutePos(el.offsetParent);
@@ -128,5 +130,11 @@ window.View = (function() {
         }
         return r;
     }
-    return view;
-})();
+    
+    exports.View = view;
+    exports.scrollToAnimation = scrollToAnimation;
+    exports.getScrollY = getScrollY;
+    exports.setScrollY = setScrollY;
+    exports.getScrollPoints = getScrollPoints;
+    exports.getAbsolutePos = getAbsolutePos;
+})))
