@@ -3,6 +3,7 @@
     (global = global || self, factory(global));
 }(this, (function(exports) {
     'use strict';
+    
     const SCALABLE = !(window.navigator.userAgent.indexOf("Lumia") + 1);  //windows Phone 
     function view(width) {
         let dw = document.documentElement.clientWidth;

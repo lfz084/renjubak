@@ -1,4 +1,4 @@
-self.SCRIPT_VERSIONS["renju"] = "v1718.00";
+self.SCRIPT_VERSIONS["renju"] = "v1718.01";
 var loadApp = () => { // 按顺序加载应用
     "use strict";
     const TEST_LOADAPP = true;
@@ -23,7 +23,9 @@ var loadApp = () => { // 按顺序加载应用
         }
         let print = command[type] || console.log;
         if (TEST_LOADAPP && DEBUG) {
-            print(`[renju.js]\n>>  ${ param}`);
+            const MSG = `${param}`;
+            print(`[renju.js]\n>>  ${MSG}`);
+            "mlog" in window && typeof mlog == "function" && mlog(MSG);
         }
     }
     
@@ -593,8 +595,8 @@ var loadApp = () => { // 按顺序加载应用
         })
         .then(() => {
             loadAnimarion.text("99%");
-            removeMlog();
             initNoSleep();
+            removeMlog();
             const UI = createUI();
             window.viewport1.resize();
             loadAnimarion.lock(false);

@@ -1,7 +1,9 @@
-self.SCRIPT_VERSIONS["CheckerBoard"] = "v1718.00";
-window.CheckerBoard = (function() {
+self.SCRIPT_VERSIONS["CheckerBoard"] = "v1718.01";
+(function(global, factory) {
+    (global = global || self, factory(global));
+}(this, (function(exports) {
+    'use strict';
 
-    "use strict";
     const TEST_CHECKER_BOARD = true;
     const TYPE_EMPTY = 0;
     const TYPE_MARK = 1; // 标记
@@ -4323,22 +4325,22 @@ window.CheckerBoard = (function() {
     };
 
 
-    window.TYPE_EMPTY = TYPE_EMPTY;
-    window.TYPE_MARK = TYPE_MARK; // 标记
-    window.TYPE_NUMBER = TYPE_NUMBER; // 顺序添加的棋子
-    window.TYPE_BLACK = TYPE_BLACK; // 无序号 添加的黑棋
-    window.TYPE_WHITE = TYPE_WHITE; // 无序号 添加的黑棋
-    window.TYPE_MOVE = TYPE_MOVE; //VCF手顺
-    window.TYPE_MARKFOUL = TYPE_MARKFOUL;
-    window.TYPE_MARKARROW = TYPE_MARKARROW;
-    window.TYPE_MARKLINE = TYPE_MARKLINE;
+    exports.TYPE_EMPTY = TYPE_EMPTY;
+    exports.TYPE_MARK = TYPE_MARK; // 标记
+    exports.TYPE_NUMBER = TYPE_NUMBER; // 顺序添加的棋子
+    exports.TYPE_BLACK = TYPE_BLACK; // 无序号 添加的黑棋
+    exports.TYPE_WHITE = TYPE_WHITE; // 无序号 添加的黑棋
+    exports.TYPE_MOVE = TYPE_MOVE; //VCF手顺
+    exports.TYPE_MARKFOUL = TYPE_MARKFOUL;
+    exports.TYPE_MARKARROW = TYPE_MARKARROW;
+    exports.TYPE_MARKLINE = TYPE_MARKLINE;
 
-    window.COORDINATE_ALL = COORDINATE_ALL;
-    window.COORDINATE_LEFT_UP = COORDINATE_LEFT_UP;
-    window.COORDINATE_RIGHT_UP = COORDINATE_RIGHT_UP;
-    window.COORDINATE_RIGHT_DOWN = COORDINATE_RIGHT_DOWN;
-    window.COORDINATE_LEFT_DOWN = COORDINATE_LEFT_DOWN;
-    window.COORDINATE_NONE = COORDINATE_NONE;
+    exports.COORDINATE_ALL = COORDINATE_ALL;
+    exports.COORDINATE_LEFT_UP = COORDINATE_LEFT_UP;
+    exports.COORDINATE_RIGHT_UP = COORDINATE_RIGHT_UP;
+    exports.COORDINATE_RIGHT_DOWN = COORDINATE_RIGHT_DOWN;
+    exports.COORDINATE_LEFT_DOWN = COORDINATE_LEFT_DOWN;
+    exports.COORDINATE_NONE = COORDINATE_NONE;
 
-    return CheckerBoard;
-})();
+    exports.CheckerBoard = CheckerBoard;
+})))

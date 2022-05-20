@@ -1,4 +1,4 @@
-    var VERSION = "v1718.00";
+    var VERSION = "v1718.01";
 var myInit = {
     cache: "no-store"
 };
@@ -139,7 +139,7 @@ function loadCache(url, version, clientID) {
         })
 }
 
-function fetchErr(err, url) {
+function fetchErr(err, url, version) {
     const type = url.split("?")[0].split(".").pop();
     const myHeaders = { "Content-Type": 'text/html; charset=utf-8' };
     const init = {
@@ -149,15 +149,19 @@ function fetchErr(err, url) {
     }
     if (["htm", "html"].indexOf(type) + 1) {
         let request = new Request("./404.html");
+        postMsg(`fetchErr >> 1`)
         return caches.open(version)
             .then(cache => {
+                postMsg(`fetchErr >> 2`)
                 return cache.match(request);
             })
             .then(response => {
+                postMsg(`fetchErr >> 3`)
                 if (response.constructor.name != "Response") throw new Error("");
                 return response;
             })
             .catch(() => {
+                postMsg(`fetchErr >> 4`)
                 return new Response(response_err, init)
             })
     }
@@ -174,7 +178,7 @@ function cacheFirst(url, version, clientID) {
         })
         .catch(err => {
             //postMsg(`404.html ${err.message}`, clientID);
-            return fetchErr(err, url);
+            return fetchErr(err, url, version);
         })
 }
 
@@ -184,7 +188,7 @@ function netFirst(url, version, clientID) {
             return loadCache(url, version, clientID)
         })
         .catch(err => {
-            return fetchErr(err, url)
+            return fetchErr(err, url, version)
         })
 }
 

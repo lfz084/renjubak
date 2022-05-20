@@ -1,4 +1,5 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1718.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1718.01";
+
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -879,7 +880,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1718.00";
         return  !!this.getPositionNodes(path, maxMatch).length;
     }
 
-
     Tree.prototype.getBranchNodes = function(path) {
         function checkPath(shortPath, longPath) {
             return !shortPath.find((idx, i) => idx != longPath[i]);
@@ -893,7 +893,10 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1718.00";
                 current = nodes[branch.idx] = new Branchs();
             }
 
-            if (0 == (current.branchsInfo & branchsInfo) || branch.color == "black" || current.branchs[branchsInfo - 1]?.isJoinNode) {
+            if (0 == (current.branchsInfo & branchsInfo) || 
+                branch.color == "black" || 
+                (current.branchs[branchsInfo - 1] && current.branchs[branchsInfo - 1].isJoinNode))
+            {
                 current.branchsInfo |= branchsInfo;
                 current.branchs[branchsInfo - 1] = branch;
                 3 == current.branchsInfo && (current.boardText = DEFAULT_BOARD_TXT[3]);
@@ -1104,4 +1107,5 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenjuTree"] = "v1718.00";
     
     exports.RenjuNode = Node;
     exports.RenjuTree = Tree;
+    
 })))

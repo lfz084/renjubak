@@ -1,4 +1,4 @@
-if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
+if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.01";
 (function(global, factory) {
     (global = global || self, factory(global));
 }(this, (function(exports) {
@@ -287,6 +287,8 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
                 else if(scl>1)setTimeout(()=>max(bufSize, scl),0);
                 else reject(`浏览器申请内存失败,请关闭后台应用、刷新网页，再试一下`);
             }
+            const FOUR_GB = 4095*1024*1024;
+            if (FOUR_GB < bufSize * scl) scl = parseInt(FOUR_GB / bufSize);
             max(bufSize, scl);
         });
     }
@@ -401,7 +403,6 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
                 wasm_exports._Z4initv(buf.byteLength);
             })
             .then(function(){
-                post(`log`, `maxMemory`);
                 return maxMemory(buf.byteLength, buffer_scale);
                 /*
                 post("warn", `buffer_scale = ${buffer_scale}`);
@@ -509,7 +510,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
             PH,
             NS,
             normalizeNS;
-        post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
+        //post("log", `棋谱中心点为, x = ${centerPos.x}, y = ${centerPos.y}`)
         for (let i = 0; i < 8; i++) {
             PH = transposePath(path, i);
             putPath(PH);
@@ -520,9 +521,7 @@ if (self.SCRIPT_VERSIONS) self.SCRIPT_VERSIONS["RenLibDoc_wasm"] = "v1718.00";
             normalizeNS = normalizeNodes(NS, i);
             //post("log",normalizeNS)
             nodes = pushNodes(nodes, normalizeNS);
-            post("log",`>>> ${i}`)
             wasm_exports._Z19searchInnerHTMLInfoP6CPointj(in_buffer, path.length);
-            post("log",`<<< ${i}`)
             let info = getInnerHTMLInfo(out_buffer);
             if (info.depth > innerHTMLInfo.depth) innerHTMLInfo = info;
         }

@@ -37,7 +37,7 @@
         window.setUpdataVersion = function () {
             localStorage.removeItem("RENJU_APP_VERSION")
         }
-        window.NEW_VERSION = "v1718.00";
+        window.NEW_VERSION = "v1718.01";
         window.OLD_VERDION = localStorage.getItem("RENJU_APP_VERSION"); // if window.OLD_VERDION == null then upDate Version
         if (window.OLD_VERDION != window.NEW_VERSION && window.NEW_VERSION.indexOf("up") + 1) window.OLD_VERDION = null; //强制更新
         
@@ -142,7 +142,7 @@
             "v1202.12": ["修复了,浏览lib棋谱时,部分节点丢失文字标记的bug"],
             "v1623.09": ["增加无禁模式",
                          "增加3种摆棋模式"],
-            "v1718.00": ["支持打开大棋谱(64位浏览器)",
+            "v1718.01": ["支持打开大棋谱(64位浏览器)",
                         "浏览器内存不够时,打开部分棋谱"]
         };
         
@@ -311,7 +311,7 @@
     
     <script>
         const BUT = document.getElementById("mlog");
-        let mlog = (function() {
+        window.mlog = (function() {
             let timer;
             return function(message) {
                 if (timer) clearTimeout(timer);
@@ -327,6 +327,7 @@
         })()
         let removeMlog = function() {
             if (BUT && BUT.parentNode) BUT.parentNode.removeChild(BUT);
+            window.mlog = undefined;
         }
 
         function strLen(str, len, char = " ", align = "left") {
@@ -402,7 +403,7 @@
                 .then(() => {
                     window.SOURCE_FILES = undefined;
                     window.SCRIPT_VERSIONS = undefined;
-                    window.UPDATA_INFO = undefined;
+                    //window.UPDATA_INFO = undefined;
                     window.alertCache = undefined;
                     window.checkScriptVersion = undefined;
                     window.checkAppVersion = undefined;

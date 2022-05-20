@@ -1,7 +1,9 @@
-self.SCRIPT_VERSIONS["button"] = "v1718.00";
-window.Button = (() => {
+self.SCRIPT_VERSIONS["button"] = "v1718.01";
+(function(global, factory) {
+    (global = global || self, factory(global));
+}(this, (function(exports) {
+    'use strict';
 
-    "use strict";
     const ANIMATION_TIMEOUT = 300;
     const TEST_BUTTON = false; // ==true >>> console.log;
     let isMenuShow = false; //控制主程序，不允许同时打开两个菜单
@@ -851,6 +853,6 @@ window.Button = (() => {
         this._menu.showMenu(x, y);
     };
 
-    window.ANIMATION_TIMEOUT = ANIMATION_TIMEOUT;
-    return button;
-})();
+    exports.ANIMATION_TIMEOUT = ANIMATION_TIMEOUT;
+    exports.Button = button;
+})))

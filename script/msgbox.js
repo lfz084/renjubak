@@ -1,7 +1,9 @@
-self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
-// 弹窗代码
-(function() {
-    "use strict";
+self.SCRIPT_VERSIONS["msgbox"] = "v1718.01";
+(function(global, factory) {
+    (global = global || self, factory(global));
+}(this, (function(exports) {
+    'use strict';
+    
     let isMsgShow = false; // =true 屏蔽 bodytouch 事件;
     let msgWindow = (() => {
         const TYPE_MSG = 1;
@@ -179,10 +181,10 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
         }
     })();
 
-    window.MSG_ENTER = 1;
-    window.MSG_CANCEL = -1;
+    exports.MSG_ENTER = 1;
+    exports.MSG_CANCEL = -1;
 
-    window.msg = function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter = () => {}, callCancel = () => {}, butNum, lineNum, textAlign) {
+    exports.msg = function msg(text, type = `msgbox`, left, top, width, height, enterTXT, cancelTXT, callEnter = () => {}, callCancel = () => {}, butNum, lineNum, textAlign) {
         if (typeof text == "object") {
             const data = text;
             text = data.title || data.text || "";
@@ -218,7 +220,7 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
         })
     }
 
-    window.msgbox = function msgbox(title, enterTXT, enterFunction = () => {}, cancelTXT, cancelFunction = () => {}, butNum, timer) {
+    exports.msgbox = function msgbox(title, enterTXT, enterFunction = () => {}, cancelTXT, cancelFunction = () => {}, butNum, timer) {
         if (typeof title == "object") {
             const data = title;
             title = data.title || data.text || "";
@@ -241,7 +243,7 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
                         resolve({ butCode: MSG_CANCEL });
                     }
                 msgWindow.msg(title, "msgbox", undefined, undefined, undefined, undefined, enterTXT, cancelTXT, newEnterFunction, newCancelFunction, butNum == undefined ? cancelTXT ? 2 : 1 : butNum, butNum == 0 ? 1 : undefined);
-                (butNum == 0) && window.closeMsg(timer).then(resolve).catch(resolve);
+                (butNum == 0) && exports.closeMsg(timer).then(resolve).catch(resolve);
             }
             catch (err) {
                 reject(err)
@@ -249,7 +251,7 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
         })
     }
 
-    window.closeMsg = function closeMsg(timer) {
+    exports.closeMsg = function closeMsg(timer) {
         timer = parseInt(timer) > 0 ? parseInt(timer) : 300;
         msgWindow.closeMsg(timer);
         
@@ -258,7 +260,7 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
         })
     }
 
-    window.warn = (() => {
+    exports.warn = (() => {
         let isShowLabel = true;
         return (txt, timer = 2000) => new Promise((resolve, reject) => {
             if (!isShowLabel) resolve();
@@ -270,4 +272,4 @@ self.SCRIPT_VERSIONS["msgbox"] = "v1718.00";
                 })
         })
     })();
-})()
+})))
